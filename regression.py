@@ -21,17 +21,17 @@ def list_dummy_variables(length, order):
 def sample_phenotypes(phenotypes, std, num_samples):
     """ Generate artificial data sampled from phenotype and percent error. """
     gen_phenotypes = list()
-    gen_sequences = list()
+    gen_genotypes = list()
     for s in phenotypes:
-        gen_sequences += [s for i in range(num_samples)]
+        gen_genotypes += [s for i in range(num_samples)]
         gen_phenotypes += list(std[s] * np.random.randn(num_samples) + phenotypes[s])
-    return gen_sequences, gen_phenotypes
+    return gen_genotypes, gen_phenotypes
 
-def generate_alpha(sequences):
+def generate_alpha(genotypes):
     """ Generate penalty parameter for Ridge Regressions. """
-    alpha = np.empty(len(sequences), dtype=float)
-    for s in range(len(sequences)):
-        n = sequences[s].count("1")
+    alpha = np.empty(len(genotypes), dtype=float)
+    for s in range(len(genotypes)):
+        n = genotypes[s].count("1")
         alpha[s] = 2**n
     return alpha
     
@@ -47,12 +47,12 @@ def log_pheno(phenotypes):
 
 class EpistasisRegression(object):
     
-    def __init__(self, sequences, phenotypes, interaction_order=2, log_phenotypes=True):
-        self.sequences = sequences
-        self.length = len(self.sequences[0])
+    def __init__(self, genotypes, phenotypes, interaction_order=2, log_phenotypes=True):
+        self.genotypes = genotypes
+        self.length = len(self.genotypes[0])
         self.interaction_order = interaction_order
         self.dummy_variables = list_dummy_variables(self.length, self.interaction_order)
-        self.dummy_variables_matrix = generate_dv_matrix(self.sequences, self.dummy_variables)
+        self.dummy_variables_matrix = generate_dv_matrix(self.genotypes, self.dummy_variables)
         self.model = LinearRegression(fit_intercept=False)
         self.error_model = LinearRegression()
         self.log_phenotypes = log_phenotypes
@@ -79,7 +79,7 @@ class EpistasisRegression(object):
         terms = dict()
         for dv in range(len(self.dummy_variables)):
             dummy = self.dummy_variables[dv]
-            if len(dummy == order):
+            if len(dummy) == order:
                 label = ",".join([str(i) for i in dummy])
                 terms[label] = self.interactions[dv]
         return terms
@@ -136,7 +136,7 @@ class EpistasisRegression(object):
             error_vector = np.array(errors.values())
             X = generate_dv_matrix(self.error_seq, self.dummy_variables)
         else:
-            self.error_seq = self.sequences
+            self.error_seq = self.genotypes
             error_vector = np.array(errors)
             X = self.dummy_variables_matrix
         
@@ -185,7 +185,7 @@ class EpistasisRegression(object):
 
         self.epistasis_dataframe = self.epistasis_dataframe.sort("Ordering")
 
-    def plot_interaction_dataframe(self, title, sigmas=3):
+    def plot_interaction_dataframe(self, title, sigmas=3, figsize=[15,7],**kwargs):
         """ Plot the interactions sorted by their order. 
             
         Parameters:
@@ -195,16 +195,14 @@ class EpistasisRegression(object):
         sigmas: 
             Number of sigmas to represent the errorbars. If 0, no error bars will be included.
         """
-        fig, ax = plt.subplots(1,1, figsize=[12,7])
+        fig, ax = plt.subplots(1,1, figsize=figsize)
         
         if sigmas == 0:
             if self.epistasis_dataframe is None:
                 self.build_interaction_dataframe()
-        
             y = self.epistasis_dataframe["Mean Value"]
             xlabels = self.epistasis_dataframe["Interactions"]
-            ax.plot(range(len(y)), y, linewidth=1.1)
-
+            ax.plot(range(len(y)), y, linewidth=1.1, **kwargs)
         else:
             if self.epistasis_dataframe is None:
                 self.build_interaction_dataframe(include_error=True)
@@ -212,9 +210,9 @@ class EpistasisRegression(object):
             y = self.epistasis_dataframe["Mean Value"]
             xlabels = self.epistasis_dataframe["Interactions"]
             yerr = self.epistasis_dataframe["Standard Deviations"]
-            ax.errorbar(range(len(y)), y, yerr=sigmas*yerr, linewidth=1.1)
+            ax.errorbar(range(len(y)), y, yerr=sigmas*yerr, linewidth=1.1, **kwargs)
             
-        ax.xticks(range(len(y)), np.array(xlabels), rotation="vertical")
+        plt.xticks(range(len(y)), np.array(xlabels), rotation="vertical")
         ax.set_xlabel("Interaction term", fontsize=16)
         ax.set_ylabel("Interaction Value", fontsize=16) 
         ax.set_title(title, fontsize=20)
@@ -222,20 +220,13 @@ class EpistasisRegression(object):
         ax.grid('on')
         ax.hlines(0,0,len(y), linestyles="dashed")
         
-        return fig, ax
-        
-        
-    def generate_data_without_interactions(self, interactions):
-        """ Gen"""
-        pass
-            
-        
+        return fig, ax    
 
 
 class EpistasisRidgeRegression(EpistasisRegression):
     
-    def __init__(self, sequences, phenotypes, interaction_order=2):
-        EpistasisRegression.__init__(self, sequences, phenotypes, interaction_order)
+    def __init__(self, genotypes, phenotypes, interaction_order=2):
+        EpistasisRegression.__init__(self, genotypes, phenotypes, interaction_order)
         self.alphas = 1
         self.model = Ridge(alpha=self.alphas)
     
