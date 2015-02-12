@@ -12,9 +12,9 @@ def
 
 
 
-class EpistasisGraph(GenoPhenoGraph):
+class EpistasisGraph(object):
     
-    def __init__(self, geno_pheno_map, regression_model):
+    def __init__(self, epistasis_map):
         self.gpm = geno_pheno_map
         self.model = regression_model
         

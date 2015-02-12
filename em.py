@@ -27,7 +27,21 @@ def cut_interaction_labels(labels, order):
     """ Cut off interaction labels at certain order of interactions. """
     return [l for l in labels if len(l) <= order]
 
-
+def label_to_key(label):
+    """ Take an interaction label list and convert to a string for dictionary 
+        key (e.g. [1,2,6,8] = '1,2,6,8' )
+    """
+    return ",".join([str(i) for i in label])
+    
+def interaction_keyed_map(labels, values):
+    """ Take ordered interaction labels ([1,2,3]) and values and create a dictionary
+        mapping interaction key (i.e. '1,2,3') to interaction value
+    """
+    interaction_map = dict()
+    for l in range(len(labels)):
+        interaction_map[label_to_key(labels[l])] = values[l]
+    return interaction_map
+    
 # ------------------------------------------------------------
 # Epistasis Mapping Classes
 # ------------------------------------------------------------
@@ -40,52 +54,56 @@ class EpistasisMap(object):
             in a genotype-phenotype map. This class does not determine epistasis;
             it merely t
         """
-        self.genotypes = gpm.phenotype_dict.keys()
-        self.phenotypes = gpm.phenotype_dict.values()
-        self.phenotype_errors = gpm.error_dict.values()
+        self.genotypes = gpm.gp_mapping.keys()
+        self.phenotypes = gpm.gp_mapping.values()
+        self.phenotype_errors = np.array(gpm.error_mapping.values())
         self.length = len(self.genotypes[0])
         self.log_phenotypes = log_phenotypes
-        self.epistasis_dataframe = None
         self.interaction_labels = build_interaction_labels(self.genotypes)
+        self.interaction_values = None
+        self.interaction_errors = None
+        self.interaction_mapping = {}
+        self.error_mapping = {}
+        self.epistasis_dataframe = None
         
-        # Make Y_vector with phenotypes logged
+        # Log-transform phenotypes if specified
         if log_phenotypes is True:
             self.Y = np.log(self.phenotypes)
         else:
             self.Y = self.phenotypes
         
-    def get_single_term(self, sites):
-        """ Returns the value of interaction term. """
-        if len(sites) > self.interaction_order:
-            raise("Order of interation is higher than the model's regression interactions. ")
-        sites.sort()
-        location = self.dummy_variables.index(sites)
-        self.interactions[location]
-        
-    def get_order_terms(self, order):
+    def nth_order(self, order):
         """ Returns dictionary of all interactions with specified order. """
+        
         terms = dict()
-        for dv in range(len(self.dummy_variables)):
-            dummy = self.dummy_variables[dv]
+        for dv in range(len(self.interaction_labels)):
+            dummy = self.interaction_labels[dv]
             if len(dummy) == order:
                 label = ",".join([str(i) for i in dummy])
-                terms[label] = self.interactions[dv]
+                terms[label] = self.interaction_values[dv]
         return terms
         
-    def get_interactions(self):
-        """ Returns a dictionary of interactions from regression. """
-        terms = dict()
-        for dv in range(len(self.dummy_variables)):
-            dummy = self.dummy_variables[dv]
-            label = ",".join([str(i) for i in dummy])
-            terms[label] = self.interactions[dv]
-        return terms
+    def create_interaction_map(self):
+        """ Take ordered interaction labels ([1,2,3]) and values and create a dictionary
+            mapping interaction key (i.e. '1,2,3') to interaction value
+        """
+        self.interaction_mapping = interaction_keyed_map(
+                                self.interaction_labels,
+                                self.interaction_values)
+        
+    def create_error_map(self):
+        """ Take ordered interaction labels ([1,2,3]) and values for error and create a dictionary
+            mapping interaction key (i.e. '1,2,3') to interaction value
+        """
+        self.error_mapping = interaction_keyed_map(
+                                self.interaction_labels, 
+                                self.interaction_errors)
         
     def build_interaction_dataframe(self, include_error=False):
         """ Build a pandas dataframe of the interactions/error. """
         if include_error is True:
-            uncertainty = self.get_interaction_error()
-            interactions = self.get_interactions()
+            uncertainty = self.error_mapping
+            interactions = self.interaction_mapping
         
             data = list()
             for i in interactions:
@@ -94,7 +112,7 @@ class EpistasisMap(object):
             self.epistasis_dataframe = pd.DataFrame(data=data,
                         columns=["Interactions", "Mean Value", "Standard Deviations", "Ordering"])        
         else:
-            interactions = self.get_interactions()
+            interactions = self.error_mapping
         
             data = list()
             for i in interactions:
@@ -172,13 +190,15 @@ class LocalEpistasisMap(EpistasisMap):
             mutant cycle method to order=number_of_mutations.
         """
         self.interaction_values = np.dot(self.X_inv, self.Y)
+        self.create_interaction_map()
         return self.interaction_values
         
     def estimate_error(self):
         """ Estimate the error of each epistatic interaction by standard error 
             propagation of the phenotypes through the model.
         """
-        self.interaction_errors = np.dot(self.X, self.phenotype_errors)
+        self.interaction_errors = np.sqrt(np.dot(self.X, self.phenotype_errors**2))
+        self.create_error_map()
         return self.interaction_errors
     
     
@@ -201,13 +221,15 @@ class GlobalEpistasisMap(EpistasisMap):
         matrix transformation.
         """
         self.interaction_values = np.dot(self.X, self.Y)
+        self.create_interaction_map()
         return self.interaction_values
         
     def estimate_error(self):
         """ Estimate the error of each epistatic interaction by standard error 
             propagation of the phenotypes through the model.
         """
-        self.interaction_errors = np.dot(self.X, self.phenotype_errors)
+        self.interaction_errors = np.sqrt(np.dot(abs(self.X), self.phenotype_errors**2))
+        self.create_error_map()
         return self.interaction_errors
     
 class ProjectedEpistasisMap(EpistasisMap):
@@ -236,14 +258,20 @@ class ProjectedEpistasisMap(EpistasisMap):
         
     def estimate_interactions(self):
         """ Estimate the values of all epistatic interactions using the expanded
-            mutant cycle method to order=number_of_mutations.
+            mutant cycle method to any order<=number of mutations.
         """
         self.regression_model.fit(self.X, self.Y)
         self.r_squared = self.regression_model.score(self.X, self.Y)
         self.interaction_values = self.regression_model.coef_
+        self.create_interaction_map()
         return self.interaction_values
         
         
     def estimate_error(self):
-        pass
+        """ Estimate the error of each epistatic interaction by standard error 
+            propagation of the phenotypes through the model.
+        """
+        self.interaction_errors = np.sqrt(np.dot(self.X, self.phenotype_errors**2))
+        self.create_error_map()
+        return self.interaction_errors
         
