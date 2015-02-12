@@ -18,6 +18,15 @@ def list_dummy_variables(length, order):
         dv = dv + [list(i) for i in it.combinations(seq, j)]
     return dv
 
+def list_dummy_variables2(genotypes):
+    """ Create interactions for X Matrix """
+    def find(s, ch):
+        return sorted([i+1 for i, ltr in enumerate(s) if ltr == ch])
+    
+    vector = [find(t, '1') for t in genotypes]
+    vector[0] = [0]
+    return vector
+    
 def sample_phenotypes(phenotypes, std, num_samples):
     """ Generate artificial data sampled from phenotype and percent error. """
     gen_phenotypes = list()
@@ -27,13 +36,6 @@ def sample_phenotypes(phenotypes, std, num_samples):
         gen_phenotypes += list(std[s] * np.random.randn(num_samples) + phenotypes[s])
     return gen_genotypes, gen_phenotypes
 
-def generate_alpha(genotypes):
-    """ Generate penalty parameter for Ridge Regressions. """
-    alpha = np.empty(len(genotypes), dtype=float)
-    for s in range(len(genotypes)):
-        n = genotypes[s].count("1")
-        alpha[s] = 2**n
-    return alpha
     
 def log_pheno(phenotypes):
     """ Generate a dictionary of the log(phenotype). """
@@ -47,11 +49,14 @@ def log_pheno(phenotypes):
 
 class EpistasisRegression(object):
     
-    def __init__(self, genotypes, phenotypes, interaction_order=2, log_phenotypes=True):
-        self.genotypes = genotypes
+    def __init__(self, geno_pheno_dict, interaction_order=2, log_phenotypes=True):
+        self.genotypes = geno_pheno_dict.keys()
+        self.phenotypes = geno_pheno_dict.values()
         self.length = len(self.genotypes[0])
         self.interaction_order = interaction_order
-        self.dummy_variables = list_dummy_variables(self.length, self.interaction_order)
+        #self.dummy_variables = list_dummy_variables(self.length, self.interaction_order)
+        self.dummy_variables = list_dummy_variables2(self.genotypes)
+
         self.dummy_variables_matrix = generate_dv_matrix(self.genotypes, self.dummy_variables)
         self.model = LinearRegression(fit_intercept=False)
         self.error_model = LinearRegression()
@@ -62,9 +67,9 @@ class EpistasisRegression(object):
         self.interactions = []
         
         if log_phenotypes is True:
-            self.Y_vector = log_pheno(phenotypes)
+            self.Y_vector = log_pheno(self.phenotypes)
         else:
-            self.Y_vector = phenotypes
+            self.Y_vector = self.phenotypes
         
     def get_single_term(self, sites):
         """ Returns the value of interaction term. """
@@ -122,7 +127,7 @@ class EpistasisRegression(object):
         
     def fit_error(self, errors):
         """ 
-        A method for creating a model that handles error propagation in intereaction terms. 
+        A method for creating a model that handles error propagation in interaction terms. 
         
         Parameters:
         ----------
@@ -223,10 +228,5 @@ class EpistasisRegression(object):
         return fig, ax    
 
 
-class EpistasisRidgeRegression(EpistasisRegression):
-    
-    def __init__(self, genotypes, phenotypes, interaction_order=2):
-        EpistasisRegression.__init__(self, genotypes, phenotypes, interaction_order)
-        self.alphas = 1
-        self.model = Ridge(alpha=self.alphas)
+
     
