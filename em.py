@@ -42,6 +42,27 @@ def interaction_keyed_map(labels, values):
         interaction_map[label_to_key(labels[l])] = values[l]
     return interaction_map
     
+def nth_order_map(full_map, length, order):
+    # Built list of labels with given order
+    labels = [",".join(map(str,i)) for i in it.combinations(range(1,length+1), order)]
+    nth_map = dict()
+    for l in labels:
+        nth_map[l] = full_map[l]
+    return nth_map
+    
+# ------------------------------------------------------------
+# Unique Epistasis Functions
+# ------------------------------------------------------------   
+
+def hadamard_weight_vector(genotypes):
+    l = len(genotypes)
+    n = len(genotypes[0])
+    weights = np.zeros((l, l), dtype=float)
+    for g in range(l):
+        epistasis = float(genotypes[g].count("1"))
+        weights[g][g] = ((-1)**epistasis)/(2**(n-epistasis))    
+    return weights    
+
 # ------------------------------------------------------------
 # Epistasis Mapping Classes
 # ------------------------------------------------------------
@@ -74,14 +95,10 @@ class EpistasisMap(object):
         
     def nth_order(self, order):
         """ Returns dictionary of all interactions with specified order. """
-        
-        terms = dict()
-        for dv in range(len(self.interaction_labels)):
-            dummy = self.interaction_labels[dv]
-            if len(dummy) == order:
-                label = ",".join([str(i) for i in dummy])
-                terms[label] = self.interaction_values[dv]
-        return terms
+        return nth_order_map(self.interaction_mapping, self.length, order)
+    
+    def nth_error(self, order):
+        return nth_order_map(self.error_mapping, self.length, order)
         
     def create_interaction_map(self):
         """ Take ordered interaction labels ([1,2,3]) and values and create a dictionary
@@ -90,6 +107,7 @@ class EpistasisMap(object):
         self.interaction_mapping = interaction_keyed_map(
                                 self.interaction_labels,
                                 self.interaction_values)
+        return self.interaction_mapping
         
     def create_error_map(self):
         """ Take ordered interaction labels ([1,2,3]) and values for error and create a dictionary
@@ -112,7 +130,7 @@ class EpistasisMap(object):
             self.epistasis_dataframe = pd.DataFrame(data=data,
                         columns=["Interactions", "Mean Value", "Standard Deviations", "Ordering"])        
         else:
-            interactions = self.error_mapping
+            interactions = self.interaction_mapping
         
             data = list()
             for i in interactions:
@@ -140,7 +158,7 @@ class EpistasisMap(object):
                 self.build_interaction_dataframe()
             y = self.epistasis_dataframe["Mean Value"]
             xlabels = self.epistasis_dataframe["Interactions"]
-            ax.plot(range(len(y)), y, linewidth=1.1, **kwargs)
+            ax.bar(range(len(y)), y, 0.9, alpha=0.4, align="center", **kwargs)
         else:
             if self.epistasis_dataframe is None:
                 self.build_interaction_dataframe(include_error=True)
@@ -148,14 +166,13 @@ class EpistasisMap(object):
             y = self.epistasis_dataframe["Mean Value"]
             xlabels = self.epistasis_dataframe["Interactions"]
             yerr = self.epistasis_dataframe["Standard Deviations"]
-            ax.errorbar(range(len(y)), y, yerr=sigmas*yerr, linewidth=1.1, **kwargs)
+            ax.bar(range(len(y)), y, 0.9, yerr=sigmas*yerr, alpha=0.4, align="center",**kwargs)
             
         plt.xticks(range(len(y)), np.array(xlabels), rotation="vertical")
         ax.set_xlabel("Interaction term", fontsize=16)
         ax.set_ylabel("Interaction Value", fontsize=16) 
         ax.set_title(title, fontsize=20)
         ax.axis("tight")
-        ax.grid('on')
         ax.hlines(0,0,len(y), linestyles="dashed")
         
         return fig, ax    
@@ -213,6 +230,7 @@ class GlobalEpistasisMap(EpistasisMap):
         EpistasisMap.__init__(self, gpm, log_phenotypes)
         
         # Generate basis matrix for mutant cycle approach to epistasis.
+        self.weight_vector = hadamard_weight_vector(gpm.genotypes)
         self.X = sp.linalg.hadamard(2**self.length)
         self.interaction_values = None
         
@@ -220,7 +238,7 @@ class GlobalEpistasisMap(EpistasisMap):
         """ Estimate the values of all epistatic interactions using the hadamard
         matrix transformation.
         """
-        self.interaction_values = np.dot(self.X, self.Y)
+        self.interaction_values = np.dot(self.weight_vector,np.dot(self.X, self.Y))
         self.create_interaction_map()
         return self.interaction_values
         
@@ -228,7 +246,7 @@ class GlobalEpistasisMap(EpistasisMap):
         """ Estimate the error of each epistatic interaction by standard error 
             propagation of the phenotypes through the model.
         """
-        self.interaction_errors = np.sqrt(np.dot(abs(self.X), self.phenotype_errors**2))
+        self.interaction_errors = np.dot(self.weight_vector, np.sqrt(np.dot(abs(self.X), self.phenotype_errors**2)))
         self.create_error_map()
         return self.interaction_errors
     
@@ -253,6 +271,7 @@ class ProjectedEpistasisMap(EpistasisMap):
         
         # Regression properties
         self.regression_model = LinearRegression(fit_intercept=False)
+        self.error_model = LinearRegression(fit_intercept=False)
         self.r_squared = None
         
         
@@ -271,7 +290,10 @@ class ProjectedEpistasisMap(EpistasisMap):
         """ Estimate the error of each epistatic interaction by standard error 
             propagation of the phenotypes through the model.
         """
-        self.interaction_errors = np.sqrt(np.dot(self.X, self.phenotype_errors**2))
+        self.interaction_errors = np.empty(len(self.interaction_labels), dtype=float)
+        for i in range(len(self.interaction_labels)):
+            n = len(self.interaction_labels[i])
+            self.interaction_errors[i] = np.sqrt(n*self.phenotype_errors[i]**2)
         self.create_error_map()
         return self.interaction_errors
         

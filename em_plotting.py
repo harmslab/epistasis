@@ -1,32 +1,29 @@
 import numpy as np
-import networkx as nx
-from ..geno_pheno_map.gpm_network import GenoPhenoGraph
+import matplotlib.pyplot as plt
 
 # ---------------------------------------------------
-# NetworkX graphing
+# Epistasis Graphing
 # ---------------------------------------------------
 
-def
+def epistasis_bar_charts(em, length, order):
+    """ Generate stacked subplots, showing barcharts of interactions for each order
+        of epistasis. 
+    """
+    fig, ax = plt.subplots(length, 1, figsize=[5,5*order])
 
-
-
-
-
-class EpistasisGraph(object):
-    
-    def __init__(self, epistasis_map):
-        self.gpm = geno_pheno_map
-        self.model = regression_model
-        
-    def node_mapping(self):
-        
-        node_to_pheno = dict()
-        node_to_geno = dict()
-        
-        # Dict with interaction term to interaction value
-        node_to_interaction = self.model.get_interactions()
-        
-        for key in node_to_interactions:
-            
-            node_to_pheno[key] = 
+    for order in range(1, length+1):
+        interactions = em.nth_order(order)
+        error = em.nth_error(order)
+        labels = interactions.keys()
+        values = interactions.values()
+        n_terms = len(values)
+        index = np.arange(n_terms)
+        bar_width = .9
+        opacity = 0.4
+        rects1 = ax[order-1].bar(index, values, bar_width,
+                         alpha=opacity,
+                         color='b',
+                         yerr=error.values())
+        ticks = ax[order-1].set_xticklabels(labels, rotation="vertical")
+        ax[order-1].set_xticks(index+.5)
         
