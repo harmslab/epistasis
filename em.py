@@ -76,9 +76,9 @@ class EpistasisMap(object):
             it merely t
         """
         self.gpm = gpm
-        self.length = len(self.gpm.get_genotypes()[0])
+        self.length = self.gpm.length
         self.log_phenotypes = log_phenotypes
-        self.interaction_labels = build_interaction_labels(self.gpm.get_genotypes())
+        self.interaction_labels = build_interaction_labels(self.gpm.genotypes)
         self.interaction_values = None
         self.interaction_errors = None
         self.interaction_mapping = {}
@@ -87,9 +87,9 @@ class EpistasisMap(object):
         
         # Log-transform phenotypes if specified
         if log_phenotypes is True:
-            self.Y = np.log(self.gpm.get_phenotypes())
+            self.Y = np.log(self.gpm.phenotypes)
         else:
-            self.Y = self.gpm.get_phenotypes()
+            self.Y = self.gpm.phenotypes
         
     def nth_order(self, order):
         """ Returns dictionary of all interactions with specified order. """
