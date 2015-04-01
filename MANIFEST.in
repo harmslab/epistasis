@@ -1,0 +1,3 @@
+include README.md
+include epistasis/regression_ext.c
+include epistasisregression_ext.pyx
