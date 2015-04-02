@@ -15,7 +15,8 @@ def setting_error(func):
 def hamming_distance(s1, s2):
     """ Return the Hamming distance between equal-length sequences """
     return sum(ch1 != ch2 for ch1, ch2 in zip(s1, s2))
-    
+
+
 # -------------------------------------
 # Main class for building epistasis map
 # -------------------------------------
@@ -92,6 +93,16 @@ class EpistasisMap(object):
         return self._genotypes
         
     @property
+    def bits(self):
+        """ Get Binary representation of genotypes. """
+        return self._bits
+        
+    @property
+    def bit_indices(self):
+        """ Get indices of genotypes in self.genotypes that mapped to their binary representation. """
+        self.bit_indices
+        
+    @property
     def phenotypes(self):
         """ Get the phenotypes of the system. """
         return self._phenotypes
@@ -103,7 +114,7 @@ class EpistasisMap(object):
     
     @property
     def indices(self):
-        """ Return numpy array of phenotypes. """
+        """ Return numpy array of genotypes position. """
         return self._indices
     
     @property
@@ -206,7 +217,20 @@ class EpistasisMap(object):
         """ Set the interaction genotypes of the system."""
         self._genotypes = genotypes
         
+    @property
+    def geno2binary(self):
+        """ Return dictionary of genotypes mapped to their binary representation. """
+        mapping = dict()
+        for i in range(self.n):
+            mapping[self.genotypes[self.bit_indices[i]]] = self.bits[i] 
+        return mapping
+
+    @property
+    def geno2index(self):
+        """ Return dict of genotypes mapped to their indices in transition matrix. """
+        return self._map(self._genotypes, self._indices)
         
+    
     # ---------------------------------
     # Useful methods for mapping object
     # ---------------------------------
@@ -225,7 +249,9 @@ class EpistasisMap(object):
         return elements
 
     def _build_interaction_map(self):
-        """ Build the epistatic interaction map.
+        """ Returns a label and key for every epistatic interaction. 
+            
+            Also returns a dictionary with order mapped to the index in the interactions array.
             
             An interaction label looks like [1,4,6] (type==list).
             An interaction key looks like '1,4,6'   (type==str).
@@ -235,7 +261,7 @@ class EpistasisMap(object):
         order_indices = dict()
         for o in range(1,self._order+1):
             start = len(labels)
-            for label in it.combinations(range(1,self._length), o)
+            for label in it.combinations(range(1,self._length), o):
                 labels.append(list(label))
                 key = ','.join([str(i) for i in label])
                 keys.append(key)
@@ -251,5 +277,31 @@ class EpistasisMap(object):
                 break
         return genotype
         
-        
+    def _to_bits(self):
+        """ Encode the genotypes an ordered binary set of genotypes with 
+            wildtype as reference state (ref is all zeros).
+        """
+        w = list(self.wildtype)
+        m = list(self.mutant)
+        # build binary system
+        binaries = sorted(["".join(list(s)) for s in it.product('01', repeat=len(wildtype))])
+        # get genotype indices
+        geno2index = self.geno2indices
+        # initialize bit_indicies
+        bit_indices = np.empty(len(binaries), dtype=int)
+        for b in range(len(binaries)):
+            binary = list(binaries[b])
+            sequence = list()
+            for i in range(len(w)):
+                if binaries[b][i] == '0':
+                    sequence.append(w[i])
+                else:
+                    sequence.append(m[i])
+            # Find genotype in map and store index
+            bit_indices[b] = geno2index[sequence]
+        self._bit_indices = bit_indices
+        self._bits = binaries
+            
+                    
+                    
     
