@@ -1,297 +1,255 @@
-import itertools as it
 import numpy as np
-import scipy as sp
-import pandas as pd
-from regression_ext import generate_dv_matrix
-from sklearn.linear_model import LinearRegression
-from sklearn.linear_model import Ridge
-import matplotlib.pyplot as plt
+import itertools as it
 
-# ------------------------------------------------------------
-# Functions for Model building
-# ------------------------------------------------------------
+# Decorator for error catching
+def setting_error(func):
+    """ Raise an AttributeError if _genotypes are not set before using any methods. """
+    def wrapper(*args, **kwargs):
+        try:
+            output = func(*args, **kwargs)
+            return output
+        except AttributeError:
+            raise AttributeError("'genotypes' property must be set before setting this attribute.")
+    return wrapper
 
-def build_interaction_labels(genotypes):
-    """ Create interaction labels for X Matrix. REQUIRES that genotypes are in
-        ascending order by their binary value."""
+def hamming_distance(s1, s2):
+    """ Return the Hamming distance between equal-length sequences """
+    return sum(ch1 != ch2 for ch1, ch2 in zip(s1, s2))
     
-    def find(s, ch):
-        # simple function to find indices of mutations
-        return sorted([i+1 for i, ltr in enumerate(s) if ltr == ch])
-    
-    vector = [find(g, '1') for g in genotypes]
-    vector[0] = [0]
-    return vector
-    
-def cut_interaction_labels(labels, order):
-    """ Cut off interaction labels at certain order of interactions. """
-    return [l for l in labels if len(l) <= order]
-
-def label_to_key(label):
-    """ Take an interaction label list and convert to a string for dictionary 
-        key (e.g. [1,2,6,8] = '1,2,6,8' )
-    """
-    return ",".join([str(i) for i in label])
-    
-def interaction_keyed_map(labels, values):
-    """ Take ordered interaction labels ([1,2,3]) and values and create a dictionary
-        mapping interaction key (i.e. '1,2,3') to interaction value
-    """
-    interaction_map = dict()
-    for l in range(len(labels)):
-        interaction_map[label_to_key(labels[l])] = values[l]
-    return interaction_map
-    
-def nth_order_map(full_map, length, order):
-    # Built list of labels with given order
-    labels = [",".join(map(str,i)) for i in it.combinations(range(1,length+1), order)]
-    nth_map = dict()
-    for l in labels:
-        nth_map[l] = full_map[l]
-    return nth_map
-    
-# ------------------------------------------------------------
-# Unique Epistasis Functions
-# ------------------------------------------------------------   
-
-def hadamard_weight_vector(genotypes):
-    l = len(genotypes)
-    n = len(genotypes[0])
-    weights = np.zeros((l, l), dtype=float)
-    for g in range(l):
-        epistasis = float(genotypes[g].count("1"))
-        weights[g][g] = ((-1)**epistasis)/(2**(n-epistasis))    
-    return weights    
-
-# ------------------------------------------------------------
-# Epistasis Mapping Classes
-# ------------------------------------------------------------
-
+# -------------------------------------
+# Main class for building epistasis map
+# -------------------------------------
 
 class EpistasisMap(object):
-    
-    def __init__(self, gpm, log_phenotypes=True):
-        """ An empty placeholder class for easy navigating/mapping Epistasis 
-            in a genotype-phenotype map. This class does not determine epistasis;
-            it merely t
-        """
-        self.gpm = gpm
-        self.length = self.gpm.length
-        self.log_phenotypes = log_phenotypes
-        self.interaction_labels = build_interaction_labels(self.gpm.genotypes)
-        self.interaction_values = None
-        self.interaction_errors = None
-        self.interaction_mapping = {}
-        self.error_mapping = {}
-        self.epistasis_dataframe = None
+    """
+        Object that maps epistasis in a genotype-phenotype map. 
         
-        # Log-transform phenotypes if specified
-        if log_phenotypes is True:
-            self.Y = np.log(self.gpm.phenotypes)
-        else:
-            self.Y = self.gpm.phenotypes
-        
-    def nth_order(self, order):
-        """ Returns dictionary of all interactions with specified order. """
-        return nth_order_map(self.interaction_mapping, self.length, order)
-    
-    def nth_error(self, order):
-        return nth_order_map(self.error_mapping, self.length, order)
-        
-    def create_interaction_map(self):
-        """ Take ordered interaction labels ([1,2,3]) and values and create a dictionary
-            mapping interaction key (i.e. '1,2,3') to interaction value
-        """
-        self.interaction_mapping = interaction_keyed_map(
-                                self.interaction_labels,
-                                self.interaction_values)
-        return self.interaction_mapping
-        
-    def create_error_map(self):
-        """ Take ordered interaction labels ([1,2,3]) and values for error and create a dictionary
-            mapping interaction key (i.e. '1,2,3') to interaction value
-        """
-        self.error_mapping = interaction_keyed_map(
-                                self.interaction_labels, 
-                                self.interaction_errors)
-        
-    def build_interaction_dataframe(self, include_error=False):
-        """ Build a pandas dataframe of the interactions/error. """
-        if include_error is True:
-            uncertainty = self.error_mapping
-            interactions = self.interaction_mapping
-        
-            data = list()
-            for i in interactions:
-                data.append([i,interactions[i],uncertainty[i],len(i)])
-
-            self.epistasis_dataframe = pd.DataFrame(data=data,
-                        columns=["Interactions", "Mean Value", "Standard Deviations", "Ordering"])        
-        else:
-            interactions = self.interaction_mapping
-        
-            data = list()
-            for i in interactions:
-                data.append([i,interactions[i],len(i)])
-
-            self.epistasis_dataframe = pd.DataFrame(data=data,
-                        columns=["Interactions", "Mean Value", "Ordering"])
-
-        self.epistasis_dataframe = self.epistasis_dataframe.sort("Ordering")
-
-    def plot_interaction_dataframe(self, title, sigmas=3, figsize=[15,7],**kwargs):
-        """ Plot the interactions sorted by their order. 
-            
-        Parameters:
+        Attributes:
         ----------
-        title: str
-            The title for the plot.
-        sigmas: 
-            Number of sigmas to represent the errorbars. If 0, no error bars will be included.
-        """
-        fig, ax = plt.subplots(1,1, figsize=figsize)
-        
-        if sigmas == 0:
-            if self.epistasis_dataframe is None:
-                self.build_interaction_dataframe()
-            y = self.epistasis_dataframe["Mean Value"]
-            xlabels = self.epistasis_dataframe["Interactions"]
-            ax.bar(range(len(y)), y, 0.9, alpha=0.4, align="center", **kwargs)
-        else:
-            if self.epistasis_dataframe is None:
-                self.build_interaction_dataframe(include_error=True)
-        
-            y = self.epistasis_dataframe["Mean Value"]
-            xlabels = self.epistasis_dataframe["Interactions"]
-            yerr = self.epistasis_dataframe["Standard Deviations"]
-            ax.bar(range(len(y)), y, 0.9, yerr=sigmas*yerr, alpha=0.4, align="center",**kwargs)
-            
-        plt.xticks(range(len(y)), np.array(xlabels), rotation="vertical")
-        ax.set_xlabel("Interaction term", fontsize=16)
-        ax.set_ylabel("Interaction Value", fontsize=16) 
-        ax.set_title(title, fontsize=20)
-        ax.axis("tight")
-        ax.hlines(0,0,len(y), linestyles="dashed")
-        
-        return fig, ax    
+        length: int, 
+            length of genotypes
+        n: int
+            size of genotype-phenotype map
+        order: int
+            order of epistasis in system
+        wildtype: str
+            wildtype genotype
+        mutations: array of chars
+            individual mutations from wildtype that are in the system
+        genotypes: array
+            genotype in system
+        phenotypes: array
+            quantitative phenotypes in system
+        phenotype_errors: array
+            errors for each phenotype value
+        indices: array
+            genotype indices
+        interactions: array
+            epistatic interactions in the genotype-phenotype map
+        interaction_error: array
+            errors for each epistatic interaction
+        interaction_indices: array
+            indices for interaction's position in mutation matrix
+        interaction_genotypes: array
+            interactions as their mutation labels
+        interaction_labels: list of lists
+            List of interactions indices 
+        interaction_keys: list
+            List of interaction keys
+    """
+    # ---------------------
+    # Getter methods
+    # ---------------------
+    
+    @property
+    def length(self):
+        """ Get length of the genotypes. """
+        return self._length    
+    
+    @property
+    def n(self):
+        """ Get number of genotypes, i.e. size of the system. """
+        return self._n
 
-class LocalEpistasisMap(EpistasisMap):
+    @property
+    def order(self):
+        """ Get order of epistasis in system. """
+        return self._order
+    
+    @property
+    def wildtype(self):
+        """ Get reference genotypes for interactions. """
+        return self._reference
         
-    def __init__(self, gpm, log_phenotypes=True):
-        """ Create a map of the local epistatic effects using expanded mutant 
-            cycle approach.
+    @property
+    def mutations(self):
+        """ Get possible that occur from reference system. """
+        return self._mutations
+    
+    @property
+    def genotypes(self):
+        """ Get the genotypes of the system. """
+        return self._genotypes
+        
+    @property
+    def phenotypes(self):
+        """ Get the phenotypes of the system. """
+        return self._phenotypes
+    
+    @property
+    def phenotype_errors(self):
+        """ Get the phenotypes' errors in the system. """
+        return self._phenotype_errors
+    
+    @property
+    def indices(self):
+        """ Return numpy array of phenotypes. """
+        return self._indices
+    
+    @property
+    def interactions(self):
+        """ Get the values of the interaction in the system"""
+        return self._interactions
+        
+    @property
+    def interaction_errors(self):
+        """ Get the value of the interaction errors in the system. """
+        return self._interaction_errors
+        
+    @property
+    def interaction_indices(self):
+        """ Get the interaction index in interaction matrix. """
+        return self._interaction_index
+        
+    @property
+    def interaction_genotypes(self):
+        """ Get the interaction genotype. """
+        return self._interaction_genotype
+        
+    @property
+    def interaction_labels(self):
+        """ Get the interaction labels, which describe the position of interacting mutations in
+            the genotypes. (type==list of lists, see self._build_interaction_labels)
+            """
+        return self._interaction_index
+        
+    @property
+    def interaction_keys(self):
+        """ Get the interaction keys. (type==list of str, see self._build_interaction_labels)"""
+        return self._interaction_keys
+        
+    # ---------------------
+    # Setter methods
+    # ---------------------
+    
+    @genotypes.setter
+    def genotypes(self, genotypes):
+        """ Set genotypes from ordered list of sequences. """
+        genotypes = sorted(genotypes)
+        self._n = len(genotypes)
+        self._length = len(genotypes[0])
+        self._genotypes = np.array(genotypes)
+        self._indices = np.arange(self._n)
+        
+    @wildtype.setter
+    @setting_error
+    def wildtype(self, wildtype):
+        """ Set the reference genotype among the mutants in the system. """
+        if type(reference) != str:
+            raise Exception("Reference must be a string.")
+        self._wildtype = wildtype
+        self._mutations = self._differ_all_sites(wildtype).split('')
+    
+    @order.setter
+    @setting_error
+    def order(self, order):
+        """ Set the order of epistasis in the system. As a consequence, 
+            this mapping object creates the """
+        self._order = order
+        # Create interaction labels and keys
+        self._interaction_labels, self._interaction_keys, self._order_indices = self._build_interaction_map()
+        self._interaction_indices = np.arange(len(self._interaction_labels))
+        
+    @phenotypes.setter
+    @setting_error
+    def phenotypes(self, phenotypes):
+        """ Set the phenotypes of the system."""
+        self._phenotypes = phenotypes
+        
+    @phenotype_errors.setter
+    @setting_error
+    def phenotype_errors(self, phenotype_errors):
+        """ Set the phenotype errors of the system."""
+        self._phenotype_errors = phenotype_errors
+        
+    @interactions.setter
+    @setting_error
+    def interactions(self, interactions):
+        """ Set the interactions of the system."""
+        self._interactions = interactions
+        
+    @interaction_errors.setter
+    @setting_error
+    def interaction_errors(self, interaction_errors):
+        """ Set the interaction errors of the system."""
+        self._interaction_errors = interaction_errors
+        
+    @interaction_indices.setter
+    @setting_error
+    def interaction_indices(self, interaction_indices):
+        """ Set the genotypes of the system."""
+        self._interaction_indices = interaction_indices
+        
+    @interaction_genotypes.setter
+    @setting_error
+    def interaction_genotypes(self, interaction_genotypes):
+        """ Set the interaction genotypes of the system."""
+        self._genotypes = genotypes
+        
+        
+    # ---------------------------------
+    # Useful methods for mapping object
+    # ---------------------------------
+        
+    def _map(self, keys, values):
+        """ Return ordered dictionary mapping two properties in self. """
+        return OrderedDict([(keys[i], values[i]) for i in range(self._n)])
+        
+    def _if_dict(self, dictionary):
+        """ If setter method is passed a dictionary with genotypes as keys, 
+            use those keys to populate array of elements in order
+        """
+        elements = np.empty(self._n, dtype=float)
+        for i in range(self._n):
+            elements[i] = dictionary[self._genotypes[i]]
+        return elements
+
+    def _build_interaction_map(self):
+        """ Build the epistatic interaction map.
             
-            i.e.
-            Phenotype = K_0 + sum(K_i) + sum(K_ij) + sum(K_ijk) + ...
-            
-            Parameters:
-            ----------
-            geno_pheno_dict: OrderedDict
-                Dictionary with keys=ordered genotypes by their binary value, 
-                mapped to their phenotypes.
-            log_phenotypes: bool (default=True)
-                Log transform the phenotypes for additivity.
+            An interaction label looks like [1,4,6] (type==list).
+            An interaction key looks like '1,4,6'   (type==str).
         """
-        # Inherit EpistasisMap
-        EpistasisMap.__init__(self, gpm, log_phenotypes)
+        labels = [0]
+        keys = ['0']
+        order_indices = dict()
+        for o in range(1,self._order+1):
+            start = len(labels)
+            for label in it.combinations(range(1,self._length), o)
+                labels.append(list(label))
+                key = ','.join([str(i) for i in label])
+                keys.append(key)
+            stop = len(labels)
+            order_indices[o] = [start, stop]
+        return labels, keys, order_indices
         
-        # Generate basis matrix for mutant cycle approach to epistasis.
-        self.X = generate_dv_matrix(self.genotypes, self.interaction_labels)
-        self.X_inv = np.linalg.inv(self.X)
-        self.interaction_values = None
+    def _differ_all_sites(self, reference):
+        """ Find the genotype in the system that differs at all sites from reference.""" 
+        for genotype in self._genotypes():
+            if hamming_distance(genotype, reference) == self._length:
+                differs = genotype
+                break
+        return genotype
         
-    def estimate_interactions(self):
-        """ Estimate the values of all epistatic interactions using the expanded
-            mutant cycle method to order=number_of_mutations.
-        """
-        self.interaction_values = np.dot(self.X_inv, self.Y)
-        self.create_interaction_map()
-        return self.interaction_values
         
-    def estimate_error(self):
-        """ Estimate the error of each epistatic interaction by standard error 
-            propagation of the phenotypes through the model.
-        """
-        self.interaction_errors = np.sqrt(np.dot(self.X, self.phenotype_errors**2))
-        self.create_error_map()
-        return self.interaction_errors
     
-    
-class GlobalEpistasisMap(EpistasisMap):
-    
-    def __init__(self, gpm, log_phenotypes=True):
-        """ Create a map of the global epistatic effects using Hadamard approach.
-            This is the related to LocalEpistasisMap by the discrete Fourier 
-            transform of mutant cycle approach. 
-        """
-        # Inherit EpistasisMap
-        EpistasisMap.__init__(self, gpm, log_phenotypes)
-        
-        # Generate basis matrix for mutant cycle approach to epistasis.
-        self.weight_vector = hadamard_weight_vector(gpm.genotypes)
-        self.X = sp.linalg.hadamard(2**self.length)
-        self.interaction_values = None
-        
-    def estimate_interactions(self):
-        """ Estimate the values of all epistatic interactions using the hadamard
-        matrix transformation.
-        """
-        self.interaction_values = np.dot(self.weight_vector,np.dot(self.X, self.Y))
-        self.create_interaction_map()
-        return self.interaction_values
-        
-    def estimate_error(self):
-        """ Estimate the error of each epistatic interaction by standard error 
-            propagation of the phenotypes through the model.
-        """
-        self.interaction_errors = np.dot(self.weight_vector, np.sqrt(np.dot(abs(self.X), self.phenotype_errors**2)))
-        self.create_error_map()
-        return self.interaction_errors
-    
-class ProjectedEpistasisMap(EpistasisMap):
-    
-    def __init__(self, gpm, regression_order, log_phenotypes=True):
-        """ Create a map from local epistasis model projected into lower order
-            order epistasis interactions. Requires regression to estimate values. 
-        """
-        # Inherit EpistasisMap
-        EpistasisMap.__init__(self, gpm, log_phenotypes)
-        
-        # Generate basis matrix for mutant cycle approach to epistasis.
-        self.regression_order = regression_order
-        self.interaction_labels = cut_interaction_labels(
-                                            self.interaction_labels, 
-                                            self.regression_order
-                                            )
-                                            
-        self.X = generate_dv_matrix(self.genotypes, self.interaction_labels)
-        self.interaction_values = None
-        
-        # Regression properties
-        self.regression_model = LinearRegression(fit_intercept=False)
-        self.error_model = LinearRegression(fit_intercept=False)
-        self.r_squared = None
-        
-        
-    def estimate_interactions(self):
-        """ Estimate the values of all epistatic interactions using the expanded
-            mutant cycle method to any order<=number of mutations.
-        """
-        self.regression_model.fit(self.X, self.Y)
-        self.r_squared = self.regression_model.score(self.X, self.Y)
-        self.interaction_values = self.regression_model.coef_
-        self.create_interaction_map()
-        return self.interaction_values
-        
-        
-    def estimate_error(self):
-        """ Estimate the error of each epistatic interaction by standard error 
-            propagation of the phenotypes through the model.
-        """
-        self.interaction_errors = np.empty(len(self.interaction_labels), dtype=float)
-        for i in range(len(self.interaction_labels)):
-            n = len(self.interaction_labels[i])
-            self.interaction_errors[i] = np.sqrt(n*self.phenotype_errors[i]**2)
-        self.create_error_map()
-        return self.interaction_errors
-        

@@ -59,7 +59,6 @@ class EpistasisGraph(object):
         self.attributes = {}
         self.clean_graph()
     
-    
     def clean_graph(self):
         """ Return networkx graph to default colors and sizes. """
         self.attributes = {
