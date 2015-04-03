@@ -1,22 +1,7 @@
+from .utils import hamming_distance
 import numpy as np
 import itertools as it
 from collections import OrderedDict
-
-# Decorator for error catching
-def setting_error(func):
-    """ Raise an AttributeError if _genotypes are not set before using any methods. """
-    def wrapper(*args, **kwargs):
-        try:
-            output = func(*args, **kwargs)
-            return output
-        except AttributeError:
-            raise AttributeError("'genotypes' property must be set before setting this attribute.")
-    return wrapper
-
-def hamming_distance(s1, s2):
-    """ Return the Hamming distance between equal-length sequences """
-    return sum(ch1 != ch2 for ch1, ch2 in zip(s1, s2))
-
 
 # -------------------------------------
 # Main class for building epistasis map
@@ -46,7 +31,7 @@ class EpistasisMap(object):
             errors for each phenotype value
         indices: array
             genotype indices
-        interactions: array
+        interaction_values: array
             epistatic interactions in the genotype-phenotype map
         interaction_error: array
             errors for each epistatic interaction
@@ -99,9 +84,9 @@ class EpistasisMap(object):
         return self._phenotype_errors
 
     @property
-    def interactions(self):
+    def interaction_values(self):
         """ Get the values of the interaction in the system"""
-        return self._interactions
+        return self._interaction_values
         
     @property
     def interaction_errors(self):
@@ -157,6 +142,16 @@ class EpistasisMap(object):
         """ Get indices of genotypes in self.genotypes that mapped to their binary representation. """
         return self._bit_indices
         
+    @property
+    def bit_phenotypes(self):
+        """ Get the phenotype values in an array orderd same as binary reprentation. """
+        return self.phenotypes[self.bit_indices]
+        
+    @property
+    def bit_phenotype_errors(self):
+        """ Get the phenotype values in an array orderd same as binary reprentation. """
+        return self.phenotype_errors[self.bit_indices]
+        
     # ----------------------------------------------------------
     # Getter methods for mapping objects
     # ----------------------------------------------------------   
@@ -164,17 +159,27 @@ class EpistasisMap(object):
     @property
     def geno2pheno(self):
         """ Return dict of genotypes mapped to phenotypes. """
-        return self._map(self._genotypes, self._phenotypes)
+        return self._map(self.genotypes, self.phenotypes)
+        
+    @property
+    def bit2pheno(self):
+        """ Return dict of genotypes mapped to phenotypes. """
+        return self._map(self.bits, self.phenotypes[self.bit_indices])
         
     @property
     def key2value(self):
         """ Return dict of interaction keys mapped to their values. """
-        return self._map(self._interaction_keys, self._interaction_values)
+        return self._map(self.interaction_keys, self.interaction_values)
         
     @property
     def genotype2value(self):
         """ Return dict of interaction genotypes mapped to their values. """
-        return self._map(self._interaction_genotypes, self._interaction_values)
+        return self._map(self.interaction_genotypes, self.interaction_values)
+        
+    @property
+    def genotype2error(self):
+        """ Return dict of interaction genotypes mapped to their values. """
+        return self._map(self.interaction_genotypes, self.interaction_errors)
     
     @property
     def geno2binary(self):
@@ -187,7 +192,7 @@ class EpistasisMap(object):
     @property
     def geno2index(self):
         """ Return dict of genotypes mapped to their indices in transition matrix. """
-        return self._map(self._genotypes, self._indices)
+        return self._map(self.genotypes, self.indices)
         
         
     # ----------------------------------------------------------
@@ -204,7 +209,6 @@ class EpistasisMap(object):
         self._indices = np.arange(self._n)
         
     @wildtype.setter
-    @setting_error
     def wildtype(self, wildtype):
         """ Set the reference genotype among the mutants in the system. """
         if type(wildtype) != str:
@@ -214,7 +218,6 @@ class EpistasisMap(object):
         self._to_bits()
     
     @order.setter
-    @setting_error
     def order(self, order):
         """ Set the order of epistasis in the system. As a consequence, 
             this mapping object creates the """
@@ -224,7 +227,6 @@ class EpistasisMap(object):
         self._interaction_indices = np.arange(len(self._interaction_labels))
         
     @phenotypes.setter
-    @setting_error
     def phenotypes(self, phenotypes):
         """ Set phenotypes from ordered list of phenotypes. 
             
@@ -244,7 +246,6 @@ class EpistasisMap(object):
                 self._phenotypes = phenotypes
         
     @phenotype_errors.setter
-    @setting_error
     def phenotype_errors(self, errors):
         """ Set error from ordered list of phenotype error. 
             
@@ -260,16 +261,14 @@ class EpistasisMap(object):
         else:
             self._phenotype_errors = errors
         
-    @interactions.setter
-    @setting_error
-    def interactions(self, interactions):
+    @interaction_values.setter
+    def interaction_values(self, interaction_values):
         """ Set the interactions of the system, set by an Epistasis model (see ..models.py)."""
-        if len(interactions) != len(self._interaction_labels):
+        if len(interaction_values) != len(self._interaction_labels):
             raise Exception("Number of interactions give to map is different than was defined. ")
-        self._interactions = interactions
+        self._interaction_values = interaction_values
         
     @interaction_errors.setter
-    @setting_error
     def interaction_errors(self, interaction_errors):
         """ Set the interaction errors of the system, set by an Epistasis model (see ..models.py)."""
         if len(interaction_errors) != len(self._interaction_labels):

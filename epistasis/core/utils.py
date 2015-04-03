@@ -1,5 +1,31 @@
+# -------------------------------------------------------
+# Miscellaneous Python functions (hacks) for random task
+# -------------------------------------------------------
+import itertools as it
 import numpy as np
 from sklearn.metrics import mean_squared_error
+
+def hamming_distance(s1, s2):
+    """ Return the Hamming distance between equal-length sequences """
+    return sum(ch1 != ch2 for ch1, ch2 in zip(s1, s2))
+
+def generate_binary_space(wildtype, mutant):
+    """ Generate binary genotype space between two sequences (that should differ at all sites) """
+    if len(wildtype) != len(mutant):
+        raise IndexError("ancestor_sequence and derived sequence must be the same length.")
+
+    binaries = sorted(["".join(list(s)) for s in it.product('01', repeat=len(wildtype))])
+    sequence_space = list()
+    for b in binaries:
+        binary = list(b)
+        sequence = list()
+        for i in range(len(wildtype)):
+            if b[i] == '0':
+                sequence.append(wildtype[i])
+            else:
+                sequence.append(mutant[i])
+        sequence_space.append(''.join(sequence))
+    return sequence_space
 
 def interaction_error_vs_order(learned, known, order):
     """ Take learned and known interaction dicts. """
@@ -34,3 +60,4 @@ def error_window(mse, std, interaction_labels):
         std_window[i] = std[order-1]
         
     return err_window, std_window
+    

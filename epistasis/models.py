@@ -14,6 +14,7 @@ from .core.em import EpistasisMap
 # ------------------------------------------------------------   
 
 def hadamard_weight_vector(genotypes):
+    """ Build the hadamard weigth vector"""
     l = len(genotypes)
     n = len(genotypes[0])
     weights = np.zeros((l, l), dtype=float)
@@ -31,9 +32,10 @@ def cut_interaction_labels(labels, order):
 # ------------------------------------------------------------
 class GenericModel(EpistasisMap):
     
-    def __init__(self, genotypes, phenotypes, phenotype_errors=None, log_phenotypes=True):
+    def __init__(self, wildtype, genotypes, phenotypes, phenotype_errors=None, log_phenotypes=True):
         """ Populate an Epistasis mapping object. """
         self.genotypes = genotypes
+        self.wildtype = wildtype
         if log_phenotypes is True:
             self.phenotypes = np.log(phenotypes)
         else:
@@ -44,7 +46,7 @@ class GenericModel(EpistasisMap):
 
 class LocalEpistasisMap(GenericModel):
         
-    def __init__(self, genotypes, phenotypes, phenotype_errors=None, log_phenotypes=True):
+    def __init__(self, wildtype, genotypes, phenotypes, phenotype_errors=None, log_phenotypes=True):
         """ Create a map of the local epistatic effects using expanded mutant 
             cycle approach.
             
@@ -60,8 +62,8 @@ class LocalEpistasisMap(GenericModel):
                 Log transform the phenotypes for additivity.
         """
         # Populate Epistasis Map
-        super(LocalEpistasisMap, self).__init__(genotypes, phenotypes, phenotype_errors, log_phenotypes)
-        
+        super(LocalEpistasisMap, self).__init__(wildtype, genotypes, phenotypes, phenotype_errors, log_phenotypes)
+        self.order = self.length
         # Generate basis matrix for mutant cycle approach to epistasis.
         self.X = generate_dv_matrix(self.bits, self.interaction_labels)
         self.X_inv = np.linalg.inv(self.X)
@@ -70,24 +72,24 @@ class LocalEpistasisMap(GenericModel):
         """ Estimate the values of all epistatic interactions using the expanded
             mutant cycle method to order=number_of_mutations.
         """
-        self.interactions = np.dot(self.X_inv, self.Y)
+        self.interaction_values = np.dot(self.X_inv, self.bit_phenotypes)
         
     def estimate_error(self):
         """ Estimate the error of each epistatic interaction by standard error 
             propagation of the phenotypes through the model.
         """
-        self.interaction_errors = np.sqrt(np.dot(self.X, self.phenotype_errors**2))
+        self.interaction_errors = np.sqrt(np.dot(self.X, self.bit_phenotype_errors**2))
     
 class GlobalEpistasisMap(EpistasisMap):
     
-    def __init__(self, genotypes, phenotypes, phenotype_errors=None, log_phenotypes=True):
+    def __init__(self, wildtype, genotypes, phenotypes, phenotype_errors=None, log_phenotypes=True):
         """ Create a map of the global epistatic effects using Hadamard approach.
             This is the related to LocalEpistasisMap by the discrete Fourier 
             transform of mutant cycle approach. 
         """
         # Populate Epistasis Map
-        super(LocalEpistasisMap, self).__init__(genotypes, phenotypes, phenotype_errors, log_phenotypes)
-        
+        super(LocalEpistasisMap, self).__init__(wildtype, genotypes, phenotypes, phenotype_errors, log_phenotypes)
+        self.order = self.length
         # Generate basis matrix for mutant cycle approach to epistasis.
         self.weight_vector = hadamard_weight_vector(self.bits)
         self.X = hadamard(2**self.length)
@@ -96,22 +98,22 @@ class GlobalEpistasisMap(EpistasisMap):
         """ Estimate the values of all epistatic interactions using the hadamard
         matrix transformation.
         """
-        self.interactions = np.dot(self.weight_vector,np.dot(self.X, self.Y))
+        self.interaction_values = np.dot(self.weight_vector,np.dot(self.X, self.bit_phenotypes))
         
     def estimate_error(self):
         """ Estimate the error of each epistatic interaction by standard error 
             propagation of the phenotypes through the model.
         """
-        self.interaction_errors = np.dot(self.weight_vector, np.sqrt(np.dot(abs(self.X), self.phenotype_errors**2)))
+        self.interaction_errors = np.dot(self.weight_vector, np.sqrt(np.dot(abs(self.X), self.bit_phenotype_errors**2)))
     
 class ProjectedEpistasisMap(EpistasisMap):
     
-    def __init__(self, regression_order, genotypes, phenotypes, phenotype_errors=None, log_phenotypes=True):
+    def __init__(self, regression_order, wildtype, genotypes, phenotypes, phenotype_errors=None, log_phenotypes=True):
         """ Create a map from local epistasis model projected into lower order
             order epistasis interactions. Requires regression to estimate values. 
         """
         # Populate Epistasis Map
-        super(LocalEpistasisMap, self).__init__(genotypes, phenotypes, phenotype_errors, log_phenotypes)
+        super(LocalEpistasisMap, self).__init__(wildtype, genotypes, phenotypes, phenotype_errors, log_phenotypes)
         
         # Generate basis matrix for mutant cycle approach to epistasis.
         self.order = regression_order
@@ -129,8 +131,8 @@ class ProjectedEpistasisMap(EpistasisMap):
             mutant cycle method to any order<=number of mutations.
         """
         self.regression_model.fit(self.X, self.Y)
-        self.r_squared = self.regression_model.score(self.X, self.Y)
-        self.interactions = self.regression_model.coef_
+        self.r_squared = self.regression_model.score(self.X, self.bit_phenotypes)
+        self.interaction_values = self.regression_model.coef_
         
         
     def estimate_error(self):
@@ -140,6 +142,6 @@ class ProjectedEpistasisMap(EpistasisMap):
         interaction_errors = np.empty(len(self.interaction_labels), dtype=float)
         for i in range(len(self.interaction_labels)):
             n = len(self.interaction_labels[i])
-            interaction_errors[i] = np.sqrt(n*self.phenotype_errors[i]**2)
+            interaction_errors[i] = np.sqrt(n*self.bit_phenotype_errors[i]**2)
         self.interaction_errors = interaction_errors
         
