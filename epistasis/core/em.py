@@ -1,5 +1,6 @@
 import numpy as np
 import itertools as it
+from collections import OrderedDict
 
 # Decorator for error catching
 def setting_error(func):
@@ -80,7 +81,7 @@ class EpistasisMap(object):
     @property
     def wildtype(self):
         """ Get reference genotypes for interactions. """
-        return self._reference
+        return self._wildtype
         
     @property
     def mutations(self):
@@ -100,7 +101,7 @@ class EpistasisMap(object):
     @property
     def bit_indices(self):
         """ Get indices of genotypes in self.genotypes that mapped to their binary representation. """
-        self.bit_indices
+        return self._bit_indices
         
     @property
     def phenotypes(self):
@@ -130,7 +131,7 @@ class EpistasisMap(object):
     @property
     def interaction_indices(self):
         """ Get the interaction index in interaction matrix. """
-        return self._interaction_index
+        return self._interaction_indices
         
     @property
     def interaction_genotypes(self):
@@ -142,7 +143,7 @@ class EpistasisMap(object):
         """ Get the interaction labels, which describe the position of interacting mutations in
             the genotypes. (type==list of lists, see self._build_interaction_labels)
             """
-        return self._interaction_index
+        return self._interaction_labels
         
     @property
     def interaction_keys(self):
@@ -166,10 +167,11 @@ class EpistasisMap(object):
     @setting_error
     def wildtype(self, wildtype):
         """ Set the reference genotype among the mutants in the system. """
-        if type(reference) != str:
+        if type(wildtype) != str:
             raise Exception("Reference must be a string.")
         self._wildtype = wildtype
-        self._mutations = self._differ_all_sites(wildtype).split('')
+        self._mutations = self._differ_all_sites(wildtype)
+        self._to_bits()
     
     @order.setter
     @setting_error
@@ -184,14 +186,39 @@ class EpistasisMap(object):
     @phenotypes.setter
     @setting_error
     def phenotypes(self, phenotypes):
-        """ Set the phenotypes of the system."""
-        self._phenotypes = phenotypes
+        """ Set phenotypes from ordered list of phenotypes. 
+            
+            Args:
+            -----
+            phenotypes: array-like or dict
+                if array-like, it musted be ordered by genotype; if dict,
+                this method automatically orders the phenotypes into numpy
+                array.
+        """
+        if type(phenotypes) is dict:
+            self._phenotypes = self._if_dict(phenotypes)
+        else:
+            if len(phenotypes) != len(self._genotypes):
+                raise("Number of phenotypes does not equal number of genotypes.")
+            else:
+                self._phenotypes = phenotypes
         
     @phenotype_errors.setter
     @setting_error
-    def phenotype_errors(self, phenotype_errors):
-        """ Set the phenotype errors of the system."""
-        self._phenotype_errors = phenotype_errors
+    def phenotype_errors(self, errors):
+        """ Set error from ordered list of phenotype error. 
+            
+            Args:
+            -----
+            error: array-like or dict
+                if array-like, it musted be ordered by genotype; if dict,
+                this method automatically orders the errors into numpy
+                array.
+        """
+        if type(errors) is dict:
+            self._phenotype_errors = self._if_dict(phenotype_errors)
+        else:
+            self._phenotype_errors = errors
         
     @interactions.setter
     @setting_error
@@ -261,7 +288,7 @@ class EpistasisMap(object):
         order_indices = dict()
         for o in range(1,self._order+1):
             start = len(labels)
-            for label in it.combinations(range(1,self._length), o):
+            for label in it.combinations(range(1,self._length+1), o):
                 labels.append(list(label))
                 key = ','.join([str(i) for i in label])
                 keys.append(key)
@@ -271,7 +298,7 @@ class EpistasisMap(object):
         
     def _differ_all_sites(self, reference):
         """ Find the genotype in the system that differs at all sites from reference.""" 
-        for genotype in self._genotypes():
+        for genotype in self.genotypes:
             if hamming_distance(genotype, reference) == self._length:
                 differs = genotype
                 break
@@ -282,11 +309,11 @@ class EpistasisMap(object):
             wildtype as reference state (ref is all zeros).
         """
         w = list(self.wildtype)
-        m = list(self.mutant)
+        m = list(self.mutations)
         # build binary system
-        binaries = sorted(["".join(list(s)) for s in it.product('01', repeat=len(wildtype))])
+        binaries = sorted(["".join(list(s)) for s in it.product('01', repeat=len(w))])
         # get genotype indices
-        geno2index = self.geno2indices
+        geno2index = self.geno2index
         # initialize bit_indicies
         bit_indices = np.empty(len(binaries), dtype=int)
         for b in range(len(binaries)):
@@ -298,7 +325,7 @@ class EpistasisMap(object):
                 else:
                     sequence.append(m[i])
             # Find genotype in map and store index
-            bit_indices[b] = geno2index[sequence]
+            bit_indices[b] = geno2index[''.join(sequence)]
         self._bit_indices = bit_indices
         self._bits = binaries
             
