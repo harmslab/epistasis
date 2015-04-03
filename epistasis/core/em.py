@@ -59,9 +59,9 @@ class EpistasisMap(object):
         interaction_keys: list
             List of interaction keys
     """
-    # ---------------------
-    # Getter methods
-    # ---------------------
+    # ------------------------------------------------------
+    # Getter methods for attributes that can be set by user.
+    # ------------------------------------------------------
     
     @property
     def length(self):
@@ -82,6 +82,52 @@ class EpistasisMap(object):
     def wildtype(self):
         """ Get reference genotypes for interactions. """
         return self._wildtype
+
+    @property
+    def genotypes(self):
+        """ Get the genotypes of the system. """
+        return self._genotypes
+        
+    @property
+    def phenotypes(self):
+        """ Get the phenotypes of the system. """
+        return self._phenotypes
+    
+    @property
+    def phenotype_errors(self):
+        """ Get the phenotypes' errors in the system. """
+        return self._phenotype_errors
+
+    @property
+    def interactions(self):
+        """ Get the values of the interaction in the system"""
+        return self._interactions
+        
+    @property
+    def interaction_errors(self):
+        """ Get the value of the interaction errors in the system. """
+        return self._interaction_errors
+        
+                
+    # ----------------------------------------------------------
+    # Getter methods for attributes that are not set explicitly.
+    # ----------------------------------------------------------
+    @property
+    def indices(self):
+        """ Return numpy array of genotypes position. """
+        return self._indices
+    
+    @property
+    def interaction_labels(self):
+        """ Get the interaction labels, which describe the position of interacting mutations in
+            the genotypes. (type==list of lists, see self._build_interaction_labels)
+        """
+        return self._interaction_labels
+        
+    @property
+    def interaction_keys(self):
+        """ Get the interaction keys. (type==list of str, see self._build_interaction_labels)"""
+        return self._interaction_keys
         
     @property
     def mutations(self):
@@ -89,9 +135,17 @@ class EpistasisMap(object):
         return self._mutations
     
     @property
-    def genotypes(self):
-        """ Get the genotypes of the system. """
-        return self._genotypes
+    def interaction_indices(self):
+        """ Get the interaction index in interaction matrix. """
+        return self._interaction_indices
+        
+    @property
+    def interaction_genotypes(self):
+        """ Get the interaction genotype. """
+        elements = list()
+        for label in self._interaction_labels:
+            elements.append(self._label_to_genotype(label))
+        return elements
         
     @property
     def bits(self):
@@ -103,56 +157,42 @@ class EpistasisMap(object):
         """ Get indices of genotypes in self.genotypes that mapped to their binary representation. """
         return self._bit_indices
         
-    @property
-    def phenotypes(self):
-        """ Get the phenotypes of the system. """
-        return self._phenotypes
+    # ----------------------------------------------------------
+    # Getter methods for mapping objects
+    # ----------------------------------------------------------   
     
     @property
-    def phenotype_errors(self):
-        """ Get the phenotypes' errors in the system. """
-        return self._phenotype_errors
+    def geno2pheno(self):
+        """ Return dict of genotypes mapped to phenotypes. """
+        return self._map(self._genotypes, self._phenotypes)
+        
+    @property
+    def key2value(self):
+        """ Return dict of interaction keys mapped to their values. """
+        return self._map(self._interaction_keys, self._interaction_values)
+        
+    @property
+    def genotype2value(self):
+        """ Return dict of interaction genotypes mapped to their values. """
+        return self._map(self._interaction_genotypes, self._interaction_values)
     
     @property
-    def indices(self):
-        """ Return numpy array of genotypes position. """
-        return self._indices
-    
+    def geno2binary(self):
+        """ Return dictionary of genotypes mapped to their binary representation. """
+        mapping = dict()
+        for i in range(self.n):
+            mapping[self.genotypes[self.bit_indices[i]]] = self.bits[i] 
+        return mapping
+
     @property
-    def interactions(self):
-        """ Get the values of the interaction in the system"""
-        return self._interactions
+    def geno2index(self):
+        """ Return dict of genotypes mapped to their indices in transition matrix. """
+        return self._map(self._genotypes, self._indices)
         
-    @property
-    def interaction_errors(self):
-        """ Get the value of the interaction errors in the system. """
-        return self._interaction_errors
         
-    @property
-    def interaction_indices(self):
-        """ Get the interaction index in interaction matrix. """
-        return self._interaction_indices
-        
-    @property
-    def interaction_genotypes(self):
-        """ Get the interaction genotype. """
-        return self._interaction_genotype
-        
-    @property
-    def interaction_labels(self):
-        """ Get the interaction labels, which describe the position of interacting mutations in
-            the genotypes. (type==list of lists, see self._build_interaction_labels)
-            """
-        return self._interaction_labels
-        
-    @property
-    def interaction_keys(self):
-        """ Get the interaction keys. (type==list of str, see self._build_interaction_labels)"""
-        return self._interaction_keys
-        
-    # ---------------------
+    # ----------------------------------------------------------
     # Setter methods
-    # ---------------------
+    # ----------------------------------------------------------
     
     @genotypes.setter
     def genotypes(self, genotypes):
@@ -223,40 +263,18 @@ class EpistasisMap(object):
     @interactions.setter
     @setting_error
     def interactions(self, interactions):
-        """ Set the interactions of the system."""
+        """ Set the interactions of the system, set by an Epistasis model (see ..models.py)."""
+        if len(interactions) != len(self._interaction_labels):
+            raise Exception("Number of interactions give to map is different than was defined. ")
         self._interactions = interactions
         
     @interaction_errors.setter
     @setting_error
     def interaction_errors(self, interaction_errors):
-        """ Set the interaction errors of the system."""
+        """ Set the interaction errors of the system, set by an Epistasis model (see ..models.py)."""
+        if len(interaction_errors) != len(self._interaction_labels):
+            raise Exception("Number of interactions give to map is different than was defined. ")
         self._interaction_errors = interaction_errors
-        
-    @interaction_indices.setter
-    @setting_error
-    def interaction_indices(self, interaction_indices):
-        """ Set the genotypes of the system."""
-        self._interaction_indices = interaction_indices
-        
-    @interaction_genotypes.setter
-    @setting_error
-    def interaction_genotypes(self, interaction_genotypes):
-        """ Set the interaction genotypes of the system."""
-        self._genotypes = genotypes
-        
-    @property
-    def geno2binary(self):
-        """ Return dictionary of genotypes mapped to their binary representation. """
-        mapping = dict()
-        for i in range(self.n):
-            mapping[self.genotypes[self.bit_indices[i]]] = self.bits[i] 
-        return mapping
-
-    @property
-    def geno2index(self):
-        """ Return dict of genotypes mapped to their indices in transition matrix. """
-        return self._map(self._genotypes, self._indices)
-        
     
     # ---------------------------------
     # Useful methods for mapping object
@@ -283,7 +301,7 @@ class EpistasisMap(object):
             An interaction label looks like [1,4,6] (type==list).
             An interaction key looks like '1,4,6'   (type==str).
         """
-        labels = [0]
+        labels = [[0]]
         keys = ['0']
         order_indices = dict()
         for o in range(1,self._order+1):
@@ -329,6 +347,15 @@ class EpistasisMap(object):
         self._bit_indices = bit_indices
         self._bits = binaries
             
-                    
-                    
+    def _label_to_genotype(self, label):
+        """ Convert a label to its genotype representation. """
+        genotype = ""
+        for l in label:
+            # Labels are offset by 1, remove offset for wildtype/mutation array index
+            array_index = l - 1
+            mutation = self.wildtype[array_index] + str(l) + self.mutations[array_index]
+            genotype += mutation + ','
+        # Return genotype without the last comma
+        return genotype[:-1]
+        
     

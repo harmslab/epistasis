@@ -63,7 +63,7 @@ class LocalEpistasisMap(GenericModel):
         super(LocalEpistasisMap, self).__init__(genotypes, phenotypes, phenotype_errors, log_phenotypes)
         
         # Generate basis matrix for mutant cycle approach to epistasis.
-        self.X = generate_dv_matrix(self.genotypes, self.interaction_labels)
+        self.X = generate_dv_matrix(self.bits, self.interaction_labels)
         self.X_inv = np.linalg.inv(self.X)
         
     def estimate_interactions(self):
@@ -89,7 +89,7 @@ class GlobalEpistasisMap(EpistasisMap):
         super(LocalEpistasisMap, self).__init__(genotypes, phenotypes, phenotype_errors, log_phenotypes)
         
         # Generate basis matrix for mutant cycle approach to epistasis.
-        self.weight_vector = hadamard_weight_vector(gpm.genotypes)
+        self.weight_vector = hadamard_weight_vector(self.bits)
         self.X = hadamard(2**self.length)
         
     def estimate_interactions(self):
@@ -116,7 +116,7 @@ class ProjectedEpistasisMap(EpistasisMap):
         # Generate basis matrix for mutant cycle approach to epistasis.
         self.order = regression_order
        
-        self.X = generate_dv_matrix(self.genotypes, self.interaction_labels)
+        self.X = generate_dv_matrix(self.bits, self.interaction_labels)
         
         # Regression properties
         self.regression_model = LinearRegression(fit_intercept=False)
