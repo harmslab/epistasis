@@ -80,7 +80,7 @@ class LocalEpistasisMap(GenericModel):
         """
         self.interaction_errors = np.sqrt(np.dot(self.X, self.bit_phenotype_errors**2))
     
-class GlobalEpistasisMap(EpistasisMap):
+class GlobalEpistasisMap(GenericModel):
     
     def __init__(self, wildtype, genotypes, phenotypes, phenotype_errors=None, log_phenotypes=True):
         """ Create a map of the global epistatic effects using Hadamard approach.
@@ -88,7 +88,7 @@ class GlobalEpistasisMap(EpistasisMap):
             transform of mutant cycle approach. 
         """
         # Populate Epistasis Map
-        super(LocalEpistasisMap, self).__init__(wildtype, genotypes, phenotypes, phenotype_errors, log_phenotypes)
+        super(GlobalEpistasisMap, self).__init__(wildtype, genotypes, phenotypes, phenotype_errors, log_phenotypes)
         self.order = self.length
         # Generate basis matrix for mutant cycle approach to epistasis.
         self.weight_vector = hadamard_weight_vector(self.bits)
@@ -106,14 +106,14 @@ class GlobalEpistasisMap(EpistasisMap):
         """
         self.interaction_errors = np.dot(self.weight_vector, np.sqrt(np.dot(abs(self.X), self.bit_phenotype_errors**2)))
     
-class ProjectedEpistasisMap(EpistasisMap):
+class ProjectedEpistasisMap(GenericModel):
     
     def __init__(self, regression_order, wildtype, genotypes, phenotypes, phenotype_errors=None, log_phenotypes=True):
         """ Create a map from local epistasis model projected into lower order
             order epistasis interactions. Requires regression to estimate values. 
         """
         # Populate Epistasis Map
-        super(LocalEpistasisMap, self).__init__(wildtype, genotypes, phenotypes, phenotype_errors, log_phenotypes)
+        super(ProjectedEpistasisMap, self).__init__(wildtype, genotypes, phenotypes, phenotype_errors, log_phenotypes)
         
         # Generate basis matrix for mutant cycle approach to epistasis.
         self.order = regression_order
@@ -130,7 +130,7 @@ class ProjectedEpistasisMap(EpistasisMap):
         """ Estimate the values of all epistatic interactions using the expanded
             mutant cycle method to any order<=number of mutations.
         """
-        self.regression_model.fit(self.X, self.Y)
+        self.regression_model.fit(self.X, self.bit_phenotypes)
         self.r_squared = self.regression_model.score(self.X, self.bit_phenotypes)
         self.interaction_values = self.regression_model.coef_
         
