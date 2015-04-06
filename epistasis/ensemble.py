@@ -53,9 +53,11 @@ class EnsembleModel(EnsembleMap):
     def ensemble_averages(self):
         """ Get the ensemble averages of all interaction in the space. """
         averages = dict()
+        variation = dict()
         try:
             for key, value in self.ensemble.items():
                 averages[key] = np.mean(value)
-            return averages
+                variation[key] = np.std(value)
+            return averages, variation
         except AttributeError:
             raise AttributeError("Must build ensemble before trying to calculate averages.")

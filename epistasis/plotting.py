@@ -1,5 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
+    
+# ---------------------------------------------------
+# Epistasis Graphing
+# ---------------------------------------------------
 
 def epistasis_bar(epistasis_map, sigmas=0, title="Epistatic interactions"):
     """ Plot the interactions sorted by their order. 
@@ -32,6 +36,52 @@ def epistasis_bar(epistasis_map, sigmas=0, title="Epistatic interactions"):
     ax.hlines(0,0,len(y), linestyles="dashed")
     return fig, ax    
 
+def epistasis_bar_charts(em, length, order):
+    """ Generate stacked subplots, showing barcharts of interactions for each order
+        of epistasis. 
+        
+        BROKEN
+    """
+    fig, ax = plt.subplots(length, 1, figsize=[5,5*order])
+
+    for order in range(1, length+1):
+        interactions = em.nth_order(order)
+        error = em.nth_error(order)
+        labels = interactions.keys()
+        values = interactions.values()
+        n_terms = len(values)
+        index = np.arange(n_terms)
+        bar_width = .9
+        opacity = 0.4
+        rects1 = ax[order-1].bar(index, values, bar_width,
+                         alpha=opacity,
+                         color='b',
+                         yerr=error.values())
+        ticks = ax[order-1].set_xticklabels(labels, rotation="vertical")
+        ax[order-1].set_xticks(index+.5)
+
+def ensemble_bar(ensemble, title="Ensemble Epistasis"):
+    """ Return a bar chart of ensemble interactions from an ensemble model calculation. """
+    fig, ax = plt.subplots(1,1, figsize=[12,6])
+    averages, deviations = ensemble.ensemble_averages()
+    xlabels = list()
+    y = list()
+    yerr = list()
+    for key in averages:
+        y.append(averages[key])
+        yerr.append(deviations[key])
+        xlabels.append(key)
+        
+    ax.bar(range(len(y)), y, 0.9, yerr=yerr, alpha=0.4, align="center") #,**kwargs)
+    
+    # vertically label each interaction by their index
+    plt.xticks(range(len(y)), np.array(xlabels), rotation="vertical")
+    ax.set_xlabel("Interaction term", fontsize=16)
+    ax.set_ylabel("Interaction Value", fontsize=16) 
+    ax.set_title(title, fontsize=20)
+    ax.axis("tight")
+    ax.hlines(0,0,len(y), linestyles="dashed")
+    return fig, ax
 
 # -----------------------------
 # Useful plots for analyzing data 
@@ -67,32 +117,4 @@ def residuals(learned, known, title="Residual Plot"):
     ax.set_ylabel("Residuals")
     
     return fig
-    
-# ---------------------------------------------------
-# Epistasis Graphing
-# ---------------------------------------------------
 
-def epistasis_bar_charts(em, length, order):
-    """ Generate stacked subplots, showing barcharts of interactions for each order
-        of epistasis. 
-        
-        BROKEN
-    """
-    fig, ax = plt.subplots(length, 1, figsize=[5,5*order])
-
-    for order in range(1, length+1):
-        interactions = em.nth_order(order)
-        error = em.nth_error(order)
-        labels = interactions.keys()
-        values = interactions.values()
-        n_terms = len(values)
-        index = np.arange(n_terms)
-        bar_width = .9
-        opacity = 0.4
-        rects1 = ax[order-1].bar(index, values, bar_width,
-                         alpha=opacity,
-                         color='b',
-                         yerr=error.values())
-        ticks = ax[order-1].set_xticklabels(labels, rotation="vertical")
-        ax[order-1].set_xticks(index+.5)
-        

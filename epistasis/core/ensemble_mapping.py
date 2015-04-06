@@ -46,7 +46,7 @@ class EnsembleMap(object):
     @property
     def interaction_genotypes(self):
         """ Get interaction genotypes."""
-        return list(self._ensemble_map.keys())
+        return list(self._ensemble.keys())
         
     @property
     def ensemble(self):
