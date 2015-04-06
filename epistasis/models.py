@@ -7,7 +7,7 @@ import numpy as np
 from scipy.linalg import hadamard
 from regression_ext import generate_dv_matrix
 from sklearn.linear_model import LinearRegression
-from .core.em import EpistasisMap
+from .core.mapping import EpistasisMap
 
 # ------------------------------------------------------------
 # Unique Epistasis Functions
@@ -44,7 +44,7 @@ class GenericModel(EpistasisMap):
             self.phenotype_errors = phenotype_errors
 
 
-class LocalEpistasisMap(GenericModel):
+class LocalEpistasisModel(GenericModel):
         
     def __init__(self, wildtype, genotypes, phenotypes, phenotype_errors=None, log_phenotypes=True):
         """ Create a map of the local epistatic effects using expanded mutant 
@@ -62,7 +62,7 @@ class LocalEpistasisMap(GenericModel):
                 Log transform the phenotypes for additivity.
         """
         # Populate Epistasis Map
-        super(LocalEpistasisMap, self).__init__(wildtype, genotypes, phenotypes, phenotype_errors, log_phenotypes)
+        super(LocalEpistasisModel, self).__init__(wildtype, genotypes, phenotypes, phenotype_errors, log_phenotypes)
         self.order = self.length
         # Generate basis matrix for mutant cycle approach to epistasis.
         self.X = generate_dv_matrix(self.bits, self.interaction_labels)
@@ -80,7 +80,7 @@ class LocalEpistasisMap(GenericModel):
         """
         self.interaction_errors = np.sqrt(np.dot(self.X, self.bit_phenotype_errors**2))
     
-class GlobalEpistasisMap(GenericModel):
+class GlobalEpistasisModel(GenericModel):
     
     def __init__(self, wildtype, genotypes, phenotypes, phenotype_errors=None, log_phenotypes=True):
         """ Create a map of the global epistatic effects using Hadamard approach.
@@ -88,7 +88,7 @@ class GlobalEpistasisMap(GenericModel):
             transform of mutant cycle approach. 
         """
         # Populate Epistasis Map
-        super(GlobalEpistasisMap, self).__init__(wildtype, genotypes, phenotypes, phenotype_errors, log_phenotypes)
+        super(GlobalEpistasisModel, self).__init__(wildtype, genotypes, phenotypes, phenotype_errors, log_phenotypes)
         self.order = self.length
         # Generate basis matrix for mutant cycle approach to epistasis.
         self.weight_vector = hadamard_weight_vector(self.bits)
@@ -106,14 +106,14 @@ class GlobalEpistasisMap(GenericModel):
         """
         self.interaction_errors = np.dot(self.weight_vector, np.sqrt(np.dot(abs(self.X), self.bit_phenotype_errors**2)))
     
-class ProjectedEpistasisMap(GenericModel):
+class ProjectedEpistasisModel(GenericModel):
     
-    def __init__(self, regression_order, wildtype, genotypes, phenotypes, phenotype_errors=None, log_phenotypes=True):
+    def __init__(self, wildtype, genotypes, phenotypes, regression_order, phenotype_errors=None, log_phenotypes=True):
         """ Create a map from local epistasis model projected into lower order
             order epistasis interactions. Requires regression to estimate values. 
         """
         # Populate Epistasis Map
-        super(ProjectedEpistasisMap, self).__init__(wildtype, genotypes, phenotypes, phenotype_errors, log_phenotypes)
+        super(ProjectedEpistasisModel, self).__init__(wildtype, genotypes, phenotypes, phenotype_errors, log_phenotypes)
         
         # Generate basis matrix for mutant cycle approach to epistasis.
         self.order = regression_order

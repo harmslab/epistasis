@@ -94,9 +94,9 @@ class EpistasisMap(object):
         return self._interaction_errors
         
                 
-    # ----------------------------------------------------------
-    # Getter methods for attributes that are not set explicitly.
-    # ----------------------------------------------------------
+    # ------------------------------------------------------------------
+    # Getter methods for attributes that are not set explicitly by user.
+    # ------------------------------------------------------------------
     @property
     def indices(self):
         """ Return numpy array of genotypes position. """
