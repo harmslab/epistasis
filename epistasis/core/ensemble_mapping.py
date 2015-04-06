@@ -129,11 +129,7 @@ class EnsembleMap(object):
             ---
             ensemble: dict
                 Dictionary of mutation genotypes to their epistastic value.
-        """
-        # Check that ensemble is a dictionary
-        if type(ensemble) is not dict:
-            raise Exception("ensemble argument must be a dictionary!")
-            
+        """            
         # If the ensemble has already been started, add to it; else, 
         # create a new ensemble map
         try:
@@ -141,10 +137,12 @@ class EnsembleMap(object):
                 if key in self._ensemble:
                     self._ensemble[key].append(value)
                 else:
-                    self._ensemble[key] = list(value)
+                    self._ensemble[key] = [value]
         except AttributeError:
-            self._ensemble = ensemble
-    
+            self._ensemble = dict()
+            for key, value in ensemble.items():
+                self._ensemble[key] = [value]
+                    
     # -------------------------------------------------------
     # Useful methods for the map.
     # -------------------------------------------------------

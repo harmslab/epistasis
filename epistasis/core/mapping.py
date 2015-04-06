@@ -211,8 +211,6 @@ class EpistasisMap(object):
     @wildtype.setter
     def wildtype(self, wildtype):
         """ Set the reference genotype among the mutants in the system. """
-        if type(wildtype) != str:
-            raise Exception("Reference must be a string.")
         self._wildtype = wildtype
         self._mutations = self._differ_all_sites(wildtype)
         self._to_bits()
