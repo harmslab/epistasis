@@ -64,6 +64,11 @@ class EpistasisMap(object):
         return self._order
     
     @property
+    def log_transform(self):
+        """ Boolean argument telling whether space is log transformed. """
+        return self._log_transform
+        
+    @property
     def wildtype(self):
         """ Get reference genotypes for interactions. """
         return self._wildtype
@@ -151,6 +156,7 @@ class EpistasisMap(object):
     def bit_phenotype_errors(self):
         """ Get the phenotype values in an array orderd same as binary reprentation. """
         return self.phenotype_errors[self.bit_indices]
+
         
     # ----------------------------------------------------------
     # Getter methods for mapping objects
@@ -199,6 +205,11 @@ class EpistasisMap(object):
     # Setter methods
     # ----------------------------------------------------------
     
+    @log_transform.setter
+    def log_transform(self, boolean):
+        """ True/False to log transform the space. """
+        self._log_transform = boolean
+    
     @genotypes.setter
     def genotypes(self, genotypes):
         """ Set genotypes from ordered list of sequences. """
@@ -226,7 +237,7 @@ class EpistasisMap(object):
         
     @phenotypes.setter
     def phenotypes(self, phenotypes):
-        """ Set phenotypes from ordered list of phenotypes. 
+        """ NORMALIZE and set phenotypes from ordered list of phenotypes 
             
             Args:
             -----
@@ -236,12 +247,18 @@ class EpistasisMap(object):
                 array.
         """
         if type(phenotypes) is dict:
-            self._phenotypes = self._if_dict(phenotypes)
+            self._phenotypes = self._if_dict(phenotypes)/phenotypes[self.wildtype]
         else:
             if len(phenotypes) != len(self._genotypes):
                 raise("Number of phenotypes does not equal number of genotypes.")
             else:
-                self._phenotypes = phenotypes
+                wildtype_index = self.geno2index[self.wildtype]
+                self._phenotypes = phenotypes/phenotypes[wildtype_index] 
+        
+        # log transform if log_transform = True
+        if self.log_transform is True:
+            self._phenotypes = np.log(self._phenotypes)
+
         
     @phenotype_errors.setter
     def phenotype_errors(self, errors):

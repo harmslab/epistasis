@@ -14,13 +14,14 @@ from .core.mapping import EpistasisMap
 
 class ArtificalMap(EpistasisMap):
     
-    def __init__(self, length, order):
+    def __init__(self, length, order, log_transform=False):
         """ Generate a binary genotype-phenotype mape with the given length from epistatic interactions. """
         wildtype = 'A'*length
-        mutant = 'V'*length
+        mutant = 'T'*length
         self.genotypes = generate_binary_space(wildtype, mutant)
         self.wildtype = wildtype
         self.order = order
+        self.log_transform = log_transform
         self._random_epistasis()
         self._build_phenotypes()
 

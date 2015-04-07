@@ -35,7 +35,7 @@ class EnsembleModel(EnsembleMap):
         self.N = N
         # Build wildtypes array
         if wildtypes is None:
-            self.wildtypes = np.random.choice(self.genotypes, size=self.N, replace=True)
+            self.wildtypes = np.random.choice(self.genotypes, size=self.N, replace=False)
               
         for i in range(self.N):
             # Create an instance with the first wildtype

@@ -32,21 +32,19 @@ def cut_interaction_labels(labels, order):
 # ------------------------------------------------------------
 class GenericModel(EpistasisMap):
     
-    def __init__(self, wildtype, genotypes, phenotypes, phenotype_errors=None, log_phenotypes=True):
+    def __init__(self, wildtype, genotypes, phenotypes, phenotype_errors=None, log_phenotypes=False):
         """ Populate an Epistasis mapping object. """
         self.genotypes = genotypes
         self.wildtype = wildtype
-        if log_phenotypes is True:
-            self.phenotypes = np.log(phenotypes)
-        else:
-            self.phenotypes = phenotypes
+        self.log_transform = log_phenotypes
+        self.phenotypes = phenotypes
         if phenotype_errors is not None:
             self.phenotype_errors = phenotype_errors
 
 
 class LocalEpistasisModel(GenericModel):
         
-    def __init__(self, wildtype, genotypes, phenotypes, phenotype_errors=None, log_phenotypes=True):
+    def __init__(self, wildtype, genotypes, phenotypes, phenotype_errors=None, log_phenotypes=False):
         """ Create a map of the local epistatic effects using expanded mutant 
             cycle approach.
             
