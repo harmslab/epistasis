@@ -213,7 +213,6 @@ class EpistasisMap(object):
     @genotypes.setter
     def genotypes(self, genotypes):
         """ Set genotypes from ordered list of sequences. """
-        genotypes = sorted(genotypes)
         self._n = len(genotypes)
         self._length = len(genotypes[0])
         self._genotypes = np.array(genotypes)
@@ -254,10 +253,10 @@ class EpistasisMap(object):
             else:
                 wildtype_index = self.geno2index[self.wildtype]
                 self._phenotypes = phenotypes/phenotypes[wildtype_index] 
-        
+
         # log transform if log_transform = True
         if self.log_transform is True:
-            self._phenotypes = np.log(self._phenotypes)
+            self._phenotypes = np.log10(self._phenotypes)
 
         
     @phenotype_errors.setter
@@ -339,6 +338,9 @@ class EpistasisMap(object):
     def _to_bits(self):
         """ Encode the genotypes an ordered binary set of genotypes with 
             wildtype as reference state (ref is all zeros).
+            
+            Essentially, this method maps each genotype to their binary representation
+            relative to the 'wildtype' sequence.
         """
         w = list(self.wildtype)
         m = list(self.mutations)
