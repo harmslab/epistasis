@@ -76,7 +76,14 @@ class LocalEpistasisModel(GenericModel):
         """ Estimate the error of each epistatic interaction by standard error 
             propagation of the phenotypes through the model.
         """
-        self.interaction_errors = np.sqrt(np.dot(self.X, self.bit_phenotype_errors**2))
+        if self.log_transform is True:
+            # If log-transformed, fit assymetric errorbars correctly
+            upper = np.sqrt(np.dot(self.X, self.bit_phenotype_errors[0]**2))
+            lower = np.sqrt(np.dot(self.X, self.bit_phenotype_errors[1]**2))
+            self.interaction_errors = np.array((lower,upper))
+        else:
+            # Errorbars are symmetric, so only one column for errors is necessary
+            self.interaction_errors = np.sqrt(np.dot(self.X, self.bit_phenotype_errors**2))
     
 class GlobalEpistasisModel(GenericModel):
     
@@ -102,7 +109,16 @@ class GlobalEpistasisModel(GenericModel):
         """ Estimate the error of each epistatic interaction by standard error 
             propagation of the phenotypes through the model.
         """
-        self.interaction_errors = np.dot(self.weight_vector, np.sqrt(np.dot(abs(self.X), self.bit_phenotype_errors**2)))
+        if self.log_transform is True:
+            # If log-transformed, fit assymetric errorbars correctly
+            # upper and lower are unweighted tranformations
+            upper = np.sqrt(np.dot(abs(self.X), self.bit_phenotype_errors[0]**2))
+            lower = np.sqrt(np.dot(abs(self.X), self.bit_phenotype_errors[1]**2))
+            self.interaction_errors = np.array((np.dot(self.weight_vector, lower), np.dot(self.weight_vector, upper)))
+        else:
+            unweighted = np.sqrt(np.dot(abs(self.X), self.bit_phenotype_errors**2))
+            self.interaction_errors = np.dot(self.weight_vector, unweighted)
+            
     
 class ProjectedEpistasisModel(GenericModel):
     
@@ -137,9 +153,17 @@ class ProjectedEpistasisModel(GenericModel):
         """ Estimate the error of each epistatic interaction by standard error 
             propagation of the phenotypes through the model.
         """
-        interaction_errors = np.empty(len(self.interaction_labels), dtype=float)
-        for i in range(len(self.interaction_labels)):
-            n = len(self.interaction_labels[i])
-            interaction_errors[i] = np.sqrt(n*self.bit_phenotype_errors[i]**2)
-        self.interaction_errors = interaction_errors
+        if self.log_transform is True:
+            interaction_errors = np.empty((2,len(self.interaction_labels)), dtype=float)
+            for i in range(len(self.interaction_labels)):
+                n = len(self.interaction_labels[i])
+                interaction_errors[0,i] = np.sqrt(n*self.bit_phenotype_errors[0,i]**2)
+                interaction_errors[1,i] = np.sqrt(n*self.bit_phenotype_errors[1,i]**2)
+            self.interaction_errors = interaction_errors        
+        else:
+            interaction_errors = np.empty(len(self.interaction_labels), dtype=float)
+            for i in range(len(self.interaction_labels)):
+                n = len(self.interaction_labels[i])
+                interaction_errors[i] = np.sqrt(n*self.bit_phenotype_errors[i]**2)
+            self.interaction_errors = interaction_errors
         

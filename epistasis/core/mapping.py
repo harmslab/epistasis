@@ -155,8 +155,10 @@ class EpistasisMap(object):
     @property
     def bit_phenotype_errors(self):
         """ Get the phenotype values in an array orderd same as binary reprentation. """
-        return self.phenotype_errors[self.bit_indices]
-
+        if self.log_transform is True:
+            return np.array((self.phenotype_errors[0,self.bit_indices],self.phenotype_errors[1,self.bit_indices]))
+        else:
+            return self.phenotype_errors[self.bit_indices]
         
     # ----------------------------------------------------------
     # Getter methods for mapping objects
@@ -270,10 +272,16 @@ class EpistasisMap(object):
                 this method automatically orders the errors into numpy
                 array.
         """
+        # Order phenotype errors from geno2pheno_err dictionary
         if type(errors) is dict:
-            self._phenotype_errors = self._if_dict(phenotype_errors)
-        else:
-            self._phenotype_errors = errors
+            errors = self._if_dict(phenotype_errors)
+        
+        # For log-transformations of error, need to translate errors to center around 1,
+        # then take the log.
+        if self.log_transform is True:
+            errors = np.array((np.log10(1-errors), np.log10(1 + errors)))
+        
+        self._phenotype_errors = errors
         
     @interaction_values.setter
     def interaction_values(self, interaction_values):
@@ -285,8 +293,13 @@ class EpistasisMap(object):
     @interaction_errors.setter
     def interaction_errors(self, interaction_errors):
         """ Set the interaction errors of the system, set by an Epistasis model (see ..models.py)."""
-        if len(interaction_errors) != len(self._interaction_labels):
-            raise Exception("Number of interactions give to map is different than was defined. ")
+        if self.log_transform is True:
+            if np.array(interaction_errors).shape != (2, len(self._interaction_labels)):
+                raise Exception("""interaction_errors is not the right shape (should include 2 elements
+                                    for each interaction, upper and lower bounds).""")
+        else:
+            if len(interaction_errors) != len(self._interaction_labels):    
+                raise Exception("Number of interactions give to map is different than was defined. ")
         self._interaction_errors = interaction_errors
     
     # ---------------------------------
