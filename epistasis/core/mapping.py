@@ -187,7 +187,10 @@ class EpistasisMap(object):
     @property
     def genotype2error(self):
         """ Return dict of interaction genotypes mapped to their values. """
-        return self._map(self.interaction_genotypes, self.interaction_errors)
+        if self.log_transform is True:
+            return OrderedDict([(self.interaction_genotypes[i], self.interaction_errors[:,i]) for i in range(self._n)])
+        else:   
+            return self._map(self.interaction_genotypes, self.interaction_errors)
     
     @property
     def geno2binary(self):
