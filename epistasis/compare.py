@@ -9,7 +9,7 @@ def overlap(items1, items2):
                 overlaps.append(i1)
     return overlaps
 
-def rmsd(self, val1, val2):
+def rmsd(val1, val2):
     """ Calculate the rmsd between two values. """
     if len(val1) != len(val2):
         raise Exception("Two values must the the same length.")
@@ -19,7 +19,7 @@ def rmsd(self, val1, val2):
         val1 = np.array(val1)
         val2 = np.array(val2)
         
-    return sum(np.sqrt((val1**2 - val2**2)**2))
+    return np.sqrt(sum((abs(val1) - abs(val2))**2)/len(val1))
 
 class ModelTypeError(Exception):
     """ Raise this exception if models being compared are different types. """
@@ -27,8 +27,9 @@ class ModelTypeError(Exception):
 class ModelComparison(object):
     
     def __init__(self, model1, model2):
-        if type(self.model1) != type(self.model2):
-            raise ModelTypeError("The two models being compared are not the same type.")
+        if type(model1) != type(model2):
+            raise ModelTypeError("""The two models being compared are not the same type. 
+                                    (i.e. Both GlobalEpistasModel? or LocalEpistasisModel?)""")
         self.model1 = model1
         self.model2 = model2
         
@@ -52,7 +53,7 @@ class ModelComparison(object):
         keys = list()
         for o in overlap:
             keys.append(o)
-            values.append(model1map[o], model2map[o])
+            values.append((model1map[o], model2map[o]))
         return keys, values
     
     @property

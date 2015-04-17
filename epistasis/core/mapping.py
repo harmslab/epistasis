@@ -177,21 +177,19 @@ class EpistasisMap(object):
     @property
     def key2value(self):
         """ Return dict of interaction keys mapped to their values. """
-        return self._map(self.interaction_keys, self.interaction_values)
+        return OrderedDict([(self.interaction_keys[i], self.interaction_values[i]) for i in range(len(self.interaction_values))])
         
     @property
     def genotype2value(self):
         """ Return dict of interaction genotypes mapped to their values. """
+        return OrderedDict([(self.interaction_genotypes[i], self.interaction_values[i]) for i in range(len(self.interaction_values))])
         return self._map(self.interaction_genotypes, self.interaction_values)
         
     @property
     def genotype2error(self):
         """ Return dict of interaction genotypes mapped to their values. """
-        if self.log_transform is True:
-            return OrderedDict([(self.interaction_genotypes[i], self.interaction_errors[:,i]) for i in range(self._n)])
-        else:   
-            return self._map(self.interaction_genotypes, self.interaction_errors)
-    
+        return OrderedDict([(self.interaction_genotypes[i], self.interaction_errors[:,i]) for i in range(len(self.interaction_values))])
+        
     @property
     def geno2binary(self):
         """ Return dictionary of genotypes mapped to their binary representation. """
