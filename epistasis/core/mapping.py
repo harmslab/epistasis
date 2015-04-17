@@ -205,7 +205,6 @@ class EpistasisMap(object):
         """ Return dict of genotypes mapped to their indices in transition matrix. """
         return self._map(self.genotypes, self.indices)
         
-        
     # ----------------------------------------------------------
     # Setter methods
     # ----------------------------------------------------------

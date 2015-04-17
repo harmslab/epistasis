@@ -10,9 +10,39 @@ def hamming_distance(s1, s2):
     return sum(ch1 != ch2 for ch1, ch2 in zip(s1, s2))
 
 def generate_binary_space(wildtype, mutant):
-    """ Generate binary genotype space between two sequences (that should differ at all sites) """
+    """ Generate binary genotype space between two sequences (that should differ at all sites). 
+    
+        Args:
+        ----
+        wildtype: str
+            Wildtype sequence as starting reference point.
+        mutant: str
+            Mutant sequence that differs at all sites from wildtype. 
+        
+        Returns:
+        -------
+        sequence_space:
+            List of all sequence combinations between the two sequences. 
+            
+        Example:
+        -------
+        if wildtype == 'AAA' and mutant == 'TTT':
+            sequence space =    ['AAA',
+                                'AAV',
+                                'AVA',
+                                'VAA',
+                                'AVV',
+                                'VAV',
+                                'VVA',
+                                'VVV']
+    """
+    # Check that sequences are the same length
     if len(wildtype) != len(mutant):
         raise IndexError("ancestor_sequence and derived sequence must be the same length.")
+    
+    # Check that two strings differ at all sites
+    if hamming_distance(wildtype, mutant) != len(wildtype):
+        raise Exception("wildtype and mutant must differ at all sites.")
 
     binaries = sorted(["".join(list(s)) for s in it.product('01', repeat=len(wildtype))])
     sequence_space = list()
