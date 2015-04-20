@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 # Epistasis Graphing
 # ---------------------------------------------------
 
-def epistasis_bar(epistasis_map, sigmas=0, title="Epistatic interactions", string_labels=False):
+def epistasis_bar(epistasis_map, sigmas=0, title="Epistatic interactions", string_labels=False, ax=None):
     """ Plot the interactions sorted by their order. 
     
     Parameters:
@@ -16,7 +16,11 @@ def epistasis_bar(epistasis_map, sigmas=0, title="Epistatic interactions", strin
         Number of sigmas to represent the errorbars. If 0, no error bars will be included.
     """
     em = epistasis_map
-    fig, ax = plt.subplots(1,1, figsize=[12,6])
+    if ax is None:
+        fig, ax = plt.subplots(1,1, figsize=[12,6])
+    else:
+        fig = ax.get_figure()
+    
     y = em.interaction_values
     if string_labels is True:
         xlabels = em.interaction_genotypes
