@@ -27,7 +27,7 @@ class ArtificialMap(EpistasisMap):
 
     def _random_epistasis(self):
         """Assign random values to epistatic terms. """ 
-        vals = np.random.rand(len(self.interaction_labels))
+        vals = (-1)**(np.random.randint(1,10, size=len(self.interaction_labels))) * np.random.rand(len(self.interaction_labels))
         self.interaction_values = vals
         
     def _build_phenotypes(self):
