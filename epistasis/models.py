@@ -137,7 +137,7 @@ class ProjectedEpistasisModel(GenericModel):
         # Regression properties
         self.regression_model = LinearRegression(fit_intercept=False)
         self.error_model = LinearRegression(fit_intercept=False)
-        self.r_squared = None
+        self.score = None
         
         
     def estimate_interactions(self):
@@ -145,7 +145,7 @@ class ProjectedEpistasisModel(GenericModel):
             mutant cycle method to any order<=number of mutations.
         """
         self.regression_model.fit(self.X, self.bit_phenotypes)
-        self.r_squared = self.regression_model.score(self.X, self.bit_phenotypes)
+        self.score = self.regression_model.score(self.X, self.bit_phenotypes)
         self.interaction_values = self.regression_model.coef_
         
         
