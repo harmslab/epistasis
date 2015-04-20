@@ -43,6 +43,7 @@ class ArtificialMap(EpistasisMap):
         for i in range(len(self.bit_indices)):
             phenotypes[self.bit_indices[i]] = bit_phenotypes[i]
         self.phenotypes = phenotypes
+        self.interaction_values = self.interaction_values/self.interaction_values[0]
         
     def model_input(self):
         """ Get input for a generic Epistasis Model.

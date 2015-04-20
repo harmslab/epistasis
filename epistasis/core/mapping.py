@@ -132,8 +132,8 @@ class EpistasisMap(object):
     @property
     def interaction_genotypes(self):
         """ Get the interaction genotype. """
-        elements = list()
-        for label in self._interaction_labels:
+        elements = ['w.t.']
+        for label in self._interaction_labels[1:]:
             elements.append(self._label_to_genotype(label))
         return elements
         
