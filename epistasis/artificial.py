@@ -12,7 +12,7 @@ from .core.mapping import EpistasisMap
 # space for testing the EpistasisModels
 # ------------------------------------------------------------
 
-class ArtificalMap(EpistasisMap):
+class ArtificialMap(EpistasisMap):
     
     def __init__(self, length, order, log_transform=False):
         """ Generate a binary genotype-phenotype mape with the given length from epistatic interactions. """
