@@ -87,7 +87,7 @@ class LocalEpistasisModel(GenericModel):
     
 class GlobalEpistasisModel(GenericModel):
     
-    def __init__(self, wildtype, genotypes, phenotypes, phenotype_errors=None, log_phenotypes=True):
+    def __init__(self, wildtype, genotypes, phenotypes, phenotype_errors=None, log_phenotypes=False):
         """ Create a map of the global epistatic effects using Hadamard approach.
             This is the related to LocalEpistasisMap by the discrete Fourier 
             transform of mutant cycle approach. 
@@ -122,7 +122,7 @@ class GlobalEpistasisModel(GenericModel):
     
 class ProjectedEpistasisModel(GenericModel):
     
-    def __init__(self, wildtype, genotypes, phenotypes, regression_order, phenotype_errors=None, log_phenotypes=True):
+    def __init__(self, wildtype, genotypes, phenotypes, regression_order, phenotype_errors=None, log_phenotypes=False):
         """ Create a map from local epistasis model projected into lower order
             order epistasis interactions. Requires regression to estimate values. 
         """
