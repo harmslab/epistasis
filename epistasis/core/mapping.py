@@ -1,4 +1,4 @@
-from .utils import hamming_distance
+from epistasis.core.utils import hamming_distance
 import numpy as np
 import itertools as it
 from collections import OrderedDict
