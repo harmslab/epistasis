@@ -3,3 +3,4 @@
 build/
 *.so
 *.ipynb_checkpoints/
+dist/

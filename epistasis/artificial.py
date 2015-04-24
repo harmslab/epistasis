@@ -3,9 +3,9 @@
 # ------------------------------------------------------------
 
 import numpy as np
-from regression_ext import generate_dv_matrix
-from .core.utils import generate_binary_space
-from .core.mapping import EpistasisMap
+from epistasis.regression_ext import generate_dv_matrix
+from epistasis.core.utils import generate_binary_space
+from epistasis.core.mapping import EpistasisMap
 
 # ------------------------------------------------------------
 # ArtificialMap object can be used to quickly generating a toy

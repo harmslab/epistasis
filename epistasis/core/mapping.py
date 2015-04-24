@@ -4,6 +4,23 @@ import itertools as it
 from collections import OrderedDict
 
 # -------------------------------------
+# Error Catching for unset properties
+# -------------------------------------
+
+class PropertyError(Exception):
+    """ error for unset properties. """
+
+def property_error(func):
+    """ Raise an AttributeError if _genotypes are not set before using any methods. """
+    def wrapper(*args, **kwargs):
+        try:
+            output = func(*args, **kwargs)
+            return output
+        except AttributeError:
+            raise PropertyError(func.__name__ + " has not been set yet.")
+    return wrapper
+
+# -------------------------------------
 # Main class for building epistasis map
 # -------------------------------------
 
@@ -11,7 +28,7 @@ class EpistasisMap(object):
     """
         Object that maps epistasis in a genotype-phenotype map. 
         
-        Attributes:
+        Attributes:gi to
         ----------
         length: int, 
             length of genotypes
