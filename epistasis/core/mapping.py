@@ -379,7 +379,6 @@ class EpistasisMap(object):
         for genotype in self.genotypes:
             differs = hamming_distance(genotype, reference)
             if differs > mutations:
-                print(differs, genotype)
                 mutations = int(differs)
                 mutant = str(genotype)
         return mutant
@@ -400,14 +399,14 @@ class EpistasisMap(object):
         # Build binary space
         # this is a really slow/memory intensive step ... need to revisit this
         full_genotypes, binaries = enumerate_space(self.wildtype, self.mutant, binary = True)
-        bin2geno = zip(binaries, full_genotypes)
+        bin2geno = dict(zip(binaries, full_genotypes))
         bits = list()
-        bit_indices = ()
+        bit_indices = list()
         # initialize bit_indicies
         for b in binaries:
             try:
                 bit_indices.append(geno2index[bin2geno[b]])
-                bits.append(binary)
+                bits.append(b)
             except:
                 pass
         self._bits = np.array(bits)
