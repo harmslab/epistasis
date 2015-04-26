@@ -19,7 +19,7 @@ class BinaryMap(BaseMap):
     @property
     def phenotypes(self):
         """ Get the phenotype values in an array orderd same as binary reprentation."""
-        return self.phenotypes
+        return self._phenotypes
         
     @property
     def phenotype_errors(self):
@@ -37,3 +37,6 @@ class BinaryMap(BaseMap):
     def geno2pheno(self):
         """ Return dict of genotypes mapped to phenotypes. """
         return self._map(self.genotypes, self.phenotypes)
+        
+    
+    

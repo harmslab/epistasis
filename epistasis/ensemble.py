@@ -3,7 +3,7 @@
 # ------------------------------------------------------------
 
 import numpy as np
-from epistasis.core.ensemble_mapping import EnsembleMap
+from epistasis.mapping.ensemble import EnsembleMap
     
 # ------------------------------------------------------------
 # EnsembleModel object for observing average of ensemble of 

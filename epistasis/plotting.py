@@ -21,11 +21,11 @@ def epistasis_bar(epistasis_map, sigmas=0, title="Epistatic interactions", strin
     else:
         fig = ax.get_figure()
     
-    y = em.interaction_values
+    y = em.Interactions.values
     if string_labels is True:
-        xlabels = em.interaction_genotypes
+        xlabels = em.Interactions.genotypes
     else:
-        xlabels = em.interaction_keys
+        xlabels = em.Interactions.keys
     
     # plot error if sigmas are given.
     if sigmas == 0:

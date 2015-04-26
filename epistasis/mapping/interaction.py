@@ -2,8 +2,13 @@ import itertools as it
 import numpy as np
 
 from epistasis.mapping.base import BaseMap
+from epistasis.mapping.mutation import MutationMap
 
 class InteractionMap(BaseMap):
+    
+    def __init__(self):
+        """ Mapping for interactions. """
+        self.Mutations = MutationMap()
     
     @property
     def log_transform(self):
@@ -14,7 +19,12 @@ class InteractionMap(BaseMap):
     def order(self):
         """ Get order of epistasis in system. """
         return self._order
-                
+        
+    @property
+    def keys(self):
+        """ Get the interaction keys. (type==list of str, see self._build_interaction_labels)"""
+        return self._keys
+            
     @property
     def values(self):
         """ Get the values of the interaction in the system"""
@@ -24,6 +34,11 @@ class InteractionMap(BaseMap):
     def errors(self):
         """ Get the value of the interaction errors in the system. """
         return self._errors
+        
+    @property
+    def indices(self):
+        """ Get the interaction index in interaction matrix. """
+        return self._indices
 
     @property
     def labels(self):
@@ -31,17 +46,7 @@ class InteractionMap(BaseMap):
             the genotypes. (type==list of lists, see self._build_interaction_labels)
         """
         return self._labels
-        
-    @property
-    def keys(self):
-        """ Get the interaction keys. (type==list of str, see self._build_interaction_labels)"""
-        return self._keys
-        
-    @property
-    def indices(self):
-        """ Get the interaction index in interaction matrix. """
-        return self._indices
-        
+    
     @property
     def genotypes(self):
         """ Get the interaction genotype. """
@@ -90,7 +95,7 @@ class InteractionMap(BaseMap):
         self._values = values
         
     @errors.setter
-    def interaction_errors(self, errors):
+    def errors(self, errors):
         """ Set the interaction errors of the system, set by an Epistasis model (see ..models.py)."""
         if self.log_transform is True:
             if np.array(errors).shape != (2, len(self.labels)):
@@ -123,7 +128,7 @@ class InteractionMap(BaseMap):
         order_indices = dict()
         for o in range(1,self.order+1):
             start = len(labels)
-            for label in it.combinations(range(1,self.n_mutations+1), o):
+            for label in it.combinations(range(1,self.Mutations.n+1), o):
                 labels.append(list(label))
                 key = ','.join([str(i) for i in label])
                 keys.append(key)
@@ -137,7 +142,7 @@ class InteractionMap(BaseMap):
         for l in label:
             # Labels are offset by 1, remove offset for wildtype/mutation array index
             array_index = l - 1
-            mutation = self.wildtype[array_index] + str(l) + self.mutations[array_index]
+            mutation = self.wildtype[array_index] + str(l) + self.Mutations.mutations[array_index]
             genotype += mutation + ','
         # Return genotype without the last comma
         return genotype[:-1]    

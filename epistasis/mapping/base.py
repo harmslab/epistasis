@@ -1,3 +1,7 @@
+# Base class for all maps in this a genotype-phenotype map.
+#
+# Author: Zach Sailer
+#
 # -------------------------------------
 # Outside imports
 # -------------------------------------
@@ -8,7 +12,7 @@ from collections import OrderedDict
 # -------------------------------------
 # Local imports
 # -------------------------------------
-from epistasis.core.utils import hamming_distance, find_differences, enumerate_space
+from epistasis.utils import hamming_distance, find_differences, enumerate_space
 
 # -------------------------------------
 # Main class for building epistasis map

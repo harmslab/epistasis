@@ -1,5 +1,9 @@
+# -------------------------------------- -------------
+# Module for Principal Component Analysis of Epistasis
+# ----------------------------------------------------
+
 from sklearn.decomposition import PCA
-from epistasis.models import GenericModel, LocalEpistasisModel , GlobalEpistasisModel
+from epistasis.models import GenericModel, LocalEpistasisModel, GlobalEpistasisModel
 from epistasis.regression_ext import generate_dv_matrix
 
 class EpistasisPCA(GenericModel):
@@ -9,7 +13,7 @@ class EpistasisPCA(GenericModel):
         super(EpistasisPCA, self).__init__(wildtype, genotypes, phenotypes, phenotype_errors, log_phenotypes)
         self.order = regression_order
         self.model = PCA()
-        self.X = (self.phenotypes[1:]*generate_dv_matrix(self.bits[1:], self.interaction_labels[1:]).T).T
+        self.X = (self.Binary.phenotypes[1:]*generate_dv_matrix(self.Binary.genotypes[1:], self.Interactions.labels[1:]).T).T
         
     def estimate_components(self):
         """ Estimate the principal components. """
