@@ -9,7 +9,6 @@ from sklearn.linear_model import LinearRegression
 from epistasis.core.mapping import EpistasisMap
 from epistasis.regression_ext import generate_dv_matrix
 
-
 # ------------------------------------------------------------
 # Unique Epistasis Functions
 # ------------------------------------------------------------   

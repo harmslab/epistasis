@@ -9,53 +9,62 @@ def hamming_distance(s1, s2):
     """ Return the Hamming distance between equal-length sequences """
     return sum(ch1 != ch2 for ch1, ch2 in zip(s1, s2))
 
-def generate_binary_space(wildtype, mutant):
-    """ Generate binary genotype space between two sequences (that should differ at all sites). 
+def find_differences(s1, s2):
+    """ Return the index of differences between two sequences."""
+    indices = list()
+    for i in range(len(s1)):
+        if s1[i] != s2[i]:
+            indices.append(i)
+    return indices
+
+def enumerate_space(wildtype, mutant, binary=True):
+    """ Generate binary genotype space between two sequences. 
     
         Args:
         ----
         wildtype: str
             Wildtype sequence as starting reference point.
         mutant: str
-            Mutant sequence that differs at all sites from wildtype. 
-        
+            Mutant sequence. 
+            
         Returns:
         -------
-        sequence_space:
+        sequence_space: list
             List of all sequence combinations between the two sequences. 
+        binary_representation: list (optional)
+            In
             
         Example:
         -------
         if wildtype == 'AAA' and mutant == 'TTT':
-            sequence space =    ['AAA',
-                                'AAV',
-                                'AVA',
-                                'VAA',
-                                'AVV',
-                                'VAV',
-                                'VVA',
-                                'VVV']
+            sequence space =    ['AAA','AAV','AVA','VAA','AVV','VAV','VVA','VVV']
     """
-    # Check that sequences are the same length
+    
+    # Check that wildtype and mutant are the same length
     if len(wildtype) != len(mutant):
         raise IndexError("ancestor_sequence and derived sequence must be the same length.")
     
-    # Check that two strings differ at all sites
-    if hamming_distance(wildtype, mutant) != len(wildtype):
-        raise Exception("wildtype and mutant must differ at all sites.")
-
-    binaries = sorted(["".join(list(s)) for s in it.product('01', repeat=len(wildtype))])
-    sequence_space = list()
-    for b in binaries:
-        binary = list(b)
-        sequence = list()
-        for i in range(len(wildtype)):
-            if b[i] == '0':
-                sequence.append(wildtype[i])
-            else:
-                sequence.append(mutant[i])
-        sequence_space.append(''.join(sequence))
-    return sequence_space
+    # Count mutations and keep indices
+    mutations = find_differences(wildtype, mutant)
+    n_mut = len(mutations)    
+    rev_mutations = [mutations[i] for i in range(n_mut-1, -1, -1)]
+    mutation_map = dict(zip(range(n_mut), mutations))
+    
+    # Build a binary representation
+    combinations = [list(j) for i in range(1,n_mut+1) for j in it.combinations(rev_mutations, i)]
+    sequence_space = [wildtype]
+    for c in combinations:
+        sequence = list(wildtype)
+        for el in c:
+            sequence[el] = mutant[el]
+        sequence_space.append("".join(sequence))
+     
+    if binary:
+        # Create the binary representation   
+        binaries = sorted(["".join(list(s)) for s in it.product('01', repeat=n_mut)])
+        return sequence_space, binaries
+    else:
+        return sequence_spaces
 
 def interaction_error_vs_order(learned, known, order):
     """ Take learned and known interaction dicts. """

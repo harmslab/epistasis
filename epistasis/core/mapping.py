@@ -1,24 +1,14 @@
-from epistasis.core.utils import hamming_distance
+# -------------------------------------
+# Outside imports
+# -------------------------------------
 import numpy as np
 import itertools as it
 from collections import OrderedDict
 
 # -------------------------------------
-# Error Catching for unset properties
+# Local imports
 # -------------------------------------
-
-class PropertyError(Exception):
-    """ error for unset properties. """
-
-def property_error(func):
-    """ Raise an AttributeError if _genotypes are not set before using any methods. """
-    def wrapper(*args, **kwargs):
-        try:
-            output = func(*args, **kwargs)
-            return output
-        except AttributeError:
-            raise PropertyError(func.__name__ + " has not been set yet.")
-    return wrapper
+from epistasis.core.utils import hamming_distance, find_differences, enumerate_space
 
 # -------------------------------------
 # Main class for building epistasis map
@@ -89,6 +79,11 @@ class EpistasisMap(object):
     def wildtype(self):
         """ Get reference genotypes for interactions. """
         return self._wildtype
+        
+    @property
+    def mutant(self):
+        """ Get the furthest genotype from the wildtype genotype. """
+        return self._mutant
 
     @property
     def genotypes(self):
@@ -140,6 +135,16 @@ class EpistasisMap(object):
     def mutations(self):
         """ Get possible that occur from reference system. """
         return self._mutations
+        
+    @property
+    def mutation_indices(self):
+        """ Get the indices of mutations in the sequence. """
+        return self._mutation_indices
+        
+    @property
+    def n_mutations(self):
+        """ Get the number of mutations in the space. """
+        return self._n_mutations
     
     @property
     def interaction_indices(self):
@@ -241,7 +246,10 @@ class EpistasisMap(object):
     def wildtype(self, wildtype):
         """ Set the reference genotype among the mutants in the system. """
         self._wildtype = wildtype
-        self._mutations = self._differ_all_sites(wildtype)
+        self._mutant = self._farthest_genotype(wildtype)
+        self._mutation_indices = find_differences(self.wildtype, self.mutant)
+        self._mutations = [self.mutant[i] for i in self.mutation_indices]
+        self._n_mutations = len(self._mutations)
         self._to_bits()
     
     @order.setter
@@ -347,24 +355,35 @@ class EpistasisMap(object):
         labels = [[0]]
         keys = ['0']
         order_indices = dict()
-        for o in range(1,self._order+1):
+        for o in range(1,self.order+1):
             start = len(labels)
-            for label in it.combinations(range(1,self._length+1), o):
+            for label in it.combinations(range(1,self.n_mutations+1), o):
                 labels.append(list(label))
                 key = ','.join([str(i) for i in label])
                 keys.append(key)
             stop = len(labels)
             order_indices[o] = [start, stop]
         return labels, keys, order_indices
-        
+
     def _differ_all_sites(self, reference):
         """ Find the genotype in the system that differs at all sites from reference.""" 
         for genotype in self.genotypes:
             if hamming_distance(genotype, reference) == self._length:
                 differs = genotype
                 break
-        return genotype
-        
+        return differs
+
+    def _farthest_genotype(self, reference):
+        """ Find the genotype in the system that differs at the most sites. """ 
+        mutations = 0
+        for genotype in self.genotypes:
+            differs = hamming_distance(genotype, reference)
+            if differs > mutations:
+                print(differs, genotype)
+                mutations = int(differs)
+                mutant = str(genotype)
+        return mutant
+
     def _to_bits(self):
         """ Encode the genotypes an ordered binary set of genotypes with 
             wildtype as reference state (ref is all zeros).
@@ -374,27 +393,28 @@ class EpistasisMap(object):
         """
         w = list(self.wildtype)
         m = list(self.mutations)
-        # build binary system
-        binaries = sorted(["".join(list(s)) for s in it.product('01', repeat=len(w))])
+
         # get genotype indices
         geno2index = self.geno2index
+        
+        # Build binary space
+        # this is a really slow/memory intensive step ... need to revisit this
+        full_genotypes, binaries = enumerate_space(self.wildtype, self.mutant, binary = True)
+        bin2geno = zip(binaries, full_genotypes)
+        bits = list()
+        bit_indices = ()
         # initialize bit_indicies
-        bit_indices = np.empty(len(binaries), dtype=int)
-        for b in range(len(binaries)):
-            binary = list(binaries[b])
-            sequence = list()
-            for i in range(len(w)):
-                if binaries[b][i] == '0':
-                    sequence.append(w[i])
-                else:
-                    sequence.append(m[i])
-            # Find genotype in map and store index
-            bit_indices[b] = geno2index[''.join(sequence)]
-        self._bit_indices = bit_indices
-        self._bits = binaries
+        for b in binaries:
+            try:
+                bit_indices.append(geno2index[bin2geno[b]])
+                bits.append(binary)
+            except:
+                pass
+        self._bits = np.array(bits)
+        self._bit_indices = np.array(bit_indices)
             
     def _label_to_genotype(self, label):
-        """ Convert a label to its genotype representation. """
+        """ Convert a label (list(3,4,5)) to its genotype representation ('A3V, A4V, A5V'). """
         genotype = ""
         for l in label:
             # Labels are offset by 1, remove offset for wildtype/mutation array index
@@ -403,5 +423,6 @@ class EpistasisMap(object):
             genotype += mutation + ','
         # Return genotype without the last comma
         return genotype[:-1]
+                
         
     
