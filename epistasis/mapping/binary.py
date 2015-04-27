@@ -1,11 +1,17 @@
+# Mapping object for tracking a binary representation of the epistasis map.
+#
+# Author: Zach Sailer
+#
+# ----------------------------------------------------------
+# Local imports
+# ----------------------------------------------------------
+
 from epistasis.mapping.base import BaseMap
 
 class BinaryMap(BaseMap):
-    
     """
-        Map for holding a binary representation of the epistasis map.
+        Map for holding a binary representation of an epistasis map.
     """
-    
     @property
     def genotypes(self):
         """ Get Binary representation of genotypes. """
@@ -22,21 +28,39 @@ class BinaryMap(BaseMap):
         return self._phenotypes
         
     @property
-    def phenotype_errors(self):
-        """ Get the phenotype values in an array orderd same as binary reprentation. 
-        
-            BROKEN --- NEEDS SOME WORK
-        
-        """
-        if self.log_transform is True:
-            return np.array((self.phenotype_errors[0,self.bit_indices],self.phenotype_errors[1,self.bit_indices]))
-        else:
-            return self.phenotype_errors[self.bit_indices]
-            
+    def errors(self):
+        """ Get the phenotype values in an array orderd same as binary reprentation."""
+        return self._errors
+
+    # ----------------------------------------------------------
+    # Getter methods for mapping objects
+    # ----------------------------------------------------------
+    
     @property
     def geno2pheno(self):
         """ Return dict of genotypes mapped to phenotypes. """
         return self._map(self.genotypes, self.phenotypes)
         
+    # ----------------------------------------------------------
+    # Setter methods
+    # ----------------------------------------------------------
     
-    
+    @genotypes.setter
+    def genotypes(self, genotypes):
+        """ Set Binary representation of genotypes. """
+        self._genotypes = genotypes
+        
+    @indices.setter
+    def indices(self, indices):
+        """ Set indices of genotypes in self.genotypes that mapped to their binary representation. """
+        self._indices = indices
+        
+    @phenotypes.setter
+    def phenotypes(self, phenotypes):
+        """ Set the phenotype values in an array orderd same as binary reprentation."""
+        self._phenotypes = phenotypes
+        
+    @errors.setter
+    def errors(self, errors):
+        """ Set the phenotype values in an array orderd same as binary reprentation."""
+        self._errors = errors

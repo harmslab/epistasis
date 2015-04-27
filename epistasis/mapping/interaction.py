@@ -1,5 +1,17 @@
+# Mapping Object for epistatic interactions int the epistasis map
+#
+# Author: Zach Sailer
+#
+# ----------------------------------------------------------
+# Outside imports
+# ----------------------------------------------------------
+
 import itertools as it
 import numpy as np
+
+# ----------------------------------------------------------
+# Local imports
+# ----------------------------------------------------------
 
 from epistasis.mapping.base import BaseMap
 from epistasis.mapping.mutation import MutationMap
@@ -7,7 +19,9 @@ from epistasis.mapping.mutation import MutationMap
 class InteractionMap(BaseMap):
     
     def __init__(self):
-        """ Mapping for interactions. """
+        """ Mapping object for indexing and tracking interactions in an 
+            epistasis map object. 
+        """
         self.Mutations = MutationMap()
     
     @property
@@ -84,8 +98,8 @@ class InteractionMap(BaseMap):
             this mapping object creates the """
         self._order = order
         # Create interaction labels and keys
-        self.labels, self.keys, self._order_indices = self._build_interaction_map()
-        self.indices = np.arange(len(self.labels))
+        self._labels, self._keys, self._order_indices = self._build_interaction_map()
+        self._indices = np.arange(len(self.labels))
         
     @values.setter
     def values(self, values):
@@ -142,7 +156,7 @@ class InteractionMap(BaseMap):
         for l in label:
             # Labels are offset by 1, remove offset for wildtype/mutation array index
             array_index = l - 1
-            mutation = self.wildtype[array_index] + str(l) + self.Mutations.mutations[array_index]
+            mutation = self.Mutations.wildtype[array_index] + str(self.Mutations.indices[l-1]+1) + self.Mutations.mutations[array_index]
             genotype += mutation + ','
         # Return genotype without the last comma
         return genotype[:-1]    

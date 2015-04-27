@@ -34,6 +34,7 @@ class GenericModel(EpistasisMap):
     
     def __init__(self, wildtype, genotypes, phenotypes, phenotype_errors=None, log_phenotypes=False):
         """ Populate an Epistasis mapping object. """
+        super(GenericModel, self).__init__()
         self.genotypes = genotypes
         self.wildtype = wildtype
         self.log_transform = log_phenotypes
