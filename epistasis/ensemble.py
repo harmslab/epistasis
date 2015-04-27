@@ -20,7 +20,7 @@ class EnsembleModel(EnsembleMap):
         self.genotypes = genotypes
         self.phenotypes = phenotypes
         self.log_phenotypes = log_phenotypes
-        self.phenotype_errors = phenotype_errors
+        self.errors = phenotype_errors
         self.log_phenotypes = log_phenotypes 
         
         # set keywords arguments
@@ -40,7 +40,7 @@ class EnsembleModel(EnsembleMap):
         for i in range(self.N):
             # Create an instance with the first wildtype
             m =  self.model(self.wildtypes[i], self.genotypes, self.phenotypes, 
-                            phenotype_errors=self.phenotype_errors, 
+                            phenotype_errors=self.errors, 
                             log_phenotypes=self.log_phenotypes)
             # Use the model to estimate epistasis from this reference             
             m.estimate_interactions()

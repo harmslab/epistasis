@@ -4,7 +4,7 @@
 
 import numpy as np
 from epistasis.regression_ext import generate_dv_matrix
-from epistasis.utils import generate_binary_space
+from epistasis.utils import enumerate_space
 from epistasis.mapping.epistasis import EpistasisMap
 
 # ------------------------------------------------------------
@@ -18,7 +18,7 @@ class ArtificialMap(EpistasisMap):
         """ Generate a binary genotype-phenotype mape with the given length from epistatic interactions. """
         wildtype = 'A'*length
         mutant = 'T'*length
-        self.genotypes = generate_binary_space(wildtype, mutant)
+        self.genotypes = enumerate_space(wildtype, mutant)
         self.wildtype = wildtype
         self.order = order
         self.log_transform = log_transform
@@ -27,8 +27,8 @@ class ArtificialMap(EpistasisMap):
 
     def _random_epistasis(self):
         """Assign random values to epistatic terms. """ 
-        vals = (-1)**(np.random.randint(1,10, size=len(self.interaction_labels))) * np.random.rand(len(self.interaction_labels))
-        self.interaction_values = vals
+        vals = (-1)**(np.random.randint(1,10, size=len(self.Interactions.labels))) * np.random.rand(len(self.Interactions.labels))
+        self.Interactions.values = vals
         
     def _build_phenotypes(self):
         """ Build the phenotype map from epistatic interactions. """
@@ -36,14 +36,14 @@ class ArtificialMap(EpistasisMap):
         phenotypes = np.zeros(self.n, dtype=float)
         
         # Build phenotypes for binary representation of space
-        self.X = generate_dv_matrix(self.bits, self.interaction_labels)
-        bit_phenotypes = np.dot(self.X,self.interaction_values)
+        self.X = generate_dv_matrix(self.Binary.genotypes, self.Interactions.labels)
+        bit_phenotypes = np.dot(self.X,self.Interactions.values)
     
         # Reorder phenotypes to map back to genotypes
-        for i in range(len(self.bit_indices)):
-            phenotypes[self.bit_indices[i]] = bit_phenotypes[i]
+        for i in range(len(self.Binary.indices)):
+            phenotypes[self.Binary.indices[i]] = bit_phenotypes[i]
         self.phenotypes = phenotypes
-        self.interaction_values = self.interaction_values/self.interaction_values[0]
+        self.Interaction.values = self.Interactions.values/self.Interactions.values[0]
         
     def model_input(self):
         """ Get input for a generic Epistasis Model.

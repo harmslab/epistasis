@@ -31,7 +31,7 @@ def epistasis_bar(epistasis_map, sigmas=0, title="Epistatic interactions", strin
     if sigmas == 0:
         ax.bar(range(len(y)), y, 0.9, alpha=0.4, align="center") #, **kwargs)
     else:
-        yerr = em.interaction_errors
+        yerr = em.Interactions.errors
         ax.bar(range(len(y)), y, 0.9, yerr=sigmas*yerr, alpha=0.4, align="center") #,**kwargs)
     
     # vertically label each interaction by their index

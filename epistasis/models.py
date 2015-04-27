@@ -40,7 +40,7 @@ class GenericModel(EpistasisMap):
         self.log_transform = log_phenotypes
         self.phenotypes = phenotypes
         if phenotype_errors is not None:
-            self.phenotype_errors = phenotype_errors
+            self.errors = phenotype_errors
 
 
 class LocalEpistasisModel(GenericModel):
@@ -79,12 +79,12 @@ class LocalEpistasisModel(GenericModel):
         """
         if self.log_transform is True:
             # If log-transformed, fit assymetric errorbars correctly
-            upper = np.sqrt(np.dot(self.X, self.Binary.phenotype_errors[0]**2))
-            lower = np.sqrt(np.dot(self.X, self.Binary.phenotype_errors[1]**2))
+            upper = np.sqrt(np.dot(self.X, self.Binary.errors[0]**2))
+            lower = np.sqrt(np.dot(self.X, self.Binary.errors[1]**2))
             self.Interactions.errors = np.array((lower,upper))
         else:
             # Errorbars are symmetric, so only one column for errors is necessary
-            self.Interactions.errors = np.sqrt(np.dot(self.X, self.Binary.phenotype_errors**2))
+            self.Interactions.errors = np.sqrt(np.dot(self.X, self.Binary.errors**2))
     
 class GlobalEpistasisModel(GenericModel):
     
@@ -113,11 +113,11 @@ class GlobalEpistasisModel(GenericModel):
         if self.log_transform is True:
             # If log-transformed, fit assymetric errorbars correctly
             # upper and lower are unweighted tranformations
-            upper = np.sqrt(np.dot(abs(self.X), self.Binary.phenotype_errors[0]**2))
-            lower = np.sqrt(np.dot(abs(self.X), self.Binary.phenotype_errors[1]**2))
+            upper = np.sqrt(np.dot(abs(self.X), self.Binary.errors[0]**2))
+            lower = np.sqrt(np.dot(abs(self.X), self.Binary.errors[1]**2))
             self.Interactions.errors = np.array((np.dot(self.weight_vector, lower), np.dot(self.weight_vector, upper)))
         else:
-            unweighted = np.sqrt(np.dot(abs(self.X), self.Binary.phenotype_errors**2))
+            unweighted = np.sqrt(np.dot(abs(self.X), self.Binary.errors**2))
             self.Interactions.errors = np.dot(self.weight_vector, unweighted)
             
     
@@ -158,13 +158,13 @@ class ProjectedEpistasisModel(GenericModel):
             interaction_errors = np.empty((2,len(self.Interactions.labels)), dtype=float)
             for i in range(len(self.Interactions.labels)):
                 n = len(self.Interactions.labels[i])
-                interaction_errors[0,i] = np.sqrt(n*self.Binary.phenotype_errors[0,i]**2)
-                interaction_errors[1,i] = np.sqrt(n*self.Binary.phenotype_errors[1,i]**2)
+                interaction_errors[0,i] = np.sqrt(n*self.Binary.errors[0,i]**2)
+                interaction_errors[1,i] = np.sqrt(n*self.Binary.errors[1,i]**2)
             self.Interactions.errors = interaction_errors        
         else:
             interaction_errors = np.empty(len(self.Interactions.labels), dtype=float)
             for i in range(len(self.Interactions.labels)):
                 n = len(self.Interactions.labels[i])
-                interaction_errors[i] = np.sqrt(n*self.Binary.phenotype_errors[i]**2)
+                interaction_errors[i] = np.sqrt(n*self.Binary.errors[i]**2)
             self.Interactions.errors = interaction_errors
         

@@ -41,7 +41,7 @@ class ModelComparison(object):
     @property
     def interaction_overlap(self):
         """ Get interactions that overlap. """
-        return overlap(self.model1.interaction_genotypes, self.model2.interaction_genotypes)
+        return overlap(self.model1.Interactions.genotypes, self.model2.Interactions.genotypes)
     
     @property
     def interaction_values(self):
@@ -59,7 +59,7 @@ class ModelComparison(object):
     @property
     def rmsd_interactions(self):
         """ Get the rmsd between two items from the model. """
-        keys,vals = self.interaction_values
+        keys,vals = self.Interactions.values
         val1 = np.array(vals)[:,0]
         val2 = np.array(vals)[:,1]
         return rmsd(val1,val2)
