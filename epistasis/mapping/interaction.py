@@ -14,15 +14,19 @@ import numpy as np
 # ----------------------------------------------------------
 
 from epistasis.mapping.base import BaseMap
-from epistasis.mapping.mutation import MutationMap
 
 class InteractionMap(BaseMap):
     
-    def __init__(self):
+    def __init__(self, mutation_map):
         """ Mapping object for indexing and tracking interactions in an 
             epistasis map object. 
+            
+            Arg:
+            ---
+            mutation_map: MutationMap instance
+                An already populated MutationMap instance.
         """
-        self.Mutations = MutationMap()
+        self.Mutations = mutation_map
     
     @property
     def log_transform(self):

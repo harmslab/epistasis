@@ -14,6 +14,7 @@ import numpy as np
 
 from epistasis.mapping.base import BaseMap
 from epistasis.mapping.binary import BinaryMap
+from epistasis.mapping.mutation import MutationMap
 from epistasis.mapping.interaction import InteractionMap
 from epistasis.utils import hamming_distance, find_differences, enumerate_space
 
@@ -44,7 +45,8 @@ class EpistasisMap(BaseMap):
             indices: array
                 genotype indices
         """
-        self.Interactions = InteractionMap()
+        self.Mutations = MutationMap()
+        self.Interactions = InteractionMap(self.Mutations)
         self.Binary = BinaryMap()
         
     # ------------------------------------------------------
@@ -146,10 +148,10 @@ class EpistasisMap(BaseMap):
         """ Set the reference genotype among the mutants in the system. """
         self._wildtype = wildtype
         self._mutant = self._farthest_genotype(wildtype)
-        self.Interactions.Mutations._indices = find_differences(self.wildtype, self.mutant)
-        self.Interactions.Mutations._wildtype = [self.wildtype[i] for i in self.Interactions.Mutations.indices]
-        self.Interactions.Mutations._mutations = [self.mutant[i] for i in self.Interactions.Mutations.indices]
-        self.Interactions.Mutations._n = len(self.Interactions.Mutations.mutations)
+        self.Mutations._indices = np.array(find_differences(self.wildtype, self.mutant))
+        self.Mutations._wildtype = np.array([self.wildtype[i] for i in self.Mutations.indices])
+        self.Mutations._mutations = np.array([self.mutant[i] for i in self.Mutations.indices])
+        self.Mutations._n = len(self.Mutations.mutations)
         self._to_bits()
     
     @order.setter
