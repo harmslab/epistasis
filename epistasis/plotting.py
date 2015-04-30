@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 # Epistasis Graphing
 # ---------------------------------------------------
 
-def epistasis_bar(epistasis_map, sigmas=0, title="Epistatic interactions", string_labels=False, ax=None):
+def epistasis_bar(epistasis_map, sigmas=0, title="Epistatic interactions", string_labels=False, ax=None, color='b'):
     """ Plot the interactions sorted by their order. 
     
     Parameters:
@@ -29,10 +29,10 @@ def epistasis_bar(epistasis_map, sigmas=0, title="Epistatic interactions", strin
     
     # plot error if sigmas are given.
     if sigmas == 0:
-        ax.bar(range(len(y)), y, 0.9, alpha=0.4, align="center") #, **kwargs)
+        ax.bar(range(len(y)), y, 0.9, alpha=0.4, align="center", color=color) #, **kwargs)
     else:
         yerr = em.Interactions.errors
-        ax.bar(range(len(y)), y, 0.9, yerr=sigmas*yerr, alpha=0.4, align="center") #,**kwargs)
+        ax.bar(range(len(y)), y, 0.9, yerr=sigmas*yerr, alpha=0.4, align="center", color=color) #,**kwargs)
     
     # vertically label each interaction by their index
     plt.xticks(range(len(y)), np.array(xlabels), rotation="vertical")
@@ -95,10 +95,10 @@ def ensemble_bar(ensemble, title="Ensemble Epistasis"):
 # from regression data.
 # -----------------------------
 
-def correlation(learned, known, title="Known vs. Learned"):
+def correlation(learned, known, title="Known vs. Learned", figsize=[6,6]):
     """ Create a plot showing the learned data vs. known data. """
     
-    fig, ax = plt.subplots(1,1, dpi=300)
+    fig, ax = plt.subplots(1,1, dpi=300, figsize=figsize)
     
     ax.plot(known, learned, '.b')
     ax.hold(True)
@@ -114,9 +114,9 @@ def correlation(learned, known, title="Known vs. Learned"):
     
     return fig
     
-def residuals(learned, known, title="Residual Plot"):
+def residuals(learned, known, title="Residual Plot", figsize=[6,4]):
     """ Generate a residual plot. """
-    fig, ax = plt.subplots(1,1, dpi=300)
+    fig, ax = plt.subplots(1,1, dpi=300, figsize=figsize)
     
     ax.stem(known, (learned-known), 'b-', markerfmt='.')
     ax.set_title(title, fontsize=20)

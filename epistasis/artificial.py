@@ -46,6 +46,13 @@ class ArtificialMap(EpistasisMap):
         self.phenotypes = phenotypes
         self.Interactions.values = self.Interactions.values/self.Interactions.values[0]
         
+    def add_noise(self, percent):
+        """ Add noise to the phenotypes. """
+        noise = np.empty(self.n, dtype=float)
+        for i in range(self.n):
+            noise[i] = percent*self.phenotypes[i]
+        self.errors = noise
+        
     def model_input(self):
         """ Get input for a generic Epistasis Model.
         
