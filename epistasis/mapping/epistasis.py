@@ -141,7 +141,7 @@ class EpistasisMap(BaseMap):
         self._n = len(genotypes)
         self._length = len(genotypes[0])
         self._genotypes = np.array(genotypes)
-        self._indices = np.arange(self._n)
+        self._indices = np.arange(self.n)
         
     @wildtype.setter
     def wildtype(self, wildtype):

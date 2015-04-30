@@ -16,9 +16,10 @@ class ArtificialMap(EpistasisMap):
     
     def __init__(self, length, order, log_transform=False):
         """ Generate a binary genotype-phenotype mape with the given length from epistatic interactions. """
+        super(ArtificialMap, self).__init__()
         wildtype = 'A'*length
         mutant = 'T'*length
-        self.genotypes = enumerate_space(wildtype, mutant)
+        self.genotypes, binaries = enumerate_space(wildtype, mutant)
         self.wildtype = wildtype
         self.order = order
         self.log_transform = log_transform
@@ -43,7 +44,7 @@ class ArtificialMap(EpistasisMap):
         for i in range(len(self.Binary.indices)):
             phenotypes[self.Binary.indices[i]] = bit_phenotypes[i]
         self.phenotypes = phenotypes
-        self.Interaction.values = self.Interactions.values/self.Interactions.values[0]
+        self.Interactions.values = self.Interactions.values/self.Interactions.values[0]
         
     def model_input(self):
         """ Get input for a generic Epistasis Model.

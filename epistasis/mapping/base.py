@@ -24,7 +24,7 @@ class BaseMap(object):
     """
     def _map(self, keys, values):
         """ Return ordered dictionary mapping two properties in self. """
-        return OrderedDict([(keys[i], values[i]) for i in range(self._n)])
+        return OrderedDict([(keys[i], values[i]) for i in range(len(keys))])
         
     def _if_dict(self, dictionary):
         """ If setter method is passed a dictionary with genotypes as keys, 

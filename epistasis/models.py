@@ -97,7 +97,7 @@ class GlobalEpistasisModel(GenericModel):
         super(GlobalEpistasisModel, self).__init__(wildtype, genotypes, phenotypes, phenotype_errors, log_phenotypes)
         self.order = self.length
         # Generate basis matrix for mutant cycle approach to epistasis.
-        self.weight_vector = hadamard_weight_vector(self.bits)
+        self.weight_vector = hadamard_weight_vector(self.Binary.genotypes)
         self.X = hadamard(2**self.length)
         
     def estimate_interactions(self):
