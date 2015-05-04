@@ -6,7 +6,7 @@ import itertools as it
 import numpy as np
 from scipy.linalg import hadamard
 from sklearn.linear_model import LinearRegression
-from epistasis.core.mapping import EpistasisMap
+from epistasis.mapping.epistasis import EpistasisMap
 from epistasis.regression_ext import generate_dv_matrix
 
 # ------------------------------------------------------------
@@ -34,12 +34,13 @@ class GenericModel(EpistasisMap):
     
     def __init__(self, wildtype, genotypes, phenotypes, phenotype_errors=None, log_phenotypes=False):
         """ Populate an Epistasis mapping object. """
+        super(GenericModel, self).__init__()
         self.genotypes = genotypes
         self.wildtype = wildtype
         self.log_transform = log_phenotypes
         self.phenotypes = phenotypes
         if phenotype_errors is not None:
-            self.phenotype_errors = phenotype_errors
+            self.errors = phenotype_errors
 
 
 class LocalEpistasisModel(GenericModel):
@@ -63,14 +64,14 @@ class LocalEpistasisModel(GenericModel):
         super(LocalEpistasisModel, self).__init__(wildtype, genotypes, phenotypes, phenotype_errors, log_phenotypes)
         self.order = self.length
         # Generate basis matrix for mutant cycle approach to epistasis.
-        self.X = generate_dv_matrix(self.bits, self.interaction_labels)
+        self.X = generate_dv_matrix(self.Binary.genotypes, self.Interactions.labels)
         self.X_inv = np.linalg.inv(self.X)
         
     def estimate_interactions(self):
         """ Estimate the values of all epistatic interactions using the expanded
             mutant cycle method to order=number_of_mutations.
         """
-        self.interaction_values = np.dot(self.X_inv, self.bit_phenotypes)
+        self.Interactions.values = np.dot(self.X_inv, self.Binary.phenotypes)
         
     def estimate_error(self):
         """ Estimate the error of each epistatic interaction by standard error 
@@ -78,12 +79,12 @@ class LocalEpistasisModel(GenericModel):
         """
         if self.log_transform is True:
             # If log-transformed, fit assymetric errorbars correctly
-            upper = np.sqrt(np.dot(self.X, self.bit_phenotype_errors[0]**2))
-            lower = np.sqrt(np.dot(self.X, self.bit_phenotype_errors[1]**2))
-            self.interaction_errors = np.array((lower,upper))
+            upper = np.sqrt(np.dot(self.X, self.Binary.errors[0]**2))
+            lower = np.sqrt(np.dot(self.X, self.Binary.errors[1]**2))
+            self.Interactions.errors = np.array((lower,upper))
         else:
             # Errorbars are symmetric, so only one column for errors is necessary
-            self.interaction_errors = np.sqrt(np.dot(self.X, self.bit_phenotype_errors**2))
+            self.Interactions.errors = np.sqrt(np.dot(self.X, self.Binary.errors**2))
     
 class GlobalEpistasisModel(GenericModel):
     
@@ -96,14 +97,14 @@ class GlobalEpistasisModel(GenericModel):
         super(GlobalEpistasisModel, self).__init__(wildtype, genotypes, phenotypes, phenotype_errors, log_phenotypes)
         self.order = self.length
         # Generate basis matrix for mutant cycle approach to epistasis.
-        self.weight_vector = hadamard_weight_vector(self.bits)
+        self.weight_vector = hadamard_weight_vector(self.Binary.genotypes)
         self.X = hadamard(2**self.length)
         
     def estimate_interactions(self):
         """ Estimate the values of all epistatic interactions using the hadamard
         matrix transformation.
         """
-        self.interaction_values = np.dot(self.weight_vector,np.dot(self.X, self.bit_phenotypes))
+        self.Interactions.values = np.dot(self.weight_vector,np.dot(self.X, self.Binary.phenotypes))
         
     def estimate_error(self):
         """ Estimate the error of each epistatic interaction by standard error 
@@ -112,12 +113,12 @@ class GlobalEpistasisModel(GenericModel):
         if self.log_transform is True:
             # If log-transformed, fit assymetric errorbars correctly
             # upper and lower are unweighted tranformations
-            upper = np.sqrt(np.dot(abs(self.X), self.bit_phenotype_errors[0]**2))
-            lower = np.sqrt(np.dot(abs(self.X), self.bit_phenotype_errors[1]**2))
-            self.interaction_errors = np.array((np.dot(self.weight_vector, lower), np.dot(self.weight_vector, upper)))
+            upper = np.sqrt(np.dot(abs(self.X), self.Binary.errors[0]**2))
+            lower = np.sqrt(np.dot(abs(self.X), self.Binary.errors[1]**2))
+            self.Interactions.errors = np.array((np.dot(self.weight_vector, lower), np.dot(self.weight_vector, upper)))
         else:
-            unweighted = np.sqrt(np.dot(abs(self.X), self.bit_phenotype_errors**2))
-            self.interaction_errors = np.dot(self.weight_vector, unweighted)
+            unweighted = np.sqrt(np.dot(abs(self.X), self.Binary.errors**2))
+            self.Interactions.errors = np.dot(self.weight_vector, unweighted)
             
     
 class ProjectedEpistasisModel(GenericModel):
@@ -132,7 +133,7 @@ class ProjectedEpistasisModel(GenericModel):
         # Generate basis matrix for mutant cycle approach to epistasis.
         self.order = regression_order
        
-        self.X = generate_dv_matrix(self.bits, self.interaction_labels)
+        self.X = generate_dv_matrix(self.Binary.genotypes, self.Interactions.labels)
         
         # Regression properties
         self.regression_model = LinearRegression(fit_intercept=False)
@@ -144,9 +145,9 @@ class ProjectedEpistasisModel(GenericModel):
         """ Estimate the values of all epistatic interactions using the expanded
             mutant cycle method to any order<=number of mutations.
         """
-        self.regression_model.fit(self.X, self.bit_phenotypes)
-        self.score = self.regression_model.score(self.X, self.bit_phenotypes)
-        self.interaction_values = self.regression_model.coef_
+        self.regression_model.fit(self.X, self.Binary.phenotypes)
+        self.score = self.regression_model.score(self.X, self.Binary.phenotypes)
+        self.Interactions.values = self.regression_model.coef_
         
         
     def estimate_error(self):
@@ -154,16 +155,16 @@ class ProjectedEpistasisModel(GenericModel):
             propagation of the phenotypes through the model.
         """
         if self.log_transform is True:
-            interaction_errors = np.empty((2,len(self.interaction_labels)), dtype=float)
-            for i in range(len(self.interaction_labels)):
-                n = len(self.interaction_labels[i])
-                interaction_errors[0,i] = np.sqrt(n*self.bit_phenotype_errors[0,i]**2)
-                interaction_errors[1,i] = np.sqrt(n*self.bit_phenotype_errors[1,i]**2)
-            self.interaction_errors = interaction_errors        
+            interaction_errors = np.empty((2,len(self.Interactions.labels)), dtype=float)
+            for i in range(len(self.Interactions.labels)):
+                n = len(self.Interactions.labels[i])
+                interaction_errors[0,i] = np.sqrt(n*self.Binary.errors[0,i]**2)
+                interaction_errors[1,i] = np.sqrt(n*self.Binary.errors[1,i]**2)
+            self.Interactions.errors = interaction_errors        
         else:
-            interaction_errors = np.empty(len(self.interaction_labels), dtype=float)
-            for i in range(len(self.interaction_labels)):
-                n = len(self.interaction_labels[i])
-                interaction_errors[i] = np.sqrt(n*self.bit_phenotype_errors[i]**2)
-            self.interaction_errors = interaction_errors
+            interaction_errors = np.empty(len(self.Interactions.labels), dtype=float)
+            for i in range(len(self.Interactions.labels)):
+                n = len(self.Interactions.labels[i])
+                interaction_errors[i] = np.sqrt(n*self.Binary.errors[i]**2)
+            self.Interactions.errors = interaction_errors
         

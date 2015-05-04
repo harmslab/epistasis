@@ -1,7 +1,6 @@
 import numpy as np
 from collections import OrderedDict
 
-
 class EnsembleMap(object):
     
     # ------------------------------------------------------
