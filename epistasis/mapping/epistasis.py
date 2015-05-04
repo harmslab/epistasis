@@ -173,13 +173,13 @@ class EpistasisMap(BaseMap):
                 array.
         """
         if type(phenotypes) is dict:
-            self._phenotypes = self._if_dict(phenotypes)/phenotypes[self.wildtype]
+            self._phenotypes = self._if_dict(phenotypes)#/phenotypes[self.wildtype]
         else:
             if len(phenotypes) != len(self._genotypes):
                 raise("Number of phenotypes does not equal number of genotypes.")
             else:
-                wildtype_index = self.geno2index[self.wildtype]
-                self._phenotypes = phenotypes/phenotypes[wildtype_index] 
+                #wildtype_index = self.geno2index[self.wildtype]
+                self._phenotypes = phenotypes#/phenotypes[wildtype_index] 
 
         # log transform if log_transform = True
         if self.log_transform is True:
@@ -243,6 +243,7 @@ class EpistasisMap(BaseMap):
         # this can be a really slow/memory intensive step ... need to revisit this
         full_genotypes, binaries = enumerate_space(self.wildtype, self.mutant, binary = True)
         bin2geno = dict(zip(binaries, full_genotypes))
+        print(bin2geno)
         bits = list()
         bit_indices = list()
         # initialize bit_indicies
