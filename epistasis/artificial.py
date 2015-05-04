@@ -53,6 +53,24 @@ class ArtificialMap(EpistasisMap):
             noise[i] = percent*self.phenotypes[i]
         self.errors = noise
         
+    def create_samples(self, n_samples):
+        """ Generate artificial data sampled from phenotype and percent error. """
+        try:
+            errors = self.errors
+        except:
+            add_noise(0.05)
+            errors = self.errors
+            
+        gen_phenotypes = np.empty((self.n, n_samples), dtype=float)
+        gen_genotypes = np.empty((self.n, n_samples), dtype='|S'+str(self.length))
+        
+        for s in range(len(self.genotypes)):
+            seq = self.genotypes[s]
+            gen_genotypes[s] = np.array([seq for i in range(n_samples)])
+            gen_phenotypes[s] = errors[s] * np.random.randn(n_samples) + self.phenotypes[s]
+        
+        return gen_genotypes, gen_phenotypes
+        
     def model_input(self):
         """ Get input for a generic Epistasis Model.
         

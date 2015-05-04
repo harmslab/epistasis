@@ -209,6 +209,8 @@ class EpistasisMap(BaseMap):
             errors = np.array((np.log10(1-errors), np.log10(1 + errors)))
         
         self._errors = errors
+        self.Binary._errors = np.array([errors[i] for i in self.Binary.indices])
+        
     
     # ---------------------------------
     # Useful methods for mapping object

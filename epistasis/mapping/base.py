@@ -10,11 +10,6 @@ import itertools as it
 from collections import OrderedDict
 
 # -------------------------------------
-# Local imports
-# -------------------------------------
-from epistasis.utils import hamming_distance, find_differences, enumerate_space
-
-# -------------------------------------
 # Main class for building epistasis map
 # -------------------------------------
 
