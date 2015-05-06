@@ -61,7 +61,7 @@ class LocalEpistasisModel(GenericModel):
                 Log transform the phenotypes for additivity.
         """
         # Populate Epistasis Map
-        super(LocalEpistasisModel, self).__init__(wildtype, genotypes, phenotypes, phenotype_errors, log_phenotypes)
+        super(LocalEpistasisModel, self).__init__(wildtype, genotypes, phenotypes, phenotype_errors=phenotype_errors, log_phenotypes=log_phenotypes)
         self.order = self.length
         # Generate basis matrix for mutant cycle approach to epistasis.
         self.X = generate_dv_matrix(self.Binary.genotypes, self.Interactions.labels)

@@ -68,8 +68,8 @@ def epistasis_barh(epistasis_map, sigmas=0, title="Epistatic interactions", stri
     if sigmas == 0:
         ax.barh(-np.arange(len(x)), x, 0.9, alpha=0.4, align="center", color=color) #, **kwargs)
     else:
-        yerr = em.Interactions.errors
-        ax.barh(-np.arange(len(x)), x, 0.9, yerr=sigmas*yerr, alpha=0.4, align="center", color=color) #,**kwargs)
+        xerr = em.Interactions.errors
+        ax.barh(-np.arange(len(x)), x, 0.9, xerr=sigmas*xerr, alpha=0.4, align="center", color=color) #,**kwargs)
     
     # vertically label each interaction by their index
     plt.yticks(-np.arange(len(x)), np.array(ylabels), rotation="horizontal", family='monospace')

@@ -209,7 +209,7 @@ class EpistasisMap(BaseMap):
             errors = np.array((np.log10(1-errors), np.log10(1 + errors)))
         
         self._errors = errors
-        self.Binary._errors = np.array([errors[i] for i in self.Binary.indices])
+        self.Binary._errors = np.array([errors[:,i] for i in self.Binary.indices]).T
         
     
     # ---------------------------------
@@ -243,7 +243,6 @@ class EpistasisMap(BaseMap):
         # this can be a really slow/memory intensive step ... need to revisit this
         full_genotypes, binaries = enumerate_space(self.wildtype, self.mutant, binary = True)
         bin2geno = dict(zip(binaries, full_genotypes))
-        print(bin2geno)
         bits = list()
         bit_indices = list()
         # initialize bit_indicies
