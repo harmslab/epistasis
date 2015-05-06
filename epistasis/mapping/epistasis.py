@@ -206,10 +206,11 @@ class EpistasisMap(BaseMap):
         # For log-transformations of error, need to translate errors to center around 1,
         # then take the log.
         if self.log_transform is True:
-            errors = np.array((np.log10(1-errors), np.log10(1 + errors)))
-        
-        self._errors = errors
-        self.Binary._errors = np.array([errors[:,i] for i in self.Binary.indices]).T
+            self._errors = np.array((np.log10(1-errors), np.log10(1 + errors)))
+            self.Binary._errors = np.array([self._errors[:,i] for i in self.Binary.indices]).T
+        else:
+            self._errors = errors
+            self.Binary._errors = np.array([errors[i] for i in self.Binary.indices])
         
     
     # ---------------------------------
