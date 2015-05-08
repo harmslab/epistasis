@@ -6,8 +6,14 @@ import itertools as it
 import numpy as np
 from scipy.linalg import hadamard
 from sklearn.linear_model import LinearRegression
+from collections import OrderedDict
+
+# ------------------------------------------------------------
+# Local imports
+# ------------------------------------------------------------
 from epistasis.mapping.epistasis import EpistasisMap
 from epistasis.regression_ext import generate_dv_matrix
+from epistasis.utils import epistatic_order_indices
 
 # ------------------------------------------------------------
 # Unique Epistasis Functions
@@ -34,6 +40,7 @@ class GenericModel(EpistasisMap):
     
     def __init__(self, wildtype, genotypes, phenotypes, phenotype_errors=None, log_phenotypes=False):
         """ Populate an Epistasis mapping object. """
+        
         super(GenericModel, self).__init__()
         self.genotypes = genotypes
         self.wildtype = wildtype
@@ -41,6 +48,31 @@ class GenericModel(EpistasisMap):
         self.phenotypes = phenotypes
         if phenotype_errors is not None:
             self.errors = phenotype_errors
+            
+    def get_order(self, order, errors=False, label="genotype"):
+        """ Return a dict of interactions to values of a given order. """
+        
+        # get starting index of interactions
+        if order > self.order:
+            raise Exception("Order argument is higher than model's order")
+            
+        # Determine the indices of this order of interactions.
+        start, stop = epistatic_order_indices(self.length,order)
+        # Label type.
+        if label == "genotype":
+            keys = self.Interactions.genotypes
+        elif label == "keys":
+            keys = self.Interactions.keys
+        else:
+            raise Exception("Unknown keyword argument for label.")
+        
+        # Build dictionary of interactions
+        stuff = OrderedDict(zip(keys[start:stop], self.Interactions.values[start:stop]))
+        if errors:
+            errors = OrderedDict(zip(keys[start:stop], self.Interactions.errors[start:stop]))
+            return stuff, errors
+        else:
+            return stuff
 
 
 class LocalEpistasisModel(GenericModel):

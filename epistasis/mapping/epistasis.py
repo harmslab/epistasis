@@ -152,6 +152,7 @@ class EpistasisMap(BaseMap):
         self.Mutations._wildtype = np.array([self.wildtype[i] for i in self.Mutations.indices])
         self.Mutations._mutations = np.array([self.mutant[i] for i in self.Mutations.indices])
         self.Mutations._n = len(self.Mutations.mutations)
+        self.Mutations._length = self.length
         self._to_bits()
     
     @order.setter

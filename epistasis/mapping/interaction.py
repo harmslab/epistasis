@@ -34,6 +34,11 @@ class InteractionMap(BaseMap):
         return self._log_transform
     
     @property
+    def length(self):
+        """ Length of sequences. """
+        return self._length
+    
+    @property
     def order(self):
         """ Get order of epistasis in system. """
         return self._order
@@ -92,7 +97,7 @@ class InteractionMap(BaseMap):
     def genotype2error(self):
         """ Return dict of interaction genotypes mapped to their values. """
         return OrderedDict([(self.genotypes[i], self.errors[:,i]) for i in range(len(self.values))])
-
+        
     # ----------------------------------------------
     # Setter Functions
     # ----------------------------------------------

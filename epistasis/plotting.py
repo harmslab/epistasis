@@ -42,7 +42,8 @@ def epistasis_bar(epistasis_map, sigmas=0, title="Epistatic interactions", strin
     ax.hlines(0,0,len(y), linestyles="dashed")
     return fig, ax    
 
-def epistasis_barh(epistasis_map, sigmas=0, title="Epistatic interactions", string_labels=False, ax=None, color='b', figsize=[6,4]):
+def epistasis_barh(epistasis_map, sigmas=0, title="Epistatic interactions", 
+                    string_labels=False, ax=None, color='b', figsize=[6,4], partition=False):
     """ Plot the interactions sorted by their order. 
     
     Parameters:
@@ -79,29 +80,43 @@ def epistasis_barh(epistasis_map, sigmas=0, title="Epistatic interactions", stri
     ax.vlines(0,0,-len(x), linestyles="dashed")
     return fig, ax    
 
-def epistasis_bar_charts(em, length, order):
-    """ Generate stacked subplots, showing barcharts of interactions for each order
-        of epistasis. 
-        
-        BROKEN
+def epistasis_bar_charts(em, sigmas=0, x_axis=[-1.5,1.5]):
+    """ Plot each order of epistasis from model as barcharts subplots.
+    
+    Parameters:
+    ----------
+    em: EpistasisModel object
+        Must be a complete, fitted epistasis map
+    order: int
+        Highest order of epistasis to plot
     """
-    fig, ax = plt.subplots(length, 1, figsize=[5,5*order])
+    length = em.length
+    order = em.order
+    fig, ax = plt.subplots(order, 1, figsize=[5,2*order])
 
-    for order in range(1, length+1):
-        interactions = em.nth_order(order)
-        error = em.nth_error(order)
-        labels = interactions.keys()
-        values = interactions.values()
+    for o in range(1, order+1):
+        interactions, errors = em.get_order(o, errors=sigmas)
+        labels = list(interactions.keys())
+        values = list(interactions.values())
         n_terms = len(values)
         index = np.arange(n_terms)
-        bar_width = .9
-        opacity = 0.4
-        rects1 = ax[order-1].bar(index, values, bar_width,
+        bar_width = .8
+        opacity = 0.5
+        rects1 = ax[o-1].barh(index, values, bar_width,
                          alpha=opacity,
                          color='b',
-                         yerr=error.values())
-        ticks = ax[order-1].set_xticklabels(labels, rotation="vertical")
-        ax[order-1].set_xticks(index+.5)
+                         xerr=sigmas*np.array(list(errors.values())),
+                        align="center",
+                        ecolor='r')
+        ticks = ax[o-1].set_yticklabels(labels, rotation="horizontal", fontsize=8)
+        ax[o-1].set_yticks(index)
+        
+        axis_dim = list(x_axis) + [-1,len(index)]
+        ax[o-1].axis(axis_dim) 
+        ax[o-1].vlines(0,-1,len(index), linestyles=u'solid')
+        if o != order:
+            ax[o-1].get_xaxis().set_ticks([])
+    ax[0].set_title("Order of Interaction: " +str(order))
 
 def ensemble_bar(ensemble, title="Ensemble Epistasis"):
     """ Return a bar chart of ensemble interactions from an ensemble model calculation. """

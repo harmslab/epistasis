@@ -3,6 +3,7 @@
 # -------------------------------------------------------
 import itertools as it
 import numpy as np
+from scipy.misc import comb
 from sklearn.metrics import mean_squared_error
 
 def hamming_distance(s1, s2):
@@ -16,6 +17,20 @@ def find_differences(s1, s2):
         if s1[i] != s2[i]:
             indices.append(i)
     return indices
+
+def epistatic_order_indices(length, order):
+    """ Return  the indices of interactions with the given order. 
+        
+        Args:
+        ----
+        length: int
+            length of the sequences
+        order: int
+            order of interactions to return
+    """
+    start = int(sum([comb(length, i) for i in range(order)]))
+    stop = int(start + comb(length, order))
+    return start, stop
 
 def enumerate_space(wildtype, mutant, binary=True):
     """ Generate binary genotype space between two sequences. 
