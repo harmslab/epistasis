@@ -45,7 +45,7 @@ class ArtificialMap(EpistasisMap):
         for i in range(len(self.Binary.indices)):
             phenotypes[self.Binary.indices[i]] = bit_phenotypes[i]
         self.phenotypes = phenotypes
-        self.Interactions.values = self.Interactions.values/self.Interactions.values[0]
+        self.Interactions.values = self.Interactions.values
         
     def add_noise(self, percent):
         """ Add noise to the phenotypes. """
