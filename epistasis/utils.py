@@ -65,12 +65,12 @@ def enumerate_space(wildtype, mutant, binary=True):
     binary_wt = "".zfill(n_mut)
     size = 2**n_mut
     rev_mutations = [mutations[i] for i in range(n_mut-1, -1, -1)]
-    mutation_map = dict(zip(range(n_mut), mutations))
+    mutation_map = dict(zip(mutations, range(n_mut)))
     
     # Enumerate mutations flipping combinations
     combinations = np.array([list(j) for i in range(1,n_mut+1) for j in it.combinations(rev_mutations, i)])
     # Initialize empty arrays 
-    sequence_space = np.empty(size, dtype="<U" + str(n_mut))
+    sequence_space = np.empty(size, dtype="<U" + str(len(wildtype)))
     binaries = np.empty(size, dtype="<U" + str(n_mut))
     # Population first element with wildtypes
     sequence_space[0] = wildtype
@@ -79,12 +79,12 @@ def enumerate_space(wildtype, mutant, binary=True):
     counter = 1
     for c in combinations:
         sequence = list(wildtype)
-        binary = list(binary_wt)
+        b = list(binary_wt)
         for el in c:
             sequence[el] = mutant[el]   # Sequence version of mutant
-            binary[el] = '1'            # Binary version of mutant
+            b[mutation_map[el]] = '1'            # Binary version of mutant
         sequence_space[counter] = "".join(sequence)
-        binaries[counter] = "".join(binary)
+        binaries[counter] = "".join(b)
         counter += 1
      
     if binary:
