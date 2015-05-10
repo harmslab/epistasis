@@ -10,6 +10,7 @@ def hamming_distance(s1, s2):
     """ Return the Hamming distance between equal-length sequences """
     return sum(ch1 != ch2 for ch1, ch2 in zip(s1, s2))
 
+
 def find_differences(s1, s2):
     """ Return the index of differences between two sequences."""
     indices = list()
@@ -17,6 +18,12 @@ def find_differences(s1, s2):
         if s1[i] != s2[i]:
             indices.append(i)
     return indices
+
+
+def list_binary(length):
+    """ List all binary strings with given length. """
+    return np.array(sort(["".join(seq) for seq in it.product("01", repeat=length)]))
+    
 
 def epistatic_order_indices(length, order):
     """ Return  the indices of interactions with the given order. 
@@ -31,6 +38,7 @@ def epistatic_order_indices(length, order):
     start = int(sum([comb(length, i) for i in range(order)]))
     stop = int(start + comb(length, order))
     return start, stop
+
 
 def enumerate_space(wildtype, mutant, binary=True):
     """ Generate binary genotype space between two sequences. 
@@ -91,38 +99,3 @@ def enumerate_space(wildtype, mutant, binary=True):
         return sequence_space, binaries
     else:
         return sequence_spaces
-
-def interaction_error_vs_order(learned, known, order):
-    """ Take learned and known interaction dicts. """
-    # Initializing a dictionary to hold order
-    order_dict = dict()
-    for i in range(order):
-        order_dict[i+1] = list()
-        
-    for k in learned.keys():
-        int_order = len(k.split(","))
-        if k not in known:
-            mse = np.sqrt((learned[k])**2)
-        else:
-            mse = np.sqrt((learned[k]-known[k])**2)
-        order_dict[int_order].append(mse)
-    
-    mse = np.empty(order, dtype=float)
-    std = np.empty(order, dtype=float)
-    for i in range(order):
-        mse[i] = np.mean(order_dict[i+1])
-        std[i] = np.std(order_dict[i+1])
-        
-    return mse, std, range(1,order+1)
-    
-def error_window(mse, std, interaction_labels):
-    """ Makes an array for plotting interaction uncertainty window. """
-    err_window = np.empty(len(interaction_labels), dtype=float)
-    std_window = np.empty(len(interaction_labels), dtype=float)
-    for i in range(len(interaction_labels)):
-        order = len(interaction_labels[i])
-        err_window[i] = mse[order-1]
-        std_window[i] = std[order-1]
-        
-    return err_window, std_window
-    

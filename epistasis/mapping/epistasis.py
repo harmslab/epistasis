@@ -250,7 +250,6 @@ class EpistasisMap(BaseMap):
         # initialize bit_indicies
         for b in binaries:
             try:
-                print(geno2index[bin2geno[b]])
                 bit_indices.append(geno2index[bin2geno[b]])
                 bits.append(b)
             except:

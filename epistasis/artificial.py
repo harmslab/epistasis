@@ -39,7 +39,8 @@ class ArtificialMap(EpistasisMap):
         # Build phenotypes for binary representation of space
         self.X = generate_dv_matrix(self.Binary.genotypes, self.Interactions.labels)
         bit_phenotypes = np.dot(self.X,self.Interactions.values)
-    
+        if self.log_transform:
+            bit_phenotypes = 10**bit_phenotypes
         # Reorder phenotypes to map back to genotypes
         for i in range(len(self.Binary.indices)):
             phenotypes[self.Binary.indices[i]] = bit_phenotypes[i]

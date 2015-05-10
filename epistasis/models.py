@@ -13,7 +13,7 @@ from collections import OrderedDict
 # ------------------------------------------------------------
 from epistasis.mapping.epistasis import EpistasisMap
 from epistasis.regression_ext import generate_dv_matrix
-from epistasis.utils import epistatic_order_indices
+from epistasis.utils import epistatic_order_indices, list_binary, enumerate_space
 
 # ------------------------------------------------------------
 # Unique Epistasis Functions
@@ -73,6 +73,7 @@ class GenericModel(EpistasisMap):
             return stuff, errors
         else:
             return stuff
+            
 
 
 class LocalEpistasisModel(GenericModel):
@@ -117,6 +118,7 @@ class LocalEpistasisModel(GenericModel):
         else:
             # Errorbars are symmetric, so only one column for errors is necessary
             self.Interactions.errors = np.sqrt(np.dot(self.X, self.Binary.errors**2))
+            
     
 class GlobalEpistasisModel(GenericModel):
     
@@ -170,15 +172,20 @@ class ProjectedEpistasisModel(GenericModel):
         # Regression properties
         self.regression_model = LinearRegression(fit_intercept=False)
         self.error_model = LinearRegression(fit_intercept=False)
-        self.score = None
-        
-        
+
+
+    @property
+    def score(self):
+        """ Get the epistasis model score after estimating interactions. """
+        return self._score
+
+
     def estimate_interactions(self):
         """ Estimate the values of all epistatic interactions using the expanded
             mutant cycle method to any order<=number of mutations.
         """
         self.regression_model.fit(self.X, self.Binary.phenotypes)
-        self.score = self.regression_model.score(self.X, self.Binary.phenotypes)
+        self._score = self.regression_model.score(self.X, self.Binary.phenotypes)
         self.Interactions.values = self.regression_model.coef_
         
         
@@ -199,4 +206,13 @@ class ProjectedEpistasisModel(GenericModel):
                 n = len(self.Interactions.labels[i])
                 interaction_errors[i] = np.sqrt(n*self.Binary.errors[i]**2)
             self.Interactions.errors = interaction_errors
+        
+    def infer_phenotypes(self):
+        """ Infer the phenotypes from model."""
+        genotypes, binaries = enumerate_space(self.wildtype, self.mutant)
+        X = generate_dv_matrix(binaries, self.Interactions.labels)
+        phenotypes = self.regression_model.predict(X)
+        return genotypes, phenotypes
+        
+        
         
