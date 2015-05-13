@@ -99,3 +99,11 @@ def enumerate_space(wildtype, mutant, binary=True):
         return sequence_space, binaries
     else:
         return sequence_spaces
+
+def build_interaction_labels(length, order):
+    """ Return interactions labels for building X matrix. """
+    labels = [[0]]
+    for o in range(1,order+1):
+        for label in it.combinations(range(1,length+1), o):
+            labels.append(list(label))
+    return labels

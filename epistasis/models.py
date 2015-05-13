@@ -13,7 +13,7 @@ from collections import OrderedDict
 # ------------------------------------------------------------
 from epistasis.mapping.epistasis import EpistasisMap
 from epistasis.regression_ext import generate_dv_matrix
-from epistasis.utils import epistatic_order_indices, list_binary, enumerate_space
+from epistasis.utils import epistatic_order_indices, list_binary, enumerate_space, build_interaction_labels
 
 # ------------------------------------------------------------
 # Unique Epistasis Functions
@@ -193,20 +193,20 @@ class ProjectedEpistasisModel(GenericModel):
         """ Estimate the error of each epistatic interaction by standard error 
             propagation of the phenotypes through the model.
         """
-        if self.log_transform is True:
-            interaction_errors = np.empty((2,len(self.Interactions.labels)), dtype=float)
-            for i in range(len(self.Interactions.labels)):
-                n = len(self.Interactions.labels[i])
-                interaction_errors[0,i] = np.sqrt(n*self.Binary.errors[0,i]**2)
-                interaction_errors[1,i] = np.sqrt(n*self.Binary.errors[1,i]**2)
-            self.Interactions.errors = interaction_errors        
-        else:
-            interaction_errors = np.empty(len(self.Interactions.labels), dtype=float)
-            for i in range(len(self.Interactions.labels)):
-                n = len(self.Interactions.labels[i])
-                interaction_errors[i] = np.sqrt(n*self.Binary.errors[i]**2)
-            self.Interactions.errors = interaction_errors
+        labels = build_interaction_labels(self.length, self.length)
+        errX = generate_dv_matrix(self.Binary.genotypes, labels)
         
+        if self.log_transform is True:
+            # If log-transformed, fit assymetric errorbars correctly
+            upper = np.sqrt(np.dot(errX, self.Binary.errors[0]**2))
+            lower = np.sqrt(np.dot(errX, self.Binary.errors[1]**2))
+            errors = np.array((lower,upper))
+        else:
+            # Errorbars are symmetric, so only one column for errors is necessary
+            errors = np.sqrt(np.dot(errX, self.Binary.errors**2))
+        self.Interactions.errors = errors[:len(self.Interactions.genotypes)]
+        
+      
     def infer_phenotypes(self):
         """ Infer the phenotypes from model."""
         genotypes, binaries = enumerate_space(self.wildtype, self.mutant)

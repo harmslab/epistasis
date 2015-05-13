@@ -59,11 +59,11 @@ class ArtificialMap(EpistasisMap):
         try:
             errors = self.errors
         except:
-            add_noise(0.05)
+            self.add_noise(0.05)
             errors = self.errors
             
         gen_phenotypes = np.empty((self.n, n_samples), dtype=float)
-        gen_genotypes = np.empty((self.n, n_samples), dtype='|S'+str(self.length))
+        gen_genotypes = np.empty((self.n, n_samples), dtype='<U'+str(self.length))
         
         for s in range(len(self.genotypes)):
             seq = self.genotypes[s]

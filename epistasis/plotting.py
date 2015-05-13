@@ -23,9 +23,11 @@ def epistasis_bar(epistasis_map, sigmas=0, title="Epistatic interactions", strin
     
     y = em.Interactions.values
     if string_labels is True:
-        xlabels = em.Interactions.genotypes
+        xtick = em.Interactions.genotypes
+        xlabel = "Interactions"
     else:
-        xlabels = em.Interactions.keys
+        xtick = em.Interactions.keys
+        xlabel = "Interaction Indices"
     
     # plot error if sigmas are given.
     if sigmas == 0:
@@ -35,10 +37,11 @@ def epistasis_bar(epistasis_map, sigmas=0, title="Epistatic interactions", strin
         ax.bar(range(len(y)), y, 0.9, yerr=sigmas*yerr, alpha=0.4, align="center", color=color) #,**kwargs)
     
     # vertically label each interaction by their index
-    plt.xticks(range(len(y)), np.array(xlabels), rotation="vertical", family='monospace')
-    ax.set_ylabel("Interaction Value", fontsize=16, fontname='monospace') 
+    plt.xticks(range(len(y)), np.array(xtick), rotation="vertical", family='monospace')
+    ax.set_ylabel("Interaction Value", fontsize=16) 
+    ax.set_xlabel(xlabel, fontsize=16)
     ax.set_title(title, fontsize=20)
-    ax.axis("tight")
+    ax.axis([-.5, len(y)-.5, -max(abs(y)), max(abs(y))])
     ax.hlines(0,0,len(y), linestyles="dashed")
     return fig, ax    
 
@@ -61,9 +64,11 @@ def epistasis_barh(epistasis_map, sigmas=0, title="Epistatic interactions",
     
     x = em.Interactions.values
     if string_labels is True:
-        ylabels = em.Interactions.genotypes
+        ytick = em.Interactions.genotypes
+        ylabel = "Interactions"
     else:
-        ylabels = em.Interactions.keys
+        ytick = em.Interactions.keys
+        ylabel = "Interaction Indices"
     
     # plot error if sigmas are given.
     if sigmas == 0:
@@ -75,8 +80,9 @@ def epistasis_barh(epistasis_map, sigmas=0, title="Epistatic interactions",
     # vertically label each interaction by their index
     plt.yticks(-np.arange(len(x)), np.array(ylabels), rotation="horizontal", family='monospace')
     ax.set_xlabel("Interaction Value", fontsize=16, fontname='monospace') 
+    ax.set_ylabel(ylabel, fontsize=16)
     ax.set_title(title, fontsize=20)
-    ax.axis([-max(abs(x)), max(abs(x)), -len(x), 0])
+    ax.axis([-max(abs(x)), max(abs(x)), -len(x)+.5, .5])
     ax.vlines(0,0,-len(x), linestyles="dashed")
     return fig, ax    
 
