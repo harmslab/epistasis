@@ -111,6 +111,16 @@ class InteractionMap(BaseMap):
         self._labels, self._keys, self._order_indices = self._build_interaction_map()
         self._indices = np.arange(len(self.labels))
         
+    @labels.setter
+    def labels(self, labels):
+        """ Manually set the interactions considered in the map. Useful for building epistasis models manually. """
+        self._labels = labels
+        keys = ['0']
+        for l in labels:
+            key = ','.join([str(i) for i in l])
+            keys.append(key)
+        self._keys = keys
+
     @values.setter
     def values(self, values):
         """ Set the interactions of the system, set by an Epistasis model (see ..models.py)."""

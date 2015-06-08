@@ -41,7 +41,7 @@ class BaseModel(EpistasisMap):
     def __init__(self, wildtype, genotypes, phenotypes, phenotype_errors=None, log_phenotypes=False):
         """ Populate an Epistasis mapping object. """
         
-        super(GenericModel, self).__init__()
+        super(BaseModel, self).__init__()
         self.genotypes = genotypes
         self.wildtype = wildtype
         self.log_transform = log_phenotypes
@@ -74,6 +74,14 @@ class BaseModel(EpistasisMap):
         else:
             return stuff
             
+    def fit(self):
+        """ Fitting methods for epistasis models. """
+        raise Exception("""Must be implemented in a subclass.""")
+        
+    def fit_error(self):
+        """ Fitting method for errors in the epistatic parameters. """
+        raise Exception("""Must be implemented in a subclass.""")
+            
 
 
 class LocalEpistasisModel(BaseModel):
@@ -100,13 +108,13 @@ class LocalEpistasisModel(BaseModel):
         self.X = generate_dv_matrix(self.Binary.genotypes, self.Interactions.labels)
         self.X_inv = np.linalg.inv(self.X)
         
-    def estimate_interactions(self):
+    def fit(self):
         """ Estimate the values of all epistatic interactions using the expanded
             mutant cycle method to order=number_of_mutations.
         """
         self.Interactions.values = np.dot(self.X_inv, self.Binary.phenotypes)
         
-    def estimate_error(self):
+    def fit_error(self):
         """ Estimate the error of each epistatic interaction by standard error 
             propagation of the phenotypes through the model.
         """
@@ -134,13 +142,13 @@ class GlobalEpistasisModel(BaseModel):
         self.weight_vector = hadamard_weight_vector(self.Binary.genotypes)
         self.X = hadamard(2**self.length)
         
-    def estimate_interactions(self):
+    def fit(self):
         """ Estimate the values of all epistatic interactions using the hadamard
         matrix transformation.
         """
         self.Interactions.values = np.dot(self.weight_vector,np.dot(self.X, self.Binary.phenotypes))
         
-    def estimate_error(self):
+    def fit_error(self):
         """ Estimate the error of each epistatic interaction by standard error 
             propagation of the phenotypes through the model.
         """
@@ -157,15 +165,38 @@ class GlobalEpistasisModel(BaseModel):
     
 class ProjectedEpistasisModel(BaseModel):
     
-    def __init__(self, wildtype, genotypes, phenotypes, regression_order, phenotype_errors=None, log_phenotypes=False):
+    def __init__(self, wildtype, genotypes, phenotypes, order=None, parameters=None, phenotype_errors=None, log_phenotypes=False):
         """ Create a map from local epistasis model projected into lower order
-            order epistasis interactions. Requires regression to estimate values. 
+            order epistasis interactions. Requires regression to estimate values.
+            
+            Args:
+            ----
+            wildtype: str
+                Wildtype genotype. Wildtype phenotype will be used as reference state.
+            genotypes: array-like, dtype=str
+                Genotypes in map. Can be binary strings, or not.
+            phenotypes: array-like
+                Quantitative phenotype values
+            order: int
+                Order of regression; if None, parameters must be passed in manually as parameters=<list of lists>
+            parameters: list of lists
+                Interactions to include in the model. 
+            phenotype_errors: array-like
+                List of phenotype errors.
+            log_phenotypes: bool
+                If True, log transform the phenotypes.
         """
         # Populate Epistasis Map
         super(ProjectedEpistasisModel, self).__init__(wildtype, genotypes, phenotypes, phenotype_errors, log_phenotypes)
         
         # Generate basis matrix for mutant cycle approach to epistasis.
-        self.order = regression_order
+        if order is not None:
+            self.order = order
+        elif parameters is not None:
+            self.Interactions.labels = parameters
+        else:
+            raise Exception("""Need to specify the model's `order` argument or manually 
+                                list model parameters as `parameters` argument.""")
        
         self.X = generate_dv_matrix(self.Binary.genotypes, self.Interactions.labels)
         
@@ -180,7 +211,7 @@ class ProjectedEpistasisModel(BaseModel):
         return self._score
 
 
-    def estimate_interactions(self):
+    def fit(self):
         """ Estimate the values of all epistatic interactions using the expanded
             mutant cycle method to any order<=number of mutations.
         """
@@ -189,7 +220,7 @@ class ProjectedEpistasisModel(BaseModel):
         self.Interactions.values = self.regression_model.coef_
         
         
-    def estimate_error(self):
+    def fit_error(self):
         """ Estimate the error of each epistatic interaction by standard error 
             propagation of the phenotypes through the model.
         """
