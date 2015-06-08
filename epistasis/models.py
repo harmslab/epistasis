@@ -36,7 +36,7 @@ def cut_interaction_labels(labels, order):
 # ------------------------------------------------------------
 # Epistasis Mapping Classes
 # ------------------------------------------------------------
-class GenericModel(EpistasisMap):
+class BaseModel(EpistasisMap):
     
     def __init__(self, wildtype, genotypes, phenotypes, phenotype_errors=None, log_phenotypes=False):
         """ Populate an Epistasis mapping object. """
@@ -76,7 +76,7 @@ class GenericModel(EpistasisMap):
             
 
 
-class LocalEpistasisModel(GenericModel):
+class LocalEpistasisModel(BaseModel):
         
     def __init__(self, wildtype, genotypes, phenotypes, phenotype_errors=None, log_phenotypes=False):
         """ Create a map of the local epistatic effects using expanded mutant 
@@ -120,7 +120,7 @@ class LocalEpistasisModel(GenericModel):
             self.Interactions.errors = np.sqrt(np.dot(self.X, self.Binary.errors**2))
             
     
-class GlobalEpistasisModel(GenericModel):
+class GlobalEpistasisModel(BaseModel):
     
     def __init__(self, wildtype, genotypes, phenotypes, phenotype_errors=None, log_phenotypes=False):
         """ Create a map of the global epistatic effects using Hadamard approach.
@@ -155,7 +155,7 @@ class GlobalEpistasisModel(GenericModel):
             self.Interactions.errors = np.dot(self.weight_vector, unweighted)
             
     
-class ProjectedEpistasisModel(GenericModel):
+class ProjectedEpistasisModel(BaseModel):
     
     def __init__(self, wildtype, genotypes, phenotypes, regression_order, phenotype_errors=None, log_phenotypes=False):
         """ Create a map from local epistasis model projected into lower order

@@ -24,7 +24,6 @@ def epistasis_bar(epistasis_map, sigmas=0, title="Epistatic interactions", strin
     y = em.Interactions.values
     if string_labels is True:
         xtick = em.Interactions.genotypes
-        xlabel = "Interactions"
     else:
         xtick = em.Interactions.keys
         xlabel = "Interaction Indices"
@@ -37,10 +36,13 @@ def epistasis_bar(epistasis_map, sigmas=0, title="Epistatic interactions", strin
         ax.bar(range(len(y)), y, 0.9, yerr=sigmas*yerr, alpha=0.4, align="center", color=color) #,**kwargs)
     
     # vertically label each interaction by their index
-    plt.xticks(range(len(y)), np.array(xtick), rotation="vertical", family='monospace')
-    ax.set_ylabel("Interaction Value", fontsize=16) 
-    ax.set_xlabel(xlabel, fontsize=16)
-    ax.set_title(title, fontsize=20)
+    plt.xticks(range(len(y)), np.array(xtick), rotation="vertical", family='monospace',fontsize=7)
+    ax.set_ylabel("Interaction Value", fontsize=10) 
+    try:
+        ax.set_xlabel(xlabel, fontsize=10)
+    except:
+        pass
+    ax.set_title(title, fontsize=12)
     ax.axis([-.5, len(y)-.5, -max(abs(y)), max(abs(y))])
     ax.hlines(0,0,len(y), linestyles="dashed")
     return fig, ax    
@@ -78,7 +80,7 @@ def epistasis_barh(epistasis_map, sigmas=0, title="Epistatic interactions",
         ax.barh(-np.arange(len(x)), x, 0.9, xerr=sigmas*xerr, alpha=0.4, align="center", color=color) #,**kwargs)
     
     # vertically label each interaction by their index
-    plt.yticks(-np.arange(len(x)), np.array(ylabels), rotation="horizontal", family='monospace')
+    plt.yticks(-np.arange(len(x)), np.array(ylabels), rotation="horizontal", family='monospace', fontsize=7)
     ax.set_xlabel("Interaction Value", fontsize=16, fontname='monospace') 
     ax.set_ylabel(ylabel, fontsize=16)
     ax.set_title(title, fontsize=20)
