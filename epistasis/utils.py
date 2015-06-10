@@ -19,11 +19,20 @@ def find_differences(s1, s2):
             indices.append(i)
     return indices
 
-
 def list_binary(length):
     """ List all binary strings with given length. """
     return np.array(sort(["".join(seq) for seq in it.product("01", repeat=length)]))
     
+
+def label_to_key(label, state=""):
+    """ Convert interaction label to key. `state` is added to end of key."""
+    if type(state) != str:
+        raise Exception("`state` must be a string.")
+    return ",".join([str(l) for l in label]) + state
+    
+def key_to_label(key):
+    """ Convert an interaction key to label."""
+    return [int(k) for k in key.split(",")]
 
 def epistatic_order_indices(length, order):
     """ Return  the indices of interactions with the given order. 

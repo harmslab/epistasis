@@ -115,10 +115,10 @@ class InteractionMap(BaseMap):
     def labels(self, labels):
         """ Manually set the interactions considered in the map. Useful for building epistasis models manually. """
         self._labels = labels
-        keys = ['0']
-        for l in labels:
-            key = ','.join([str(i) for i in l])
-            keys.append(key)
+        
+    @keys.setter
+    def keys(self, keys):
+        """ Manually set keys. NEED TO do some quality control here. """
         self._keys = keys
 
     @values.setter

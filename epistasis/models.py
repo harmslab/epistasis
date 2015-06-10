@@ -165,7 +165,7 @@ class GlobalEpistasisModel(BaseModel):
     
 class ProjectedEpistasisModel(BaseModel):
     
-    def __init__(self, wildtype, genotypes, phenotypes, order=None, parameters=None, phenotype_errors=None, log_phenotypes=False):
+    def __init__(self, wildtype, genotypes, phenotypes, order=None, parameters=None, phenotype_errors=None, log_phenotypes=False, n_states=1):
         """ Create a map from local epistasis model projected into lower order
             order epistasis interactions. Requires regression to estimate values.
             
@@ -179,8 +179,8 @@ class ProjectedEpistasisModel(BaseModel):
                 Quantitative phenotype values
             order: int
                 Order of regression; if None, parameters must be passed in manually as parameters=<list of lists>
-            parameters: list of lists
-                Interactions to include in the model. 
+            parameters: dict
+                interaction keys with their values expressed as lists.
             phenotype_errors: array-like
                 List of phenotype errors.
             log_phenotypes: bool
@@ -193,7 +193,8 @@ class ProjectedEpistasisModel(BaseModel):
         if order is not None:
             self.order = order
         elif parameters is not None:
-            self.Interactions.labels = parameters
+            self.Interactions.keys = list(parameters.keys())
+            self.Interactions.labels = list(parameters.values())
         else:
             raise Exception("""Need to specify the model's `order` argument or manually 
                                 list model parameters as `parameters` argument.""")
