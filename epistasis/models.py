@@ -5,6 +5,7 @@
 import itertools as it
 import numpy as np
 from scipy.linalg import hadamard
+from scipy.optimize import curve_fit
 from sklearn.linear_model import LinearRegression
 from collections import OrderedDict
 
@@ -32,6 +33,20 @@ def hadamard_weight_vector(genotypes):
 def cut_interaction_labels(labels, order):
     """ Cut off interaction labels at certain order of interactions. """
     return [l for l in labels if len(l) <= order]
+    
+    
+def two_state_func(x, *args):
+    """ """
+    T = params[-1]
+    params = params[:-1]
+    length = len(params)
+    params1 = np.array(params[0:int(length/2)])
+    params2 = np.array(params[int(length/2):])
+    param3 = params
+    X1 = np.exp(np.dot(x[0:int(length/2),:].T, params1)/param3)
+    X2 = np.exp(np.dot(x[int(length/2):,:].T,params2)/param3)
+    y = param3*np.log(X1 + X2)
+    return y
     
 # ------------------------------------------------------------
 # Epistasis Mapping Classes
@@ -165,7 +180,7 @@ class GlobalEpistasisModel(BaseModel):
     
 class ProjectedEpistasisModel(BaseModel):
     
-    def __init__(self, wildtype, genotypes, phenotypes, order=None, parameters=None, phenotype_errors=None, log_phenotypes=False, n_states=1):
+    def __init__(self, wildtype, genotypes, phenotypes, order=None, parameters=None, phenotype_errors=None, log_phenotypes=False):
         """ Create a map from local epistasis model projected into lower order
             order epistasis interactions. Requires regression to estimate values.
             
@@ -247,4 +262,48 @@ class ProjectedEpistasisModel(BaseModel):
         return genotypes, phenotypes
         
         
+class NonlinearEpistasisModel(BaseModel):
         
+    def __init__(self, wildtype, genotypes, phenotypes, function, parameters=None, phenotype_errors=None, log_phenotypes=False):
+        """ Create a map from local epistasis model projected into lower order
+            order epistasis interactions. Requires regression to estimate values.
+        
+            Args:
+            ----
+            wildtype: str
+                Wildtype genotype. Wildtype phenotype will be used as reference state.
+            genotypes: array-like, dtype=str
+                Genotypes in map. Can be binary strings, or not.
+            phenotypes: array-like
+                Quantitative phenotype values
+            order: int
+                Order of regression; if None, parameters must be passed in manually as parameters=<list of lists>
+            parameters: dict
+                interaction keys with their values expressed as lists.
+            phenotype_errors: array-like
+                List of phenotype errors.
+            log_phenotypes: bool
+                If True, log transform the phenotypes.
+        """
+        # Populate Epistasis Map
+        super(NonlinearEpistasisModel, self).__init__(wildtype, genotypes, phenotypes, phenotype_errors, log_phenotypes)
+        
+        # Generate basis matrix for mutant cycle approach to epistasis.
+        if parameters is not None:
+            self.Interactions.keys = list(parameters.keys())
+            self.Interactions.labels = list(parameters.values())
+        else:
+            raise Exception("""Need to specify the model's `order` argument or manually 
+                                list model parameters as `parameters` argument.""")
+   
+        self.X = generate_dv_matrix(self.Binary.genotypes, self.Interactions.labels)
+        
+        self.function = function
+    
+    def fit(self):
+        """ Fit the nonlinear function """
+        self.Interactions.values, cov = curve_fit(  self.function, 
+                                                    self.X.T, 
+                                                    self.Binary.phenotypes, 
+                                                    p0=np.zeros(len(self.Interactions.labels), dtype=float), 
+                                                    maxfev=50000)
