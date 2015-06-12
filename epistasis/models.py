@@ -33,28 +33,28 @@ def hadamard_weight_vector(genotypes):
 def cut_interaction_labels(labels, order):
     """ Cut off interaction labels at certain order of interactions. """
     return [l for l in labels if len(l) <= order]
-    
-    
-def two_state_func(x, *args):
-    """ """
-    T = params[-1]
-    params = params[:-1]
-    length = len(params)
-    params1 = np.array(params[0:int(length/2)])
-    params2 = np.array(params[int(length/2):])
-    param3 = params
-    X1 = np.exp(np.dot(x[0:int(length/2),:].T, params1)/param3)
-    X2 = np.exp(np.dot(x[int(length/2):,:].T,params2)/param3)
-    y = param3*np.log(X1 + X2)
-    return y
-    
+
 # ------------------------------------------------------------
 # Epistasis Mapping Classes
 # ------------------------------------------------------------
 class BaseModel(EpistasisMap):
     
     def __init__(self, wildtype, genotypes, phenotypes, phenotype_errors=None, log_phenotypes=False):
-        """ Populate an Epistasis mapping object. """
+        """ Populate an Epistasis mapping object. 
+        
+            Args:
+            ----
+            wildtype: str
+                Wildtype genotype. Wildtype phenotype will be used as reference state.
+            genotypes: array-like, dtype=str
+                Genotypes in map. Can be binary strings, or not.
+            phenotypes: array-like
+                Quantitative phenotype values
+            phenotype_errors: array-like
+                List of phenotype errors.
+            log_phenotypes: bool
+                If True, log transform the phenotypes.
+        """
         
         super(BaseModel, self).__init__()
         self.genotypes = genotypes
@@ -108,13 +108,18 @@ class LocalEpistasisModel(BaseModel):
             i.e.
             Phenotype = K_0 + sum(K_i) + sum(K_ij) + sum(K_ijk) + ...
             
-            Parameters:
-            ----------
-            geno_pheno_dict: OrderedDict
-                Dictionary with keys=ordered genotypes by their binary value, 
-                mapped to their phenotypes.
-            log_phenotypes: bool (default=True)
-                Log transform the phenotypes for additivity.
+            Args:
+            ----
+            wildtype: str
+                Wildtype genotype. Wildtype phenotype will be used as reference state.
+            genotypes: array-like, dtype=str
+                Genotypes in map. Can be binary strings, or not.
+            phenotypes: array-like
+                Quantitative phenotype values
+            phenotype_errors: array-like
+                List of phenotype errors.
+            log_phenotypes: bool
+                If True, log transform the phenotypes.
         """
         # Populate Epistasis Map
         super(LocalEpistasisModel, self).__init__(wildtype, genotypes, phenotypes, phenotype_errors=phenotype_errors, log_phenotypes=log_phenotypes)
@@ -149,6 +154,19 @@ class GlobalEpistasisModel(BaseModel):
         """ Create a map of the global epistatic effects using Hadamard approach.
             This is the related to LocalEpistasisMap by the discrete Fourier 
             transform of mutant cycle approach. 
+            
+            Args:
+            ----
+            wildtype: str
+                Wildtype genotype. Wildtype phenotype will be used as reference state.
+            genotypes: array-like, dtype=str
+                Genotypes in map. Can be binary strings, or not.
+            phenotypes: array-like
+                Quantitative phenotype values
+            phenotype_errors: array-like
+                List of phenotype errors.
+            log_phenotypes: bool
+                If True, log transform the phenotypes.
         """
         # Populate Epistasis Map
         super(GlobalEpistasisModel, self).__init__(wildtype, genotypes, phenotypes, phenotype_errors, log_phenotypes)
@@ -264,9 +282,9 @@ class ProjectedEpistasisModel(BaseModel):
         
 class NonlinearEpistasisModel(BaseModel):
         
-    def __init__(self, wildtype, genotypes, phenotypes, function, parameters=None, phenotype_errors=None, log_phenotypes=False):
-        """ Create a map from local epistasis model projected into lower order
-            order epistasis interactions. Requires regression to estimate values.
+    def __init__(self, wildtype, genotypes, phenotypes, function, x, parameters, phenotype_errors=None, log_phenotypes=False):
+        """ Fit a nonlinear epistasis model to a genotype-phenotype map. The function and parameters must
+            specified prior. 
         
             Args:
             ----
@@ -276,8 +294,10 @@ class NonlinearEpistasisModel(BaseModel):
                 Genotypes in map. Can be binary strings, or not.
             phenotypes: array-like
                 Quantitative phenotype values
-            order: int
-                Order of regression; if None, parameters must be passed in manually as parameters=<list of lists>
+            function: callable
+                Function to fit the linear model. Must have the arguments that correspond to the parameters.
+            x: 2d array
+                Array of dummy variables for epistasis model fitting (use `generate_dv_matrix` in regression_ext)
             parameters: dict
                 interaction keys with their values expressed as lists.
             phenotype_errors: array-like
@@ -296,14 +316,21 @@ class NonlinearEpistasisModel(BaseModel):
             raise Exception("""Need to specify the model's `order` argument or manually 
                                 list model parameters as `parameters` argument.""")
    
-        self.X = generate_dv_matrix(self.Binary.genotypes, self.Interactions.labels)
-        
+        self.X = x
         self.function = function
     
     def fit(self):
         """ Fit the nonlinear function """
-        self.Interactions.values, cov = curve_fit(  self.function, 
-                                                    self.X.T, 
-                                                    self.Binary.phenotypes, 
-                                                    p0=np.zeros(len(self.Interactions.labels), dtype=float), 
-                                                    maxfev=50000)
+        values, cov = curve_fit(self.function, 
+                                self.X.T, 
+                                self.Binary.phenotypes, 
+                                p0=0.1*np.ones(len(self.Interactions.labels), dtype=float), 
+                                maxfev=1000000)
+        self.Interactions.values = values[:]
+        # Setting error if covariance was estimated, else pass.
+        try:
+            self.error = cov[:]
+        except:
+            pass
+                                                    
+            

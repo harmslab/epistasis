@@ -37,9 +37,9 @@ def epistasis_bar(epistasis_map, sigmas=0, title="Epistatic interactions", strin
     
     # vertically label each interaction by their index
     plt.xticks(range(len(y)), np.array(xtick), rotation="vertical", family='monospace',fontsize=7)
-    ax.set_ylabel("Interaction Value", fontsize=10) 
+    ax.set_ylabel("Interaction Value", fontsize=14) 
     try:
-        ax.set_xlabel(xlabel, fontsize=10)
+        ax.set_xlabel(xlabel, fontsize=14)
     except:
         pass
     ax.set_title(title, fontsize=12)
