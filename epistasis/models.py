@@ -272,8 +272,16 @@ class ProjectedEpistasisModel(BaseModel):
         self.Interactions.errors = errors[:len(self.Interactions.genotypes)]
         
       
-    def infer_phenotypes(self):
-        """ Infer the phenotypes from model."""
+    def predict(self):
+        """ Infer the phenotypes from model.
+            
+            Returns:
+            -------
+            genotypes: array
+                array of genotypes -- in same order as phenotypes
+            phenotypes: array
+                array of quantitative phenotypes.
+        """
         genotypes, binaries = enumerate_space(self.wildtype, self.mutant)
         X = generate_dv_matrix(binaries, self.Interactions.labels)
         phenotypes = self.regression_model.predict(X)
