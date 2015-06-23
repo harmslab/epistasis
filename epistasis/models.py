@@ -39,7 +39,7 @@ def cut_interaction_labels(labels, order):
 # ------------------------------------------------------------
 class BaseModel(EpistasisMap):
     
-    def __init__(self, wildtype, genotypes, phenotypes, phenotype_errors=None, log_phenotypes=False):
+    def __init__(self, wildtype, genotypes, phenotypes, errors=None, log_transform=False, mutant=None, ):
         """ Populate an Epistasis mapping object. 
         
             Args:
@@ -50,16 +50,16 @@ class BaseModel(EpistasisMap):
                 Genotypes in map. Can be binary strings, or not.
             phenotypes: array-like
                 Quantitative phenotype values
-            phenotype_errors: array-like
+            errors: array-like
                 List of phenotype errors.
-            log_phenotypes: bool
+            log_transform: bool
                 If True, log transform the phenotypes.
         """
         
         super(BaseModel, self).__init__()
         self.genotypes = genotypes
         self.wildtype = wildtype
-        self.log_transform = log_phenotypes
+        self.log_transform = log_transform
         self.phenotypes = phenotypes
         if phenotype_errors is not None:
             self.errors = phenotype_errors
@@ -101,7 +101,7 @@ class BaseModel(EpistasisMap):
 
 class LocalEpistasisModel(BaseModel):
         
-    def __init__(self, wildtype, genotypes, phenotypes, phenotype_errors=None, log_phenotypes=False):
+    def __init__(self, wildtype, genotypes, phenotypes, errors=None, log_transform=False):
         """ Create a map of the local epistatic effects using expanded mutant 
             cycle approach.
             
@@ -116,13 +116,13 @@ class LocalEpistasisModel(BaseModel):
                 Genotypes in map. Can be binary strings, or not.
             phenotypes: array-like
                 Quantitative phenotype values
-            phenotype_errors: array-like
+            errors: array-like
                 List of phenotype errors.
-            log_phenotypes: bool
+            log_transform: bool
                 If True, log transform the phenotypes.
         """
         # Populate Epistasis Map
-        super(LocalEpistasisModel, self).__init__(wildtype, genotypes, phenotypes, phenotype_errors=phenotype_errors, log_phenotypes=log_phenotypes)
+        super(LocalEpistasisModel, self).__init__(wildtype, genotypes, phenotypes, errors=phenotype_errors, log_transform=log_transform)
         self.order = self.length
         # Generate basis matrix for mutant cycle approach to epistasis.
         self.X = generate_dv_matrix(self.Binary.genotypes, self.Interactions.labels)
@@ -150,7 +150,7 @@ class LocalEpistasisModel(BaseModel):
     
 class GlobalEpistasisModel(BaseModel):
     
-    def __init__(self, wildtype, genotypes, phenotypes, phenotype_errors=None, log_phenotypes=False):
+    def __init__(self, wildtype, genotypes, phenotypes, errors=None, log_transform=False):
         """ Create a map of the global epistatic effects using Hadamard approach.
             This is the related to LocalEpistasisMap by the discrete Fourier 
             transform of mutant cycle approach. 
@@ -163,13 +163,13 @@ class GlobalEpistasisModel(BaseModel):
                 Genotypes in map. Can be binary strings, or not.
             phenotypes: array-like
                 Quantitative phenotype values
-            phenotype_errors: array-like
+            errors: array-like
                 List of phenotype errors.
-            log_phenotypes: bool
+            log_transform: bool
                 If True, log transform the phenotypes.
         """
         # Populate Epistasis Map
-        super(GlobalEpistasisModel, self).__init__(wildtype, genotypes, phenotypes, phenotype_errors, log_phenotypes)
+        super(GlobalEpistasisModel, self).__init__(wildtype, genotypes, phenotypes, errors, log_transform)
         self.order = self.length
         # Generate basis matrix for mutant cycle approach to epistasis.
         self.weight_vector = hadamard_weight_vector(self.Binary.genotypes)
@@ -198,7 +198,7 @@ class GlobalEpistasisModel(BaseModel):
     
 class ProjectedEpistasisModel(BaseModel):
     
-    def __init__(self, wildtype, genotypes, phenotypes, order=None, parameters=None, phenotype_errors=None, log_phenotypes=False):
+    def __init__(self, wildtype, genotypes, phenotypes, order=None, parameters=None, errors=None, log_transform=False):
         """ Create a map from local epistasis model projected into lower order
             order epistasis interactions. Requires regression to estimate values.
             
@@ -214,13 +214,13 @@ class ProjectedEpistasisModel(BaseModel):
                 Order of regression; if None, parameters must be passed in manually as parameters=<list of lists>
             parameters: dict
                 interaction keys with their values expressed as lists.
-            phenotype_errors: array-like
+            errors: array-like
                 List of phenotype errors.
-            log_phenotypes: bool
+            log_transform: bool
                 If True, log transform the phenotypes.
         """
         # Populate Epistasis Map
-        super(ProjectedEpistasisModel, self).__init__(wildtype, genotypes, phenotypes, phenotype_errors, log_phenotypes)
+        super(ProjectedEpistasisModel, self).__init__(wildtype, genotypes, phenotypes, errors, log_transform)
         
         # Generate basis matrix for mutant cycle approach to epistasis.
         if order is not None:
@@ -290,7 +290,7 @@ class ProjectedEpistasisModel(BaseModel):
         
 class NonlinearEpistasisModel(BaseModel):
         
-    def __init__(self, wildtype, genotypes, phenotypes, function, x, parameters, phenotype_errors=None, log_phenotypes=False):
+    def __init__(self, wildtype, genotypes, phenotypes, function, x, parameters, errors=None, log_transform=False):
         """ Fit a nonlinear epistasis model to a genotype-phenotype map. The function and parameters must
             specified prior. 
         
@@ -308,13 +308,13 @@ class NonlinearEpistasisModel(BaseModel):
                 Array of dummy variables for epistasis model fitting (use `generate_dv_matrix` in regression_ext)
             parameters: dict
                 interaction keys with their values expressed as lists.
-            phenotype_errors: array-like
+            errors: array-like
                 List of phenotype errors.
-            log_phenotypes: bool
+            log_transform: bool
                 If True, log transform the phenotypes.
         """
         # Populate Epistasis Map
-        super(NonlinearEpistasisModel, self).__init__(wildtype, genotypes, phenotypes, phenotype_errors, log_phenotypes)
+        super(NonlinearEpistasisModel, self).__init__(wildtype, genotypes, phenotypes, errors, log_transform)
         
         # Generate basis matrix for mutant cycle approach to epistasis.
         if parameters is not None:
