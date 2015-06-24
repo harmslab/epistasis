@@ -47,6 +47,12 @@ class ArtificialMap(EpistasisMap):
         self.phenotypes = phenotypes
         self.Interactions.values = self.Interactions.values
         
+    def random_knockout(self, n_knockouts):
+        """ Set parameters"""
+        indices = np.random.randint(len(self.Interaction.labels), size=n_knockouts):
+        for i in indices:
+            self.Interactions._values[i] = 0.0
+            
     def add_noise(self, percent):
         """ Add noise to the phenotypes. """
         noise = np.empty(self.n, dtype=float)
