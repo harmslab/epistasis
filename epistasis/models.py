@@ -122,7 +122,7 @@ class LocalEpistasisModel(BaseModel):
                 If True, log transform the phenotypes.
         """
         # Populate Epistasis Map
-        super(LocalEpistasisModel, self).__init__(wildtype, genotypes, phenotypes, errors=phenotype_errors, log_transform=log_transform)
+        super(LocalEpistasisModel, self).__init__(wildtype, genotypes, phenotypes, errors=errors, log_transform=log_transform)
         self.order = self.length
         # Generate basis matrix for mutant cycle approach to epistasis.
         self.X = generate_dv_matrix(self.Binary.genotypes, self.Interactions.labels)
