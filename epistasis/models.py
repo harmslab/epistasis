@@ -61,8 +61,8 @@ class BaseModel(EpistasisMap):
         self.wildtype = wildtype
         self.log_transform = log_transform
         self.phenotypes = phenotypes
-        if phenotype_errors is not None:
-            self.errors = phenotype_errors
+        if errors is not None:
+            self.errors = errors
             
     def get_order(self, order, errors=False, label="genotype"):
         """ Return a dict of interactions to values of a given order. """
