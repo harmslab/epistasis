@@ -49,7 +49,7 @@ class ArtificialMap(EpistasisMap):
         
     def random_knockout(self, n_knockouts):
         """ Set parameters"""
-        indices = np.random.randint(len(self.Interaction.labels), size=n_knockouts):
+        indices = np.random.randint(len(self.Interactions.labels), size=n_knockouts)
         for i in indices:
             self.Interactions._values[i] = 0.0
             
