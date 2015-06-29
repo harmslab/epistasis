@@ -177,7 +177,7 @@ class EpistasisMap(BaseMap):
             self._phenotypes = self._if_dict(phenotypes)#/phenotypes[self.wildtype]
         else:
             if len(phenotypes) != len(self._genotypes):
-                raise("Number of phenotypes does not equal number of genotypes.")
+                raise ValueError("Number of phenotypes does not equal number of genotypes.")
             else:
                 #wildtype_index = self.geno2index[self.wildtype]
                 self._phenotypes = phenotypes#/phenotypes[wildtype_index] 
