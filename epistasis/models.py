@@ -294,6 +294,8 @@ class NonlinearEpistasisModel(BaseModel):
         """ Fit a nonlinear epistasis model to a genotype-phenotype map. The function and parameters must
             specified prior. 
         
+            Uses Scipy's curve_fit function.
+            
             Args:
             ----
             wildtype: str
@@ -334,6 +336,7 @@ class NonlinearEpistasisModel(BaseModel):
                                 self.Binary.phenotypes, 
                                 p0=0.1*np.ones(len(self.Interactions.labels), dtype=float), 
                                 maxfev=1000000)
+                                
         self.Interactions.values = values[:]
         # Setting error if covariance was estimated, else pass.
         try:

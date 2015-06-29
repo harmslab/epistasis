@@ -16,9 +16,9 @@ class BaseArtificialMap(EpistasisMap):
     
     def __init__(self, length, order, log_transform=False):
         """ Generate a binary genotype-phenotype mape with the given length from epistatic interactions. """
-        super(ArtificialMap, self).__init__()
-        wildtype = 'A'*length
-        mutant = 'T'*length
+        super(BaseArtificialMap, self).__init__()
+        wildtype = '0'*length
+        mutant = '1'*length
         self.genotypes, binaries = enumerate_space(wildtype, mutant)
         self.wildtype = wildtype
         self.order = order
@@ -110,13 +110,13 @@ class RandomEpistasisMap(BaseArtificialMap):
                 return the log_transformed phenotypes.
         
         """
-        super(RandomEpistasisMap,self).__init__(self, length, order, log_transform):
+        super(RandomEpistasisMap,self).__init__(length, order, log_transform)
         self.random_epistasis(magnitude)
         self.phenotypes = self.build_phenotypes()
 
 class ThresholdEpistasisMap(BaseArtificialMap):
     
-    def __init__(self, length, order, threshold, sharpness, log_transform=False):
+    def __init__(self, length, order, threshold, sharpness, magnitude):
         """ Build an epistatic genotype phenotype map with thresholding behavior. Built from
             the function:
             
@@ -135,14 +135,20 @@ class ThresholdEpistasisMap(BaseArtificialMap):
             log_transform: bool
                 return the log_transformed phenotypes.
         """
-        super(ThresholdEpistasisMap,self).__init__(self, length, order, log_transform):
-        self.random_epistasis(thresold)
-        self.raw_phenotypes = self.build_phenotypes()
-        self.phenotypes = self.threshold_func(self.raw_phenotypes)
+        super(ThresholdEpistasisMap,self).__init__(length, order, log_transform=False)
+        if magnitude > threshold:
+            raise Warning(""" Magnitude of epistasis could be greater than thesholding value. """)
+        self.random_epistasis(threshold)
+        self.raw_phenotypes = 10**self.build_phenotypes()
+        self.norm_raw = self.raw_phenotypes/self.raw_phenotypes[0]
+        self.phenotypes = self.threshold_func(self.raw_phenotypes, threshold, sharpness)
         
-        
-    def threshold_func(self, x, threshold, sharpness):
+    def threshold_func(self, raw_phenotypes, threshold, sharpness):
         """ Apply the thresholding effect. """
-        return threshold - np.exp(-sharpness*x)
+        phenotypes = np.empty(self.n, dtype=float)
+        for i in range(self.n):
+            p = self.genotypes[i].count("1") + 1
+            phenotypes[i] = threshold * (1 - np.exp(-sharpness*raw_phenotypes[i]/p))
+        return phenotypes 
         
         
