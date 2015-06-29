@@ -21,7 +21,7 @@ from epistasis.utils import epistatic_order_indices, list_binary, enumerate_spac
 # ------------------------------------------------------------   
 
 def hadamard_weight_vector(genotypes):
-    """ Build the hadamard weigth vector"""
+    """ Build the hadamard weigth vector. """
     l = len(genotypes)
     n = len(genotypes[0])
     weights = np.zeros((l, l), dtype=float)

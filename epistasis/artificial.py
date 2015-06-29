@@ -12,7 +12,7 @@ from epistasis.mapping.epistasis import EpistasisMap
 # space for testing the EpistasisModels
 # ------------------------------------------------------------
 
-class ArtificialMap(EpistasisMap):
+class BaseArtificialMap(EpistasisMap):
     
     def __init__(self, length, order, log_transform=False):
         """ Generate a binary genotype-phenotype mape with the given length from epistatic interactions. """
@@ -23,15 +23,8 @@ class ArtificialMap(EpistasisMap):
         self.wildtype = wildtype
         self.order = order
         self.log_transform = log_transform
-        self._random_epistasis()
-        self._build_phenotypes()
-
-    def _random_epistasis(self):
-        """Assign random values to epistatic terms. """ 
-        vals = (-1)**(np.random.randint(1,10, size=len(self.Interactions.labels))) * np.random.rand(len(self.Interactions.labels))
-        self.Interactions.values = vals
         
-    def _build_phenotypes(self):
+    def build_phenotypes(self):
         """ Build the phenotype map from epistatic interactions. """
         # Allocate phenotype numpy array
         phenotypes = np.zeros(self.n, dtype=float)
@@ -44,8 +37,13 @@ class ArtificialMap(EpistasisMap):
         # Reorder phenotypes to map back to genotypes
         for i in range(len(self.Binary.indices)):
             phenotypes[self.Binary.indices[i]] = bit_phenotypes[i]
-        self.phenotypes = phenotypes
-        self.Interactions.values = self.Interactions.values
+            
+        return phenotypes
+        
+    def random_epistasis(self, magnitude):
+        """Assign random values to epistatic terms. """ 
+        vals = (-1)**(np.random.randint(1,10, size=len(self.Interactions.labels))) * np.random.rand(len(self.Interactions.labels))*magnitude
+        self.Interactions.values = vals
         
     def random_knockout(self, n_knockouts):
         """ Set parameters"""
@@ -93,3 +91,58 @@ class ArtificialMap(EpistasisMap):
                 Order of epistasis in epistasis map.
         """
         return self.wildtype, self.genotypes, self.phenotypes, self.order
+        
+        
+class RandomEpistasisMap(BaseArtificialMap):
+    
+    def __init__(self, length, order, magnitude, log_transform=False):
+        """ Choose random values for epistatic terms below and construct a genotype-phenotype map. 
+        
+            Args:
+            ----
+            length: int
+                length of strings
+            order: int
+                order of epistasis in space
+            magnitude: float
+                maximum value of abs(epistatic) term. 
+            log_transform: bool
+                return the log_transformed phenotypes.
+        
+        """
+        super(RandomEpistasisMap,self).__init__(self, length, order, log_transform):
+        self.random_epistasis(magnitude)
+        self.phenotypes = self.build_phenotypes()
+
+class ThresholdEpistasisMap(BaseArtificialMap):
+    
+    def __init__(self, length, order, threshold, sharpness, log_transform=False):
+        """ Build an epistatic genotype phenotype map with thresholding behavior. Built from
+            the function:
+            
+                 f(epistasis_model) = \theta - exp(-\nu * epistasis_model)
+        
+            Args:
+            ----
+            length: int
+                length of strings
+            order: int
+                order of epistasis in space
+            threshold: float
+                fitness/phenotype thresholding value.
+            sharpness: float
+                rate of exponential growth towards thresholding value.
+            log_transform: bool
+                return the log_transformed phenotypes.
+        """
+        super(ThresholdEpistasisMap,self).__init__(self, length, order, log_transform):
+        self.random_epistasis(thresold)
+        self.raw_phenotypes = self.build_phenotypes()
+        self.phenotypes = self.threshold_func(self.raw_phenotypes)
+        
+        
+    def threshold_func(self, x, threshold, sharpness):
+        """ Apply the thresholding effect. """
+        return threshold - np.exp(-sharpness*x)
+        
+        

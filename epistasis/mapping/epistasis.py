@@ -184,6 +184,7 @@ class EpistasisMap(BaseMap):
 
         # log transform if log_transform = True
         if self.log_transform is True:
+            self._untransformed_phenotypes = self._phenotypes
             self._phenotypes = np.log10(self._phenotypes)
             
         self.Binary._phenotypes = np.array([self.phenotypes[i] for i in self.Binary.indices])
@@ -207,7 +208,12 @@ class EpistasisMap(BaseMap):
         # For log-transformations of error, need to translate errors to center around 1,
         # then take the log.
         if self.log_transform is True:
-            self._errors = np.array((np.log10(1-errors), np.log10(1 + errors)))
+            # Reference = http://onlinelibrary.wiley.com/doi/10.1002/sim.1525/epdf
+            # \sigma_{log(f)}^{2} = log(1 + \sigma_{f}6{2}/mean(f)^{2}) 
+            
+            self._errors = np.array((   -np.sqrt(np.log10(1 + (errors**2)/self._untransformed_phenotypes**2)), 
+                                        np.sqrt(np.log10(1 + (errors**2)/self._untransformed_phenotypes**2))))
+                                                
             self.Binary._errors = np.array([self._errors[:,i] for i in self.Binary.indices]).T
         else:
             self._errors = errors
