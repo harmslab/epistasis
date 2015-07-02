@@ -147,13 +147,13 @@ class EpistasisMap(BaseMap):
     def wildtype(self, wildtype):
         """ Set the reference genotype among the mutants in the system. """
         self._wildtype = wildtype
-        self._mutant = self._farthest_genotype(wildtype)
-        self.Mutations._indices = np.array(find_differences(self.wildtype, self.mutant))
-        self.Mutations._wildtype = np.array([self.wildtype[i] for i in self.Mutations.indices])
-        self.Mutations._mutations = np.array([self.mutant[i] for i in self.Mutations.indices])
-        self.Mutations._n = len(self.Mutations.mutations)
-        self.Mutations._length = self.length
-        self._to_bits()
+        #self._mutant = self._farthest_genotype(wildtype)
+        #self.Mutations._indices = np.array(find_differences(self.wildtype, self.mutant))
+        #self.Mutations._wildtype = np.array([self.wildtype[i] for i in self.Mutations.indices])
+        #self.Mutations._mutations = np.array([self.mutant[i] for i in self.Mutations.indices])
+        #self.Mutations._n = len(self.Mutations.mutations)
+        #self.Mutations._length = self.length
+        #self._to_bits()
     
     @order.setter
     def order(self, order):
@@ -164,7 +164,7 @@ class EpistasisMap(BaseMap):
         
     @phenotypes.setter
     def phenotypes(self, phenotypes):
-        """ NORMALIZE and set phenotypes from ordered list of phenotypes 
+        """ Set phenotypes from ordered list of phenotypes 
             
             Args:
             -----
@@ -174,13 +174,12 @@ class EpistasisMap(BaseMap):
                 array.
         """
         if type(phenotypes) is dict:
-            self._phenotypes = self._if_dict(phenotypes)#/phenotypes[self.wildtype]
+            self._phenotypes = self._if_dict(phenotypes)
         else:
             if len(phenotypes) != len(self._genotypes):
                 raise ValueError("Number of phenotypes does not equal number of genotypes.")
             else:
-                #wildtype_index = self.geno2index[self.wildtype]
-                self._phenotypes = phenotypes#/phenotypes[wildtype_index] 
+                self._phenotypes = phenotypes
 
         # log transform if log_transform = True
         if self.log_transform is True:

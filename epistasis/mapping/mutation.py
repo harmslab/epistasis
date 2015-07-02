@@ -47,12 +47,42 @@ class MutationMap(BaseMap):
         
     @mutations.setter
     def mutations(self, mutations):
-        """ Set the mutations from the genotypes. """
+        """ Set the mutation alphabet for all sites in wildtype genotype. 
+         
+            `mutations = { site_number : alphabet }`. If the site 
+            alphabet is note included, the model will assume binary 
+            between wildtype and derived.
+
+            ``` 
+            mutations = {
+                0: [alphabet],
+                1: [alphabet],
+
+            }
+            ```
+        
+        """
+        if type(mutations) != dict:
+            raise TypeError("mutations must be a dict")
         self._mutations = mutations
         
     @indices.setter
     def indices(self, indices):
-        """ Set the indices of where mutations occur in the wildtype genotype."""
+        """ Set the indices of where mutations occur in the wildtype genotype.
+                 
+            `indices = { site_number : indices }`. If the site 
+            alphabet is note included, the model will assume binary 
+            between wildtype and derived.
+
+            ``` 
+            indice = {
+                0: [indices],
+                1: [indices],
+
+            }
+            ```
+        
+        """
         self._indices = indices
         
     @n.setter
