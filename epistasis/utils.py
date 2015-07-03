@@ -1,15 +1,19 @@
 # -------------------------------------------------------
-# Miscellaneous Python functions (hacks) for random task
+# Miscellaneous Python functions for random task
 # -------------------------------------------------------
+
 import itertools as it
 import numpy as np
 from scipy.misc import comb
 from sklearn.metrics import mean_squared_error
 
+# -------------------------------------------------------
+# Useful metrics for genotype-phenotype spaces
+# -------------------------------------------------------
+
 def hamming_distance(s1, s2):
     """ Return the Hamming distance between equal-length sequences """
     return sum(ch1 != ch2 for ch1, ch2 in zip(s1, s2))
-
 
 def find_differences(s1, s2):
     """ Return the index of differences between two sequences."""
@@ -19,10 +23,9 @@ def find_differences(s1, s2):
             indices.append(i)
     return indices
 
-def list_binary(length):
-    """ List all binary strings with given length. """
-    return np.array(sort(["".join(seq) for seq in it.product("01", repeat=length)]))
-    
+# -------------------------------------------------------
+# Model Parameter methods
+# -------------------------------------------------------
 
 def label_to_key(label, state=""):
     """ Convert interaction label to key. `state` is added to end of key."""
@@ -47,6 +50,58 @@ def epistatic_order_indices(length, order):
     start = int(sum([comb(length, i) for i in range(order)]))
     stop = int(start + comb(length, order))
     return start, stop
+
+
+def build_interaction_labels(length, order):
+    """ Return interactions labels for building X matrix. """
+    labels = [[0]]
+    for o in range(1,order+1):
+        for label in it.combinations(range(1,length+1), o):
+            labels.append(list(label))
+    return labels
+    
+def build_model_params(length, order, mutations):
+    """ Build interaction labels up to nth order given a mutation alphabet. 
+    
+        Args:
+        ----
+        n: int
+            order of interactions
+        mutations: dict
+                             
+            `mutations = { site_number : indices }`. If the site 
+            alphabet is note included, the model will assume binary 
+            between wildtype and derived.
+
+            ``` 
+            mutations = {
+                0: [indices],
+                1: [indices],
+
+            }
+            ```
+        Returns        
+    """
+    
+    # Recursive algorithm that's difficult to follow.
+    interactions = list()
+    orders = range(1,order+1)
+    for o in orders:
+        for term in it.combinations(range(1,length), o):
+            lists = [mutations[term[i]] for i in range(len(term))]        
+            for r in it.product(*lists):
+                interactions.append(list(r))
+    interactions = [[0]] + interactions
+    
+    return interactions
+
+# -------------------------------------------------------
+# Space enumerations
+# -------------------------------------------------------
+
+def list_binary(length):
+    """ List all binary strings with given length. """
+    return np.array(sort(["".join(seq) for seq in it.product("01", repeat=length)]))
 
 
 def enumerate_space(wildtype, mutant, binary=True):
@@ -108,11 +163,62 @@ def enumerate_space(wildtype, mutant, binary=True):
         return sequence_space, binaries
     else:
         return sequence_spaces
+    
+    
+def encode_genotypes(wildtype, site_alphabet):
+    """ Constructs binary representation of genotype map given a specific alphabet
+        for each site.
+    """
+    # ------------------------------------------------------
+    # Encoding map for genotype-to-binary
+    # ------------------------------------------------------
+    encoding = OrderedDict()
 
-def build_interaction_labels(length, order):
-    """ Return interactions labels for building X matrix. """
-    labels = [[0]]
-    for o in range(1,order+1):
-        for label in it.combinations(range(1,length+1), o):
-            labels.append(list(label))
-    return labels
+    for site_number, alphabet in site_alphabet.items():
+        n = len(alphabet)-1 # number of mutation neighbors
+        wt_site = wildtype[site_number] # wildtype letter
+
+        # Build a binary representation of mutation alphabet
+        indiv_encode = OrderedDict({wt_site: "0"*n})
+        alphabet_ = list(alphabet)
+        alphabet_.remove(wt_site)
+
+        for i in range(n):
+            binary = list("0"*n)
+            binary[i] = "1"
+            indiv_encode[alphabet_[i]] = "".join(binary)
+        encoding[site_number] = indiv_encode
+    
+    print(encoding)
+    # ------------------------------------------------------
+    # Construct list of genotypes and binary representations
+    # ------------------------------------------------------
+    binary = [""]
+    genotypes = [""]
+    for site in encoding:
+
+        # Parameters that are needed for looping
+        n_genotypes = len(genotypes)
+        n_copies = len(encoding[site])
+        copy_genotypes = list(genotypes)
+        copy_binary = list(binary)
+
+        # Make copies of previous sites' genotypes
+        # for appending next sites binary combinations
+        for i in range(n_copies-1):
+            genotypes += copy_genotypes
+            binary += copy_binary
+
+        # Enumerate all possible configurations to append
+        # next sites binary combinations to old
+        skips = 0
+        for key, val in encoding[site].items():
+            for i in range(n_genotypes):
+                genotypes[skips*n_genotypes + i] += key            
+                binary[skips*n_genotypes + i] += val
+            skips += 1
+
+    genotypes = np.array(genotypes)
+    binary = np.array(binary)
+    
+    return genotypes, binary
