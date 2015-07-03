@@ -16,7 +16,7 @@ from epistasis.mapping.base import BaseMap
 from epistasis.mapping.binary import BinaryMap
 from epistasis.mapping.mutation import MutationMap
 from epistasis.mapping.interaction import InteractionMap
-from epistasis.utils import hamming_distance, find_differences, enumerate_space
+from epistasis.utils import hamming_distance, find_differences, enumerate_space,
 
 class EpistasisMap(BaseMap):
     
@@ -149,7 +149,7 @@ class EpistasisMap(BaseMap):
         self._wildtype = wildtype
         #self._mutant = self._farthest_genotype(wildtype)
         #self.Mutations._indices = np.array(find_differences(self.wildtype, self.mutant))
-        #self.Mutations._wildtype = np.array([self.wildtype[i] for i in self.Mutations.indices])
+        self.Mutations._wildtype = np.array([self.wildtype[i] for i in self.Mutations.indices])
         #self.Mutations._mutations = np.array([self.mutant[i] for i in self.Mutations.indices])
         #self.Mutations._n = len(self.Mutations.mutations)
         #self.Mutations._length = self.length
@@ -232,6 +232,7 @@ class EpistasisMap(BaseMap):
                 mutations = int(differs)
                 mutant = str(genotype)
         return mutant
+
 
     def _to_bits(self):
         """ Encode the genotypes an ordered binary set of genotypes with 

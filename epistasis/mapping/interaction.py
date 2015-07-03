@@ -149,6 +149,19 @@ class InteractionMap(BaseMap):
     # Methods
     # ----------------------------------------------    
 
+    def nth_order_interactions(n, mutations):
+        """ Build interaction labels up to nth order given a mutation alphabet. """
+        interactions = list()
+        order = range(1,n+1)
+        for o in order:
+            for term in it.combinations(range(1,6), o):
+                lists = [mutations[term[i]] for i in range(len(term))]        
+                for r in it.product(*lists):
+                    interactions.append(list(r))
+        interactions = [[0]] + interactions
+        return interactions
+        
+
     def _build_interaction_map(self):
         """ Returns a label and key for every epistatic interaction. 
             

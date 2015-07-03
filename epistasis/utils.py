@@ -6,6 +6,7 @@ import itertools as it
 import numpy as np
 from scipy.misc import comb
 from sklearn.metrics import mean_squared_error
+from collections import OrderedDict
 
 # -------------------------------------------------------
 # Useful metrics for genotype-phenotype spaces
@@ -164,14 +165,31 @@ def enumerate_space(wildtype, mutant, binary=True):
     else:
         return sequence_spaces
     
+def encode_mutations(wildtype, site_alphabet):
+    """ Encoding map for genotype-to-binary
     
-def encode_genotypes(wildtype, site_alphabet):
-    """ Constructs binary representation of genotype map given a specific alphabet
-        for each site.
+        Args:
+        ----
+        wildtype: str
+            Wildtype sequence.
+        site_alphabet: dict
+            Mapping of each site's mutation alphabet.
+            {site-number: [alphabet]}
+        
+        Returns:
+        -------
+        encode: OrderedDict of OrderDicts
+            Encoding dictionary that maps site number to mutation-binary map
+            
+            Ex:
+            {
+                site-number: {"utation": "binary"},
+                .
+                .
+                .
+            }
+    
     """
-    # ------------------------------------------------------
-    # Encoding map for genotype-to-binary
-    # ------------------------------------------------------
     encoding = OrderedDict()
 
     for site_number, alphabet in site_alphabet.items():
@@ -188,11 +206,34 @@ def encode_genotypes(wildtype, site_alphabet):
             binary[i] = "1"
             indiv_encode[alphabet_[i]] = "".join(binary)
         encoding[site_number] = indiv_encode
+        
+    return encoding
     
-    print(encoding)
-    # ------------------------------------------------------
-    # Construct list of genotypes and binary representations
-    # ------------------------------------------------------
+def construct_genotypes(mutation_encoding):
+    """ Constructs binary representation of genotype map given a specific alphabet
+        for each site.
+        
+        Args:
+        ----
+        encode: OrderedDict of OrderDicts
+            Encoding dictionary that maps site number to mutation-binary map
+            
+            Ex:
+            {
+                site-number: {"mutation": "binary"},
+                .
+                .
+                .
+            }
+            
+        Returns:
+        -------
+        genotypes: array
+            Array of genotypes
+        binary: array
+            Array of binary represention of genotypes
+    """
+    
     binary = [""]
     genotypes = [""]
     for site in encoding:

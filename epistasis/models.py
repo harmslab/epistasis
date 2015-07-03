@@ -14,7 +14,8 @@ from collections import OrderedDict
 # ------------------------------------------------------------
 from epistasis.mapping.epistasis import EpistasisMap
 from epistasis.regression_ext import generate_dv_matrix
-from epistasis.utils import epistatic_order_indices, list_binary, enumerate_space, build_interaction_labels
+from epistasis.utils import epistatic_order_indices, list_binary, enumerate_space, build_interaction_labels,
+                            encode_mutations, construct_genotypes
 
 # ------------------------------------------------------------
 # Unique Epistasis Functions
@@ -39,7 +40,7 @@ def cut_interaction_labels(labels, order):
 # ------------------------------------------------------------
 class BaseModel(EpistasisMap):
     
-    def __init__(self, wildtype, genotypes, phenotypes, errors=None, log_transform=False, mutant=None, ):
+    def __init__(self, wildtype, genotypes, phenotypes, errors=None, log_transform=False, mutant=None, site_alphabet=None):
         """ Populate an Epistasis mapping object. 
         
             Args:
@@ -55,14 +56,20 @@ class BaseModel(EpistasisMap):
             log_transform: bool
                 If True, log transform the phenotypes.
         """
-        
         super(BaseModel, self).__init__()
+
         self.genotypes = genotypes
         self.wildtype = wildtype
         self.log_transform = log_transform
         self.phenotypes = phenotypes
         if errors is not None:
             self.errors = errors
+            
+        self.Mutations.mutations = encode_mutations(wildtype, site_alphabet)
+        genotypes, binary = construct_genotypes(mutations)
+        self.Binary.genotypes = binary
+        self.Binary.phenotype = np.array([self.geno2pheno[g] for g in genotypes])
+        
             
     def get_order(self, order, errors=False, label="genotype"):
         """ Return a dict of interactions to values of a given order. """
@@ -101,7 +108,7 @@ class BaseModel(EpistasisMap):
 
 class LocalEpistasisModel(BaseModel):
         
-    def __init__(self, wildtype, genotypes, phenotypes, errors=None, log_transform=False):
+    def __init__(self, wildtype, genotypes, phenotypes, errors=None, log_transform=False, site_alphabet=None):
         """ Create a map of the local epistatic effects using expanded mutant 
             cycle approach.
             
@@ -122,7 +129,7 @@ class LocalEpistasisModel(BaseModel):
                 If True, log transform the phenotypes.
         """
         # Populate Epistasis Map
-        super(LocalEpistasisModel, self).__init__(wildtype, genotypes, phenotypes, errors=errors, log_transform=log_transform)
+        super(LocalEpistasisModel, self).__init__(wildtype, genotypes, phenotypes, errors=errors, log_transform=log_transform, site_alphabet=None)
         self.order = self.length
         # Generate basis matrix for mutant cycle approach to epistasis.
         self.X = generate_dv_matrix(self.Binary.genotypes, self.Interactions.labels)
