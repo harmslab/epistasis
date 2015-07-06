@@ -29,7 +29,6 @@ class InteractionMap(BaseMap):
                 An already populated MutationMap instance.
         """
         self.Mutations = mutation_map
-        self.
     
     @property
     def log_transform(self):
@@ -81,7 +80,7 @@ class InteractionMap(BaseMap):
     @property
     def keys(self):
         """ Get interactions as string-keys. """
-        return np.array([label_to_keys(lab) for lab in self.labels])
+        return np.array([label_to_key(lab) for lab in self.labels])
         
     @property
     def genotypes(self):

@@ -16,8 +16,7 @@ from epistasis.mapping.base import BaseMap
 from epistasis.mapping.binary import BinaryMap
 from epistasis.mapping.mutation import MutationMap
 from epistasis.mapping.interaction import InteractionMap
-from epistasis.utils import hamming_distance, find_differences, enumerate_space, 
-                            encode_mutations, construct_genotypes, build_model_params
+from epistasis.utils import hamming_distance, encode_mutations, construct_genotypes, params_index_map, build_model_params
 
 class EpistasisMap(BaseMap):
     
@@ -132,7 +131,6 @@ class EpistasisMap(BaseMap):
     def log_transform(self, boolean):
         """ True/False to log transform the space. """
         self._log_transform = boolean
-        self.Interactions.log_transform = boolean
     
     @genotypes.setter
     def genotypes(self, genotypes):
@@ -146,7 +144,7 @@ class EpistasisMap(BaseMap):
     def wildtype(self, wildtype):
         """ Set the reference genotype among the mutants in the system. """
         self._wildtype = wildtype
-        self.Mutations.wildtype = np.array([self.wildtype[i] for i in self.Mutations.indices])
+        self.Mutations.wildtype = wildtype
     
     @mutations.setter
     def mutations(self, mutations):
@@ -165,17 +163,18 @@ class EpistasisMap(BaseMap):
             ```
         
         """
+        print(type(mutations))
         if type(mutations) != dict:
             raise TypeError("mutations must be a dict")
         self._mutations = mutations
         self.Mutations.mutations = mutations
+        self.Mutations.n = len(mutations)
     
     @order.setter
     def order(self, order):
         """ Set the order of epistasis in the system. As a consequence, 
             this mapping object creates the """
         self._order = order
-        self.Interactions.order = order
         
     @phenotypes.setter
     def phenotypes(self, phenotypes):
@@ -200,8 +199,6 @@ class EpistasisMap(BaseMap):
         if self.log_transform is True:
             self._untransformed_phenotypes = self._phenotypes
             self._phenotypes = np.log10(self._phenotypes)
-            
-        self.Binary._phenotypes = np.array([self.phenotypes[i] for i in self.Binary.indices])
 
         
     @errors.setter
@@ -247,8 +244,9 @@ class EpistasisMap(BaseMap):
         """
         self.Binary = BinaryMap()
         self.Binary.mutations = encode_mutations(self.wildtype, self.mutations)
-        self.Binary.genotypes, binary = construct_genotypes(self.Binary.mutations)
-        self.Binary.phenotype = np.array([self.geno2pheno[g] for g in self.Binary.genotypes])
+        genotypes, self.Binary.genotypes = construct_genotypes(self.Binary.mutations)
+        self.Binary.phenotypes = np.array([self.geno2pheno[genotypes[i]] for i in range(len(self.Binary.genotypes))])
+        self.Binary.indices = np.array([self.geno2index[genotypes[i]] for i in range(len(self.Binary.genotypes))])
         
     def _construct_interactions(self):
         """ Construct the interactions mapping for an epistasis model. 
@@ -258,6 +256,7 @@ class EpistasisMap(BaseMap):
         self.Interactions = InteractionMap(self.Mutations)
         self.Interactions._length = self.length
         self.Interactions.order = self.order
+        self.Interactions.log_transform = self.log_transform
         self.Interactions.mutations = params_index_map(self.mutations) # construct the mutations mapping
         self.Interactions.labels = build_model_params(self.Interactions.length, 
                                                       self.Interactions.order, 

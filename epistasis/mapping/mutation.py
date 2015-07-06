@@ -27,11 +27,6 @@ class MutationMap(BaseMap):
         return self._mutations
         
     @property
-    def indices(self):
-        """ Get the indices of mutations in the sequence. """
-        return self._indices
-        
-    @property
     def n(self):
         """ Get the number of mutations in the space. """
         return self._n

@@ -14,8 +14,7 @@ from collections import OrderedDict
 # ------------------------------------------------------------
 from epistasis.mapping.epistasis import EpistasisMap
 from epistasis.regression_ext import generate_dv_matrix
-from epistasis.utils import epistatic_order_indices, list_binary, enumerate_space, build_interaction_labels,
-                            encode_mutations, construct_genotypes
+from epistasis.utils import epistatic_order_indices, list_binary, enumerate_space, build_interaction_labels, encode_mutations, construct_genotypes
 
 # ------------------------------------------------------------
 # Unique Epistasis Functions
@@ -40,7 +39,7 @@ def cut_interaction_labels(labels, order):
 # ------------------------------------------------------------
 class BaseModel(EpistasisMap):
     
-    def __init__(self, wildtype, genotypes, phenotypes, errors=None, log_transform=False, mutant=None, site_alphabet=None):
+    def __init__(self, wildtype, genotypes, phenotypes, errors=None, log_transform=False, mutations=None):
         """ Populate an Epistasis mapping object. 
         
             Args:
@@ -55,6 +54,8 @@ class BaseModel(EpistasisMap):
                 List of phenotype errors.
             log_transform: bool
                 If True, log transform the phenotypes.
+            mutations:
+            
         """
         super(BaseModel, self).__init__()
 
@@ -62,9 +63,20 @@ class BaseModel(EpistasisMap):
         self.wildtype = wildtype
         self.log_transform = log_transform
         self.phenotypes = phenotypes
-        self.mutations = site_alphabet
+        self.mutations = mutations
+        
+        # Defaults to binary mapping if not specific mutations are named
+        if mutations is None:
+            mutant = farthest_genotype(self.wildtype, self.genotypes)
+            self.mutations = binary_mutations_map(self.wildtype, mutant)
+           
+        # Model error if given. 
         if errors is not None:
             self.errors = errors
+        
+        # Construct a binary representation of the map (method inherited from parent class)
+        self._construct_binary()
+        
         
             
     def get_order(self, order, errors=False, label="genotype"):
@@ -125,8 +137,9 @@ class LocalEpistasisModel(BaseModel):
                 If True, log transform the phenotypes.
         """
         # Populate Epistasis Map
-        super(LocalEpistasisModel, self).__init__(wildtype, genotypes, phenotypes, errors=errors, log_transform=log_transform, site_alphabet=None)
+        super(LocalEpistasisModel, self).__init__(wildtype, genotypes, phenotypes, errors=errors, log_transform=log_transform, site_alphabet=site_alphabet)
         self.order = self.length
+        self._construct_interactions()
         # Generate basis matrix for mutant cycle approach to epistasis.
         self.X = generate_dv_matrix(self.Binary.genotypes, self.Interactions.labels)
         self.X_inv = np.linalg.inv(self.X)

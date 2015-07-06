@@ -32,6 +32,42 @@ def find_differences(s1, s2):
         if s1[i] != s2[i]:
             indices.append(i)
     return indices
+    
+def farthest_genotype(reference, genotypes):
+    """ Find the genotype in the system that differs at the most sites. """ 
+    mutations = 0
+    for genotype in genotypes:
+        differs = hamming_distance(genotype, reference)
+        if differs > mutations:
+            mutations = int(differs)
+            mutant = str(genotype)
+    return mutant
+    
+def binary_mutations_map(wildtype, mutant):
+    """ Construct a site-to-binary-mutations dict between two sequences. 
+    
+        Args:
+        ----
+        wildtype: str
+            wildtype sequence
+        mutant: str
+            mutant sequence
+            
+        Returns:
+        -------
+        mutations: dict
+        
+        ex.
+             mutations = {
+                 1: [wildtype[0], mutant[0],
+                 2: [wildtype[1], mutant[1]
+                 ...
+             }
+    """
+    mutations = dict()
+    for i in range(len(wildtype)):
+        mutations[i] = [wildtype[i], mutant[i]]
+    return mutations
 
 # -------------------------------------------------------
 # Model Parameter methods
@@ -130,7 +166,7 @@ def build_model_params(length, order, mutations):
     interactions = list()
     orders = range(1,order+1)
     for o in orders:
-        for term in it.combinations(range(1,length), o):
+        for term in it.combinations(range(1,length+1), o):
             lists = [mutations[term[i]] for i in range(len(term))]        
             for r in it.product(*lists):
                 interactions.append(list(r))
@@ -241,7 +277,7 @@ def encode_mutations(wildtype, site_alphabet):
 
     for site_number, alphabet in site_alphabet.items():
         n = len(alphabet)-1 # number of mutation neighbors
-        wt_site = wildtype[site_number] # wildtype letter
+        wt_site = wildtype[site_number-1] # wildtype letter
 
         # Build a binary representation of mutation alphabet
         indiv_encode = OrderedDict({wt_site: "0"*n})
@@ -284,11 +320,11 @@ def construct_genotypes(mutation_encoding):
     
     binary = [""]
     genotypes = [""]
-    for site in encoding:
+    for site in mutation_encoding:
 
         # Parameters that are needed for looping
         n_genotypes = len(genotypes)
-        n_copies = len(encoding[site])
+        n_copies = len(mutation_encoding[site])
         copy_genotypes = list(genotypes)
         copy_binary = list(binary)
 
@@ -301,7 +337,7 @@ def construct_genotypes(mutation_encoding):
         # Enumerate all possible configurations to append
         # next sites binary combinations to old
         skips = 0
-        for key, val in encoding[site].items():
+        for key, val in mutation_encoding[site].items():
             for i in range(n_genotypes):
                 genotypes[skips*n_genotypes + i] += key            
                 binary[skips*n_genotypes + i] += val
