@@ -14,7 +14,7 @@ from collections import OrderedDict
 # ------------------------------------------------------------
 from epistasis.mapping.epistasis import EpistasisMap
 from epistasis.regression_ext import generate_dv_matrix
-from epistasis.utils import epistatic_order_indices, list_binary, enumerate_space, encode_mutations, construct_genotypes, build_model_params
+from epistasis.utils import epistatic_order_indices, list_binary, enumerate_space, encode_mutations, construct_genotypes, build_model_params, farthest_genotype, binary_mutations_map
 
 # ------------------------------------------------------------
 # Unique Epistasis Functions
@@ -63,14 +63,16 @@ class BaseModel(EpistasisMap):
         self.wildtype = wildtype
         self.log_transform = log_transform
         self.phenotypes = phenotypes
-        self.mutations = mutations
         
         # Defaults to binary mapping if not specific mutations are named
         if mutations is None:
             mutant = farthest_genotype(self.wildtype, self.genotypes)
             self.mutations = binary_mutations_map(self.wildtype, mutant)
-           
+        else:
+            self.mutations = mutations
+            
         # Construct a binary representation of the map (method inherited from parent class)
+        # and make it a subclass of the model.
         self._construct_binary()
       
         # Model error if given. 
@@ -138,7 +140,10 @@ class LocalEpistasisModel(BaseModel):
         # Populate Epistasis Map
         super(LocalEpistasisModel, self).__init__(wildtype, genotypes, phenotypes, errors=errors, log_transform=log_transform, mutations=mutations)
         self.order = self.length
+        
+        # Construct the Interactions mapping -- Interactions Subclass is added to model
         self._construct_interactions()
+        
         # Generate basis matrix for mutant cycle approach to epistasis.
         self.X = generate_dv_matrix(self.Binary.genotypes, self.Interactions.labels)
         self.X_inv = np.linalg.inv(self.X)
@@ -239,9 +244,11 @@ class ProjectedEpistasisModel(BaseModel):
         
         # Generate basis matrix for mutant cycle approach to epistasis.
         if order is not None:
-            self.order = order      
+            self.order = order  
+            # Construct the Interactions mapping -- Interactions Subclass is added to model
             self._construct_interactions()      
         elif parameters is not None:
+            self._construct_interactions()      
             self.Interactions.labels = list(parameters.values())
         else:
             raise Exception("""Need to specify the model's `order` argument or manually 
@@ -326,6 +333,7 @@ class NonlinearEpistasisModel(BaseModel):
         
         # Generate basis matrix for mutant cycle approach to epistasis.
         if parameters is not None:
+            self._construct_interactions()      
             self.Interactions.keys = list(parameters.values())
             self.Interactions.labels = list(parameters.values())
         else:

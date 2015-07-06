@@ -66,7 +66,7 @@ def binary_mutations_map(wildtype, mutant):
     """
     mutations = dict()
     for i in range(len(wildtype)):
-        mutations[i] = [wildtype[i], mutant[i]]
+        mutations[i+1] = [wildtype[i], mutant[i]]
     return mutations
 
 # -------------------------------------------------------

@@ -254,9 +254,12 @@ class EpistasisMap(BaseMap):
         """
         self.Interactions = InteractionMap(self.Mutations)
         self.Interactions._length = self.length
-        self.Interactions.order = self.order
         self.Interactions.log_transform = self.log_transform
         self.Interactions.mutations = params_index_map(self.mutations) # construct the mutations mapping
-        self.Interactions.labels = build_model_params(self.Interactions.length, 
+        
+        # If an order is specified, construct epistatic interaction terms.
+        try:
+            self.Interactions.order = self.order
+            self.Interactions.labels = build_model_params(self.Interactions.length, 
                                                       self.Interactions.order, 
                                                       self.Interactions.mutations)
