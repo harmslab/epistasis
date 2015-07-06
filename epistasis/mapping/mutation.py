@@ -27,11 +27,6 @@ class MutationMap(BaseMap):
         return self._mutations
         
     @property
-    def indices(self):
-        """ Get the indices of mutations in the sequence. """
-        return self._indices
-        
-    @property
     def n(self):
         """ Get the number of mutations in the space. """
         return self._n
@@ -47,13 +42,25 @@ class MutationMap(BaseMap):
         
     @mutations.setter
     def mutations(self, mutations):
-        """ Set the mutations from the genotypes. """
-        self._mutations = mutations
+        """ Set the mutation alphabet for all sites in wildtype genotype. 
+         
+            `mutations = { site_number : alphabet }`. If the site 
+            alphabet is note included, the model will assume binary 
+            between wildtype and derived.
+
+            ``` 
+            mutations = {
+                0: [alphabet],
+                1: [alphabet],
+
+            }
+            ```
         
-    @indices.setter
-    def indices(self, indices):
-        """ Set the indices of where mutations occur in the wildtype genotype."""
-        self._indices = indices
+        """
+        if type(mutations) != dict:
+            raise TypeError("mutations must be a dict")
+        self._mutations = mutations
+        self.n = len(mutations)
         
     @n.setter
     def n(self, n):

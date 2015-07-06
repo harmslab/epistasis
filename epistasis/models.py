@@ -14,7 +14,7 @@ from collections import OrderedDict
 # ------------------------------------------------------------
 from epistasis.mapping.epistasis import EpistasisMap
 from epistasis.regression_ext import generate_dv_matrix
-from epistasis.utils import epistatic_order_indices, list_binary, enumerate_space, build_interaction_labels
+from epistasis.utils import epistatic_order_indices, list_binary, enumerate_space, encode_mutations, construct_genotypes, build_model_params, farthest_genotype, binary_mutations_map
 
 # ------------------------------------------------------------
 # Unique Epistasis Functions
@@ -39,7 +39,7 @@ def cut_interaction_labels(labels, order):
 # ------------------------------------------------------------
 class BaseModel(EpistasisMap):
     
-    def __init__(self, wildtype, genotypes, phenotypes, errors=None, log_transform=False, mutant=None, ):
+    def __init__(self, wildtype, genotypes, phenotypes, errors=None, log_transform=False, mutations=None):
         """ Populate an Epistasis mapping object. 
         
             Args:
@@ -54,15 +54,31 @@ class BaseModel(EpistasisMap):
                 List of phenotype errors.
             log_transform: bool
                 If True, log transform the phenotypes.
+            mutations:
+            
         """
-        
         super(BaseModel, self).__init__()
+
         self.genotypes = genotypes
         self.wildtype = wildtype
         self.log_transform = log_transform
         self.phenotypes = phenotypes
+        
+        # Defaults to binary mapping if not specific mutations are named
+        if mutations is None:
+            mutant = farthest_genotype(self.wildtype, self.genotypes)
+            self.mutations = binary_mutations_map(self.wildtype, mutant)
+        else:
+            self.mutations = mutations
+            
+        # Construct a binary representation of the map (method inherited from parent class)
+        # and make it a subclass of the model.
+        self._construct_binary()
+      
+        # Model error if given. 
         if errors is not None:
             self.errors = errors
+        
             
     def get_order(self, order, errors=False, label="genotype"):
         """ Return a dict of interactions to values of a given order. """
@@ -101,7 +117,7 @@ class BaseModel(EpistasisMap):
 
 class LocalEpistasisModel(BaseModel):
         
-    def __init__(self, wildtype, genotypes, phenotypes, errors=None, log_transform=False):
+    def __init__(self, wildtype, genotypes, phenotypes, errors=None, log_transform=False, mutations=None):
         """ Create a map of the local epistatic effects using expanded mutant 
             cycle approach.
             
@@ -122,8 +138,12 @@ class LocalEpistasisModel(BaseModel):
                 If True, log transform the phenotypes.
         """
         # Populate Epistasis Map
-        super(LocalEpistasisModel, self).__init__(wildtype, genotypes, phenotypes, errors=errors, log_transform=log_transform)
+        super(LocalEpistasisModel, self).__init__(wildtype, genotypes, phenotypes, errors=errors, log_transform=log_transform, mutations=mutations)
         self.order = self.length
+        
+        # Construct the Interactions mapping -- Interactions Subclass is added to model
+        self._construct_interactions()
+        
         # Generate basis matrix for mutant cycle approach to epistasis.
         self.X = generate_dv_matrix(self.Binary.genotypes, self.Interactions.labels)
         self.X_inv = np.linalg.inv(self.X)
@@ -198,7 +218,7 @@ class GlobalEpistasisModel(BaseModel):
     
 class ProjectedEpistasisModel(BaseModel):
     
-    def __init__(self, wildtype, genotypes, phenotypes, order=None, parameters=None, errors=None, log_transform=False):
+    def __init__(self, wildtype, genotypes, phenotypes, order=None, parameters=None, errors=None, log_transform=False, mutations=None):
         """ Create a map from local epistasis model projected into lower order
             order epistasis interactions. Requires regression to estimate values.
             
@@ -220,13 +240,15 @@ class ProjectedEpistasisModel(BaseModel):
                 If True, log transform the phenotypes.
         """
         # Populate Epistasis Map
-        super(ProjectedEpistasisModel, self).__init__(wildtype, genotypes, phenotypes, errors, log_transform)
+        super(ProjectedEpistasisModel, self).__init__(wildtype, genotypes, phenotypes, errors, log_transform, mutations)
         
         # Generate basis matrix for mutant cycle approach to epistasis.
         if order is not None:
-            self.order = order
+            self.order = order  
+            # Construct the Interactions mapping -- Interactions Subclass is added to model
+            self._construct_interactions()      
         elif parameters is not None:
-            self.Interactions.keys = list(parameters.keys())
+            self._construct_interactions()      
             self.Interactions.labels = list(parameters.values())
         else:
             raise Exception("""Need to specify the model's `order` argument or manually 
@@ -257,19 +279,10 @@ class ProjectedEpistasisModel(BaseModel):
     def fit_error(self):
         """ Estimate the error of each epistatic interaction by standard error 
             propagation of the phenotypes through the model.
+            
+            CANNOT propagate error in regressed model.
         """
-        labels = build_interaction_labels(self.length, self.length)
-        errX = generate_dv_matrix(self.Binary.genotypes, labels)
-        
-        if self.log_transform is True:
-            # If log-transformed, fit assymetric errorbars correctly
-            upper = np.sqrt(np.dot(errX, self.Binary.errors[0]**2))
-            lower = np.sqrt(np.dot(errX, self.Binary.errors[1]**2))
-            errors = np.array((lower,upper))
-        else:
-            # Errorbars are symmetric, so only one column for errors is necessary
-            errors = np.sqrt(np.dot(errX, self.Binary.errors**2))
-        self.Interactions.errors = errors[:len(self.Interactions.genotypes)]
+        pass
         
       
     def predict(self):
@@ -290,7 +303,7 @@ class ProjectedEpistasisModel(BaseModel):
         
 class NonlinearEpistasisModel(BaseModel):
         
-    def __init__(self, wildtype, genotypes, phenotypes, function, x, parameters, errors=None, log_transform=False):
+    def __init__(self, wildtype, genotypes, phenotypes, function, x, parameters, errors=None, log_transform=False, mutations=None):
         """ Fit a nonlinear epistasis model to a genotype-phenotype map. The function and parameters must
             specified prior. 
         
@@ -316,11 +329,12 @@ class NonlinearEpistasisModel(BaseModel):
                 If True, log transform the phenotypes.
         """
         # Populate Epistasis Map
-        super(NonlinearEpistasisModel, self).__init__(wildtype, genotypes, phenotypes, errors, log_transform)
+        super(NonlinearEpistasisModel, self).__init__(wildtype, genotypes, phenotypes, errors, log_transform, mutations=mutations)
         
         # Generate basis matrix for mutant cycle approach to epistasis.
         if parameters is not None:
-            self.Interactions.keys = list(parameters.keys())
+            self._construct_interactions()      
+            self.Interactions.keys = list(parameters.values())
             self.Interactions.labels = list(parameters.values())
         else:
             raise Exception("""Need to specify the model's `order` argument or manually 

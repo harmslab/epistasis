@@ -15,6 +15,7 @@ from collections import OrderedDict
 # ----------------------------------------------------------
 
 from epistasis.mapping.base import BaseMap
+from epistasis.utils import params_index_map, build_model_params, label_to_key
 
 class InteractionMap(BaseMap):
     
@@ -63,6 +64,11 @@ class InteractionMap(BaseMap):
     def indices(self):
         """ Get the interaction index in interaction matrix. """
         return self._indices
+        
+    @property
+    def mutations(self):
+        """ Get the interaction index in interaction matrix. """
+        return self._mutations
 
     @property
     def labels(self):
@@ -71,6 +77,14 @@ class InteractionMap(BaseMap):
         """
         return self._labels
     
+    @property
+    def keys(self):
+        """ Get interactions as string-keys. """
+        if hasattr(self, '_keys'):
+            return self._keys
+        else:
+            return np.array([label_to_key(lab) for lab in self.labels])
+        
     @property
     def genotypes(self):
         """ Get the interaction genotype. """
@@ -106,20 +120,31 @@ class InteractionMap(BaseMap):
     def order(self, order):
         """ Set the order of epistasis in the system. As a consequence, 
             this mapping object creates the """
-        self._order = order
-        # Create interaction labels and keys
-        self._labels, self._keys, self._order_indices = self._build_interaction_map()
-        self._indices = np.arange(len(self.labels))
+        self._order = order        
+        
+    @mutations.setter
+    def mutations(self, mutations):
+        """ Set the indices of where mutations occur in the wildtype genotype.
+                 
+            `mutations = { site_number : indices }`. If the site 
+            alphabet is note included, the model will assume binary 
+            between wildtype and derived.
+
+            ``` 
+            mutations = {
+                0: [indices],
+                1: [indices],
+
+            }
+            ```
+        """
+        self._mutations = mutations
         
     @labels.setter
     def labels(self, labels):
         """ Manually set the interactions considered in the map. Useful for building epistasis models manually. """
         self._labels = labels
-        
-    @keys.setter
-    def keys(self, keys):
-        """ Manually set keys. NEED TO do some quality control here. """
-        self._keys = keys
+        self._indices = np.arange(1, len(self.labels) + 1)
 
     @values.setter
     def values(self, values):
@@ -128,9 +153,15 @@ class InteractionMap(BaseMap):
             raise Exception("Number of interactions give to map is different than was defined. ")
         self._values = values
         
+    @keys.setter
+    def keys(self, keys):
+        """ Manually set keys. NEED TO do some quality control here. """
+        self._keys = keys
+        
     @errors.setter
     def errors(self, errors):
         """ Set the interaction errors of the system, set by an Epistasis model (see ..models.py)."""
+        print(errors.shape, len(self.labels))
         if self.log_transform is True:
             if np.array(errors).shape != (2, len(self.labels)):
                 raise Exception("""interaction_errors is not the right shape (should include 2 elements
@@ -149,29 +180,11 @@ class InteractionMap(BaseMap):
     # Methods
     # ----------------------------------------------    
 
-    def _build_interaction_map(self):
-        """ Returns a label and key for every epistatic interaction. 
-            
-            Also returns a dictionary with order mapped to the index in the interactions array.
-            
-            An interaction label looks like [1,4,6] (type==list).
-            An interaction key looks like '1,4,6'   (type==str).
-        """
-        labels = [[0]]
-        keys = ['0']
-        order_indices = dict()
-        for o in range(1,self.order+1):
-            start = len(labels)
-            for label in it.combinations(range(1,self.Mutations.n+1), o):
-                labels.append(list(label))
-                key = ','.join([str(i) for i in label])
-                keys.append(key)
-            stop = len(labels)
-            order_indices[o] = [start, stop]
-        return labels, keys, order_indices
-
     def _label_to_genotype(self, label):
-        """ Convert a label (list(3,4,5)) to its genotype representation ('A3V, A4V, A5V'). """
+        """ Convert a label (list(3,4,5)) to its genotype representation ('A3V, A4V, A5V'). 
+        
+            NEED TO REFACTOR
+        """
         genotype = ""
         for l in label:
             # Labels are offset by 1, remove offset for wildtype/mutation array index

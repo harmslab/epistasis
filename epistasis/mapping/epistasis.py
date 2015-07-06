@@ -16,7 +16,7 @@ from epistasis.mapping.base import BaseMap
 from epistasis.mapping.binary import BinaryMap
 from epistasis.mapping.mutation import MutationMap
 from epistasis.mapping.interaction import InteractionMap
-from epistasis.utils import hamming_distance, find_differences, enumerate_space
+from epistasis.utils import hamming_distance, encode_mutations, construct_genotypes, params_index_map, build_model_params
 
 class EpistasisMap(BaseMap):
     
@@ -46,8 +46,6 @@ class EpistasisMap(BaseMap):
                 genotype indices
         """
         self.Mutations = MutationMap()
-        self.Interactions = InteractionMap(self.Mutations)
-        self.Binary = BinaryMap()
         
     # ------------------------------------------------------
     # Getter methods for attributes that can be set by user.
@@ -79,9 +77,9 @@ class EpistasisMap(BaseMap):
         return self._wildtype
         
     @property
-    def mutant(self):
+    def mutations(self):
         """ Get the furthest genotype from the wildtype genotype. """
-        return self._mutant
+        return self._mutations
 
     @property
     def genotypes(self):
@@ -133,7 +131,6 @@ class EpistasisMap(BaseMap):
     def log_transform(self, boolean):
         """ True/False to log transform the space. """
         self._log_transform = boolean
-        self.Interactions.log_transform = boolean
     
     @genotypes.setter
     def genotypes(self, genotypes):
@@ -147,24 +144,40 @@ class EpistasisMap(BaseMap):
     def wildtype(self, wildtype):
         """ Set the reference genotype among the mutants in the system. """
         self._wildtype = wildtype
-        self._mutant = self._farthest_genotype(wildtype)
-        self.Mutations._indices = np.array(find_differences(self.wildtype, self.mutant))
-        self.Mutations._wildtype = np.array([self.wildtype[i] for i in self.Mutations.indices])
-        self.Mutations._mutations = np.array([self.mutant[i] for i in self.Mutations.indices])
-        self.Mutations._n = len(self.Mutations.mutations)
-        self.Mutations._length = self.length
-        self._to_bits()
+        self.Mutations.wildtype = wildtype
+    
+    @mutations.setter
+    def mutations(self, mutations):
+        """ Set the mutation alphabet for all sites in wildtype genotype. 
+         
+            `mutations = { site_number : alphabet }`. If the site 
+            alphabet is note included, the model will assume binary 
+            between wildtype and derived.
+
+            ``` 
+            mutations = {
+                0: [alphabet],
+                1: [alphabet],
+
+            }
+            ```
+        
+        """
+        if type(mutations) != dict:
+            raise TypeError("mutations must be a dict")
+        self._mutations = mutations
+        self.Mutations.mutations = mutations
+        self.Mutations.n = len(mutations)
     
     @order.setter
     def order(self, order):
         """ Set the order of epistasis in the system. As a consequence, 
             this mapping object creates the """
         self._order = order
-        self.Interactions.order = order
         
     @phenotypes.setter
     def phenotypes(self, phenotypes):
-        """ NORMALIZE and set phenotypes from ordered list of phenotypes 
+        """ Set phenotypes from ordered list of phenotypes 
             
             Args:
             -----
@@ -174,20 +187,17 @@ class EpistasisMap(BaseMap):
                 array.
         """
         if type(phenotypes) is dict:
-            self._phenotypes = self._if_dict(phenotypes)#/phenotypes[self.wildtype]
+            self._phenotypes = self._if_dict(phenotypes)
         else:
             if len(phenotypes) != len(self._genotypes):
                 raise ValueError("Number of phenotypes does not equal number of genotypes.")
             else:
-                #wildtype_index = self.geno2index[self.wildtype]
-                self._phenotypes = phenotypes#/phenotypes[wildtype_index] 
+                self._phenotypes = phenotypes
 
         # log transform if log_transform = True
         if self.log_transform is True:
             self._untransformed_phenotypes = self._phenotypes
             self._phenotypes = np.log10(self._phenotypes)
-            
-        self.Binary._phenotypes = np.array([self.phenotypes[i] for i in self.Binary.indices])
 
         
     @errors.setter
@@ -220,45 +230,36 @@ class EpistasisMap(BaseMap):
             self.Binary._errors = np.array([errors[i] for i in self.Binary.indices])
         
     
-    # ---------------------------------
+    # ------------------------------------------------------------
     # Useful methods for mapping object
-    # ---------------------------------
+    # ------------------------------------------------------------
 
-    def _farthest_genotype(self, reference):
-        """ Find the genotype in the system that differs at the most sites. """ 
-        mutations = 0
-        for genotype in self.genotypes:
-            differs = hamming_distance(genotype, reference)
-            if differs > mutations:
-                mutations = int(differs)
-                mutant = str(genotype)
-        return mutant
-
-    def _to_bits(self):
+    def _construct_binary(self):
         """ Encode the genotypes an ordered binary set of genotypes with 
             wildtype as reference state (ref is all zeros).
             
-            Essentially, this method maps each genotype to their binary representation
+            This method maps each genotype to their binary representation
             relative to the 'wildtype' sequence.
         """
-        w = list(self.wildtype)
-        m = list(self.mutant)
-
-        # get genotype indices
-        geno2index = self.geno2index
+        self.Binary = BinaryMap()
+        self.Binary.mutations = encode_mutations(self.wildtype, self.mutations)
+        genotypes, self.Binary.genotypes = construct_genotypes(self.Binary.mutations)
+        self.Binary.phenotypes = np.array([self.geno2pheno[genotypes[i]] for i in range(len(self.Binary.genotypes))])
+        self.Binary.indices = np.array([self.geno2index[genotypes[i]] for i in range(len(self.Binary.genotypes))])
         
-        # Build binary space
-        # this can be a really slow/memory intensive step ... need to revisit this
-        full_genotypes, binaries = enumerate_space(self.wildtype, self.mutant, binary = True)
-        bin2geno = dict(zip(binaries, full_genotypes))
-        bits = list()
-        bit_indices = list()
-        # initialize bit_indicies
-        for b in binaries:
-            try:
-                bit_indices.append(geno2index[bin2geno[b]])
-                bits.append(b)
-            except:
-                pass
-        self.Binary._genotypes = np.array(bits)
-        self.Binary._indices = np.array(bit_indices)
+    def _construct_interactions(self):
+        """ Construct the interactions mapping for an epistasis model. 
+            
+            Must populate the Mutations subclass before setting interactions. 
+        """
+        self.Interactions = InteractionMap(self.Mutations)
+        self.Interactions._length = self.length
+        self.Interactions.log_transform = self.log_transform
+        self.Interactions.mutations = params_index_map(self.mutations) # construct the mutations mapping
+        
+        # If an order is specified, construct epistatic interaction terms.
+        try:
+            self.Interactions.order = self.order
+            self.Interactions.labels = build_model_params(self.Interactions.length, 
+                                                      self.Interactions.order, 
+                                                      self.Interactions.mutations)
