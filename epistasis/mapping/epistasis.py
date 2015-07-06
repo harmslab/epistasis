@@ -263,3 +263,5 @@ class EpistasisMap(BaseMap):
             self.Interactions.labels = build_model_params(self.Interactions.length, 
                                                       self.Interactions.order, 
                                                       self.Interactions.mutations)
+        except:
+            pass
