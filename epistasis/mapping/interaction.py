@@ -80,7 +80,10 @@ class InteractionMap(BaseMap):
     @property
     def keys(self):
         """ Get interactions as string-keys. """
-        return np.array([label_to_key(lab) for lab in self.labels])
+        if hasattr(self, '_keys'):
+            return self._keys
+        else:
+            return np.array([label_to_key(lab) for lab in self.labels])
         
     @property
     def genotypes(self):
@@ -150,9 +153,15 @@ class InteractionMap(BaseMap):
             raise Exception("Number of interactions give to map is different than was defined. ")
         self._values = values
         
+    @keys.setter
+    def keys(self, keys):
+        """ Manually set keys. NEED TO do some quality control here. """
+        self._keys = keys
+        
     @errors.setter
     def errors(self, errors):
         """ Set the interaction errors of the system, set by an Epistasis model (see ..models.py)."""
+        print(errors.shape, len(self.labels))
         if self.log_transform is True:
             if np.array(errors).shape != (2, len(self.labels)):
                 raise Exception("""interaction_errors is not the right shape (should include 2 elements

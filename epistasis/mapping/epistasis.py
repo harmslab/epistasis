@@ -163,7 +163,6 @@ class EpistasisMap(BaseMap):
             ```
         
         """
-        print(type(mutations))
         if type(mutations) != dict:
             raise TypeError("mutations must be a dict")
         self._mutations = mutations
