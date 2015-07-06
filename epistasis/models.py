@@ -62,13 +62,9 @@ class BaseModel(EpistasisMap):
         self.wildtype = wildtype
         self.log_transform = log_transform
         self.phenotypes = phenotypes
+        self.mutations = site_alphabet
         if errors is not None:
             self.errors = errors
-            
-        self.Mutations.mutations = encode_mutations(wildtype, site_alphabet)
-        genotypes, binary = construct_genotypes(mutations)
-        self.Binary.genotypes = binary
-        self.Binary.phenotype = np.array([self.geno2pheno[g] for g in genotypes])
         
             
     def get_order(self, order, errors=False, label="genotype"):

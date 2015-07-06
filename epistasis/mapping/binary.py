@@ -12,6 +12,7 @@ class BinaryMap(BaseMap):
     """
         Map for holding a binary representation of an epistasis map.
     """
+    
     @property
     def genotypes(self):
         """ Get Binary representation of genotypes. """
@@ -27,6 +28,11 @@ class BinaryMap(BaseMap):
         """ Get the phenotype values in an array orderd same as binary reprentation."""
         return self._phenotypes
         
+    @property
+    def mutations(self):
+        """ Return a binary representation of each site-mutation in the genotype-phenotype map"""
+        return self._mutations
+         
     @property
     def errors(self):
         """ Get the phenotype values in an array orderd same as binary reprentation."""
@@ -54,7 +60,12 @@ class BinaryMap(BaseMap):
     def indices(self, indices):
         """ Set indices of genotypes in self.genotypes that mapped to their binary representation. """
         self._indices = indices
-        
+
+    @mutations.setter
+    def mutations(self, mutations):
+        """ Set the mapping for site-to-mutation-to-binary-representation."""
+        self._mutations = mutations
+
     @phenotypes.setter
     def phenotypes(self, phenotypes):
         """ Set the phenotype values in an array orderd same as binary reprentation."""

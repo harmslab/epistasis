@@ -9,6 +9,15 @@ from sklearn.metrics import mean_squared_error
 from collections import OrderedDict
 
 # -------------------------------------------------------
+# Mutation alphabets
+# -------------------------------------------------------
+
+DNA = ["A", "C", "G", "T"]
+
+AMINO_ACIDS = ["D","T", "S", "E", "P", "G", "A", "C", "V", "M", "I"
+                "L", "Y", "F", "H", "K", "R", "W", "Q", "N"]
+
+# -------------------------------------------------------
 # Useful metrics for genotype-phenotype spaces
 # -------------------------------------------------------
 
@@ -61,6 +70,35 @@ def build_interaction_labels(length, order):
             labels.append(list(label))
     return labels
     
+def params_index_map(mutations):
+    """
+        Args:
+        ----
+        mutations: dict
+            mapping each site to their accessible mutations alphabet.
+    
+        Returns:
+        -------
+        mutations: dict
+                         
+            `mutations = { site_number : indices }`. If the site 
+            alphabet is note included, the model will assume binary 
+            between wildtype and derived.
+
+            ``` 
+            mutations = {
+                0: [indices],
+                1: [indices],
+
+            }
+    """
+    param_map = dict()
+    n_sites = 1
+    for m in mutations:
+        param_map[m] = list(range(n_sites, n_sites + len(mutations[m]) - 1))
+        n_sites += len(mutations[m])-1
+    return param_map
+
 def build_model_params(length, order, mutations):
     """ Build interaction labels up to nth order given a mutation alphabet. 
     
@@ -81,7 +119,11 @@ def build_model_params(length, order, mutations):
 
             }
             ```
-        Returns        
+        Returns:
+        -------
+        interactions: list
+            list of all interaction labels for system with sequences of a 
+            given length and epistasis with given order.
     """
     
     # Recursive algorithm that's difficult to follow.
@@ -96,6 +138,9 @@ def build_model_params(length, order, mutations):
     
     return interactions
 
+    
+
+
 # -------------------------------------------------------
 # Space enumerations
 # -------------------------------------------------------
@@ -103,6 +148,7 @@ def build_model_params(length, order, mutations):
 def list_binary(length):
     """ List all binary strings with given length. """
     return np.array(sort(["".join(seq) for seq in it.product("01", repeat=length)]))
+
 
 
 def enumerate_space(wildtype, mutant, binary=True):
@@ -164,7 +210,8 @@ def enumerate_space(wildtype, mutant, binary=True):
         return sequence_space, binaries
     else:
         return sequence_spaces
-    
+
+
 def encode_mutations(wildtype, site_alphabet):
     """ Encoding map for genotype-to-binary
     
@@ -183,7 +230,7 @@ def encode_mutations(wildtype, site_alphabet):
             
             Ex:
             {
-                site-number: {"utation": "binary"},
+                site-number: {"mutation": "binary"},
                 .
                 .
                 .
@@ -208,7 +255,8 @@ def encode_mutations(wildtype, site_alphabet):
         encoding[site_number] = indiv_encode
         
     return encoding
-    
+
+
 def construct_genotypes(mutation_encoding):
     """ Constructs binary representation of genotype map given a specific alphabet
         for each site.

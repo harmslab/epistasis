@@ -65,25 +65,7 @@ class MutationMap(BaseMap):
         if type(mutations) != dict:
             raise TypeError("mutations must be a dict")
         self._mutations = mutations
-        
-    @indices.setter
-    def indices(self, indices):
-        """ Set the indices of where mutations occur in the wildtype genotype.
-                 
-            `indices = { site_number : indices }`. If the site 
-            alphabet is note included, the model will assume binary 
-            between wildtype and derived.
-
-            ``` 
-            indice = {
-                0: [indices],
-                1: [indices],
-
-            }
-            ```
-        
-        """
-        self._indices = indices
+        self.n = len(mutations)
         
     @n.setter
     def n(self, n):

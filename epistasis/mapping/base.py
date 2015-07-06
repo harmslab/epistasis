@@ -13,7 +13,7 @@ from collections import OrderedDict
 # Main class for building epistasis map
 # -------------------------------------
 
-class BaseMap(object):
+class BaseMap:
     """
         Base class for all maps in this file. 
     """
