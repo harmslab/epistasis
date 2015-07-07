@@ -359,7 +359,7 @@ class NonlinearEpistasisModel(BaseModel):
         self.Interactions.values = values[:]
         # Setting error if covariance was estimated, else pass.
         try:
-            self.error = cov[:]
+            self.errors = cov[:]
         except:
             pass
                                                     
