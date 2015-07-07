@@ -144,7 +144,7 @@ class ThresholdEpistasisMap(BaseArtificialMap):
         super(ThresholdEpistasisMap,self).__init__(length, order, log_transform=False)
         if magnitude > threshold:
             raise Warning(""" Magnitude of epistasis could be greater than thesholding value. """)
-        self.random_epistasis(threshold, negative=False)
+        self.random_epistasis(magnitude, negative=False)
         self.raw_phenotypes = 10**self.build_phenotypes()
         #self.norm_raw = self.raw_phenotypes/self.raw_phenotypes[0]
         self.phenotypes = self.threshold_func(self.raw_phenotypes, threshold, sharpness)

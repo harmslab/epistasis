@@ -2,6 +2,15 @@ import numpy as np
 import itertools as it
 from scipy.optimize import curve_fit
 
+from epistasis.stats import r_squared
+from epistasis.base import BaseModel
+
+# ------------------------------------------
+# LMFIT imports
+# ------------------------------------------
+
+from lmfit import minimize, Parameters
+
 # ------------------------------------------
 # Possible functions for nonlinear epistasis
 # ------------------------------------------
@@ -82,3 +91,58 @@ class NonlinearEpistasisModel(BaseModel):
             self.errors = cov[:]
         except:
             pass
+            
+            
+class LMFITEpistasisModel(BaseModel):
+    
+    def __init__(self, wildtype, genotypes, phenotypes, function, x, parameters, errors=None, log_transform=False, mutations=None):
+        """ Fit a nonlinear epistasis model to a genotype-phenotype map. The function and parameters must
+            specified prior. 
+        
+            Uses Scipy's curve_fit function.
+            
+            Args:
+            ----
+            wildtype: str
+                Wildtype genotype. Wildtype phenotype will be used as reference state.
+            genotypes: array-like, dtype=str
+                Genotypes in map. Can be binary strings, or not.
+            phenotypes: array-like
+                Quantitative phenotype values
+            function: callable
+                Function to fit the linear model. Must have the arguments that correspond to the parameters.
+            x: 2d array
+                Array of dummy variables for epistasis model fitting (use `generate_dv_matrix` in regression_ext)
+            parameters: lmfit.Parameters class
+                Parameters as specified by lmfit
+            errors: array-like
+                List of phenotype errors.
+            log_transform: bool
+                If True, log transform the phenotypes.
+        """
+        # Populate Epistasis Map
+        super(LMFITEpistasisModel, self).__init__(wildtype, genotypes, phenotypes, errors, log_transform, mutations=mutations)
+        
+        # Generate basis matrix for mutant cycle approach to epistasis.
+        if parameters is not None:
+            self._construct_interactions()
+            self.parameters = parameters
+            params = parameters.valuesdict()    
+            self.Interactions.keys = list(params.keys())
+            self.Interactions.labels = list(params.keys())
+            self.Interactions.values = list(params.values())
+        else:
+            raise Exception("""Need to specify the model's `order` argument or manually 
+                                list model parameters as `parameters` argument.""")
+   
+        self.X = x
+        self.function = function
+        
+        
+    def fit(self, method="leastsq", **kwargs):
+        """ Fit the nonlinear function """
+        self.minimizer = minimize(self.function, self.parameters, args=(self.X, self.phenotypes,), method=method, **kwargs)
+        self.Interactions.values = np.array(list(self.minimizer.params.valuesdict().values()))
+        
+        
+        
