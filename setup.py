@@ -15,7 +15,8 @@ setup(name='epistasis',
           'scipy',
           'pandas',
           'scikit-learn',
-          'networkx'
+          'networkx',
+          'lmfit'
       ],
       ext_modules=[extension1],
       zip_safe=False)
