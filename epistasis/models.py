@@ -220,3 +220,4 @@ class ProjectedEpistasisModel(BaseModel):
         X = generate_dv_matrix(binaries, self.Interactions.labels)
         phenotypes = self.regression_model.predict(X)
         return genotypes, phenotypes
+
