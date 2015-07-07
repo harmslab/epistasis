@@ -244,8 +244,13 @@ class EpistasisMap(BaseMap):
         self.Binary = BinaryMap()
         self.Binary.mutations = encode_mutations(self.wildtype, self.mutations)
         genotypes, self.Binary.genotypes = construct_genotypes(self.Binary.mutations)
-        self.Binary.phenotypes = np.array([self.geno2pheno[genotypes[i]] for i in range(len(self.Binary.genotypes))])
         self.Binary.indices = np.array([self.geno2index[genotypes[i]] for i in range(len(self.Binary.genotypes))])
+        
+        # Grab phenotypes if they exist. Otherwise, pass.
+        try:
+            self.Binary.phenotypes = np.array([self.geno2pheno[genotypes[i]] for i in range(len(self.Binary.genotypes))])
+        except:
+            pass
         
     def _construct_interactions(self):
         """ Construct the interactions mapping for an epistasis model. 

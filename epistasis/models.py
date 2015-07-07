@@ -343,12 +343,17 @@ class NonlinearEpistasisModel(BaseModel):
         self.X = x
         self.function = function
     
-    def fit(self):
+    def fit(self, p0=None):
         """ Fit the nonlinear function """
+        
+        # Try initial guess 
+        if p0 == None:
+            p0 = 0.1*np.ones(len(self.Interactions.labels), dtype=float)
+        
         values, cov = curve_fit(self.function, 
                                 self.X.T, 
                                 self.Binary.phenotypes, 
-                                p0=0.1*np.ones(len(self.Interactions.labels), dtype=float), 
+                                p0=p0, 
                                 maxfev=1000000)
                                 
         self.Interactions.values = values[:]
