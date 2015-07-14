@@ -98,6 +98,22 @@ def epistatic_order_indices(length, order):
     return start, stop
 
 
+def genotype_params(genotype, order=None):
+    """ List the possible parameters (as label form) for a binary genotype 
+        up to a given order.
+    """
+    if order is None:
+        order = len(genotype)
+    
+    length = len(genotype)
+    
+    mutations = [i + 1 for i in range(length) if genotype[i] == "1"]
+    params = [[0]]
+    for o in range(1, order+1):
+        params += [list(z) for z in it.combinations(mutations, o)]
+    
+    return params
+
 def build_interaction_labels(length, order):
     """ Return interactions labels for building X matrix. """
     labels = [[0]]
@@ -105,7 +121,7 @@ def build_interaction_labels(length, order):
         for label in it.combinations(range(1,length+1), o):
             labels.append(list(label))
     return labels
-    
+  
 def params_index_map(mutations):
     """
         Args:
@@ -174,7 +190,6 @@ def build_model_params(length, order, mutations):
     
     return interactions
 
-    
 
 
 # -------------------------------------------------------
@@ -183,7 +198,7 @@ def build_model_params(length, order, mutations):
 
 def list_binary(length):
     """ List all binary strings with given length. """
-    return np.array(sort(["".join(seq) for seq in it.product("01", repeat=length)]))
+    return np.array(["".join(seq) for seq in it.product("01", repeat=length)])
 
 
 

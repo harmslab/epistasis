@@ -5,7 +5,7 @@
 import numpy as np
 from epistasis.regression_ext import generate_dv_matrix
 from epistasis.mapping.epistasis import EpistasisMap
-from epistasis.utils import enumerate_space, binary_mutations_map
+from epistasis.utils import enumerate_space, binary_mutations_map, genotype_params, label_to_key
 
 # ------------------------------------------------------------
 # ArtificialMap object can be used to quickly generating a toy
@@ -27,29 +27,14 @@ class BaseArtificialMap(EpistasisMap):
         self._construct_binary()
         self._construct_interactions()
         
-    def build_phenotypes(self):
-        """ Build the phenotype map from epistatic interactions. """
-        # Allocate phenotype numpy array
-        phenotypes = np.zeros(self.n, dtype=float)
+    def build_phenotypes(self, values=None):
+        """ Method for construction phenotypes from model. """
+        raise Exception( """ Must be implemented in subclass. """)
         
-        # Build phenotypes for binary representation of space
-        self.X = generate_dv_matrix(self.Binary.genotypes, self.Interactions.labels)
-        bit_phenotypes = np.dot(self.X,self.Interactions.values)
-        if self.log_transform:
-            bit_phenotypes = 10**bit_phenotypes
-        # Reorder phenotypes to map back to genotypes
-        for i in range(len(self.Binary.indices)):
-            phenotypes[self.Binary.indices[i]] = bit_phenotypes[i]
-            
-        return phenotypes
-        
-    def random_epistasis(self, magnitude, negative=True):
+    def random_epistasis(self, low, high, allow_neg=True):
         """Assign random values to epistatic terms. """ 
-        vals = (-1)**(np.random.randint(1,10, size=len(self.Interactions.labels))) * np.random.rand(len(self.Interactions.labels))*magnitude
-        if negative is not True:
-            vals = abs(vals)
-            
-        self.Interactions.values = vals
+        vals = (high-low) * np.random.random(size=len(self.Interactions.labels)) + low
+        return vals
         
     def random_knockout(self, n_knockouts):
         """ Set parameters"""
@@ -103,6 +88,8 @@ class RandomEpistasisMap(BaseArtificialMap):
     
     def __init__(self, length, order, magnitude, log_transform=False):
         """ Choose random values for epistatic terms below and construct a genotype-phenotype map. 
+            
+            ASSUMES ADDITIVE MODEL (UNLESS LOG TRANSFORMED).
         
             Args:
             ----
@@ -117,8 +104,28 @@ class RandomEpistasisMap(BaseArtificialMap):
         
         """
         super(RandomEpistasisMap,self).__init__(length, order, log_transform)
-        self.random_epistasis(magnitude)
+        self.random_epistasis(-1,1)
         self.phenotypes = self.build_phenotypes()
+        
+    def build_phenotypes(self, values=None):
+        """ Build the phenotype map from epistatic interactions. """
+        # Allocate phenotype numpy array
+        phenotypes = np.zeros(self.n, dtype=float)
+    
+        # Check for custom values
+        if values is None:
+            values = self.Interactions.values
+    
+        # Build phenotypes for binary representation of space
+        self.X = generate_dv_matrix(self.Binary.genotypes, self.Interactions.labels)
+        bit_phenotypes = np.dot(self.X,values)
+        if self.log_transform:
+            bit_phenotypes = 10**bit_phenotypes
+        # Reorder phenotypes to map back to genotypes
+        for i in range(len(self.Binary.indices)):
+            phenotypes[self.Binary.indices[i]] = bit_phenotypes[i]
+        
+        return phenotypes
 
 class ThresholdEpistasisMap(BaseArtificialMap):
     
@@ -128,6 +135,8 @@ class ThresholdEpistasisMap(BaseArtificialMap):
             
                  f(epistasis_model) = \theta - exp(-\nu * epistasis_model)
         
+            where epistasis model is a MULTIPLICATIVE MODEL.      
+            
             Args:
             ----
             length: int
@@ -142,19 +151,29 @@ class ThresholdEpistasisMap(BaseArtificialMap):
                 return the log_transformed phenotypes.
         """
         super(ThresholdEpistasisMap,self).__init__(length, order, log_transform=False)
-        if magnitude > threshold:
-            raise Warning(""" Magnitude of epistasis could be greater than thesholding value. """)
-        self.random_epistasis(magnitude, negative=False)
-        self.raw_phenotypes = 10**self.build_phenotypes()
-        #self.norm_raw = self.raw_phenotypes/self.raw_phenotypes[0]
+        #if magnitude > threshold:
+         #   raise Warning(""" Magnitude of epistasis could be greater than thesholding value. """)
+        vals = self.random_epistasis(1-magnitude, 1+magnitude, allow_neg=False)
+        vals[0] = 1.0
+        self.Interactions.values = vals
+        self.raw_phenotypes = self.build_phenotypes()
         self.phenotypes = self.threshold_func(self.raw_phenotypes, threshold, sharpness)
         
+    def build_phenotypes(self, values=None):
+        """ Uses the multiplicative model to construct raw phenotypes. """
+        phenotypes = np.empty(len(self.genotypes), dtype=float)
+        param_map = self.Interactions.key2value
+        for i in range(len(phenotypes)):
+            params = genotype_params(self.genotypes[i], order=self.order)
+            values = np.array([param_map[label_to_key(p)] for p in params])
+            phenotypes[i] = np.prod(values)
+        return phenotypes
+    
     def threshold_func(self, raw_phenotypes, threshold, sharpness):
         """ Apply the thresholding effect. """
         phenotypes = np.empty(self.n, dtype=float)
         for i in range(self.n):
-            p = self.genotypes[i].count("1")
-            phenotypes[i] = threshold * (1 - np.exp(-sharpness*raw_phenotypes[i]*p))
-        return phenotypes 
+            phenotypes[i] = threshold * (1 - np.exp(-sharpness*raw_phenotypes[i]))
+        return phenotypes
         
         
