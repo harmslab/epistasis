@@ -26,6 +26,39 @@ def two_state_func(x, *args):
     X2 = np.exp(-np.dot(x[int(length/2):-1,:].T, params2)/beta)
     return -beta*np.log(X1 + X2)
 
+
+def threshold_func(params, x, y_obs):
+    """ LMFIT Threshold function. 
+    
+        P(p) = \theta (1 - exp(-\nu * p))
+        
+        where p is a high order linear epistasis model. 
+        
+        Parameters:
+        ----------
+        params: LMFIT Parameters object
+    """
+    # Check parameters
+    if isinstance(params, Parameters) is not True:
+        raise Exception(""" params must be LMFIT's Parameters object. """) 
+        
+    # Assign parameters
+    paramdict = params.valuesdict()
+    theta = paramdict["theta"]
+    del paramdict["theta"]
+    nu = paramdict["nu"]
+    del paramdict["nu"]
+    interactions = list(paramdict.values())
+    
+    ###########   Model to minimize   #############
+    # ln[ln(\theta) - ln(\theta - P)] = ln(\nu) + ln(p)
+    y_pred = np.log(nu)+np.dot(x,interactions)          # right side
+    P = np.log(np.log(theta) - np.log(theta-y_obs))     # left side
+    
+    # Residuals to minimize
+    residuals = P - y_pred
+    return residuals
+
 # ------------------------------------------
 # Classes for NonLinear modelling
 # ------------------------------------------
@@ -36,7 +69,7 @@ class NonlinearEpistasisModel(BaseModel):
         """ Fit a nonlinear epistasis model to a genotype-phenotype map. The function and parameters must
             specified prior. 
         
-            Uses Scipy's curve_fit function.
+            Uses Scipy's curve_fit method.
             
             Args:
             ----
@@ -99,7 +132,7 @@ class LMFITEpistasisModel(BaseModel):
         """ Fit a nonlinear epistasis model to a genotype-phenotype map. The function and parameters must
             specified prior. 
         
-            Uses Scipy's curve_fit function.
+            Uses LMFIT's pa
             
             Args:
             ----
@@ -151,7 +184,7 @@ class GlobalNonlinearEpistasisModel(BaseModel):
         """ Fit a nonlinear epistasis model to a genotype-phenotype map. The function and parameters must
             specified prior. 
         
-            Uses Scipy's curve_fit function.
+            Uses Scipy's basinhopping method.
             
             Args:
             ----
