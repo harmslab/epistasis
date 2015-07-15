@@ -193,6 +193,15 @@ def bar_with_xbox(model,
     # Figure out the length of the x-axis and the highest epistasis observed
     num_terms = len(labels)
     highest_order = max([len(l) for l in labels])
+
+    # Figure out how many sites are in the dataset (in case of non-binary system)
+    all_sites = []
+    for l in labels:
+        all_sites.extend(l)
+    all_sites = list(dict([(s,[]) for s in all_sites]).keys())
+    all_sites.sort()
+    num_sites = len(all_sites) 
+    
     
     # Figure out how to color each order
     if order_colors == None:
@@ -236,7 +245,7 @@ def bar_with_xbox(model,
         if p_values[i] < significance_cutoff:
             color_array[i] = len(l) - 1
         else:
-            color_array[i] = 0
+            color_array[i] = -1
         
     # ---------------- #
     # Create the plots #
@@ -245,7 +254,7 @@ def bar_with_xbox(model,
     # Make a color map
     cmap = matplotlib.colors.ListedColormap(colors=order_colors)
     cmap.set_bad(color='w', alpha=0) # set the 'bad' values (nan) to be white and transparent
-    bounds = range(len(order_colors))
+    bounds = range(-1,len(order_colors))
     norm = matplotlib.colors.BoundaryNorm(bounds, cmap.N)
     
     # Create a plot with an upper and lower panel, sharing the x-axis
@@ -259,7 +268,7 @@ def bar_with_xbox(model,
     # ------------------ #
 
     # set up bar colors
-    colors_for_bar = np.array([matplotlib.colors.colorConverter.to_rgba(order_colors[i]) for i in color_array])
+    colors_for_bar = np.array([matplotlib.colors.colorConverter.to_rgba(order_colors[(i+1)]) for i in color_array])
 
     # Plot error if sigmas are given.
     if sigmas == 0:
@@ -316,7 +325,7 @@ def bar_with_xbox(model,
     # --------------------------- #
     
     # make an empty data set
-    data = np.ones((highest_order,num_terms),dtype=int)*np.nan
+    data = np.ones((num_sites,num_terms),dtype=int)*np.nan
  
     # Make entries corresponding to each coordinate 1
     for i, l in enumerate(labels):
@@ -326,17 +335,17 @@ def bar_with_xbox(model,
     # draw the grid
     for i in range(num_terms + 1):
         ax_array[1].add_artist(matplotlib.lines.Line2D((i,i),
-                                                       (0,highest_order),
+                                                       (0,num_sites),
                                                        color="black"))
                                                 
-    for i in range(highest_order+1):
+    for i in range(num_sites+1):
         ax_array[1].add_artist(matplotlib.lines.Line2D((0,num_terms),
                                                        (i,i),
                                                        color="black"))
         
     # draw the boxes
     ax_array[1].imshow(data, interpolation='nearest',cmap=cmap,norm=norm,
-                       extent=[0, num_terms, 0, highest_order], zorder=0)
+                       extent=[0, num_terms, 0, num_sites], zorder=0)
     
     # turn off the axis labels
     ax_array[1].set_frame_on(False) 
