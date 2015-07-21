@@ -1,9 +1,12 @@
 import numpy as np
 import itertools as it
 from scipy.optimize import curve_fit, basinhopping
+import matplotlib.pyplot as plt
 
 from epistasis.stats import r_squared
 from epistasis.base import BaseModel
+from epistasis.utils import label_to_lmfit
+from epistasis.regression_ext import generate_dv_matrix
 
 # ------------------------------------------
 # LMFIT imports
@@ -26,7 +29,6 @@ def two_state_func(x, *args):
     X2 = np.exp(-np.dot(x[int(length/2):-1,:].T, params2)/beta)
     return -beta*np.log(X1 + X2)
 
-
 def threshold_func(params, x, y_obs):
     """ LMFIT Threshold function. 
     
@@ -41,7 +43,6 @@ def threshold_func(params, x, y_obs):
     # Check parameters
     if isinstance(params, Parameters) is not True:
         raise Exception(""" params must be LMFIT's Parameters object. """) 
-        
     # Assign parameters
     paramdict = params.valuesdict()
     theta = paramdict["theta"]
@@ -59,9 +60,10 @@ def threshold_func(params, x, y_obs):
     residuals = P - y_pred
     return residuals
 
-# ------------------------------------------
+
+# -------------------------------------------------------------------------------
 # Classes for NonLinear modelling
-# ------------------------------------------
+# -------------------------------------------------------------------------------
 
 class NonlinearEpistasisModel(BaseModel):
         
@@ -177,6 +179,13 @@ class LMFITEpistasisModel(BaseModel):
         self.minimizer = minimize(self.function, self.parameters, args=(self.X, self.phenotypes,), method=method, **kwargs)
         self.Interactions.values = np.array(list(self.minimizer.params.valuesdict().values()))
         
+    def update_param_value(self, **kwargs):
+        """ Update a LMFIT parameters guess value and propagate through mapping. """
+        mapping = self.Interactions.key2index
+        for k in kwargs:
+            self.parameters[k].value = kwargs[k]
+            self.Interactions.values[mapping[k]] = kwargs[k]
+            
         
 class GlobalNonlinearEpistasisModel(BaseModel):
     
@@ -230,11 +239,94 @@ class GlobalNonlinearEpistasisModel(BaseModel):
         
         results = basinhopping(self.function, p0, niter=1000,
                                 minimizer_kwargs={"args": (self.phenotypes,self.X.T)})
-        print(results)
+
         self.Interactions.values = results.x
         # Setting error if covariance was estimated, else pass.
         try:
             self.errors = cov[:]
         except:
             pass
+
+
+# -------------------------------------------------------------------------------
+# Examples of nonlinear models
+# -------------------------------------------------------------------------------
+
+class ThresholdingEpistasisModel(LMFITEpistasisModel, BaseModel):
+    
+    def __init__(self, wildtype, genotypes, phenotypes, order, errors=None, log_transform=False, mutations=None):
+        """ """
+        # Construct initial base map
+        BaseModel.__init__(self, wildtype, genotypes, phenotypes, errors=errors, log_transform=log_transform, mutations=mutations)
+        
+        # Construct the linear epistasis model
+        self.order = order
+        self._construct_interactions()
+        
+        # Construct LMFIT parameters properly
+        labels = self.Interactions.labels
+        x = generate_dv_matrix(self.Binary.genotypes, labels)
+        keys = [label_to_lmfit(l) for l in labels]
+
+        params = Parameters()
+        params.add("K0", value=0, vary=False)
+        for i in range(1,len(keys)):
+            params.add(keys[i], value=1, vary=True)
+
+        params.add("theta", value=100, vary=True)
+        params.add("nu", value=1, vary=True)
+        
+        # Construct nonlinear modelling map
+        LMFITEpistasisModel.__init__(self, wildtype, genotypes, phenotypes, 
+                                            threshold_func, 
+                                            x, 
+                                            params, 
+                                            errors=errors, 
+                                            log_transform=log_transform, 
+                                            mutations=mutations)
+        
+        
+    def fit(self, **kwargs):
+        """ Fit nonlinear thresholding epistasis model."""        
+        # Use LMFIT fit method above.
+        self.update_param_value(**kwargs)
+        LMFITEpistasisModel.fit(self)
+        
+    def linear_phenotypes(self):
+        """ Get phenotypes after removing thresholding effect. """
+        return np.exp(np.dot(self.X, self.Interactions.values[:-2]))
+        
+    def plot_interactions(self, sigmas=0, title="Epistatic interactions", string_labels=False, ax=None, color='b', figsize=[6,4]):
+        """ """
+        if ax is None:
+            fig, ax = plt.subplots(1,1, figsize=figsize)
+        else:
+            fig = ax.get_figure()
+    
+        y = self.Interactions.values[:-2]
+        if string_labels is True:
+            xtick = self.Interactions.genotypes[:-2]
+        else:
+            xtick = self.Interactions.keys[:-2]
+            xlabel = "Interaction Indices"
+    
+        # plot error if sigmas are given.
+        if sigmas == 0:
+            ax.bar(range(len(y)), y, 0.9, alpha=0.4, align="center", color=color) #, **kwargs)
+        else:
+            yerr = self.Interactions.errors[:-2]
+            ax.bar(range(len(y)), y, 0.9, yerr=sigmas*yerr, alpha=0.4, align="center", color=color) #,**kwargs)
+    
+        # vertically label each interaction by their index
+        plt.xticks(range(len(y)), np.array(xtick), rotation="vertical", family='monospace',fontsize=7)
+        ax.set_ylabel("Interaction Value", fontsize=14) 
+        try:
+            ax.set_xlabel(xlabel, fontsize=14)
+        except:
+            pass
+        ax.set_title(title, fontsize=12)
+        ax.axis([-.5, len(y)-.5, -max(abs(y)), max(abs(y))])
+        ax.hlines(0,0,len(y), linestyles="dashed")
+        return fig, ax
+        
         

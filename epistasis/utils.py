@@ -18,12 +18,25 @@ AMINO_ACIDS = ["D","T", "S", "E", "P", "G", "A", "C", "V", "M", "I"
                 "L", "Y", "F", "H", "K", "R", "W", "Q", "N"]
 
 # -------------------------------------------------------
-# Useful metrics for genotype-phenotype spaces
+# Useful methods for genotype-phenotype spaces
 # -------------------------------------------------------
 
 def hamming_distance(s1, s2):
     """ Return the Hamming distance between equal-length sequences """
     return sum(ch1 != ch2 for ch1, ch2 in zip(s1, s2))
+    
+    
+def sample_phenotypes(phenotypes, errors, n=1):
+    """ Generate `n` phenotypes from  from normal distributions. """
+    samples = np.random.randn(len(phenotypes), n)
+    # Apply phenotype scale and variance
+    for i in range(n):
+        samples[:,i] = np.multiply(samples[:,i], errors) + phenotypes
+    return samples
+    
+# -------------------------------------------------------
+# Utilities for searching sequence space
+# -------------------------------------------------------
 
 def find_differences(s1, s2):
     """ Return the index of differences between two sequences."""
@@ -79,6 +92,11 @@ def label_to_key(label, state=""):
         raise Exception("`state` must be a string.")
     return ",".join([str(l) for l in label]) + state
     
+def label_to_lmfit(label, state=""):
+    if type(state) != str:
+        raise Exception("`state` must be a string.")
+    return "K" + "_".join([str(l) for l in label]) + state
+            
 def key_to_label(key):
     """ Convert an interaction key to label."""
     return [int(k) for k in key.split(",")]
@@ -199,8 +217,6 @@ def build_model_params(length, order, mutations):
 def list_binary(length):
     """ List all binary strings with given length. """
     return np.array(["".join(seq) for seq in it.product("01", repeat=length)])
-
-
 
 def enumerate_space(wildtype, mutant, binary=True):
     """ Generate binary genotype space between two sequences. 

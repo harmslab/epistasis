@@ -1,4 +1,4 @@
-import numpy 
+import numpy as np
 
 def r_squared(y_obs, y_pred):
     """ Calculate the rquared between the observed and predicted y.

@@ -103,10 +103,14 @@ class InteractionMap(BaseMap):
         return OrderedDict([(self.keys[i], self.values[i]) for i in range(len(self.values))])
         
     @property
+    def key2index(self):
+        """ Map interaction keys to indices in array. """
+        return OrderedDict([(self.keys[i], self.indices[i]) for i in range(len(self.indices))])
+        
+    @property
     def genotype2value(self):
         """ Return dict of interaction genotypes mapped to their values. """
         return OrderedDict([(self.genotypes[i], self.values[i]) for i in range(len(self.values))])
-        return self._map(self.genotypes, self.values)
         
     @property
     def genotype2error(self):
@@ -144,7 +148,7 @@ class InteractionMap(BaseMap):
     def labels(self, labels):
         """ Manually set the interactions considered in the map. Useful for building epistasis models manually. """
         self._labels = labels
-        self._indices = np.arange(1, len(self.labels) + 1)
+        self._indices = np.arange(0, len(self.labels))
 
     @values.setter
     def values(self, values):

@@ -104,7 +104,7 @@ class RandomEpistasisMap(BaseArtificialMap):
         
         """
         super(RandomEpistasisMap,self).__init__(length, order, log_transform)
-        self.random_epistasis(-1,1)
+        self.Interactions.values = self.random_epistasis(-1,1)
         self.phenotypes = self.build_phenotypes()
         
     def build_phenotypes(self, values=None):
