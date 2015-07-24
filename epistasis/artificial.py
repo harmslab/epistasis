@@ -118,14 +118,39 @@ class RandomEpistasisMap(BaseArtificialMap):
     
         # Build phenotypes for binary representation of space
         self.X = generate_dv_matrix(self.Binary.genotypes, self.Interactions.labels)
-        bit_phenotypes = np.dot(self.X,values)
+        self.Binary.phenotypes = bit_phenotypes = np.dot(self.X,values)
         if self.log_transform:
-            bit_phenotypes = 10**bit_phenotypes
+            self.Binary.phenotypes = 10**bit_phenotypes
         # Reorder phenotypes to map back to genotypes
         for i in range(len(self.Binary.indices)):
-            phenotypes[self.Binary.indices[i]] = bit_phenotypes[i]
+            phenotypes[self.Binary.indices[i]] = self.Binary.phenotypes[i]
         
         return phenotypes
+        
+class ZeroTermsEpistasisMap(RandomEpistasisMap):
+    
+    def __init__(self, length, magnitude, zero_params, log_transform=False):
+        """ Generate a genotype phenotype map with parameters set to zero.
+        
+            Parameters:
+            ----------
+            zero_params = list of ints
+                indices of parameters to set to zero.
+        
+        """
+        super(ZeroTermsEpistasisMap, self).__init__(length, length, magnitude, log_transform=False)
+        
+        if np.amax(zero_params) >= len(self.Interactions.values):
+            raise Exception("indices in zero_params are more than number of interactions. ")
+        
+        interactions = self.Interactions.values
+        
+        for i in zero_params:
+            interactions[i] = 0.0
+            
+        self.Interactions.values = interactions
+        self.phenotypes = self.build_phenotypes()
+        
 
 class ThresholdEpistasisMap(BaseArtificialMap):
     

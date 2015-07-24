@@ -1,6 +1,6 @@
 import numpy as np
 import itertools as it
-from scipy.optimize import curve_fit, basinhopping
+from scipy.optimize import curve_fit, basinhopping, minimize
 import matplotlib.pyplot as plt
 
 from epistasis.stats import r_squared
@@ -12,7 +12,7 @@ from epistasis.regression_ext import generate_dv_matrix
 # LMFIT imports
 # ------------------------------------------
 
-from lmfit import minimize, Parameters
+import lmfit
 
 # ------------------------------------------
 # Possible functions for nonlinear epistasis
@@ -41,7 +41,7 @@ def threshold_func(params, x, y_obs):
         params: LMFIT Parameters object
     """
     # Check parameters
-    if isinstance(params, Parameters) is not True:
+    if isinstance(params, lmfit.Parameters) is not True:
         raise Exception(""" params must be LMFIT's Parameters object. """) 
     # Assign parameters
     paramdict = params.valuesdict()
@@ -67,7 +67,7 @@ def threshold_func(params, x, y_obs):
 
 class NonlinearEpistasisModel(BaseModel):
         
-    def __init__(self, wildtype, genotypes, phenotypes, function, x, parameters, errors=None, log_transform=False, mutations=None):
+    def __init__(self, wildtype, genotypes, phenotypes, function, parameters, x, errors=None, log_transform=False, mutations=None):
         """ Fit a nonlinear epistasis model to a genotype-phenotype map. The function and parameters must
             specified prior. 
         
@@ -98,8 +98,7 @@ class NonlinearEpistasisModel(BaseModel):
         # Generate basis matrix for mutant cycle approach to epistasis.
         if parameters is not None:
             self._construct_interactions()      
-            self.Interactions.keys = list(parameters.values())
-            self.Interactions.labels = list(parameters.values())
+            self.Interactions.labels = parameters
         else:
             raise Exception("""Need to specify the model's `order` argument or manually 
                                 list model parameters as `parameters` argument.""")
@@ -107,25 +106,20 @@ class NonlinearEpistasisModel(BaseModel):
         self.X = x
         self.function = function
     
-    def fit(self, p0=None):
+    def fit(self, p0=None, *args):
         """ Fit the nonlinear function """
         
         # Try initial guess 
         if p0 == None:
             p0 = 0.1*np.ones(len(self.Interactions.labels), dtype=float)
-        
-        values, cov = curve_fit(self.function, 
-                                self.X.T, 
-                                self.Binary.phenotypes, 
-                                p0=p0, 
-                                maxfev=1000000)
+
+        self.results = minimize(self.function,
+                                p0,
+                                args=(self.X, self.Binary.phenotypes),
+                                method="L-BFGS-B")
+                                #options={ "maxiter":1000})
                                 
-        self.Interactions.values = values[:]
-        # Setting error if covariance was estimated, else pass.
-        try:
-            self.errors = cov[:]
-        except:
-            pass
+        self.Interactions.values = self.results.x[:]
             
             
 class LMFITEpistasisModel(BaseModel):
@@ -176,7 +170,7 @@ class LMFITEpistasisModel(BaseModel):
         
     def fit(self, method="leastsq", **kwargs):
         """ Fit the nonlinear function """
-        self.minimizer = minimize(self.function, self.parameters, args=(self.X, self.phenotypes,), method=method, **kwargs)
+        self.minimizer = lmfit.minimize(self.function, self.parameters, args=(self.X, self.Binary.phenotypes,), method=method, **kwargs)
         self.Interactions.values = np.array(list(self.minimizer.params.valuesdict().values()))
         
     def update_param_value(self, **kwargs):
@@ -238,7 +232,7 @@ class GlobalNonlinearEpistasisModel(BaseModel):
         
         
         results = basinhopping(self.function, p0, niter=1000,
-                                minimizer_kwargs={"args": (self.phenotypes,self.X.T)})
+                                minimizer_kwargs={"args": (self.Binary.phenotypes,self.X.T)})
 
         self.Interactions.values = results.x
         # Setting error if covariance was estimated, else pass.
@@ -268,7 +262,7 @@ class ThresholdingEpistasisModel(LMFITEpistasisModel, BaseModel):
         x = generate_dv_matrix(self.Binary.genotypes, labels)
         keys = [label_to_lmfit(l) for l in labels]
 
-        params = Parameters()
+        params = lmfit.Parameters()
         params.add("K0", value=0, vary=False)
         for i in range(1,len(keys)):
             params.add(keys[i], value=1, vary=True)

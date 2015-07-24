@@ -307,19 +307,24 @@ def encode_mutations(wildtype, site_alphabet):
     encoding = OrderedDict()
 
     for site_number, alphabet in site_alphabet.items():
-        n = len(alphabet)-1 # number of mutation neighbors
-        wt_site = wildtype[site_number-1] # wildtype letter
+        # Handle sites that don't mutate.
+        if alphabet is None:
+            encoding[site_number] = wildtype[site_number-1]
+        # All sites that mutate, give a mapping dictionary.
+        else:
+            n = len(alphabet)-1 # number of mutation neighbors
+            wt_site = wildtype[site_number-1] # wildtype letter
 
-        # Build a binary representation of mutation alphabet
-        indiv_encode = OrderedDict({wt_site: "0"*n})
-        alphabet_ = list(alphabet)
-        alphabet_.remove(wt_site)
+            # Build a binary representation of mutation alphabet
+            indiv_encode = OrderedDict({wt_site: "0"*n})
+            alphabet_ = list(alphabet)
+            alphabet_.remove(wt_site)
 
-        for i in range(n):
-            binary = list("0"*n)
-            binary[i] = "1"
-            indiv_encode[alphabet_[i]] = "".join(binary)
-        encoding[site_number] = indiv_encode
+            for i in range(n):
+                binary = list("0"*n)
+                binary[i] = "1"
+                indiv_encode[alphabet_[i]] = "".join(binary)
+            encoding[site_number] = indiv_encode
         
     return encoding
 
@@ -331,11 +336,13 @@ def construct_genotypes(mutation_encoding):
         Args:
         ----
         encode: OrderedDict of OrderDicts
-            Encoding dictionary that maps site number to mutation-binary map
+            Encoding dictionary that maps site number to mutation-binary map. 
+            *NOTE* If site does not mutate, value is set to wildtype site string (not dictionary).
             
             Ex:
             {
-                site-number: {"mutation": "binary"},
+                site-number: {"mutation": "binary"},  
+                            *NOTE* Non-mutating sites have a wildtype site here
                 .
                 .
                 .
@@ -352,27 +359,35 @@ def construct_genotypes(mutation_encoding):
     binary = [""]
     genotypes = [""]
     for site in mutation_encoding:
+        if type(mutation_encoding[site]) is str:
+            # Parameters that are needed for looping
+            n_genotypes = len(genotypes)
 
-        # Parameters that are needed for looping
-        n_genotypes = len(genotypes)
-        n_copies = len(mutation_encoding[site])
-        copy_genotypes = list(genotypes)
-        copy_binary = list(binary)
-
-        # Make copies of previous sites' genotypes
-        # for appending next sites binary combinations
-        for i in range(n_copies-1):
-            genotypes += copy_genotypes
-            binary += copy_binary
-
-        # Enumerate all possible configurations to append
-        # next sites binary combinations to old
-        skips = 0
-        for key, val in mutation_encoding[site].items():
+            # Enumerate all possible configurations to append
+            # wildtype site to genotypes. Binary sequences stay the same.
             for i in range(n_genotypes):
-                genotypes[skips*n_genotypes + i] += key            
-                binary[skips*n_genotypes + i] += val
-            skips += 1
+                genotypes[i] += mutation_encoding[site]            
+        else:
+            # Parameters that are needed for looping
+            n_genotypes = len(genotypes)
+            n_copies = len(mutation_encoding[site])
+            copy_genotypes = list(genotypes)
+            copy_binary = list(binary)
+
+            # Make copies of previous sites' genotypes
+            # for appending next sites binary combinations
+            for i in range(n_copies-1):
+                genotypes += copy_genotypes
+                binary += copy_binary
+
+            # Enumerate all possible configurations to append
+            # next sites binary combinations to old
+            skips = 0
+            for key, val in mutation_encoding[site].items():
+                for i in range(n_genotypes):
+                    genotypes[skips*n_genotypes + i] += key            
+                    binary[skips*n_genotypes + i] += val
+                skips += 1
 
     genotypes = np.array(genotypes)
     binary = np.array(binary)
