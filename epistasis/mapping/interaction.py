@@ -165,7 +165,6 @@ class InteractionMap(BaseMap):
     @errors.setter
     def errors(self, errors):
         """ Set the interaction errors of the system, set by an Epistasis model (see ..models.py)."""
-        print(errors.shape, len(self.labels))
         if self.log_transform is True:
             if np.array(errors).shape != (2, len(self.labels)):
                 raise Exception("""interaction_errors is not the right shape (should include 2 elements

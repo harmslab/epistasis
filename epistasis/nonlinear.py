@@ -116,8 +116,8 @@ class NonlinearEpistasisModel(BaseModel):
         self.results = minimize(self.function,
                                 p0,
                                 args=(self.X, self.Binary.phenotypes),
-                                method="L-BFGS-B")
-                                #options={ "maxiter":1000})
+                                method="L-BFGS-B",
+                                options={ "maxiter":100000, "ftol":1.e-25})
                                 
         self.Interactions.values = self.results.x[:]
             
