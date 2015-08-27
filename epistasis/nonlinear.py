@@ -178,6 +178,7 @@ class LMFITEpistasisModel(BaseModel):
         mapping = self.Interactions.key2index
         for k in kwargs:
             self.parameters[k].value = kwargs[k]
+            self.parameters[k].vary = False
             self.Interactions.values[mapping[k]] = kwargs[k]
             
         
