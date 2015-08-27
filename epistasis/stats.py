@@ -64,7 +64,7 @@ def F_test(model1, model2):
     
     return F
     
-def false_positive(known, predicted, errors, sigmas=2):
+def false_positive_rate(known, predicted, errors, sigmas=2):
     """ Calculate the false positive rate of predicted. Known, predicted 
         and errors must all be the same length.
         
@@ -90,9 +90,9 @@ def false_positive(known, predicted, errors, sigmas=2):
     if N != len(predicted) or N != len(errors):
         raise Exception("Input arrays must all be the same size")
      
-    false_positive   
+    false_positive = list()  
     for i in range(N):
-        # Calculate bounds
+        # Calculate bounds with given number of sigmas.
         upper = predicted[i] + sigmas*errors[i]
         lower = predicted[i] - sigmas*errors[i]
         
