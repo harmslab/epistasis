@@ -97,7 +97,7 @@ def false_positive_rate(known, predicted, errors, sigmas=2):
         lower = predicted[i] - sigmas*errors[i]
         
         # Check false positive rate.
-        if known[i] > upper and known[i] < lower:
+        if known[i] > upper or known[i] < lower:
             false_positive.append(i)
     
     # Calculate false positive rate
