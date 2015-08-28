@@ -36,10 +36,11 @@ def log_likelihood_ratio(model1, model2):
         raise Exception("Models must be instances of the ProjectedEpistasisModel.")
     
     # Calculate the chi-squares of each model.
-    chi1 = chi_squared(model1.phenotypes, model1.predict())
-    chi2 = chi_squared(model2.phenotypes, model2.predict())
+    L1 = model1.score #chi_squared(model1.phenotypes, model1.predict())
+    L2 = model2.score #chi_squared(model2.phenotypes, model2.predict())
+    print(L1,L2)
     
-    ratio = -2 * np.log(chi1/chi2)
+    ratio = -2 * np.log(L1/L2)
     return ratio
     
 def F_test(model1, model2):

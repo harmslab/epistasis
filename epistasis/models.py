@@ -205,7 +205,7 @@ class ProjectedEpistasisModel(BaseModel):
         """
         pass
         
-      
+
     def predict(self):
         """ Infer the phenotypes from model.
             

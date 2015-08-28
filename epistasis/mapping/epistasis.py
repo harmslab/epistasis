@@ -161,7 +161,6 @@ class EpistasisMap(BaseMap):
 
             }
             ```
-        
         """
         if type(mutations) != dict:
             raise TypeError("mutations must be a dict")

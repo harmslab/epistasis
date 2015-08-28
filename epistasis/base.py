@@ -2,7 +2,7 @@ import numpy as np
 import itertools as it
 from collections import OrderedDict
 
-from epistasis.utils import farthest_genotype, binary_mutations_map
+from epistasis.utils import farthest_genotype, binary_mutations_map, epistatic_order_indices
 
 from epistasis.mapping.epistasis import EpistasisMap
 
