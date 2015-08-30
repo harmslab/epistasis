@@ -163,7 +163,7 @@ def params_index_map(mutations):
             }
     """
     param_map = dict()
-    n_sites = 1
+    n_sites = 0
     for m in mutations:
         param_map[m] = list(range(n_sites, n_sites + len(mutations[m]) - 1))
         n_sites += len(mutations[m])-1
@@ -200,7 +200,7 @@ def build_model_params(length, order, mutations):
     interactions = list()
     orders = range(1,order+1)
     for o in orders:
-        for term in it.combinations(range(1,length+1), o):
+        for term in it.combinations(range(length), o):
             lists = [mutations[term[i]] for i in range(len(term))]        
             for r in it.product(*lists):
                 interactions.append(list(r))

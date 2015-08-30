@@ -4,9 +4,14 @@
 
 import numpy as np
 import itertools as it
+
+# seqspace imports
+from seqspace.utils import enumerate_space, binary_mutations_map
+
+# local imports 
 from epistasis.regression_ext import generate_dv_matrix
 from epistasis.mapping.epistasis import EpistasisMap
-from epistasis.utils import enumerate_space, binary_mutations_map, genotype_params, label_to_key
+from epistasis.utils import genotype_params, label_to_key
 
 # ------------------------------------------------------------
 # ArtificialMap object can be used to quickly generating a toy

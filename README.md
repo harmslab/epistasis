@@ -18,6 +18,7 @@ Should work in Python 2.6+ and Python 3+
 
 ## Dependencies
 
+* [Seqspace](https://github.com/harmslab/seqspace): Module for constructing powerful genotype-phenotype map python data-structures. 
 * [Scikit-learn](http://scikit-learn.org/stable/): Simple to use machine-learning algorithms
 * [Numpy](http://www.numpy.org/): Python's array manipulation packaged
 * [Scipy](http://www.scipy.org/): Efficient scientific array manipulations and fitting.

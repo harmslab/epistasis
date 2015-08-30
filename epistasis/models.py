@@ -8,12 +8,18 @@ from scipy.linalg import hadamard
 from sklearn.linear_model import LinearRegression
 
 # ------------------------------------------------------------
+# seqspace imports
+# ------------------------------------------------------------
+
+from seqspace.utils import list_binary, enumerate_space, encode_mutations, construct_genotypes
+
+# ------------------------------------------------------------
 # Local imports
 # ------------------------------------------------------------
 
 from epistasis.base import BaseModel
 from epistasis.regression_ext import generate_dv_matrix
-from epistasis.utils import epistatic_order_indices, list_binary, enumerate_space, encode_mutations, construct_genotypes, build_model_params 
+from epistasis.utils import epistatic_order_indices, build_model_params 
 # ------------------------------------------------------------
 # Unique Epistasis Functions
 # ------------------------------------------------------------   
@@ -112,6 +118,10 @@ class GlobalEpistasisModel(BaseModel):
         # Populate Epistasis Map
         super(GlobalEpistasisModel, self).__init__(wildtype, genotypes, phenotypes, errors, log_transform)
         self.order = self.length
+        
+        # Construct the Interactions mapping -- Interactions Subclass is added to model
+        self._construct_interactions()
+        
         # Generate basis matrix for mutant cycle approach to epistasis.
         self.weight_vector = hadamard_weight_vector(self.Binary.genotypes)
         self.X = hadamard(2**self.length)

@@ -2,8 +2,11 @@ import numpy as np
 import itertools as it
 from collections import OrderedDict
 
-from epistasis.utils import farthest_genotype, binary_mutations_map, epistatic_order_indices
+# imports from seqspace dependency
+from seqspace.utils import farthest_genotype, binary_mutations_map
 
+# Local imports
+from epistasis.utils import epistatic_order_indices
 from epistasis.mapping.epistasis import EpistasisMap
 
 class BaseModel(EpistasisMap):
@@ -26,20 +29,13 @@ class BaseModel(EpistasisMap):
             mutations:
             
         """
-        super(BaseModel, self).__init__()
-
-        self.genotypes = genotypes
-        self.wildtype = wildtype
-        self.log_transform = log_transform
-        self.phenotypes = phenotypes
-        
         # Defaults to binary mapping if not specific mutations are named
         if mutations is None:
-            mutant = farthest_genotype(self.wildtype, self.genotypes)
-            self.mutations = binary_mutations_map(self.wildtype, mutant)
-        else:
-            self.mutations = mutations
+            mutant = farthest_genotype(wildtype, genotypes)
+            mutations = binary_mutations_map(wildtype, mutant)
             
+        super(BaseModel, self).__init__(wildtype, genotypes, phenotypes, errors=errors, log_transform=log_transform, mutations=mutations)
+        
         # Construct a binary representation of the map (method inherited from parent class)
         # and make it a subclass of the model.
         self._construct_binary()

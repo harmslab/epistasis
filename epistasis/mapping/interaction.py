@@ -14,7 +14,7 @@ from collections import OrderedDict
 # Local imports
 # ----------------------------------------------------------
 
-from epistasis.mapping.base import BaseMap
+from seqspace.base import BaseMap
 from epistasis.utils import params_index_map, build_model_params, label_to_key
 
 class InteractionMap(BaseMap):
@@ -92,30 +92,6 @@ class InteractionMap(BaseMap):
         for label in self._labels[1:]:
             elements.append(self._label_to_genotype(label))
         return elements
-
-    # ----------------------------------------------------------
-    # Getter methods for mapping objects
-    # ----------------------------------------------------------  
-       
-    @property
-    def key2value(self):
-        """ Return dict of interaction keys mapped to their values. """
-        return OrderedDict([(self.keys[i], self.values[i]) for i in range(len(self.values))])
-        
-    @property
-    def key2index(self):
-        """ Map interaction keys to indices in array. """
-        return OrderedDict([(self.keys[i], self.indices[i]) for i in range(len(self.indices))])
-        
-    @property
-    def genotype2value(self):
-        """ Return dict of interaction genotypes mapped to their values. """
-        return OrderedDict([(self.genotypes[i], self.values[i]) for i in range(len(self.values))])
-        
-    @property
-    def genotype2error(self):
-        """ Return dict of interaction genotypes mapped to their values. """
-        return OrderedDict([(self.genotypes[i], self.errors[:,i]) for i in range(len(self.values))])
         
     # ----------------------------------------------
     # Setter Functions

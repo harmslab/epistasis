@@ -11,6 +11,7 @@ setup(name='epistasis',
       author_email='zachsailer@gmail.com',
       packages=['epistasis'],
       install_requires=[
+          'seqspace',
           'numpy',
           'scipy',
           'pandas',
