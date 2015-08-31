@@ -7,6 +7,12 @@
 # ----------------------------------------------------------
 
 import numpy as np
+
+# ----------------------------------------------------------
+# Core internal mapping for this package is inheritted from 
+# seqspace module. 
+# ----------------------------------------------------------
+
 from seqspace.gpm import GenoPhenoMap
 from seqspace.utils import hamming_distance, encode_mutations, construct_genotypes
 
@@ -16,6 +22,11 @@ from seqspace.utils import hamming_distance, encode_mutations, construct_genotyp
 
 from epistasis.mapping.interaction import InteractionMap
 from epistasis.utils import params_index_map, build_model_params
+
+# ----------------------------------------------------------
+# Internal mapping object for all models in this package
+# Notice: mapping inherits seqspace base mapping object
+# ----------------------------------------------------------
 
 class EpistasisMap(GenoPhenoMap):
     

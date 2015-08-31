@@ -22,12 +22,14 @@ class BaseArtificialMap(EpistasisMap):
     
     def __init__(self, length, order, log_transform=False):
         """ Generate a binary genotype-phenotype mape with the given length from epistatic interactions. """
-        super(BaseArtificialMap, self).__init__()
         wildtype = '0'*length
         mutant = '1'*length
-        self.mutations = binary_mutations_map(wildtype, mutant)
-        self.genotypes, binaries = enumerate_space(wildtype, mutant)
-        self.wildtype = wildtype
+        mutations = binary_mutations_map(wildtype, mutant)
+        genotypes, binaries = enumerate_space(wildtype, mutant)
+        phenotypes = np.zeros(len(genotypes), dtype=float)
+
+        # Initialize base map.
+        super(BaseArtificialMap, self).__init__(wildtype, genotypes, phenotypes, log_transform=log_transform, mutations=mutations)
         self.order = order
         self.log_transform = log_transform
         self._construct_binary()
@@ -196,7 +198,7 @@ class ThresholdEpistasisMap(BaseArtificialMap):
     def build_phenotypes(self, values=None):
         """ Uses the multiplicative model to construct raw phenotypes. """
         phenotypes = np.empty(len(self.genotypes), dtype=float)
-        param_map = self.Interactions.key2value
+        param_map = self.get_map("Interactions.keys", "Interactions.values")
         for i in range(len(phenotypes)):
             params = genotype_params(self.genotypes[i], order=self.order)
             values = np.array([param_map[label_to_key(p)] for p in params])
@@ -209,8 +211,8 @@ class ThresholdEpistasisMap(BaseArtificialMap):
         for i in range(self.n):
             phenotypes[i] = threshold * (1 - np.exp(-sharpness*raw_phenotypes[i]))
         return phenotypes
-        
-        
+
+
 class NKEpistasisMap(BaseArtificialMap):
     
     def __init__(self, length, order, magnitude):
