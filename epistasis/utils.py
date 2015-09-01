@@ -72,6 +72,12 @@ def params_index_map(mutations):
         ----
         mutations: dict
             mapping each site to their accessible mutations alphabet.
+            
+            ```
+            mutations = {site_number : alphabet}
+            
+            If site does not mutate, value should be None.
+            ```
     
         Returns:
         -------
@@ -87,12 +93,16 @@ def params_index_map(mutations):
                 1: [indices],
 
             }
+            ```
     """
     param_map = dict()
     n_sites = 1
     for m in mutations:
-        param_map[m] = list(range(n_sites, n_sites + len(mutations[m]) - 1))
-        n_sites += len(mutations[m])-1
+        if mutations[m] is None: 
+            param_map[m] = None
+        else:
+            param_map[m] = list(range(n_sites, n_sites + len(mutations[m]) - 1))
+            n_sites += len(mutations[m])-1
     return param_map
 
 def build_model_params(length, order, mutations):
@@ -125,11 +135,28 @@ def build_model_params(length, order, mutations):
     # Recursive algorithm that's difficult to follow.
     interactions = list()
     orders = range(1,order+1)
+    
+    # Iterate through each order
     for o in orders:
+        
+        # Iterate through all combinations of orders with given length
         for term in it.combinations(range(length), o):
-            lists = [mutations[term[i]] for i in range(len(term))]        
-            for r in it.product(*lists):
-                interactions.append(list(r))
+            # If any sites in `term` == None, skip this term.
+            bad_term = False
+            lists = []
+            for i in range(len(term)):
+                if mutations[term[i]] == None:
+                    bad_term = True
+                    break
+                else:
+                    lists.append(mutations[term[i]])
+        
+            # Else, add interactions combinations to list
+            if bad_term is False:
+                for r in it.product(*lists):
+                    interactions.append(list(r))
+    
+    # Add intercept term (for wildtype)
     interactions = [[0]] + interactions
     
     return interactions
