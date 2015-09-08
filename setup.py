@@ -1,4 +1,9 @@
-from setuptools import setup
+# Try using setuptools first, if it's installed
+try:
+    from setuptools import setup
+except: 
+    from distutils.core import setup
+    
 from distutils.extension import Extension
 
 

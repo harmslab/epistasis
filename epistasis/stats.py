@@ -27,6 +27,23 @@ def chi_squared(y_obs, y_pred):
 # Comparing two models.
 # -----------------------------------------------------------------------    
 
+def log_likelihood(model):
+    """ Calculate the maximum likelihood estimate from sum of squared residuals."""
+    ssr = ss_residuals(model.phenotypes, model.predict())
+    N = model.n
+    sigma = float(ssr/ N)
+    L = N * np.log(1.0 / np.sqrt(2*np.pi*sigma)) - (1.0 / (2.0*sigma)) * ssr
+    return L
+
+def AIC(model):
+    """ Calculate the Akaike information criterion score for a model. """
+    k = len(model.Interactions.values)
+    aic = 2 * k - 2 * log_likelihood(model)
+    return aic
+
+#def f_statistic(model):
+ #   """ """
+
 def log_likelihood_ratio(model1, model2):
     """ Calculate the likelihood ratio two regressed epistasis models. 
     
@@ -35,12 +52,20 @@ def log_likelihood_ratio(model1, model2):
     if isinstance(model1, ProjectedEpistasisModel) != True and isinstance(model2, ProjectedEpistasisModel) != True:
         raise Exception("Models must be instances of the ProjectedEpistasisModel.")
     
-    # Calculate the chi-squares of each model.
-    L1 = model1.score #chi_squared(model1.phenotypes, model1.predict())
-    L2 = model2.score #chi_squared(model2.phenotypes, model2.predict())
-    print(L1,L2)
+    ssr1 = ss_residuals(model1.phenotypes, model1.predict())
+    ssr2 = ss_residuals(model2.phenotypes, model2.predict())
     
-    ratio = -2 * np.log(L1/L2)
+    sigma1 = float(ssr1/model1.n)
+    sigma2 = float(ssr2/model2.n)
+    
+    L1 = (1.0/ np.sqrt(2*np.pi*s1)) ** model1.n * np.exp(-ssr1/(sigma1*2.0))
+    L2 = (1.0/ np.sqrt(2*np.pi*s2)) ** model2.n * np.exp(-ssr2/(sigma2*2.0))
+    
+    AIC1 = 2*df1 - 2*L1
+    AIC2 = 2*df2 - 2*L2
+    
+    print(AIC1, AIC2)
+    ratio = np.exp(AIC1-AIC2/2)
     return ratio
     
 def F_test(model1, model2):
@@ -55,15 +80,17 @@ def F_test(model1, model2):
     # Number of parameters in each model
     p1 = len(model1.Interactions.values)
     p2 = len(model2.Interactions.values)
+    df1 = p2-p1
+    df2 = n_obs - p2
     
     # Sum of square residuals for each model.
     sse1 = ss_residuals(model1.phenotypes, model1.predict())
     sse2 = ss_residuals(model2.phenotypes, model2.predict())
     
     # F-test
-    F = ( (sse1 - sse2) / (p2 - p1) ) / (sse2 / (n_obs - p2 - 1))
+    F = ( (sse1 - sse2) / df1 ) / (sse2 / df2)
     
-    return F
+    return F, df1, df2
     
 def false_positive_rate(known, predicted, errors, sigmas=2):
     """ Calculate the false positive rate of predicted. Known, predicted 
