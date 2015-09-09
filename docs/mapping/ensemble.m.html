@@ -1143,12 +1143,11 @@ table {
     <span class="k">def</span> <span class="nf">phenotypes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">phenotypes</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Set phenotypes from ordered list of phenotypes. </span>
 <span class="sd">            </span>
-<span class="sd">            Args:</span>
-<span class="sd">            -----</span>
-<span class="sd">            phenotypes: array-like or dict</span>
-<span class="sd">                if array-like, it musted be ordered by genotype; if dict,</span>
-<span class="sd">                this method automatically orders the phenotypes into numpy</span>
-<span class="sd">                array.</span>
+<span class="sd">            __Arguments__:</span>
+<span class="sd">            </span>
+<span class="sd">            `phenotypes` [array-like or dict] : if array-like, it musted be </span>
+<span class="sd">                ordered by genotype; if dict, this method automatically orders </span>
+<span class="sd">                the phenotypes into numpy array.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">phenotypes</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">dict</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_phenotypes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_if_dict</span><span class="p">(</span><span class="n">phenotypes</span><span class="p">)</span>
@@ -1162,12 +1161,11 @@ table {
     <span class="k">def</span> <span class="nf">phenotype_errors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">errors</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Set error from ordered list of phenotype error. </span>
 <span class="sd">            </span>
-<span class="sd">            Args:</span>
-<span class="sd">            -----</span>
-<span class="sd">            error: array-like or dict</span>
-<span class="sd">                if array-like, it musted be ordered by genotype; if dict,</span>
-<span class="sd">                this method automatically orders the errors into numpy</span>
-<span class="sd">                array.</span>
+<span class="sd">            __Arguments__:</span>
+<span class="sd">            </span>
+<span class="sd">            `error` [array-like or dict] : if array-like, it musted be ordered by </span>
+<span class="sd">                genotype; if dict, this method automatically orders the errors </span>
+<span class="sd">                into numpy array.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">errors</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">dict</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_phenotype_errors</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_if_dict</span><span class="p">(</span><span class="n">phenotype_errors</span><span class="p">)</span>
@@ -1330,12 +1328,11 @@ table {
     <span class="k">def</span> <span class="nf">phenotypes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">phenotypes</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Set phenotypes from ordered list of phenotypes. </span>
 <span class="sd">            </span>
-<span class="sd">            Args:</span>
-<span class="sd">            -----</span>
-<span class="sd">            phenotypes: array-like or dict</span>
-<span class="sd">                if array-like, it musted be ordered by genotype; if dict,</span>
-<span class="sd">                this method automatically orders the phenotypes into numpy</span>
-<span class="sd">                array.</span>
+<span class="sd">            __Arguments__:</span>
+<span class="sd">            </span>
+<span class="sd">            `phenotypes` [array-like or dict] : if array-like, it musted be </span>
+<span class="sd">                ordered by genotype; if dict, this method automatically orders </span>
+<span class="sd">                the phenotypes into numpy array.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">phenotypes</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">dict</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_phenotypes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_if_dict</span><span class="p">(</span><span class="n">phenotypes</span><span class="p">)</span>
@@ -1349,12 +1346,11 @@ table {
     <span class="k">def</span> <span class="nf">phenotype_errors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">errors</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Set error from ordered list of phenotype error. </span>
 <span class="sd">            </span>
-<span class="sd">            Args:</span>
-<span class="sd">            -----</span>
-<span class="sd">            error: array-like or dict</span>
-<span class="sd">                if array-like, it musted be ordered by genotype; if dict,</span>
-<span class="sd">                this method automatically orders the errors into numpy</span>
-<span class="sd">                array.</span>
+<span class="sd">            __Arguments__:</span>
+<span class="sd">            </span>
+<span class="sd">            `error` [array-like or dict] : if array-like, it musted be ordered by </span>
+<span class="sd">                genotype; if dict, this method automatically orders the errors </span>
+<span class="sd">                into numpy array.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">errors</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">dict</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_phenotype_errors</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_if_dict</span><span class="p">(</span><span class="n">phenotype_errors</span><span class="p">)</span>

@@ -4,7 +4,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 
     <title>epistasis API documentation</title>
-    <meta name="description" content="" />
+    <meta name="description" content="A python package for estimating high order epistasis in genotype-phenotype maps. This package includ..." />
 
   <link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro:400,300' rel='stylesheet' type='text/css'>
   
@@ -1046,7 +1046,6 @@ table {
         <li class="mono"><a href="knockout.m.html">epistasis.knockout</a></li>
         <li class="mono"><a href="mapping/index.html">epistasis.mapping</a></li>
         <li class="mono"><a href="models.m.html">epistasis.models</a></li>
-        <li class="mono"><a href="network.m.html">epistasis.network</a></li>
         <li class="mono"><a href="nonlinear.m.html">epistasis.nonlinear</a></li>
         <li class="mono"><a href="pca.m.html">epistasis.pca</a></li>
         <li class="mono"><a href="plotting.m.html">epistasis.plotting</a></li>
@@ -1067,8 +1066,32 @@ table {
 
   <header id="section-intro">
   <h1 class="title"><span class="name">epistasis</span> module</h1>
+  <p>A python package for estimating high order epistasis in genotype-phenotype maps. This package includes both linear and non-linear epistasis models, as well as various tools for analyzing these spaces. </p>
+<p>The source code can be found at www.github.com/harmslab/epistasis.</p>
+<p>The main documentation for this package can be found on the source-codes wiki page.</p>
+<p>To install:</p>
+<div class="codehilite"><pre>python setup.py install
+</pre></div>
   
-  
+  <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-epistasis', this);">Show source &equiv;</a></p>
+  <div id="source-epistasis" class="source">
+    <div class="codehilite"><pre><span class="n">__doc__</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot; </span>
+
+<span class="s">A python package for estimating high order epistasis in genotype-phenotype maps. This package includes both linear and non-linear epistasis models, as well as various tools for analyzing these spaces. </span>
+
+<span class="s">The source code can be found at www.github.com/harmslab/epistasis.</span>
+
+<span class="s">The main documentation for this package can be found on the source-codes wiki page.</span>
+
+<span class="s">To install:</span>
+
+<span class="s">    python setup.py install</span>
+
+
+<span class="s">&quot;&quot;&quot;</span>
+</pre></div>
+
+  </div>
 
   </header>
 
@@ -1081,66 +1104,70 @@ table {
       <p class="name"><a href="artificial.m.html">epistasis.artificial</a></p>
       
   
+    <div class="desc"><p>Submodule with various classes for generating/simulating genotype-phenotype maps.</p></div>
 
       </div>
       <div class="item">
       <p class="name"><a href="base.m.html">epistasis.base</a></p>
       
   
+    <div class="desc"><p>Base class for epistasis models. This is meant to be called in a subclass.</p></div>
 
       </div>
       <div class="item">
       <p class="name"><a href="compare.m.html">epistasis.compare</a></p>
       
   
+    <div class="desc"><p>Submodule with classes for comparing two epistasis models.</p></div>
 
       </div>
       <div class="item">
       <p class="name"><a href="ensemble.m.html">epistasis.ensemble</a></p>
       
   
+    <div class="desc"><p>Generate an ensemble of genotype-phenotype maps for studying average properties of the space.</p></div>
 
       </div>
       <div class="item">
       <p class="name"><a href="knockout.m.html">epistasis.knockout</a></p>
       
   
+    <div class="desc"><p>Submodule with classes for projecting spaces after knocking out epistatic interactions.</p></div>
 
       </div>
       <div class="item">
       <p class="name"><a href="mapping/index.html">epistasis.mapping</a></p>
       
   
+    <div class="desc"><p>Submodule with core mapping objects for epistasis models.</p></div>
 
       </div>
       <div class="item">
       <p class="name"><a href="models.m.html">epistasis.models</a></p>
       
   
-
-      </div>
-      <div class="item">
-      <p class="name"><a href="network.m.html">epistasis.network</a></p>
-      
-  
+    <div class="desc"><p>Submodule of linear epistasis models. Includes full local and global epistasis models and regression model for low order models.</p></div>
 
       </div>
       <div class="item">
       <p class="name"><a href="nonlinear.m.html">epistasis.nonlinear</a></p>
       
   
+    <div class="desc"><p>Submodule with nonlinear epistasis models for estimating epistatic interactions in nonlinear genotype-phenotype maps.</p></div>
 
       </div>
       <div class="item">
       <p class="name"><a href="pca.m.html">epistasis.pca</a></p>
       
   
+    <div class="desc"><p>Principal component analysis for genotype-phenotype maps in submodule.</p></div>
 
       </div>
       <div class="item">
       <p class="name"><a href="plotting.m.html">epistasis.plotting</a></p>
       
   
+    <div class="desc"><p>Plotting submodule for epistasis models.</p></div>
 
       </div>
       <div class="item">
@@ -1153,12 +1180,14 @@ table {
       <p class="name"><a href="stats.m.html">epistasis.stats</a></p>
       
   
+    <div class="desc"><p>Submodule with useful statistics functions for epistasis model.</p></div>
 
       </div>
       <div class="item">
       <p class="name"><a href="utils.m.html">epistasis.utils</a></p>
       
   
+    <div class="desc"><p>Submodule with handy utilities for constructing epistasis models.</p></div>
 
       </div>
   </section>

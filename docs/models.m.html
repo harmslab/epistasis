@@ -4,7 +4,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 
     <title>epistasis.models API documentation</title>
-    <meta name="description" content="" />
+    <meta name="description" content="Submodule of linear epistasis models. Includes full local and global epistasis models and regression..." />
 
   <link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro:400,300' rel='stylesheet' type='text/css'>
   
@@ -1104,11 +1104,13 @@ table {
 
   <header id="section-intro">
   <h1 class="title"><span class="name">epistasis.models</span> module</h1>
-  
+  <p>Submodule of linear epistasis models. Includes full local and global epistasis models and regression model for low order models.</p>
   
   <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-epistasis.models', this);">Show source &equiv;</a></p>
   <div id="source-epistasis.models" class="source">
-    <div class="codehilite"><pre><span class="c"># ------------------------------------------------------------</span>
+    <div class="codehilite"><pre><span class="n">__doc__</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot; Submodule of linear epistasis models. Includes full local and global epistasis models and regression model for low order models.&quot;&quot;&quot;</span>
+
+<span class="c"># ------------------------------------------------------------</span>
 <span class="c"># Imports</span>
 <span class="c"># ------------------------------------------------------------</span>
 
@@ -1161,18 +1163,17 @@ table {
 <span class="sd">            i.e.</span>
 <span class="sd">            Phenotype = K_0 + sum(K_i) + sum(K_ij) + sum(K_ijk) + ...</span>
 <span class="sd">            </span>
-<span class="sd">            Args:</span>
-<span class="sd">            ----</span>
-<span class="sd">            wildtype: str</span>
-<span class="sd">                Wildtype genotype. Wildtype phenotype will be used as reference state.</span>
-<span class="sd">            genotypes: array-like, dtype=str</span>
-<span class="sd">                Genotypes in map. Can be binary strings, or not.</span>
-<span class="sd">            phenotypes: array-like</span>
-<span class="sd">                Quantitative phenotype values</span>
-<span class="sd">            errors: array-like</span>
-<span class="sd">                List of phenotype errors.</span>
-<span class="sd">            log_transform: bool</span>
-<span class="sd">                If True, log transform the phenotypes.</span>
+<span class="sd">            __Arguments__:</span>
+<span class="sd">            </span>
+<span class="sd">            `wildtype` [str] : Wildtype genotype. Wildtype phenotype will be used as reference state.</span>
+<span class="sd">            </span>
+<span class="sd">            `genotypes` [array-like, dtype=str] : Genotypes in map. Can be binary strings, or not.</span>
+<span class="sd">            </span>
+<span class="sd">            `phenotypes` [array-like] : Quantitative phenotype values</span>
+<span class="sd">            </span>
+<span class="sd">            `errors` [array-like] : List of phenotype errors.</span>
+<span class="sd">            </span>
+<span class="sd">            `log_transform` [bool] : If True, log transform the phenotypes.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c"># Populate Epistasis Map</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">LocalEpistasisModel</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">wildtype</span><span class="p">,</span> <span class="n">genotypes</span><span class="p">,</span> <span class="n">phenotypes</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="n">errors</span><span class="p">,</span> <span class="n">log_transform</span><span class="o">=</span><span class="n">log_transform</span><span class="p">,</span> <span class="n">mutations</span><span class="o">=</span><span class="n">mutations</span><span class="p">)</span>
@@ -1209,21 +1210,21 @@ table {
     
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wildtype</span><span class="p">,</span> <span class="n">genotypes</span><span class="p">,</span> <span class="n">phenotypes</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">log_transform</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Create a map of the global epistatic effects using Hadamard approach.</span>
+<span class="sd">            </span>
 <span class="sd">            This is the related to LocalEpistasisMap by the discrete Fourier </span>
 <span class="sd">            transform of mutant cycle approach. </span>
 <span class="sd">            </span>
-<span class="sd">            Args:</span>
-<span class="sd">            ----</span>
-<span class="sd">            wildtype: str</span>
-<span class="sd">                Wildtype genotype. Wildtype phenotype will be used as reference state.</span>
-<span class="sd">            genotypes: array-like, dtype=str</span>
-<span class="sd">                Genotypes in map. Can be binary strings, or not.</span>
-<span class="sd">            phenotypes: array-like</span>
-<span class="sd">                Quantitative phenotype values</span>
-<span class="sd">            errors: array-like</span>
-<span class="sd">                List of phenotype errors.</span>
-<span class="sd">            log_transform: bool</span>
-<span class="sd">                If True, log transform the phenotypes.</span>
+<span class="sd">            __Arguments__:</span>
+<span class="sd">            </span>
+<span class="sd">            `wildtype` [str] : Wildtype genotype. Wildtype phenotype will be used as reference state.</span>
+<span class="sd">            </span>
+<span class="sd">            `genotypes` [array-like, dtype=str] : Genotypes in map. Can be binary strings, or not.</span>
+<span class="sd">            </span>
+<span class="sd">            `phenotypes` [array-like] : Quantitative phenotype values</span>
+<span class="sd">            </span>
+<span class="sd">            `errors` [array-like] : List of phenotype errors.</span>
+<span class="sd">            </span>
+<span class="sd">            `log_transform` [bool] : If True, log transform the phenotypes.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c"># Populate Epistasis Map</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">GlobalEpistasisModel</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">wildtype</span><span class="p">,</span> <span class="n">genotypes</span><span class="p">,</span> <span class="n">phenotypes</span><span class="p">,</span> <span class="n">errors</span><span class="p">,</span> <span class="n">log_transform</span><span class="p">)</span>
@@ -1263,22 +1264,21 @@ table {
         <span class="sd">&quot;&quot;&quot; Create a map from local epistasis model projected into lower order</span>
 <span class="sd">            order epistasis interactions. Requires regression to estimate values.</span>
 <span class="sd">            </span>
-<span class="sd">            Args:</span>
-<span class="sd">            ----</span>
-<span class="sd">            wildtype: str</span>
-<span class="sd">                Wildtype genotype. Wildtype phenotype will be used as reference state.</span>
-<span class="sd">            genotypes: array-like, dtype=str</span>
-<span class="sd">                Genotypes in map. Can be binary strings, or not.</span>
-<span class="sd">            phenotypes: array-like</span>
-<span class="sd">                Quantitative phenotype values</span>
-<span class="sd">            order: int</span>
-<span class="sd">                Order of regression; if None, parameters must be passed in manually as parameters=&lt;list of lists&gt;</span>
-<span class="sd">            parameters: dict</span>
-<span class="sd">                interaction keys with their values expressed as lists.</span>
-<span class="sd">            errors: array-like</span>
-<span class="sd">                List of phenotype errors.</span>
-<span class="sd">            log_transform: bool</span>
-<span class="sd">                If True, log transform the phenotypes.</span>
+<span class="sd">            __Arguments__:</span>
+<span class="sd">            </span>
+<span class="sd">            `wildtype` [str] : Wildtype genotype. Wildtype phenotype will be used as reference state.</span>
+<span class="sd">            </span>
+<span class="sd">            `genotypes` [array-like, dtype=str] : Genotypes in map. Can be binary strings, or not.</span>
+<span class="sd">            </span>
+<span class="sd">            `phenotypes` [array-like] : Quantitative phenotype values</span>
+<span class="sd">            </span>
+<span class="sd">            `order` [int] : Order of regression; if None, parameters must be passed in manually as parameters=&lt;list of lists&gt;</span>
+<span class="sd">            </span>
+<span class="sd">            `parameters` [dict] : interaction keys with their values expressed as lists.</span>
+<span class="sd">            </span>
+<span class="sd">            `errors` [array-like] : List of phenotype errors.</span>
+<span class="sd">            </span>
+<span class="sd">            `log_transform` [bool] : If True, log transform the phenotypes.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c"># Populate Epistasis Map</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">ProjectedEpistasisModel</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">wildtype</span><span class="p">,</span> <span class="n">genotypes</span><span class="p">,</span> <span class="n">phenotypes</span><span class="p">,</span> <span class="n">errors</span><span class="p">,</span> <span class="n">log_transform</span><span class="p">,</span> <span class="n">mutations</span><span class="p">)</span>
@@ -1329,12 +1329,11 @@ table {
     <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Infer the phenotypes from model.</span>
 <span class="sd">            </span>
-<span class="sd">            Returns:</span>
-<span class="sd">            -------</span>
-<span class="sd">            genotypes: array</span>
-<span class="sd">                array of genotypes -- in same order as phenotypes</span>
-<span class="sd">            phenotypes: array</span>
-<span class="sd">                array of quantitative phenotypes.</span>
+<span class="sd">            __Returns__:</span>
+<span class="sd">            </span>
+<span class="sd">            `genotypes` [array] : array of genotypes -- in same order as phenotypes</span>
+<span class="sd">            </span>
+<span class="sd">            `phenotypes` [array] : array of quantitative phenotypes.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">phenotypes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">genotypes</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
         <span class="n">binaries</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Binary</span><span class="o">.</span><span class="n">genotypes</span>
@@ -1418,21 +1417,21 @@ table {
     
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wildtype</span><span class="p">,</span> <span class="n">genotypes</span><span class="p">,</span> <span class="n">phenotypes</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">log_transform</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Create a map of the global epistatic effects using Hadamard approach.</span>
+<span class="sd">            </span>
 <span class="sd">            This is the related to LocalEpistasisMap by the discrete Fourier </span>
 <span class="sd">            transform of mutant cycle approach. </span>
 <span class="sd">            </span>
-<span class="sd">            Args:</span>
-<span class="sd">            ----</span>
-<span class="sd">            wildtype: str</span>
-<span class="sd">                Wildtype genotype. Wildtype phenotype will be used as reference state.</span>
-<span class="sd">            genotypes: array-like, dtype=str</span>
-<span class="sd">                Genotypes in map. Can be binary strings, or not.</span>
-<span class="sd">            phenotypes: array-like</span>
-<span class="sd">                Quantitative phenotype values</span>
-<span class="sd">            errors: array-like</span>
-<span class="sd">                List of phenotype errors.</span>
-<span class="sd">            log_transform: bool</span>
-<span class="sd">                If True, log transform the phenotypes.</span>
+<span class="sd">            __Arguments__:</span>
+<span class="sd">            </span>
+<span class="sd">            `wildtype` [str] : Wildtype genotype. Wildtype phenotype will be used as reference state.</span>
+<span class="sd">            </span>
+<span class="sd">            `genotypes` [array-like, dtype=str] : Genotypes in map. Can be binary strings, or not.</span>
+<span class="sd">            </span>
+<span class="sd">            `phenotypes` [array-like] : Quantitative phenotype values</span>
+<span class="sd">            </span>
+<span class="sd">            `errors` [array-like] : List of phenotype errors.</span>
+<span class="sd">            </span>
+<span class="sd">            `log_transform` [bool] : If True, log transform the phenotypes.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c"># Populate Epistasis Map</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">GlobalEpistasisModel</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">wildtype</span><span class="p">,</span> <span class="n">genotypes</span><span class="p">,</span> <span class="n">phenotypes</span><span class="p">,</span> <span class="n">errors</span><span class="p">,</span> <span class="n">log_transform</span><span class="p">)</span>
@@ -1490,40 +1489,35 @@ table {
 
     
   
-    <div class="desc"><p>Create a map of the global epistatic effects using Hadamard approach.
-This is the related to LocalEpistasisMap by the discrete Fourier 
+    <div class="desc"><p>Create a map of the global epistatic effects using Hadamard approach.</p>
+<p>This is the related to LocalEpistasisMap by the discrete Fourier 
 transform of mutant cycle approach. </p>
-<h2>Args:</h2>
-<p>wildtype: str
-    Wildtype genotype. Wildtype phenotype will be used as reference state.
-genotypes: array-like, dtype=str
-    Genotypes in map. Can be binary strings, or not.
-phenotypes: array-like
-    Quantitative phenotype values
-errors: array-like
-    List of phenotype errors.
-log_transform: bool
-    If True, log transform the phenotypes.</p></div>
+<p><strong>Arguments</strong>:</p>
+<p><code>wildtype</code> [str] : Wildtype genotype. Wildtype phenotype will be used as reference state.</p>
+<p><code>genotypes</code> [array-like, dtype=str] : Genotypes in map. Can be binary strings, or not.</p>
+<p><code>phenotypes</code> [array-like] : Quantitative phenotype values</p>
+<p><code>errors</code> [array-like] : List of phenotype errors.</p>
+<p><code>log_transform</code> [bool] : If True, log transform the phenotypes.</p></div>
   <div class="source_cont">
   <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-epistasis.models.GlobalEpistasisModel.__init__', this);">Show source &equiv;</a></p>
   <div id="source-epistasis.models.GlobalEpistasisModel.__init__" class="source">
     <div class="codehilite"><pre><span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wildtype</span><span class="p">,</span> <span class="n">genotypes</span><span class="p">,</span> <span class="n">phenotypes</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">log_transform</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Create a map of the global epistatic effects using Hadamard approach.</span>
+<span class="sd">        </span>
 <span class="sd">        This is the related to LocalEpistasisMap by the discrete Fourier </span>
 <span class="sd">        transform of mutant cycle approach. </span>
 <span class="sd">        </span>
-<span class="sd">        Args:</span>
-<span class="sd">        ----</span>
-<span class="sd">        wildtype: str</span>
-<span class="sd">            Wildtype genotype. Wildtype phenotype will be used as reference state.</span>
-<span class="sd">        genotypes: array-like, dtype=str</span>
-<span class="sd">            Genotypes in map. Can be binary strings, or not.</span>
-<span class="sd">        phenotypes: array-like</span>
-<span class="sd">            Quantitative phenotype values</span>
-<span class="sd">        errors: array-like</span>
-<span class="sd">            List of phenotype errors.</span>
-<span class="sd">        log_transform: bool</span>
-<span class="sd">            If True, log transform the phenotypes.</span>
+<span class="sd">        __Arguments__:</span>
+<span class="sd">        </span>
+<span class="sd">        `wildtype` [str] : Wildtype genotype. Wildtype phenotype will be used as reference state.</span>
+<span class="sd">        </span>
+<span class="sd">        `genotypes` [array-like, dtype=str] : Genotypes in map. Can be binary strings, or not.</span>
+<span class="sd">        </span>
+<span class="sd">        `phenotypes` [array-like] : Quantitative phenotype values</span>
+<span class="sd">        </span>
+<span class="sd">        `errors` [array-like] : List of phenotype errors.</span>
+<span class="sd">        </span>
+<span class="sd">        `log_transform` [bool] : If True, log transform the phenotypes.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c"># Populate Epistasis Map</span>
     <span class="nb">super</span><span class="p">(</span><span class="n">GlobalEpistasisModel</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">wildtype</span><span class="p">,</span> <span class="n">genotypes</span><span class="p">,</span> <span class="n">phenotypes</span><span class="p">,</span> <span class="n">errors</span><span class="p">,</span> <span class="n">log_transform</span><span class="p">)</span>
@@ -1886,18 +1880,17 @@ attr2: str
 <span class="sd">            i.e.</span>
 <span class="sd">            Phenotype = K_0 + sum(K_i) + sum(K_ij) + sum(K_ijk) + ...</span>
 <span class="sd">            </span>
-<span class="sd">            Args:</span>
-<span class="sd">            ----</span>
-<span class="sd">            wildtype: str</span>
-<span class="sd">                Wildtype genotype. Wildtype phenotype will be used as reference state.</span>
-<span class="sd">            genotypes: array-like, dtype=str</span>
-<span class="sd">                Genotypes in map. Can be binary strings, or not.</span>
-<span class="sd">            phenotypes: array-like</span>
-<span class="sd">                Quantitative phenotype values</span>
-<span class="sd">            errors: array-like</span>
-<span class="sd">                List of phenotype errors.</span>
-<span class="sd">            log_transform: bool</span>
-<span class="sd">                If True, log transform the phenotypes.</span>
+<span class="sd">            __Arguments__:</span>
+<span class="sd">            </span>
+<span class="sd">            `wildtype` [str] : Wildtype genotype. Wildtype phenotype will be used as reference state.</span>
+<span class="sd">            </span>
+<span class="sd">            `genotypes` [array-like, dtype=str] : Genotypes in map. Can be binary strings, or not.</span>
+<span class="sd">            </span>
+<span class="sd">            `phenotypes` [array-like] : Quantitative phenotype values</span>
+<span class="sd">            </span>
+<span class="sd">            `errors` [array-like] : List of phenotype errors.</span>
+<span class="sd">            </span>
+<span class="sd">            `log_transform` [bool] : If True, log transform the phenotypes.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c"># Populate Epistasis Map</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">LocalEpistasisModel</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">wildtype</span><span class="p">,</span> <span class="n">genotypes</span><span class="p">,</span> <span class="n">phenotypes</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="n">errors</span><span class="p">,</span> <span class="n">log_transform</span><span class="o">=</span><span class="n">log_transform</span><span class="p">,</span> <span class="n">mutations</span><span class="o">=</span><span class="n">mutations</span><span class="p">)</span>
@@ -1958,17 +1951,12 @@ attr2: str
 cycle approach.</p>
 <p>i.e.
 Phenotype = K_0 + sum(K_i) + sum(K_ij) + sum(K_ijk) + ...</p>
-<h2>Args:</h2>
-<p>wildtype: str
-    Wildtype genotype. Wildtype phenotype will be used as reference state.
-genotypes: array-like, dtype=str
-    Genotypes in map. Can be binary strings, or not.
-phenotypes: array-like
-    Quantitative phenotype values
-errors: array-like
-    List of phenotype errors.
-log_transform: bool
-    If True, log transform the phenotypes.</p></div>
+<p><strong>Arguments</strong>:</p>
+<p><code>wildtype</code> [str] : Wildtype genotype. Wildtype phenotype will be used as reference state.</p>
+<p><code>genotypes</code> [array-like, dtype=str] : Genotypes in map. Can be binary strings, or not.</p>
+<p><code>phenotypes</code> [array-like] : Quantitative phenotype values</p>
+<p><code>errors</code> [array-like] : List of phenotype errors.</p>
+<p><code>log_transform</code> [bool] : If True, log transform the phenotypes.</p></div>
   <div class="source_cont">
   <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-epistasis.models.LocalEpistasisModel.__init__', this);">Show source &equiv;</a></p>
   <div id="source-epistasis.models.LocalEpistasisModel.__init__" class="source">
@@ -1979,18 +1967,17 @@ log_transform: bool
 <span class="sd">        i.e.</span>
 <span class="sd">        Phenotype = K_0 + sum(K_i) + sum(K_ij) + sum(K_ijk) + ...</span>
 <span class="sd">        </span>
-<span class="sd">        Args:</span>
-<span class="sd">        ----</span>
-<span class="sd">        wildtype: str</span>
-<span class="sd">            Wildtype genotype. Wildtype phenotype will be used as reference state.</span>
-<span class="sd">        genotypes: array-like, dtype=str</span>
-<span class="sd">            Genotypes in map. Can be binary strings, or not.</span>
-<span class="sd">        phenotypes: array-like</span>
-<span class="sd">            Quantitative phenotype values</span>
-<span class="sd">        errors: array-like</span>
-<span class="sd">            List of phenotype errors.</span>
-<span class="sd">        log_transform: bool</span>
-<span class="sd">            If True, log transform the phenotypes.</span>
+<span class="sd">        __Arguments__:</span>
+<span class="sd">        </span>
+<span class="sd">        `wildtype` [str] : Wildtype genotype. Wildtype phenotype will be used as reference state.</span>
+<span class="sd">        </span>
+<span class="sd">        `genotypes` [array-like, dtype=str] : Genotypes in map. Can be binary strings, or not.</span>
+<span class="sd">        </span>
+<span class="sd">        `phenotypes` [array-like] : Quantitative phenotype values</span>
+<span class="sd">        </span>
+<span class="sd">        `errors` [array-like] : List of phenotype errors.</span>
+<span class="sd">        </span>
+<span class="sd">        `log_transform` [bool] : If True, log transform the phenotypes.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c"># Populate Epistasis Map</span>
     <span class="nb">super</span><span class="p">(</span><span class="n">LocalEpistasisModel</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">wildtype</span><span class="p">,</span> <span class="n">genotypes</span><span class="p">,</span> <span class="n">phenotypes</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="n">errors</span><span class="p">,</span> <span class="n">log_transform</span><span class="o">=</span><span class="n">log_transform</span><span class="p">,</span> <span class="n">mutations</span><span class="o">=</span><span class="n">mutations</span><span class="p">)</span>
@@ -2349,22 +2336,21 @@ attr2: str
         <span class="sd">&quot;&quot;&quot; Create a map from local epistasis model projected into lower order</span>
 <span class="sd">            order epistasis interactions. Requires regression to estimate values.</span>
 <span class="sd">            </span>
-<span class="sd">            Args:</span>
-<span class="sd">            ----</span>
-<span class="sd">            wildtype: str</span>
-<span class="sd">                Wildtype genotype. Wildtype phenotype will be used as reference state.</span>
-<span class="sd">            genotypes: array-like, dtype=str</span>
-<span class="sd">                Genotypes in map. Can be binary strings, or not.</span>
-<span class="sd">            phenotypes: array-like</span>
-<span class="sd">                Quantitative phenotype values</span>
-<span class="sd">            order: int</span>
-<span class="sd">                Order of regression; if None, parameters must be passed in manually as parameters=&lt;list of lists&gt;</span>
-<span class="sd">            parameters: dict</span>
-<span class="sd">                interaction keys with their values expressed as lists.</span>
-<span class="sd">            errors: array-like</span>
-<span class="sd">                List of phenotype errors.</span>
-<span class="sd">            log_transform: bool</span>
-<span class="sd">                If True, log transform the phenotypes.</span>
+<span class="sd">            __Arguments__:</span>
+<span class="sd">            </span>
+<span class="sd">            `wildtype` [str] : Wildtype genotype. Wildtype phenotype will be used as reference state.</span>
+<span class="sd">            </span>
+<span class="sd">            `genotypes` [array-like, dtype=str] : Genotypes in map. Can be binary strings, or not.</span>
+<span class="sd">            </span>
+<span class="sd">            `phenotypes` [array-like] : Quantitative phenotype values</span>
+<span class="sd">            </span>
+<span class="sd">            `order` [int] : Order of regression; if None, parameters must be passed in manually as parameters=&lt;list of lists&gt;</span>
+<span class="sd">            </span>
+<span class="sd">            `parameters` [dict] : interaction keys with their values expressed as lists.</span>
+<span class="sd">            </span>
+<span class="sd">            `errors` [array-like] : List of phenotype errors.</span>
+<span class="sd">            </span>
+<span class="sd">            `log_transform` [bool] : If True, log transform the phenotypes.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c"># Populate Epistasis Map</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">ProjectedEpistasisModel</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">wildtype</span><span class="p">,</span> <span class="n">genotypes</span><span class="p">,</span> <span class="n">phenotypes</span><span class="p">,</span> <span class="n">errors</span><span class="p">,</span> <span class="n">log_transform</span><span class="p">,</span> <span class="n">mutations</span><span class="p">)</span>
@@ -2415,12 +2401,11 @@ attr2: str
     <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Infer the phenotypes from model.</span>
 <span class="sd">            </span>
-<span class="sd">            Returns:</span>
-<span class="sd">            -------</span>
-<span class="sd">            genotypes: array</span>
-<span class="sd">                array of genotypes -- in same order as phenotypes</span>
-<span class="sd">            phenotypes: array</span>
-<span class="sd">                array of quantitative phenotypes.</span>
+<span class="sd">            __Returns__:</span>
+<span class="sd">            </span>
+<span class="sd">            `genotypes` [array] : array of genotypes -- in same order as phenotypes</span>
+<span class="sd">            </span>
+<span class="sd">            `phenotypes` [array] : array of quantitative phenotypes.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">phenotypes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">genotypes</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
         <span class="n">binaries</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Binary</span><span class="o">.</span><span class="n">genotypes</span>
@@ -2457,21 +2442,14 @@ attr2: str
   
     <div class="desc"><p>Create a map from local epistasis model projected into lower order
 order epistasis interactions. Requires regression to estimate values.</p>
-<h2>Args:</h2>
-<p>wildtype: str
-    Wildtype genotype. Wildtype phenotype will be used as reference state.
-genotypes: array-like, dtype=str
-    Genotypes in map. Can be binary strings, or not.
-phenotypes: array-like
-    Quantitative phenotype values
-order: int
-    Order of regression; if None, parameters must be passed in manually as parameters=<list of lists>
-parameters: dict
-    interaction keys with their values expressed as lists.
-errors: array-like
-    List of phenotype errors.
-log_transform: bool
-    If True, log transform the phenotypes.</p></div>
+<p><strong>Arguments</strong>:</p>
+<p><code>wildtype</code> [str] : Wildtype genotype. Wildtype phenotype will be used as reference state.</p>
+<p><code>genotypes</code> [array-like, dtype=str] : Genotypes in map. Can be binary strings, or not.</p>
+<p><code>phenotypes</code> [array-like] : Quantitative phenotype values</p>
+<p><code>order</code> [int] : Order of regression; if None, parameters must be passed in manually as parameters=<list of lists></p>
+<p><code>parameters</code> [dict] : interaction keys with their values expressed as lists.</p>
+<p><code>errors</code> [array-like] : List of phenotype errors.</p>
+<p><code>log_transform</code> [bool] : If True, log transform the phenotypes.</p></div>
   <div class="source_cont">
   <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-epistasis.models.ProjectedEpistasisModel.__init__', this);">Show source &equiv;</a></p>
   <div id="source-epistasis.models.ProjectedEpistasisModel.__init__" class="source">
@@ -2479,22 +2457,21 @@ log_transform: bool
     <span class="sd">&quot;&quot;&quot; Create a map from local epistasis model projected into lower order</span>
 <span class="sd">        order epistasis interactions. Requires regression to estimate values.</span>
 <span class="sd">        </span>
-<span class="sd">        Args:</span>
-<span class="sd">        ----</span>
-<span class="sd">        wildtype: str</span>
-<span class="sd">            Wildtype genotype. Wildtype phenotype will be used as reference state.</span>
-<span class="sd">        genotypes: array-like, dtype=str</span>
-<span class="sd">            Genotypes in map. Can be binary strings, or not.</span>
-<span class="sd">        phenotypes: array-like</span>
-<span class="sd">            Quantitative phenotype values</span>
-<span class="sd">        order: int</span>
-<span class="sd">            Order of regression; if None, parameters must be passed in manually as parameters=&lt;list of lists&gt;</span>
-<span class="sd">        parameters: dict</span>
-<span class="sd">            interaction keys with their values expressed as lists.</span>
-<span class="sd">        errors: array-like</span>
-<span class="sd">            List of phenotype errors.</span>
-<span class="sd">        log_transform: bool</span>
-<span class="sd">            If True, log transform the phenotypes.</span>
+<span class="sd">        __Arguments__:</span>
+<span class="sd">        </span>
+<span class="sd">        `wildtype` [str] : Wildtype genotype. Wildtype phenotype will be used as reference state.</span>
+<span class="sd">        </span>
+<span class="sd">        `genotypes` [array-like, dtype=str] : Genotypes in map. Can be binary strings, or not.</span>
+<span class="sd">        </span>
+<span class="sd">        `phenotypes` [array-like] : Quantitative phenotype values</span>
+<span class="sd">        </span>
+<span class="sd">        `order` [int] : Order of regression; if None, parameters must be passed in manually as parameters=&lt;list of lists&gt;</span>
+<span class="sd">        </span>
+<span class="sd">        `parameters` [dict] : interaction keys with their values expressed as lists.</span>
+<span class="sd">        </span>
+<span class="sd">        `errors` [array-like] : List of phenotype errors.</span>
+<span class="sd">        </span>
+<span class="sd">        `log_transform` [bool] : If True, log transform the phenotypes.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c"># Populate Epistasis Map</span>
     <span class="nb">super</span><span class="p">(</span><span class="n">ProjectedEpistasisModel</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">wildtype</span><span class="p">,</span> <span class="n">genotypes</span><span class="p">,</span> <span class="n">phenotypes</span><span class="p">,</span> <span class="n">errors</span><span class="p">,</span> <span class="n">log_transform</span><span class="p">,</span> <span class="n">mutations</span><span class="p">)</span>
@@ -2725,23 +2702,20 @@ attr2: str
     
   
     <div class="desc"><p>Infer the phenotypes from model.</p>
-<h2>Returns:</h2>
-<p>genotypes: array
-    array of genotypes -- in same order as phenotypes
-phenotypes: array
-    array of quantitative phenotypes.</p></div>
+<p><strong>Returns</strong>:</p>
+<p><code>genotypes</code> [array] : array of genotypes -- in same order as phenotypes</p>
+<p><code>phenotypes</code> [array] : array of quantitative phenotypes.</p></div>
   <div class="source_cont">
   <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-epistasis.models.ProjectedEpistasisModel.predict', this);">Show source &equiv;</a></p>
   <div id="source-epistasis.models.ProjectedEpistasisModel.predict" class="source">
     <div class="codehilite"><pre><span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Infer the phenotypes from model.</span>
 <span class="sd">        </span>
-<span class="sd">        Returns:</span>
-<span class="sd">        -------</span>
-<span class="sd">        genotypes: array</span>
-<span class="sd">            array of genotypes -- in same order as phenotypes</span>
-<span class="sd">        phenotypes: array</span>
-<span class="sd">            array of quantitative phenotypes.</span>
+<span class="sd">        __Returns__:</span>
+<span class="sd">        </span>
+<span class="sd">        `genotypes` [array] : array of genotypes -- in same order as phenotypes</span>
+<span class="sd">        </span>
+<span class="sd">        `phenotypes` [array] : array of quantitative phenotypes.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">phenotypes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">genotypes</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
     <span class="n">binaries</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Binary</span><span class="o">.</span><span class="n">genotypes</span>

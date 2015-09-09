@@ -4,7 +4,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 
     <title>epistasis.artificial API documentation</title>
-    <meta name="description" content="" />
+    <meta name="description" content="Submodule with various classes for generating/simulating genotype-phenotype maps." />
 
   <link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro:400,300' rel='stylesheet' type='text/css'>
   
@@ -1140,11 +1140,13 @@ table {
 
   <header id="section-intro">
   <h1 class="title"><span class="name">epistasis.artificial</span> module</h1>
-  
+  <p>Submodule with various classes for generating/simulating genotype-phenotype maps.</p>
   
   <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-epistasis.artificial', this);">Show source &equiv;</a></p>
   <div id="source-epistasis.artificial" class="source">
-    <div class="codehilite"><pre><span class="c"># ------------------------------------------------------------</span>
+    <div class="codehilite"><pre><span class="n">__doc__</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;Submodule with various classes for generating/simulating genotype-phenotype maps.&quot;&quot;&quot;</span>
+
+<span class="c"># ------------------------------------------------------------</span>
 <span class="c"># Imports</span>
 <span class="c"># ------------------------------------------------------------</span>
 
@@ -1166,8 +1168,19 @@ table {
 
 <span class="k">class</span> <span class="nc">BaseArtificialMap</span><span class="p">(</span><span class="n">EpistasisMap</span><span class="p">):</span>
     
+    <span class="sd">&quot;&quot;&quot; Base class for generating genotype-phenotype maps from epistasis interactions.&quot;&quot;&quot;</span>
+    
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="n">log_transform</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Generate a binary genotype-phenotype mape with the given length from epistatic interactions. &quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot; Generate a binary genotype-phenotype mape with the given length from epistatic interactions. </span>
+<span class="sd">        </span>
+<span class="sd">            __Arguments__: </span>
+<span class="sd">            </span>
+<span class="sd">            `length` [int] : length of sequences.</span>
+
+<span class="sd">            `order` [int] : order of epistasis in model.</span>
+<span class="sd">            </span>
+<span class="sd">            `log_transform` [bool]: log transform the phenotypes if true.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">wildtype</span> <span class="o">=</span> <span class="s">&#39;0&#39;</span><span class="o">*</span><span class="n">length</span>
         <span class="n">mutant</span> <span class="o">=</span> <span class="s">&#39;1&#39;</span><span class="o">*</span><span class="n">length</span>
         <span class="n">mutations</span> <span class="o">=</span> <span class="n">binary_mutations_map</span><span class="p">(</span><span class="n">wildtype</span><span class="p">,</span> <span class="n">mutant</span><span class="p">)</span>
@@ -1224,37 +1237,39 @@ table {
     <span class="k">def</span> <span class="nf">model_input</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Get input for a generic Epistasis Model.</span>
 <span class="sd">        </span>
-<span class="sd">            Returns:</span>
-<span class="sd">            -------</span>
-<span class="sd">            wildtype: str</span>
-<span class="sd">                wildtype sequence for reference when calculating epistasis</span>
-<span class="sd">            genotypes: list of str</span>
-<span class="sd">                List of all genotypes in space.</span>
-<span class="sd">            phenotypes: array of floats</span>
-<span class="sd">                Array of phenotype map.</span>
-<span class="sd">            order: int</span>
-<span class="sd">                Order of epistasis in epistasis map.</span>
+<span class="sd">            __Returns__:</span>
+<span class="sd">            </span>
+<span class="sd">            </span>
+<span class="sd">                        </span>
+<span class="sd">            `wildtype` [str] :  wildtype sequence for reference when calculating epistasis</span>
+<span class="sd">                </span>
+<span class="sd">            `genotypes` [list of str] : List of all genotypes in space.</span>
+<span class="sd">                </span>
+<span class="sd">            `phenotypes` [array of floats] : Array of phenotype map.</span>
+<span class="sd">                </span>
+<span class="sd">            `order` [int]: Order of epistasis in epistasis map.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">wildtype</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">genotypes</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">phenotypes</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span>
         
         
 <span class="k">class</span> <span class="nc">RandomEpistasisMap</span><span class="p">(</span><span class="n">BaseArtificialMap</span><span class="p">):</span>
     
+    <span class="sd">&quot;&quot;&quot; Generate genotype-phenotype map from random epistatic interactions. &quot;&quot;&quot;</span>
+    
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="n">magnitude</span><span class="p">,</span> <span class="n">log_transform</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Choose random values for epistatic terms below and construct a genotype-phenotype map. </span>
 <span class="sd">            </span>
 <span class="sd">            ASSUMES ADDITIVE MODEL (UNLESS LOG TRANSFORMED).</span>
 <span class="sd">        </span>
-<span class="sd">            Args:</span>
-<span class="sd">            ----</span>
-<span class="sd">            length: int</span>
-<span class="sd">                length of strings</span>
-<span class="sd">            order: int</span>
-<span class="sd">                order of epistasis in space</span>
-<span class="sd">            magnitude: float</span>
-<span class="sd">                maximum value of abs(epistatic) term. </span>
-<span class="sd">            log_transform: bool</span>
-<span class="sd">                return the log_transformed phenotypes.</span>
+<span class="sd">            __Arguments__:</span>
+<span class="sd">            </span>
+<span class="sd">            `length` [int] : length of strings</span>
+<span class="sd">            </span>
+<span class="sd">            `order` [int] : order of epistasis in space</span>
+<span class="sd">            </span>
+<span class="sd">            `magnitude` [float] : maximum value of abs(epistatic) term. </span>
+<span class="sd">            </span>
+<span class="sd">            `log_transform` [bool] : return the log_transformed phenotypes.</span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">RandomEpistasisMap</span><span class="p">,</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">length</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="n">log_transform</span><span class="p">)</span>
@@ -1286,14 +1301,14 @@ table {
         
 <span class="k">class</span> <span class="nc">ZeroTermsEpistasisMap</span><span class="p">(</span><span class="n">RandomEpistasisMap</span><span class="p">):</span>
     
+    <span class="sd">&quot;&quot;&quot; Generate genotype-phenotype map with parameters set to zero. &quot;&quot;&quot;</span>
+    
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="n">magnitude</span><span class="p">,</span> <span class="n">zero_params</span><span class="p">,</span> <span class="n">log_transform</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Generate a genotype phenotype map with parameters set to zero.</span>
 <span class="sd">        </span>
-<span class="sd">            Parameters:</span>
-<span class="sd">            ----------</span>
-<span class="sd">            zero_params = list of ints</span>
-<span class="sd">                indices of parameters to set to zero.</span>
-<span class="sd">        </span>
+<span class="sd">            __Arguments__:</span>
+<span class="sd">            </span>
+<span class="sd">            `zero_params`  [list of ints] : indices of parameters to set to zero.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">ZeroTermsEpistasisMap</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">length</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="n">magnitude</span><span class="p">,</span> <span class="n">log_transform</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
         
@@ -1311,6 +1326,8 @@ table {
 
 <span class="k">class</span> <span class="nc">ThresholdEpistasisMap</span><span class="p">(</span><span class="n">BaseArtificialMap</span><span class="p">):</span>
     
+    <span class="sd">&quot;&quot;&quot;Generate genotype-phenotype map with thresholding behavior.&quot;&quot;&quot;</span>
+    
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="n">threshold</span><span class="p">,</span> <span class="n">sharpness</span><span class="p">,</span> <span class="n">magnitude</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Build an epistatic genotype phenotype map with thresholding behavior. Built from</span>
 <span class="sd">            the function:</span>
@@ -1319,18 +1336,17 @@ table {
 <span class="sd">        </span>
 <span class="sd">            where epistasis model is a MULTIPLICATIVE MODEL.      </span>
 <span class="sd">            </span>
-<span class="sd">            Args:</span>
-<span class="sd">            ----</span>
-<span class="sd">            length: int</span>
-<span class="sd">                length of strings</span>
-<span class="sd">            order: int</span>
-<span class="sd">                order of epistasis in space</span>
-<span class="sd">            threshold: float</span>
-<span class="sd">                fitness/phenotype thresholding value.</span>
-<span class="sd">            sharpness: float</span>
-<span class="sd">                rate of exponential growth towards thresholding value.</span>
-<span class="sd">            log_transform: bool</span>
-<span class="sd">                return the log_transformed phenotypes.</span>
+<span class="sd">            __Arguments__:</span>
+<span class="sd">            </span>
+<span class="sd">            `length` [int] : length of strings</span>
+<span class="sd">            </span>
+<span class="sd">            `order` [int] : order of epistasis in space</span>
+<span class="sd">            </span>
+<span class="sd">            `threshold` [float] : fitness/phenotype thresholding value.</span>
+<span class="sd">            </span>
+<span class="sd">            `sharpness` [float] : rate of exponential growth towards thresholding value.</span>
+<span class="sd">            </span>
+<span class="sd">            `log_transform` [bool] : return the log_transformed phenotypes.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">ThresholdEpistasisMap</span><span class="p">,</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">length</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="n">log_transform</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
         <span class="c">#if magnitude &gt; threshold:</span>
@@ -1360,6 +1376,8 @@ table {
 
 
 <span class="k">class</span> <span class="nc">NKEpistasisMap</span><span class="p">(</span><span class="n">BaseArtificialMap</span><span class="p">):</span>
+    
+    <span class="sd">&quot;&quot;&quot; Generate genotype-phenotype map from NK fitness models. &quot;&quot;&quot;</span>
     
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="n">magnitude</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Construct a genotype phenotype map from NK epistatic landscape. &quot;&quot;&quot;</span>
@@ -1436,13 +1454,25 @@ table {
       <p id="epistasis.artificial.BaseArtificialMap" class="name">class <span class="ident">BaseArtificialMap</span></p>
       
   
+    <div class="desc"><p>Base class for generating genotype-phenotype maps from epistasis interactions.</p></div>
   <div class="source_cont">
   <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-epistasis.artificial.BaseArtificialMap', this);">Show source &equiv;</a></p>
   <div id="source-epistasis.artificial.BaseArtificialMap" class="source">
     <div class="codehilite"><pre><span class="k">class</span> <span class="nc">BaseArtificialMap</span><span class="p">(</span><span class="n">EpistasisMap</span><span class="p">):</span>
     
+    <span class="sd">&quot;&quot;&quot; Base class for generating genotype-phenotype maps from epistasis interactions.&quot;&quot;&quot;</span>
+    
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="n">log_transform</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Generate a binary genotype-phenotype mape with the given length from epistatic interactions. &quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot; Generate a binary genotype-phenotype mape with the given length from epistatic interactions. </span>
+<span class="sd">        </span>
+<span class="sd">            __Arguments__: </span>
+<span class="sd">            </span>
+<span class="sd">            `length` [int] : length of sequences.</span>
+
+<span class="sd">            `order` [int] : order of epistasis in model.</span>
+<span class="sd">            </span>
+<span class="sd">            `log_transform` [bool]: log transform the phenotypes if true.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">wildtype</span> <span class="o">=</span> <span class="s">&#39;0&#39;</span><span class="o">*</span><span class="n">length</span>
         <span class="n">mutant</span> <span class="o">=</span> <span class="s">&#39;1&#39;</span><span class="o">*</span><span class="n">length</span>
         <span class="n">mutations</span> <span class="o">=</span> <span class="n">binary_mutations_map</span><span class="p">(</span><span class="n">wildtype</span><span class="p">,</span> <span class="n">mutant</span><span class="p">)</span>
@@ -1499,16 +1529,17 @@ table {
     <span class="k">def</span> <span class="nf">model_input</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Get input for a generic Epistasis Model.</span>
 <span class="sd">        </span>
-<span class="sd">            Returns:</span>
-<span class="sd">            -------</span>
-<span class="sd">            wildtype: str</span>
-<span class="sd">                wildtype sequence for reference when calculating epistasis</span>
-<span class="sd">            genotypes: list of str</span>
-<span class="sd">                List of all genotypes in space.</span>
-<span class="sd">            phenotypes: array of floats</span>
-<span class="sd">                Array of phenotype map.</span>
-<span class="sd">            order: int</span>
-<span class="sd">                Order of epistasis in epistasis map.</span>
+<span class="sd">            __Returns__:</span>
+<span class="sd">            </span>
+<span class="sd">            </span>
+<span class="sd">                        </span>
+<span class="sd">            `wildtype` [str] :  wildtype sequence for reference when calculating epistasis</span>
+<span class="sd">                </span>
+<span class="sd">            `genotypes` [list of str] : List of all genotypes in space.</span>
+<span class="sd">                </span>
+<span class="sd">            `phenotypes` [array of floats] : Array of phenotype map.</span>
+<span class="sd">                </span>
+<span class="sd">            `order` [int]: Order of epistasis in epistasis map.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">wildtype</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">genotypes</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">phenotypes</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span>
 </pre></div>
@@ -1536,12 +1567,24 @@ table {
 
     
   
-    <div class="desc"><p>Generate a binary genotype-phenotype mape with the given length from epistatic interactions.</p></div>
+    <div class="desc"><p>Generate a binary genotype-phenotype mape with the given length from epistatic interactions. </p>
+<p><strong>Arguments</strong>: </p>
+<p><code>length</code> [int] : length of sequences.</p>
+<p><code>order</code> [int] : order of epistasis in model.</p>
+<p><code>log_transform</code> [bool]: log transform the phenotypes if true.</p></div>
   <div class="source_cont">
   <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-epistasis.artificial.BaseArtificialMap.__init__', this);">Show source &equiv;</a></p>
   <div id="source-epistasis.artificial.BaseArtificialMap.__init__" class="source">
     <div class="codehilite"><pre><span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="n">log_transform</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Generate a binary genotype-phenotype mape with the given length from epistatic interactions. &quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot; Generate a binary genotype-phenotype mape with the given length from epistatic interactions. </span>
+<span class="sd">    </span>
+<span class="sd">        __Arguments__: </span>
+<span class="sd">        </span>
+<span class="sd">        `length` [int] : length of sequences.</span>
+<span class="sd">        `order` [int] : order of epistasis in model.</span>
+<span class="sd">        </span>
+<span class="sd">        `log_transform` [bool]: log transform the phenotypes if true.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">wildtype</span> <span class="o">=</span> <span class="s">&#39;0&#39;</span><span class="o">*</span><span class="n">length</span>
     <span class="n">mutant</span> <span class="o">=</span> <span class="s">&#39;1&#39;</span><span class="o">*</span><span class="n">length</span>
     <span class="n">mutations</span> <span class="o">=</span> <span class="n">binary_mutations_map</span><span class="p">(</span><span class="n">wildtype</span><span class="p">,</span> <span class="n">mutant</span><span class="p">)</span>
@@ -1747,31 +1790,28 @@ attr2: str
     
   
     <div class="desc"><p>Get input for a generic Epistasis Model.</p>
-<h2>Returns:</h2>
-<p>wildtype: str
-    wildtype sequence for reference when calculating epistasis
-genotypes: list of str
-    List of all genotypes in space.
-phenotypes: array of floats
-    Array of phenotype map.
-order: int
-    Order of epistasis in epistasis map.</p></div>
+<p><strong>Returns</strong>:</p>
+<p><code>wildtype</code> [str] :  wildtype sequence for reference when calculating epistasis</p>
+<p><code>genotypes</code> [list of str] : List of all genotypes in space.</p>
+<p><code>phenotypes</code> [array of floats] : Array of phenotype map.</p>
+<p><code>order</code> [int]: Order of epistasis in epistasis map.</p></div>
   <div class="source_cont">
   <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-epistasis.artificial.BaseArtificialMap.model_input', this);">Show source &equiv;</a></p>
   <div id="source-epistasis.artificial.BaseArtificialMap.model_input" class="source">
     <div class="codehilite"><pre><span class="k">def</span> <span class="nf">model_input</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Get input for a generic Epistasis Model.</span>
 <span class="sd">    </span>
-<span class="sd">        Returns:</span>
-<span class="sd">        -------</span>
-<span class="sd">        wildtype: str</span>
-<span class="sd">            wildtype sequence for reference when calculating epistasis</span>
-<span class="sd">        genotypes: list of str</span>
-<span class="sd">            List of all genotypes in space.</span>
-<span class="sd">        phenotypes: array of floats</span>
-<span class="sd">            Array of phenotype map.</span>
-<span class="sd">        order: int</span>
-<span class="sd">            Order of epistasis in epistasis map.</span>
+<span class="sd">        __Returns__:</span>
+<span class="sd">        </span>
+<span class="sd">        </span>
+<span class="sd">                    </span>
+<span class="sd">        `wildtype` [str] :  wildtype sequence for reference when calculating epistasis</span>
+<span class="sd">            </span>
+<span class="sd">        `genotypes` [list of str] : List of all genotypes in space.</span>
+<span class="sd">            </span>
+<span class="sd">        `phenotypes` [array of floats] : Array of phenotype map.</span>
+<span class="sd">            </span>
+<span class="sd">        `order` [int]: Order of epistasis in epistasis map.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">wildtype</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">genotypes</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">phenotypes</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span>
 </pre></div>
@@ -1946,10 +1986,13 @@ order: int
       <p id="epistasis.artificial.NKEpistasisMap" class="name">class <span class="ident">NKEpistasisMap</span></p>
       
   
+    <div class="desc"><p>Generate genotype-phenotype map from NK fitness models.</p></div>
   <div class="source_cont">
   <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-epistasis.artificial.NKEpistasisMap', this);">Show source &equiv;</a></p>
   <div id="source-epistasis.artificial.NKEpistasisMap" class="source">
     <div class="codehilite"><pre><span class="k">class</span> <span class="nc">NKEpistasisMap</span><span class="p">(</span><span class="n">BaseArtificialMap</span><span class="p">):</span>
+    
+    <span class="sd">&quot;&quot;&quot; Generate genotype-phenotype map from NK fitness models. &quot;&quot;&quot;</span>
     
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="n">magnitude</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Construct a genotype phenotype map from NK epistatic landscape. &quot;&quot;&quot;</span>
@@ -2310,31 +2353,28 @@ attr2: str
     
   
     <div class="desc"><p>Get input for a generic Epistasis Model.</p>
-<h2>Returns:</h2>
-<p>wildtype: str
-    wildtype sequence for reference when calculating epistasis
-genotypes: list of str
-    List of all genotypes in space.
-phenotypes: array of floats
-    Array of phenotype map.
-order: int
-    Order of epistasis in epistasis map.</p></div>
+<p><strong>Returns</strong>:</p>
+<p><code>wildtype</code> [str] :  wildtype sequence for reference when calculating epistasis</p>
+<p><code>genotypes</code> [list of str] : List of all genotypes in space.</p>
+<p><code>phenotypes</code> [array of floats] : Array of phenotype map.</p>
+<p><code>order</code> [int]: Order of epistasis in epistasis map.</p></div>
   <div class="source_cont">
   <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-epistasis.artificial.NKEpistasisMap.model_input', this);">Show source &equiv;</a></p>
   <div id="source-epistasis.artificial.NKEpistasisMap.model_input" class="source">
     <div class="codehilite"><pre><span class="k">def</span> <span class="nf">model_input</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Get input for a generic Epistasis Model.</span>
 <span class="sd">    </span>
-<span class="sd">        Returns:</span>
-<span class="sd">        -------</span>
-<span class="sd">        wildtype: str</span>
-<span class="sd">            wildtype sequence for reference when calculating epistasis</span>
-<span class="sd">        genotypes: list of str</span>
-<span class="sd">            List of all genotypes in space.</span>
-<span class="sd">        phenotypes: array of floats</span>
-<span class="sd">            Array of phenotype map.</span>
-<span class="sd">        order: int</span>
-<span class="sd">            Order of epistasis in epistasis map.</span>
+<span class="sd">        __Returns__:</span>
+<span class="sd">        </span>
+<span class="sd">        </span>
+<span class="sd">                    </span>
+<span class="sd">        `wildtype` [str] :  wildtype sequence for reference when calculating epistasis</span>
+<span class="sd">            </span>
+<span class="sd">        `genotypes` [list of str] : List of all genotypes in space.</span>
+<span class="sd">            </span>
+<span class="sd">        `phenotypes` [array of floats] : Array of phenotype map.</span>
+<span class="sd">            </span>
+<span class="sd">        `order` [int]: Order of epistasis in epistasis map.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">wildtype</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">genotypes</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">phenotypes</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span>
 </pre></div>
@@ -2430,14 +2470,10 @@ order: int
             <div class="item">
             <p id="epistasis.artificial.NKEpistasisMap.length" class="name">var <span class="ident">length</span></p>
             
-    <p class="inheritance">
-     <strong>Inheritance:</strong>
-       <code><a href="#epistasis.artificial.BaseArtificialMap">BaseArtificialMap</a></code>.<code><a href="#epistasis.artificial.BaseArtificialMap.length">length</a></code>
-    </p>
 
             
   
-    <div class="desc inherited"><p>Get length of the genotypes.</p></div>
+    <div class="desc"><p>Get length of the genotypes.</p></div>
   <div class="source_cont">
 </div>
 
@@ -2524,26 +2560,28 @@ order: int
       <p id="epistasis.artificial.RandomEpistasisMap" class="name">class <span class="ident">RandomEpistasisMap</span></p>
       
   
+    <div class="desc"><p>Generate genotype-phenotype map from random epistatic interactions.</p></div>
   <div class="source_cont">
   <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-epistasis.artificial.RandomEpistasisMap', this);">Show source &equiv;</a></p>
   <div id="source-epistasis.artificial.RandomEpistasisMap" class="source">
     <div class="codehilite"><pre><span class="k">class</span> <span class="nc">RandomEpistasisMap</span><span class="p">(</span><span class="n">BaseArtificialMap</span><span class="p">):</span>
+    
+    <span class="sd">&quot;&quot;&quot; Generate genotype-phenotype map from random epistatic interactions. &quot;&quot;&quot;</span>
     
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="n">magnitude</span><span class="p">,</span> <span class="n">log_transform</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Choose random values for epistatic terms below and construct a genotype-phenotype map. </span>
 <span class="sd">            </span>
 <span class="sd">            ASSUMES ADDITIVE MODEL (UNLESS LOG TRANSFORMED).</span>
 <span class="sd">        </span>
-<span class="sd">            Args:</span>
-<span class="sd">            ----</span>
-<span class="sd">            length: int</span>
-<span class="sd">                length of strings</span>
-<span class="sd">            order: int</span>
-<span class="sd">                order of epistasis in space</span>
-<span class="sd">            magnitude: float</span>
-<span class="sd">                maximum value of abs(epistatic) term. </span>
-<span class="sd">            log_transform: bool</span>
-<span class="sd">                return the log_transformed phenotypes.</span>
+<span class="sd">            __Arguments__:</span>
+<span class="sd">            </span>
+<span class="sd">            `length` [int] : length of strings</span>
+<span class="sd">            </span>
+<span class="sd">            `order` [int] : order of epistasis in space</span>
+<span class="sd">            </span>
+<span class="sd">            `magnitude` [float] : maximum value of abs(epistatic) term. </span>
+<span class="sd">            </span>
+<span class="sd">            `log_transform` [bool] : return the log_transformed phenotypes.</span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">RandomEpistasisMap</span><span class="p">,</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">length</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="n">log_transform</span><span class="p">)</span>
@@ -2600,15 +2638,11 @@ order: int
   
     <div class="desc"><p>Choose random values for epistatic terms below and construct a genotype-phenotype map. </p>
 <p>ASSUMES ADDITIVE MODEL (UNLESS LOG TRANSFORMED).</p>
-<h2>Args:</h2>
-<p>length: int
-    length of strings
-order: int
-    order of epistasis in space
-magnitude: float
-    maximum value of abs(epistatic) term. 
-log_transform: bool
-    return the log_transformed phenotypes.</p></div>
+<p><strong>Arguments</strong>:</p>
+<p><code>length</code> [int] : length of strings</p>
+<p><code>order</code> [int] : order of epistasis in space</p>
+<p><code>magnitude</code> [float] : maximum value of abs(epistatic) term. </p>
+<p><code>log_transform</code> [bool] : return the log_transformed phenotypes.</p></div>
   <div class="source_cont">
   <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-epistasis.artificial.RandomEpistasisMap.__init__', this);">Show source &equiv;</a></p>
   <div id="source-epistasis.artificial.RandomEpistasisMap.__init__" class="source">
@@ -2617,16 +2651,15 @@ log_transform: bool
 <span class="sd">        </span>
 <span class="sd">        ASSUMES ADDITIVE MODEL (UNLESS LOG TRANSFORMED).</span>
 <span class="sd">    </span>
-<span class="sd">        Args:</span>
-<span class="sd">        ----</span>
-<span class="sd">        length: int</span>
-<span class="sd">            length of strings</span>
-<span class="sd">        order: int</span>
-<span class="sd">            order of epistasis in space</span>
-<span class="sd">        magnitude: float</span>
-<span class="sd">            maximum value of abs(epistatic) term. </span>
-<span class="sd">        log_transform: bool</span>
-<span class="sd">            return the log_transformed phenotypes.</span>
+<span class="sd">        __Arguments__:</span>
+<span class="sd">        </span>
+<span class="sd">        `length` [int] : length of strings</span>
+<span class="sd">        </span>
+<span class="sd">        `order` [int] : order of epistasis in space</span>
+<span class="sd">        </span>
+<span class="sd">        `magnitude` [float] : maximum value of abs(epistatic) term. </span>
+<span class="sd">        </span>
+<span class="sd">        `log_transform` [bool] : return the log_transformed phenotypes.</span>
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="nb">super</span><span class="p">(</span><span class="n">RandomEpistasisMap</span><span class="p">,</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">length</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="n">log_transform</span><span class="p">)</span>
@@ -2845,31 +2878,28 @@ attr2: str
     
   
     <div class="desc"><p>Get input for a generic Epistasis Model.</p>
-<h2>Returns:</h2>
-<p>wildtype: str
-    wildtype sequence for reference when calculating epistasis
-genotypes: list of str
-    List of all genotypes in space.
-phenotypes: array of floats
-    Array of phenotype map.
-order: int
-    Order of epistasis in epistasis map.</p></div>
+<p><strong>Returns</strong>:</p>
+<p><code>wildtype</code> [str] :  wildtype sequence for reference when calculating epistasis</p>
+<p><code>genotypes</code> [list of str] : List of all genotypes in space.</p>
+<p><code>phenotypes</code> [array of floats] : Array of phenotype map.</p>
+<p><code>order</code> [int]: Order of epistasis in epistasis map.</p></div>
   <div class="source_cont">
   <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-epistasis.artificial.RandomEpistasisMap.model_input', this);">Show source &equiv;</a></p>
   <div id="source-epistasis.artificial.RandomEpistasisMap.model_input" class="source">
     <div class="codehilite"><pre><span class="k">def</span> <span class="nf">model_input</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Get input for a generic Epistasis Model.</span>
 <span class="sd">    </span>
-<span class="sd">        Returns:</span>
-<span class="sd">        -------</span>
-<span class="sd">        wildtype: str</span>
-<span class="sd">            wildtype sequence for reference when calculating epistasis</span>
-<span class="sd">        genotypes: list of str</span>
-<span class="sd">            List of all genotypes in space.</span>
-<span class="sd">        phenotypes: array of floats</span>
-<span class="sd">            Array of phenotype map.</span>
-<span class="sd">        order: int</span>
-<span class="sd">            Order of epistasis in epistasis map.</span>
+<span class="sd">        __Returns__:</span>
+<span class="sd">        </span>
+<span class="sd">        </span>
+<span class="sd">                    </span>
+<span class="sd">        `wildtype` [str] :  wildtype sequence for reference when calculating epistasis</span>
+<span class="sd">            </span>
+<span class="sd">        `genotypes` [list of str] : List of all genotypes in space.</span>
+<span class="sd">            </span>
+<span class="sd">        `phenotypes` [array of floats] : Array of phenotype map.</span>
+<span class="sd">            </span>
+<span class="sd">        `order` [int]: Order of epistasis in epistasis map.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">wildtype</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">genotypes</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">phenotypes</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span>
 </pre></div>
@@ -2965,14 +2995,10 @@ order: int
             <div class="item">
             <p id="epistasis.artificial.RandomEpistasisMap.length" class="name">var <span class="ident">length</span></p>
             
-    <p class="inheritance">
-     <strong>Inheritance:</strong>
-       <code><a href="#epistasis.artificial.BaseArtificialMap">BaseArtificialMap</a></code>.<code><a href="#epistasis.artificial.BaseArtificialMap.length">length</a></code>
-    </p>
 
             
   
-    <div class="desc inherited"><p>Get length of the genotypes.</p></div>
+    <div class="desc"><p>Get length of the genotypes.</p></div>
   <div class="source_cont">
 </div>
 
@@ -3013,6 +3039,10 @@ order: int
             <div class="item">
             <p id="epistasis.artificial.RandomEpistasisMap.order" class="name">var <span class="ident">order</span></p>
             
+    <p class="inheritance">
+     <strong>Inheritance:</strong>
+       <code><a href="#epistasis.artificial.BaseArtificialMap">BaseArtificialMap</a></code>.<code><a href="#epistasis.artificial.BaseArtificialMap.order">order</a></code>
+    </p>
 
             
   
@@ -3049,10 +3079,13 @@ order: int
       <p id="epistasis.artificial.ThresholdEpistasisMap" class="name">class <span class="ident">ThresholdEpistasisMap</span></p>
       
   
+    <div class="desc"><p>Generate genotype-phenotype map with thresholding behavior.</p></div>
   <div class="source_cont">
   <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-epistasis.artificial.ThresholdEpistasisMap', this);">Show source &equiv;</a></p>
   <div id="source-epistasis.artificial.ThresholdEpistasisMap" class="source">
     <div class="codehilite"><pre><span class="k">class</span> <span class="nc">ThresholdEpistasisMap</span><span class="p">(</span><span class="n">BaseArtificialMap</span><span class="p">):</span>
+    
+    <span class="sd">&quot;&quot;&quot;Generate genotype-phenotype map with thresholding behavior.&quot;&quot;&quot;</span>
     
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="n">threshold</span><span class="p">,</span> <span class="n">sharpness</span><span class="p">,</span> <span class="n">magnitude</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Build an epistatic genotype phenotype map with thresholding behavior. Built from</span>
@@ -3062,18 +3095,17 @@ order: int
 <span class="sd">        </span>
 <span class="sd">            where epistasis model is a MULTIPLICATIVE MODEL.      </span>
 <span class="sd">            </span>
-<span class="sd">            Args:</span>
-<span class="sd">            ----</span>
-<span class="sd">            length: int</span>
-<span class="sd">                length of strings</span>
-<span class="sd">            order: int</span>
-<span class="sd">                order of epistasis in space</span>
-<span class="sd">            threshold: float</span>
-<span class="sd">                fitness/phenotype thresholding value.</span>
-<span class="sd">            sharpness: float</span>
-<span class="sd">                rate of exponential growth towards thresholding value.</span>
-<span class="sd">            log_transform: bool</span>
-<span class="sd">                return the log_transformed phenotypes.</span>
+<span class="sd">            __Arguments__:</span>
+<span class="sd">            </span>
+<span class="sd">            `length` [int] : length of strings</span>
+<span class="sd">            </span>
+<span class="sd">            `order` [int] : order of epistasis in space</span>
+<span class="sd">            </span>
+<span class="sd">            `threshold` [float] : fitness/phenotype thresholding value.</span>
+<span class="sd">            </span>
+<span class="sd">            `sharpness` [float] : rate of exponential growth towards thresholding value.</span>
+<span class="sd">            </span>
+<span class="sd">            `log_transform` [bool] : return the log_transformed phenotypes.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">ThresholdEpistasisMap</span><span class="p">,</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">length</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="n">log_transform</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
         <span class="c">#if magnitude &gt; threshold:</span>
@@ -3135,18 +3167,17 @@ order: int
 <p>u * epistasis_model)</p>
 <div class="codehilite"><pre>        where epistasis model is a MULTIPLICATIVE MODEL.
 
-        Args:
-        ----
-        length: int
-            length of strings
-        order: int
-            order of epistasis in space
-        threshold: float
-            fitness/phenotype thresholding value.
-        sharpness: float
-            rate of exponential growth towards thresholding value.
-        log_transform: bool
-            return the log_transformed phenotypes.
+        __Arguments__:
+
+        `length` [int] : length of strings
+
+        `order` [int] : order of epistasis in space
+
+        `threshold` [float] : fitness/phenotype thresholding value.
+
+        `sharpness` [float] : rate of exponential growth towards thresholding value.
+
+        `log_transform` [bool] : return the log_transformed phenotypes.
 </pre></div></div>
   <div class="source_cont">
   <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-epistasis.artificial.ThresholdEpistasisMap.__init__', this);">Show source &equiv;</a></p>
@@ -3159,18 +3190,17 @@ order: int
 <span class="sd">    </span>
 <span class="sd">        where epistasis model is a MULTIPLICATIVE MODEL.      </span>
 <span class="sd">        </span>
-<span class="sd">        Args:</span>
-<span class="sd">        ----</span>
-<span class="sd">        length: int</span>
-<span class="sd">            length of strings</span>
-<span class="sd">        order: int</span>
-<span class="sd">            order of epistasis in space</span>
-<span class="sd">        threshold: float</span>
-<span class="sd">            fitness/phenotype thresholding value.</span>
-<span class="sd">        sharpness: float</span>
-<span class="sd">            rate of exponential growth towards thresholding value.</span>
-<span class="sd">        log_transform: bool</span>
-<span class="sd">            return the log_transformed phenotypes.</span>
+<span class="sd">        __Arguments__:</span>
+<span class="sd">        </span>
+<span class="sd">        `length` [int] : length of strings</span>
+<span class="sd">        </span>
+<span class="sd">        `order` [int] : order of epistasis in space</span>
+<span class="sd">        </span>
+<span class="sd">        `threshold` [float] : fitness/phenotype thresholding value.</span>
+<span class="sd">        </span>
+<span class="sd">        `sharpness` [float] : rate of exponential growth towards thresholding value.</span>
+<span class="sd">        </span>
+<span class="sd">        `log_transform` [bool] : return the log_transformed phenotypes.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="nb">super</span><span class="p">(</span><span class="n">ThresholdEpistasisMap</span><span class="p">,</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">length</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="n">log_transform</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
     <span class="c">#if magnitude &gt; threshold:</span>
@@ -3380,31 +3410,28 @@ attr2: str
     
   
     <div class="desc"><p>Get input for a generic Epistasis Model.</p>
-<h2>Returns:</h2>
-<p>wildtype: str
-    wildtype sequence for reference when calculating epistasis
-genotypes: list of str
-    List of all genotypes in space.
-phenotypes: array of floats
-    Array of phenotype map.
-order: int
-    Order of epistasis in epistasis map.</p></div>
+<p><strong>Returns</strong>:</p>
+<p><code>wildtype</code> [str] :  wildtype sequence for reference when calculating epistasis</p>
+<p><code>genotypes</code> [list of str] : List of all genotypes in space.</p>
+<p><code>phenotypes</code> [array of floats] : Array of phenotype map.</p>
+<p><code>order</code> [int]: Order of epistasis in epistasis map.</p></div>
   <div class="source_cont">
   <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-epistasis.artificial.ThresholdEpistasisMap.model_input', this);">Show source &equiv;</a></p>
   <div id="source-epistasis.artificial.ThresholdEpistasisMap.model_input" class="source">
     <div class="codehilite"><pre><span class="k">def</span> <span class="nf">model_input</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Get input for a generic Epistasis Model.</span>
 <span class="sd">    </span>
-<span class="sd">        Returns:</span>
-<span class="sd">        -------</span>
-<span class="sd">        wildtype: str</span>
-<span class="sd">            wildtype sequence for reference when calculating epistasis</span>
-<span class="sd">        genotypes: list of str</span>
-<span class="sd">            List of all genotypes in space.</span>
-<span class="sd">        phenotypes: array of floats</span>
-<span class="sd">            Array of phenotype map.</span>
-<span class="sd">        order: int</span>
-<span class="sd">            Order of epistasis in epistasis map.</span>
+<span class="sd">        __Returns__:</span>
+<span class="sd">        </span>
+<span class="sd">        </span>
+<span class="sd">                    </span>
+<span class="sd">        `wildtype` [str] :  wildtype sequence for reference when calculating epistasis</span>
+<span class="sd">            </span>
+<span class="sd">        `genotypes` [list of str] : List of all genotypes in space.</span>
+<span class="sd">            </span>
+<span class="sd">        `phenotypes` [array of floats] : Array of phenotype map.</span>
+<span class="sd">            </span>
+<span class="sd">        `order` [int]: Order of epistasis in epistasis map.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">wildtype</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">genotypes</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">phenotypes</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span>
 </pre></div>
@@ -3526,14 +3553,10 @@ order: int
             <div class="item">
             <p id="epistasis.artificial.ThresholdEpistasisMap.length" class="name">var <span class="ident">length</span></p>
             
-    <p class="inheritance">
-     <strong>Inheritance:</strong>
-       <code><a href="#epistasis.artificial.BaseArtificialMap">BaseArtificialMap</a></code>.<code><a href="#epistasis.artificial.BaseArtificialMap.length">length</a></code>
-    </p>
 
             
   
-    <div class="desc inherited"><p>Get length of the genotypes.</p></div>
+    <div class="desc"><p>Get length of the genotypes.</p></div>
   <div class="source_cont">
 </div>
 
@@ -3574,6 +3597,10 @@ order: int
             <div class="item">
             <p id="epistasis.artificial.ThresholdEpistasisMap.order" class="name">var <span class="ident">order</span></p>
             
+    <p class="inheritance">
+     <strong>Inheritance:</strong>
+       <code><a href="#epistasis.artificial.BaseArtificialMap">BaseArtificialMap</a></code>.<code><a href="#epistasis.artificial.BaseArtificialMap.order">order</a></code>
+    </p>
 
             
   
@@ -3620,19 +3647,20 @@ order: int
       <p id="epistasis.artificial.ZeroTermsEpistasisMap" class="name">class <span class="ident">ZeroTermsEpistasisMap</span></p>
       
   
+    <div class="desc"><p>Generate genotype-phenotype map with parameters set to zero.</p></div>
   <div class="source_cont">
   <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-epistasis.artificial.ZeroTermsEpistasisMap', this);">Show source &equiv;</a></p>
   <div id="source-epistasis.artificial.ZeroTermsEpistasisMap" class="source">
     <div class="codehilite"><pre><span class="k">class</span> <span class="nc">ZeroTermsEpistasisMap</span><span class="p">(</span><span class="n">RandomEpistasisMap</span><span class="p">):</span>
     
+    <span class="sd">&quot;&quot;&quot; Generate genotype-phenotype map with parameters set to zero. &quot;&quot;&quot;</span>
+    
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="n">magnitude</span><span class="p">,</span> <span class="n">zero_params</span><span class="p">,</span> <span class="n">log_transform</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Generate a genotype phenotype map with parameters set to zero.</span>
 <span class="sd">        </span>
-<span class="sd">            Parameters:</span>
-<span class="sd">            ----------</span>
-<span class="sd">            zero_params = list of ints</span>
-<span class="sd">                indices of parameters to set to zero.</span>
-<span class="sd">        </span>
+<span class="sd">            __Arguments__:</span>
+<span class="sd">            </span>
+<span class="sd">            `zero_params`  [list of ints] : indices of parameters to set to zero.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">ZeroTermsEpistasisMap</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">length</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="n">magnitude</span><span class="p">,</span> <span class="n">log_transform</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
         
@@ -3674,20 +3702,17 @@ order: int
     
   
     <div class="desc"><p>Generate a genotype phenotype map with parameters set to zero.</p>
-<h2>Parameters:</h2>
-<p>zero_params = list of ints
-    indices of parameters to set to zero.</p></div>
+<p><strong>Arguments</strong>:</p>
+<p><code>zero_params</code>  [list of ints] : indices of parameters to set to zero.</p></div>
   <div class="source_cont">
   <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-epistasis.artificial.ZeroTermsEpistasisMap.__init__', this);">Show source &equiv;</a></p>
   <div id="source-epistasis.artificial.ZeroTermsEpistasisMap.__init__" class="source">
     <div class="codehilite"><pre><span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="n">magnitude</span><span class="p">,</span> <span class="n">zero_params</span><span class="p">,</span> <span class="n">log_transform</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Generate a genotype phenotype map with parameters set to zero.</span>
 <span class="sd">    </span>
-<span class="sd">        Parameters:</span>
-<span class="sd">        ----------</span>
-<span class="sd">        zero_params = list of ints</span>
-<span class="sd">            indices of parameters to set to zero.</span>
-<span class="sd">    </span>
+<span class="sd">        __Arguments__:</span>
+<span class="sd">        </span>
+<span class="sd">        `zero_params`  [list of ints] : indices of parameters to set to zero.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="nb">super</span><span class="p">(</span><span class="n">ZeroTermsEpistasisMap</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">length</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="n">magnitude</span><span class="p">,</span> <span class="n">log_transform</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
     
@@ -3914,31 +3939,28 @@ attr2: str
     
   
     <div class="desc"><p>Get input for a generic Epistasis Model.</p>
-<h2>Returns:</h2>
-<p>wildtype: str
-    wildtype sequence for reference when calculating epistasis
-genotypes: list of str
-    List of all genotypes in space.
-phenotypes: array of floats
-    Array of phenotype map.
-order: int
-    Order of epistasis in epistasis map.</p></div>
+<p><strong>Returns</strong>:</p>
+<p><code>wildtype</code> [str] :  wildtype sequence for reference when calculating epistasis</p>
+<p><code>genotypes</code> [list of str] : List of all genotypes in space.</p>
+<p><code>phenotypes</code> [array of floats] : Array of phenotype map.</p>
+<p><code>order</code> [int]: Order of epistasis in epistasis map.</p></div>
   <div class="source_cont">
   <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-epistasis.artificial.ZeroTermsEpistasisMap.model_input', this);">Show source &equiv;</a></p>
   <div id="source-epistasis.artificial.ZeroTermsEpistasisMap.model_input" class="source">
     <div class="codehilite"><pre><span class="k">def</span> <span class="nf">model_input</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Get input for a generic Epistasis Model.</span>
 <span class="sd">    </span>
-<span class="sd">        Returns:</span>
-<span class="sd">        -------</span>
-<span class="sd">        wildtype: str</span>
-<span class="sd">            wildtype sequence for reference when calculating epistasis</span>
-<span class="sd">        genotypes: list of str</span>
-<span class="sd">            List of all genotypes in space.</span>
-<span class="sd">        phenotypes: array of floats</span>
-<span class="sd">            Array of phenotype map.</span>
-<span class="sd">        order: int</span>
-<span class="sd">            Order of epistasis in epistasis map.</span>
+<span class="sd">        __Returns__:</span>
+<span class="sd">        </span>
+<span class="sd">        </span>
+<span class="sd">                    </span>
+<span class="sd">        `wildtype` [str] :  wildtype sequence for reference when calculating epistasis</span>
+<span class="sd">            </span>
+<span class="sd">        `genotypes` [list of str] : List of all genotypes in space.</span>
+<span class="sd">            </span>
+<span class="sd">        `phenotypes` [array of floats] : Array of phenotype map.</span>
+<span class="sd">            </span>
+<span class="sd">        `order` [int]: Order of epistasis in epistasis map.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">wildtype</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">genotypes</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">phenotypes</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span>
 </pre></div>
@@ -4012,14 +4034,10 @@ order: int
             <div class="item">
             <p id="epistasis.artificial.ZeroTermsEpistasisMap.genotypes" class="name">var <span class="ident">genotypes</span></p>
             
-    <p class="inheritance">
-     <strong>Inheritance:</strong>
-       <code><a href="#epistasis.artificial.BaseArtificialMap">BaseArtificialMap</a></code>.<code><a href="#epistasis.artificial.BaseArtificialMap.genotypes">genotypes</a></code>
-    </p>
 
             
   
-    <div class="desc inherited"><p>Get the genotypes of the system.</p></div>
+    <div class="desc"><p>Get the genotypes of the system.</p></div>
   <div class="source_cont">
 </div>
 
@@ -4038,14 +4056,10 @@ order: int
             <div class="item">
             <p id="epistasis.artificial.ZeroTermsEpistasisMap.length" class="name">var <span class="ident">length</span></p>
             
-    <p class="inheritance">
-     <strong>Inheritance:</strong>
-       <code><a href="#epistasis.artificial.RandomEpistasisMap">RandomEpistasisMap</a></code>.<code><a href="#epistasis.artificial.RandomEpistasisMap.length">length</a></code>
-    </p>
 
             
   
-    <div class="desc inherited"><p>Get length of the genotypes.</p></div>
+    <div class="desc"><p>Get length of the genotypes.</p></div>
   <div class="source_cont">
 </div>
 
@@ -4086,10 +4100,14 @@ order: int
             <div class="item">
             <p id="epistasis.artificial.ZeroTermsEpistasisMap.order" class="name">var <span class="ident">order</span></p>
             
+    <p class="inheritance">
+     <strong>Inheritance:</strong>
+       <code><a href="#epistasis.artificial.RandomEpistasisMap">RandomEpistasisMap</a></code>.<code><a href="#epistasis.artificial.RandomEpistasisMap.order">order</a></code>
+    </p>
 
             
   
-    <div class="desc"><p>Get order of epistasis in system.</p></div>
+    <div class="desc inherited"><p>Get order of epistasis in system.</p></div>
   <div class="source_cont">
 </div>
 
@@ -4107,10 +4125,14 @@ order: int
             <div class="item">
             <p id="epistasis.artificial.ZeroTermsEpistasisMap.wildtype" class="name">var <span class="ident">wildtype</span></p>
             
+    <p class="inheritance">
+     <strong>Inheritance:</strong>
+       <code><a href="#epistasis.artificial.BaseArtificialMap">BaseArtificialMap</a></code>.<code><a href="#epistasis.artificial.BaseArtificialMap.wildtype">wildtype</a></code>
+    </p>
 
             
   
-    <div class="desc"><p>Get reference genotypes for interactions.</p></div>
+    <div class="desc inherited"><p>Get reference genotypes for interactions.</p></div>
   <div class="source_cont">
 </div>
 

@@ -80,12 +80,11 @@ class EnsembleMap(object):
     def phenotypes(self, phenotypes):
         """ Set phenotypes from ordered list of phenotypes. 
             
-            Args:
-            -----
-            phenotypes: array-like or dict
-                if array-like, it musted be ordered by genotype; if dict,
-                this method automatically orders the phenotypes into numpy
-                array.
+            __Arguments__:
+            
+            `phenotypes` [array-like or dict] : if array-like, it musted be 
+                ordered by genotype; if dict, this method automatically orders 
+                the phenotypes into numpy array.
         """
         if type(phenotypes) is dict:
             self._phenotypes = self._if_dict(phenotypes)
@@ -99,12 +98,11 @@ class EnsembleMap(object):
     def phenotype_errors(self, errors):
         """ Set error from ordered list of phenotype error. 
             
-            Args:
-            -----
-            error: array-like or dict
-                if array-like, it musted be ordered by genotype; if dict,
-                this method automatically orders the errors into numpy
-                array.
+            __Arguments__:
+            
+            `error` [array-like or dict] : if array-like, it musted be ordered by 
+                genotype; if dict, this method automatically orders the errors 
+                into numpy array.
         """
         if type(errors) is dict:
             self._phenotype_errors = self._if_dict(phenotype_errors)

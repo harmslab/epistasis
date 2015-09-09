@@ -1,3 +1,5 @@
+__doc__ = """ Submodule with nonlinear epistasis models for estimating epistatic interactions in nonlinear genotype-phenotype maps."""
+
 import numpy as np
 import itertools as it
 from scipy.optimize import curve_fit, basinhopping, minimize
@@ -36,9 +38,9 @@ def threshold_func(params, x, y_obs):
         
         where p is a high order linear epistasis model. 
         
-        Parameters:
-        ----------
-        params: LMFIT Parameters object
+        __Arguments__:
+        
+        `params` : LMFIT Parameters object
     """
     # Check parameters
     if isinstance(params, lmfit.Parameters) is not True:
@@ -73,24 +75,23 @@ class NonlinearEpistasisModel(BaseModel):
         
             Uses Scipy's curve_fit method.
             
-            Args:
-            ----
-            wildtype: str
-                Wildtype genotype. Wildtype phenotype will be used as reference state.
-            genotypes: array-like, dtype=str
-                Genotypes in map. Can be binary strings, or not.
-            phenotypes: array-like
-                Quantitative phenotype values
-            function: callable
-                Function to fit the linear model. Must have the arguments that correspond to the parameters.
-            x: 2d array
-                Array of dummy variables for epistasis model fitting (use `generate_dv_matrix` in regression_ext)
-            parameters: dict
-                interaction keys with their values expressed as lists.
-            errors: array-like
-                List of phenotype errors.
-            log_transform: bool
-                If True, log transform the phenotypes.
+            __Arguments__:
+            
+            `wildtype` [str] : Wildtype genotype. Wildtype phenotype will be used as reference state.
+            
+            `genotypes` [array-like, dtype=str] : Genotypes in map. Can be binary strings, or not.
+            
+            `phenotypes` [array-like] : Quantitative phenotype values
+            
+            `function` [callable] : Function to fit the linear model. Must have the arguments that correspond to the parameters.
+            
+            `x` [2d array] : Array of dummy variables for epistasis model fitting (use `generate_dv_matrix` in regression_ext)
+            
+            `parameters` [dict] : interaction keys with their values expressed as lists.
+            
+            `errors` [array-like] : List of phenotype errors.
+            
+            `log_transform` [bool] : If True, log transform the phenotypes.
         """
         # Populate Epistasis Map
         super(NonlinearEpistasisModel, self).__init__(wildtype, genotypes, phenotypes, errors, log_transform, mutations=mutations)
@@ -130,24 +131,23 @@ class LMFITEpistasisModel(BaseModel):
         
             Uses LMFIT's pa
             
-            Args:
-            ----
-            wildtype: str
-                Wildtype genotype. Wildtype phenotype will be used as reference state.
-            genotypes: array-like, dtype=str
-                Genotypes in map. Can be binary strings, or not.
-            phenotypes: array-like
-                Quantitative phenotype values
-            function: callable
-                Function to fit the linear model. Must have the arguments that correspond to the parameters.
-            x: 2d array
-                Array of dummy variables for epistasis model fitting (use `generate_dv_matrix` in regression_ext)
-            parameters: lmfit.Parameters class
-                Parameters as specified by lmfit
-            errors: array-like
-                List of phenotype errors.
-            log_transform: bool
-                If True, log transform the phenotypes.
+            __Arguments__:
+            
+            `wildtype` [str] : Wildtype genotype. Wildtype phenotype will be used as reference state.
+            
+            `genotypes` [array-like, dtype=str] : Genotypes in map. Can be binary strings, or not.
+            
+            `phenotypes` [array-like] : Quantitative phenotype values
+            
+            `function` [callable] : Function to fit the linear model. Must have the arguments that correspond to the parameters.
+            
+            `x` [2d array] : Array of dummy variables for epistasis model fitting (use `generate_dv_matrix` in regression_ext)
+            
+            `parameters` [lmfit.Parameters class] : Parameters as specified by lmfit
+            
+            `errors` [array-like] : List of phenotype errors.
+            
+            `log_transform` [bool] : If True, log transform the phenotypes.
         """
         # Populate Epistasis Map
         super(LMFITEpistasisModel, self).__init__(wildtype, genotypes, phenotypes, errors, log_transform, mutations=mutations)
@@ -190,24 +190,23 @@ class GlobalNonlinearEpistasisModel(BaseModel):
         
             Uses Scipy's basinhopping method.
             
-            Args:
-            ----
-            wildtype: str
-                Wildtype genotype. Wildtype phenotype will be used as reference state.
-            genotypes: array-like, dtype=str
-                Genotypes in map. Can be binary strings, or not.
-            phenotypes: array-like
-                Quantitative phenotype values
-            function: callable
-                Function to fit the linear model. Must have the arguments that correspond to the parameters.
-            x: 2d array
-                Array of dummy variables for epistasis model fitting (use `generate_dv_matrix` in regression_ext)
-            parameters: dict
-                interaction keys with their values expressed as lists.
-            errors: array-like
-                List of phenotype errors.
-            log_transform: bool
-                If True, log transform the phenotypes.
+            __Arguments__:
+            
+            `wildtype` [str] : Wildtype genotype. Wildtype phenotype will be used as reference state.
+            
+            `genotypes` [array-like, dtype=str] : Genotypes in map. Can be binary strings, or not.
+            
+            `phenotypes` [array-like] : Quantitative phenotype values
+            
+            `function` [callable] : Function to fit the linear model. Must have the arguments that correspond to the parameters.
+            
+            `x` [2d array] : Array of dummy variables for epistasis model fitting (use `generate_dv_matrix` in regression_ext)
+            
+            `parameters` [dict] : interaction keys with their values expressed as lists.
+            
+            `errors` [array-like] : List of phenotype errors.
+            
+            `log_transform` [bool] : If True, log transform the phenotypes.
         """
         # Populate Epistasis Map
         super(GlobalNonlinearEpistasisModel, self).__init__(wildtype, genotypes, phenotypes, errors, log_transform, mutations=mutations)

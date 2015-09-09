@@ -1,3 +1,5 @@
+__doc__ = """ Principal component analysis for genotype-phenotype maps in submodule."""
+
 # -------------------------------------- -------------
 # Module for Principal Component Analysis of Epistasis
 # ----------------------------------------------------

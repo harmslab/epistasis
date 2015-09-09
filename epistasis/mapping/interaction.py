@@ -23,10 +23,9 @@ class InteractionMap(BaseMap):
         """ Mapping object for indexing and tracking interactions in an 
             epistasis map object. 
             
-            Arg:
-            ---
-            mutation_map: MutationMap instance
-                An already populated MutationMap instance.
+            __Arguments__:
+            
+            `mutation_map` [MutationMap instance] : An already populated MutationMap instance.
         """
         self.Mutations = mutation_map
     
@@ -110,13 +109,13 @@ class InteractionMap(BaseMap):
             alphabet is note included, the model will assume binary 
             between wildtype and derived.
 
-            ``` 
-            mutations = {
-                0: [indices],
-                1: [indices],
+                #!python
+                mutations = {
+                    0: [indices],
+                    1: [indices],
 
-            }
-            ```
+                }
+            
         """
         self._mutations = mutations
         

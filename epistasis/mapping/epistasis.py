@@ -34,26 +34,25 @@ class EpistasisMap(GenoPhenoMap):
         """
             Object that maps epistasis in a genotype-phenotype map. 
         
-            Attributes:
-            ----------
-            length: int, 
-                length of genotypes
-            n: int
-                size of genotype-phenotype map
-            order: int
-                order of epistasis in system
-            wildtype: str
-                wildtype genotype
-            mutations: array of chars
-                individual mutations from wildtype that are in the system
-            genotypes: array
-                genotype in system
-            phenotypes: array
-                quantitative phenotypes in system
-            errors: array
-                errors for each phenotype value
-            indices: array
-                genotype indices
+            __Attributes__:
+            
+            `length` [int] : length of genotypes
+            
+            `n` [int] : size of genotype-phenotype map
+            
+            `order` [int] : order of epistasis in system
+            
+            `wildtype` [str] : wildtype genotype
+            
+            `mutations` [array of chars] : individual mutations from wildtype that are in the system
+            
+            `genotypes` [array] : genotype in system
+            
+            `phenotypes` [array] : quantitative phenotypes in system
+            
+            `errors` [array] : errors for each phenotype value
+            
+            `indices` [array] : genotype indices
         """
         super(EpistasisMap, self).__init__(wildtype, genotypes, phenotypes, errors=errors, log_transform=log_transform, mutations=mutations)
         

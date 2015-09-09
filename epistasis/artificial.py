@@ -1,3 +1,5 @@
+__doc__ = """Submodule with various classes for generating/simulating genotype-phenotype maps."""
+
 # ------------------------------------------------------------
 # Imports
 # ------------------------------------------------------------
@@ -20,8 +22,19 @@ from epistasis.utils import genotype_params, label_to_key
 
 class BaseArtificialMap(EpistasisMap):
     
+    """ Base class for generating genotype-phenotype maps from epistasis interactions."""
+    
     def __init__(self, length, order, log_transform=False):
-        """ Generate a binary genotype-phenotype mape with the given length from epistatic interactions. """
+        """ Generate a binary genotype-phenotype mape with the given length from epistatic interactions. 
+        
+            __Arguments__: 
+            
+            `length` [int] : length of sequences.
+
+            `order` [int] : order of epistasis in model.
+            
+            `log_transform` [bool]: log transform the phenotypes if true.
+        """
         wildtype = '0'*length
         mutant = '1'*length
         mutations = binary_mutations_map(wildtype, mutant)
@@ -78,37 +91,39 @@ class BaseArtificialMap(EpistasisMap):
     def model_input(self):
         """ Get input for a generic Epistasis Model.
         
-            Returns:
-            -------
-            wildtype: str
-                wildtype sequence for reference when calculating epistasis
-            genotypes: list of str
-                List of all genotypes in space.
-            phenotypes: array of floats
-                Array of phenotype map.
-            order: int
-                Order of epistasis in epistasis map.
+            __Returns__:
+            
+            
+                        
+            `wildtype` [str] :  wildtype sequence for reference when calculating epistasis
+                
+            `genotypes` [list of str] : List of all genotypes in space.
+                
+            `phenotypes` [array of floats] : Array of phenotype map.
+                
+            `order` [int]: Order of epistasis in epistasis map.
         """
         return self.wildtype, self.genotypes, self.phenotypes, self.order
         
         
 class RandomEpistasisMap(BaseArtificialMap):
     
+    """ Generate genotype-phenotype map from random epistatic interactions. """
+    
     def __init__(self, length, order, magnitude, log_transform=False):
         """ Choose random values for epistatic terms below and construct a genotype-phenotype map. 
             
             ASSUMES ADDITIVE MODEL (UNLESS LOG TRANSFORMED).
         
-            Args:
-            ----
-            length: int
-                length of strings
-            order: int
-                order of epistasis in space
-            magnitude: float
-                maximum value of abs(epistatic) term. 
-            log_transform: bool
-                return the log_transformed phenotypes.
+            __Arguments__:
+            
+            `length` [int] : length of strings
+            
+            `order` [int] : order of epistasis in space
+            
+            `magnitude` [float] : maximum value of abs(epistatic) term. 
+            
+            `log_transform` [bool] : return the log_transformed phenotypes.
         
         """
         super(RandomEpistasisMap,self).__init__(length, order, log_transform)
@@ -140,14 +155,14 @@ class RandomEpistasisMap(BaseArtificialMap):
         
 class ZeroTermsEpistasisMap(RandomEpistasisMap):
     
+    """ Generate genotype-phenotype map with parameters set to zero. """
+    
     def __init__(self, length, magnitude, zero_params, log_transform=False):
         """ Generate a genotype phenotype map with parameters set to zero.
         
-            Parameters:
-            ----------
-            zero_params = list of ints
-                indices of parameters to set to zero.
-        
+            __Arguments__:
+            
+            `zero_params`  [list of ints] : indices of parameters to set to zero.
         """
         super(ZeroTermsEpistasisMap, self).__init__(length, length, magnitude, log_transform=False)
         
@@ -165,6 +180,8 @@ class ZeroTermsEpistasisMap(RandomEpistasisMap):
 
 class ThresholdEpistasisMap(BaseArtificialMap):
     
+    """Generate genotype-phenotype map with thresholding behavior."""
+    
     def __init__(self, length, order, threshold, sharpness, magnitude):
         """ Build an epistatic genotype phenotype map with thresholding behavior. Built from
             the function:
@@ -173,18 +190,17 @@ class ThresholdEpistasisMap(BaseArtificialMap):
         
             where epistasis model is a MULTIPLICATIVE MODEL.      
             
-            Args:
-            ----
-            length: int
-                length of strings
-            order: int
-                order of epistasis in space
-            threshold: float
-                fitness/phenotype thresholding value.
-            sharpness: float
-                rate of exponential growth towards thresholding value.
-            log_transform: bool
-                return the log_transformed phenotypes.
+            __Arguments__:
+            
+            `length` [int] : length of strings
+            
+            `order` [int] : order of epistasis in space
+            
+            `threshold` [float] : fitness/phenotype thresholding value.
+            
+            `sharpness` [float] : rate of exponential growth towards thresholding value.
+            
+            `log_transform` [bool] : return the log_transformed phenotypes.
         """
         super(ThresholdEpistasisMap,self).__init__(length, order, log_transform=False)
         #if magnitude > threshold:
@@ -214,6 +230,8 @@ class ThresholdEpistasisMap(BaseArtificialMap):
 
 
 class NKEpistasisMap(BaseArtificialMap):
+    
+    """ Generate genotype-phenotype map from NK fitness models. """
     
     def __init__(self, length, order, magnitude):
         """ Construct a genotype phenotype map from NK epistatic landscape. """

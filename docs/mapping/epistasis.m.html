@@ -1104,26 +1104,25 @@ table {
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">            Object that maps epistasis in a genotype-phenotype map. </span>
 <span class="sd">        </span>
-<span class="sd">            Attributes:</span>
-<span class="sd">            ----------</span>
-<span class="sd">            length: int, </span>
-<span class="sd">                length of genotypes</span>
-<span class="sd">            n: int</span>
-<span class="sd">                size of genotype-phenotype map</span>
-<span class="sd">            order: int</span>
-<span class="sd">                order of epistasis in system</span>
-<span class="sd">            wildtype: str</span>
-<span class="sd">                wildtype genotype</span>
-<span class="sd">            mutations: array of chars</span>
-<span class="sd">                individual mutations from wildtype that are in the system</span>
-<span class="sd">            genotypes: array</span>
-<span class="sd">                genotype in system</span>
-<span class="sd">            phenotypes: array</span>
-<span class="sd">                quantitative phenotypes in system</span>
-<span class="sd">            errors: array</span>
-<span class="sd">                errors for each phenotype value</span>
-<span class="sd">            indices: array</span>
-<span class="sd">                genotype indices</span>
+<span class="sd">            __Attributes__:</span>
+<span class="sd">            </span>
+<span class="sd">            `length` [int] : length of genotypes</span>
+<span class="sd">            </span>
+<span class="sd">            `n` [int] : size of genotype-phenotype map</span>
+<span class="sd">            </span>
+<span class="sd">            `order` [int] : order of epistasis in system</span>
+<span class="sd">            </span>
+<span class="sd">            `wildtype` [str] : wildtype genotype</span>
+<span class="sd">            </span>
+<span class="sd">            `mutations` [array of chars] : individual mutations from wildtype that are in the system</span>
+<span class="sd">            </span>
+<span class="sd">            `genotypes` [array] : genotype in system</span>
+<span class="sd">            </span>
+<span class="sd">            `phenotypes` [array] : quantitative phenotypes in system</span>
+<span class="sd">            </span>
+<span class="sd">            `errors` [array] : errors for each phenotype value</span>
+<span class="sd">            </span>
+<span class="sd">            `indices` [array] : genotype indices</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">EpistasisMap</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">wildtype</span><span class="p">,</span> <span class="n">genotypes</span><span class="p">,</span> <span class="n">phenotypes</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="n">errors</span><span class="p">,</span> <span class="n">log_transform</span><span class="o">=</span><span class="n">log_transform</span><span class="p">,</span> <span class="n">mutations</span><span class="o">=</span><span class="n">mutations</span><span class="p">)</span>
         
@@ -1186,26 +1185,25 @@ table {
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">            Object that maps epistasis in a genotype-phenotype map. </span>
 <span class="sd">        </span>
-<span class="sd">            Attributes:</span>
-<span class="sd">            ----------</span>
-<span class="sd">            length: int, </span>
-<span class="sd">                length of genotypes</span>
-<span class="sd">            n: int</span>
-<span class="sd">                size of genotype-phenotype map</span>
-<span class="sd">            order: int</span>
-<span class="sd">                order of epistasis in system</span>
-<span class="sd">            wildtype: str</span>
-<span class="sd">                wildtype genotype</span>
-<span class="sd">            mutations: array of chars</span>
-<span class="sd">                individual mutations from wildtype that are in the system</span>
-<span class="sd">            genotypes: array</span>
-<span class="sd">                genotype in system</span>
-<span class="sd">            phenotypes: array</span>
-<span class="sd">                quantitative phenotypes in system</span>
-<span class="sd">            errors: array</span>
-<span class="sd">                errors for each phenotype value</span>
-<span class="sd">            indices: array</span>
-<span class="sd">                genotype indices</span>
+<span class="sd">            __Attributes__:</span>
+<span class="sd">            </span>
+<span class="sd">            `length` [int] : length of genotypes</span>
+<span class="sd">            </span>
+<span class="sd">            `n` [int] : size of genotype-phenotype map</span>
+<span class="sd">            </span>
+<span class="sd">            `order` [int] : order of epistasis in system</span>
+<span class="sd">            </span>
+<span class="sd">            `wildtype` [str] : wildtype genotype</span>
+<span class="sd">            </span>
+<span class="sd">            `mutations` [array of chars] : individual mutations from wildtype that are in the system</span>
+<span class="sd">            </span>
+<span class="sd">            `genotypes` [array] : genotype in system</span>
+<span class="sd">            </span>
+<span class="sd">            `phenotypes` [array] : quantitative phenotypes in system</span>
+<span class="sd">            </span>
+<span class="sd">            `errors` [array] : errors for each phenotype value</span>
+<span class="sd">            </span>
+<span class="sd">            `indices` [array] : genotype indices</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">EpistasisMap</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">wildtype</span><span class="p">,</span> <span class="n">genotypes</span><span class="p">,</span> <span class="n">phenotypes</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="n">errors</span><span class="p">,</span> <span class="n">log_transform</span><span class="o">=</span><span class="n">log_transform</span><span class="p">,</span> <span class="n">mutations</span><span class="o">=</span><span class="n">mutations</span><span class="p">)</span>
         
@@ -1269,25 +1267,16 @@ table {
     
   
     <div class="desc"><p>Object that maps epistasis in a genotype-phenotype map. </p>
-<h2>Attributes:</h2>
-<p>length: int, 
-    length of genotypes
-n: int
-    size of genotype-phenotype map
-order: int
-    order of epistasis in system
-wildtype: str
-    wildtype genotype
-mutations: array of chars
-    individual mutations from wildtype that are in the system
-genotypes: array
-    genotype in system
-phenotypes: array
-    quantitative phenotypes in system
-errors: array
-    errors for each phenotype value
-indices: array
-    genotype indices</p></div>
+<p><strong>Attributes</strong>:</p>
+<p><code>length</code> [int] : length of genotypes</p>
+<p><code>n</code> [int] : size of genotype-phenotype map</p>
+<p><code>order</code> [int] : order of epistasis in system</p>
+<p><code>wildtype</code> [str] : wildtype genotype</p>
+<p><code>mutations</code> [array of chars] : individual mutations from wildtype that are in the system</p>
+<p><code>genotypes</code> [array] : genotype in system</p>
+<p><code>phenotypes</code> [array] : quantitative phenotypes in system</p>
+<p><code>errors</code> [array] : errors for each phenotype value</p>
+<p><code>indices</code> [array] : genotype indices</p></div>
   <div class="source_cont">
   <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-epistasis.mapping.epistasis.EpistasisMap.__init__', this);">Show source &equiv;</a></p>
   <div id="source-epistasis.mapping.epistasis.EpistasisMap.__init__" class="source">
@@ -1295,26 +1284,25 @@ indices: array
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Object that maps epistasis in a genotype-phenotype map. </span>
 <span class="sd">    </span>
-<span class="sd">        Attributes:</span>
-<span class="sd">        ----------</span>
-<span class="sd">        length: int, </span>
-<span class="sd">            length of genotypes</span>
-<span class="sd">        n: int</span>
-<span class="sd">            size of genotype-phenotype map</span>
-<span class="sd">        order: int</span>
-<span class="sd">            order of epistasis in system</span>
-<span class="sd">        wildtype: str</span>
-<span class="sd">            wildtype genotype</span>
-<span class="sd">        mutations: array of chars</span>
-<span class="sd">            individual mutations from wildtype that are in the system</span>
-<span class="sd">        genotypes: array</span>
-<span class="sd">            genotype in system</span>
-<span class="sd">        phenotypes: array</span>
-<span class="sd">            quantitative phenotypes in system</span>
-<span class="sd">        errors: array</span>
-<span class="sd">            errors for each phenotype value</span>
-<span class="sd">        indices: array</span>
-<span class="sd">            genotype indices</span>
+<span class="sd">        __Attributes__:</span>
+<span class="sd">        </span>
+<span class="sd">        `length` [int] : length of genotypes</span>
+<span class="sd">        </span>
+<span class="sd">        `n` [int] : size of genotype-phenotype map</span>
+<span class="sd">        </span>
+<span class="sd">        `order` [int] : order of epistasis in system</span>
+<span class="sd">        </span>
+<span class="sd">        `wildtype` [str] : wildtype genotype</span>
+<span class="sd">        </span>
+<span class="sd">        `mutations` [array of chars] : individual mutations from wildtype that are in the system</span>
+<span class="sd">        </span>
+<span class="sd">        `genotypes` [array] : genotype in system</span>
+<span class="sd">        </span>
+<span class="sd">        `phenotypes` [array] : quantitative phenotypes in system</span>
+<span class="sd">        </span>
+<span class="sd">        `errors` [array] : errors for each phenotype value</span>
+<span class="sd">        </span>
+<span class="sd">        `indices` [array] : genotype indices</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="nb">super</span><span class="p">(</span><span class="n">EpistasisMap</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">wildtype</span><span class="p">,</span> <span class="n">genotypes</span><span class="p">,</span> <span class="n">phenotypes</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="n">errors</span><span class="p">,</span> <span class="n">log_transform</span><span class="o">=</span><span class="n">log_transform</span><span class="p">,</span> <span class="n">mutations</span><span class="o">=</span><span class="n">mutations</span><span class="p">)</span>
 </pre></div>

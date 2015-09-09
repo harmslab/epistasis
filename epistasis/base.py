@@ -1,3 +1,6 @@
+__doc__ = """
+Base class for epistasis models. This is meant to be called in a subclass.
+"""
 import numpy as np
 import itertools as it
 from collections import OrderedDict
@@ -14,19 +17,19 @@ class BaseModel(EpistasisMap):
     def __init__(self, wildtype, genotypes, phenotypes, errors=None, log_transform=False, mutations=None):
         """ Populate an Epistasis mapping object. 
         
-            Args:
-            ----
-            wildtype: str
-                Wildtype genotype. Wildtype phenotype will be used as reference state.
-            genotypes: array-like, dtype=str
-                Genotypes in map. Can be binary strings, or not.
-            phenotypes: array-like
-                Quantitative phenotype values
-            errors: array-like
-                List of phenotype errors.
-            log_transform: bool
-                If True, log transform the phenotypes.
-            mutations:
+            __Arguments__:
+            
+            `wildtype` [str] : Wildtype genotype. Wildtype phenotype will be used as reference state.
+            
+            `genotypes` [array-like, dtype=str] : Genotypes in map. Can be binary strings, or not.
+            
+            `phenotypes` [array-like] : Quantitative phenotype values
+            
+            `errors` [array-like] : List of phenotype errors.
+            
+            `log_transform` [bool] : If True, log transform the phenotypes.
+            
+            `mutations` [dict]: Mapping dictionary for mutations at each site.
             
         """
         # Defaults to binary mapping if not specific mutations are named

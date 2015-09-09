@@ -1,3 +1,4 @@
+__doc__ = """Submodule with handy utilities for constructing epistasis models."""
 # -------------------------------------------------------
 # Miscellaneous Python functions for random task
 # -------------------------------------------------------
@@ -30,12 +31,11 @@ def key_to_label(key):
 def epistatic_order_indices(length, order):
     """ Return  the indices of interactions with the given order. 
         
-        Args:
-        ----
-        length: int
-            length of the sequences
-        order: int
-            order of interactions to return
+        __Arguments__:
+        
+        `length` [int] : length of the sequences
+        
+        `order` [int] : order of interactions to return
     """
     start = int(sum([comb(length, i) for i in range(order)]))
     stop = int(start + comb(length, order))
@@ -68,26 +68,20 @@ def build_interaction_labels(length, order):
   
 def params_index_map(mutations):
     """
-        Args:
-        ----
-        mutations: dict
-            mapping each site to their accessible mutations alphabet.
+        __Arguments__:
+        
+        `mutations` [dict] : mapping each site to their accessible mutations alphabet.
             
-            ```
+            
             mutations = {site_number : alphabet}
             
-            If site does not mutate, value should be None.
-            ```
-    
-        Returns:
-        -------
-        mutations: dict
-                         
-            `mutations = { site_number : indices }`. If the site 
-            alphabet is note included, the model will assume binary 
-            between wildtype and derived.
+        If site does not mutate, value should be None.
+            
+        __Returns__:
+        
+        `mutations` [dict] : `mutations = { site_number : indices }`. If the site alphabet is 
+            note included, the model will assume binary between wildtype and derived.
 
-            ``` 
             mutations = {
                 0: [indices],
                 1: [indices],
@@ -108,28 +102,24 @@ def params_index_map(mutations):
 def build_model_params(length, order, mutations):
     """ Build interaction labels up to nth order given a mutation alphabet. 
     
-        Args:
-        ----
-        n: int
-            order of interactions
-        mutations: dict
-                             
-            `mutations = { site_number : indices }`. If the site 
+        __Arguments__:
+        
+        `n` [int] : order of interactions
+        
+        `mutations` [dict] : `mutations = { site_number : indices }`. If the site 
             alphabet is note included, the model will assume binary 
             between wildtype and derived.
 
-            ``` 
             mutations = {
                 0: [indices],
                 1: [indices],
 
             }
-            ```
-        Returns:
-        -------
-        interactions: list
-            list of all interaction labels for system with sequences of a 
-            given length and epistasis with given order.
+            
+        __Returns__:
+        
+        `interactions` [list] : list of all interaction labels for system with 
+            sequences of a given length and epistasis with given order.
     """
     
     # Recursive algorithm that's difficult to follow.

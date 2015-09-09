@@ -1,3 +1,5 @@
+__doc__ = """ Plotting submodule for epistasis models."""
+
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib

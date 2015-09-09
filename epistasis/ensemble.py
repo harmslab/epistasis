@@ -1,3 +1,6 @@
+__doc__ = """
+Generate an ensemble of genotype-phenotype maps for studying average properties of the space.
+"""
 # ------------------------------------------------------------
 # Imports
 # ------------------------------------------------------------

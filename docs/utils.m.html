@@ -4,7 +4,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 
     <title>epistasis.utils API documentation</title>
-    <meta name="description" content="" />
+    <meta name="description" content="Submodule with handy utilities for constructing epistasis models." />
 
   <link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro:400,300' rel='stylesheet' type='text/css'>
   
@@ -1063,11 +1063,12 @@ table {
 
   <header id="section-intro">
   <h1 class="title"><span class="name">epistasis.utils</span> module</h1>
-  
+  <p>Submodule with handy utilities for constructing epistasis models.</p>
   
   <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-epistasis.utils', this);">Show source &equiv;</a></p>
   <div id="source-epistasis.utils" class="source">
-    <div class="codehilite"><pre><span class="c"># -------------------------------------------------------</span>
+    <div class="codehilite"><pre><span class="n">__doc__</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;Submodule with handy utilities for constructing epistasis models.&quot;&quot;&quot;</span>
+<span class="c"># -------------------------------------------------------</span>
 <span class="c"># Miscellaneous Python functions for random task</span>
 <span class="c"># -------------------------------------------------------</span>
 
@@ -1099,12 +1100,11 @@ table {
 <span class="k">def</span> <span class="nf">epistatic_order_indices</span><span class="p">(</span><span class="n">length</span><span class="p">,</span> <span class="n">order</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Return  the indices of interactions with the given order. </span>
 <span class="sd">        </span>
-<span class="sd">        Args:</span>
-<span class="sd">        ----</span>
-<span class="sd">        length: int</span>
-<span class="sd">            length of the sequences</span>
-<span class="sd">        order: int</span>
-<span class="sd">            order of interactions to return</span>
+<span class="sd">        __Arguments__:</span>
+<span class="sd">        </span>
+<span class="sd">        `length` [int] : length of the sequences</span>
+<span class="sd">        </span>
+<span class="sd">        `order` [int] : order of interactions to return</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">start</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">sum</span><span class="p">([</span><span class="n">comb</span><span class="p">(</span><span class="n">length</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">order</span><span class="p">)]))</span>
     <span class="n">stop</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">start</span> <span class="o">+</span> <span class="n">comb</span><span class="p">(</span><span class="n">length</span><span class="p">,</span> <span class="n">order</span><span class="p">))</span>
@@ -1137,26 +1137,20 @@ table {
   
 <span class="k">def</span> <span class="nf">params_index_map</span><span class="p">(</span><span class="n">mutations</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Args:</span>
-<span class="sd">        ----</span>
-<span class="sd">        mutations: dict</span>
-<span class="sd">            mapping each site to their accessible mutations alphabet.</span>
+<span class="sd">        __Arguments__:</span>
+<span class="sd">        </span>
+<span class="sd">        `mutations` [dict] : mapping each site to their accessible mutations alphabet.</span>
 <span class="sd">            </span>
-<span class="sd">            ```</span>
+<span class="sd">            </span>
 <span class="sd">            mutations = {site_number : alphabet}</span>
 <span class="sd">            </span>
-<span class="sd">            If site does not mutate, value should be None.</span>
-<span class="sd">            ```</span>
-<span class="sd">    </span>
-<span class="sd">        Returns:</span>
-<span class="sd">        -------</span>
-<span class="sd">        mutations: dict</span>
-<span class="sd">                         </span>
-<span class="sd">            `mutations = { site_number : indices }`. If the site </span>
-<span class="sd">            alphabet is note included, the model will assume binary </span>
-<span class="sd">            between wildtype and derived.</span>
+<span class="sd">        If site does not mutate, value should be None.</span>
+<span class="sd">            </span>
+<span class="sd">        __Returns__:</span>
+<span class="sd">        </span>
+<span class="sd">        `mutations` [dict] : `mutations = { site_number : indices }`. If the site alphabet is </span>
+<span class="sd">            note included, the model will assume binary between wildtype and derived.</span>
 
-<span class="sd">            ``` </span>
 <span class="sd">            mutations = {</span>
 <span class="sd">                0: [indices],</span>
 <span class="sd">                1: [indices],</span>
@@ -1177,28 +1171,24 @@ table {
 <span class="k">def</span> <span class="nf">build_model_params</span><span class="p">(</span><span class="n">length</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="n">mutations</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Build interaction labels up to nth order given a mutation alphabet. </span>
 <span class="sd">    </span>
-<span class="sd">        Args:</span>
-<span class="sd">        ----</span>
-<span class="sd">        n: int</span>
-<span class="sd">            order of interactions</span>
-<span class="sd">        mutations: dict</span>
-<span class="sd">                             </span>
-<span class="sd">            `mutations = { site_number : indices }`. If the site </span>
+<span class="sd">        __Arguments__:</span>
+<span class="sd">        </span>
+<span class="sd">        `n` [int] : order of interactions</span>
+<span class="sd">        </span>
+<span class="sd">        `mutations` [dict] : `mutations = { site_number : indices }`. If the site </span>
 <span class="sd">            alphabet is note included, the model will assume binary </span>
 <span class="sd">            between wildtype and derived.</span>
 
-<span class="sd">            ``` </span>
 <span class="sd">            mutations = {</span>
 <span class="sd">                0: [indices],</span>
 <span class="sd">                1: [indices],</span>
 
 <span class="sd">            }</span>
-<span class="sd">            ```</span>
-<span class="sd">        Returns:</span>
-<span class="sd">        -------</span>
-<span class="sd">        interactions: list</span>
-<span class="sd">            list of all interaction labels for system with sequences of a </span>
-<span class="sd">            given length and epistasis with given order.</span>
+<span class="sd">            </span>
+<span class="sd">        __Returns__:</span>
+<span class="sd">        </span>
+<span class="sd">        `interactions` [list] : list of all interaction labels for system with </span>
+<span class="sd">            sequences of a given length and epistasis with given order.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     
     <span class="c"># Recursive algorithm that&#39;s difficult to follow.</span>
@@ -1275,56 +1265,46 @@ table {
     
   
     <div class="desc"><p>Build interaction labels up to nth order given a mutation alphabet. </p>
-<h2>Args:</h2>
-<p>n: int
-    order of interactions
-mutations: dict</p>
-<div class="codehilite"><pre>`mutations = { site_number : indices }`. If the site 
-alphabet is note included, the model will assume binary 
-between wildtype and derived.
-
-``` 
-mutations = {
+<p><strong>Arguments</strong>:</p>
+<p><code>n</code> [int] : order of interactions</p>
+<p><code>mutations</code> [dict] : <code>mutations = { site_number : indices }</code>. If the site 
+    alphabet is note included, the model will assume binary 
+    between wildtype and derived.</p>
+<div class="codehilite"><pre>mutations = {
     0: [indices],
     1: [indices],
 
 }
-```
 </pre></div>
 
 
-<h2>Returns:</h2>
-<p>interactions: list
-    list of all interaction labels for system with sequences of a 
-    given length and epistasis with given order.</p></div>
+<p><strong>Returns</strong>:</p>
+<p><code>interactions</code> [list] : list of all interaction labels for system with 
+    sequences of a given length and epistasis with given order.</p></div>
   <div class="source_cont">
   <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-epistasis.utils.build_model_params', this);">Show source &equiv;</a></p>
   <div id="source-epistasis.utils.build_model_params" class="source">
     <div class="codehilite"><pre><span class="k">def</span> <span class="nf">build_model_params</span><span class="p">(</span><span class="n">length</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="n">mutations</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Build interaction labels up to nth order given a mutation alphabet. </span>
 <span class="sd">    </span>
-<span class="sd">        Args:</span>
-<span class="sd">        ----</span>
-<span class="sd">        n: int</span>
-<span class="sd">            order of interactions</span>
-<span class="sd">        mutations: dict</span>
-<span class="sd">                             </span>
-<span class="sd">            `mutations = { site_number : indices }`. If the site </span>
+<span class="sd">        __Arguments__:</span>
+<span class="sd">        </span>
+<span class="sd">        `n` [int] : order of interactions</span>
+<span class="sd">        </span>
+<span class="sd">        `mutations` [dict] : `mutations = { site_number : indices }`. If the site </span>
 <span class="sd">            alphabet is note included, the model will assume binary </span>
 <span class="sd">            between wildtype and derived.</span>
 
-<span class="sd">            ``` </span>
 <span class="sd">            mutations = {</span>
 <span class="sd">                0: [indices],</span>
 <span class="sd">                1: [indices],</span>
 
 <span class="sd">            }</span>
-<span class="sd">            ```</span>
-<span class="sd">        Returns:</span>
-<span class="sd">        -------</span>
-<span class="sd">        interactions: list</span>
-<span class="sd">            list of all interaction labels for system with sequences of a </span>
-<span class="sd">            given length and epistasis with given order.</span>
+<span class="sd">            </span>
+<span class="sd">        __Returns__:</span>
+<span class="sd">        </span>
+<span class="sd">        `interactions` [list] : list of all interaction labels for system with </span>
+<span class="sd">            sequences of a given length and epistasis with given order.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     
     <span class="c"># Recursive algorithm that&#39;s difficult to follow.</span>
@@ -1372,23 +1352,20 @@ mutations = {
     
   
     <div class="desc"><p>Return  the indices of interactions with the given order. </p>
-<h2>Args:</h2>
-<p>length: int
-    length of the sequences
-order: int
-    order of interactions to return</p></div>
+<p><strong>Arguments</strong>:</p>
+<p><code>length</code> [int] : length of the sequences</p>
+<p><code>order</code> [int] : order of interactions to return</p></div>
   <div class="source_cont">
   <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-epistasis.utils.epistatic_order_indices', this);">Show source &equiv;</a></p>
   <div id="source-epistasis.utils.epistatic_order_indices" class="source">
     <div class="codehilite"><pre><span class="k">def</span> <span class="nf">epistatic_order_indices</span><span class="p">(</span><span class="n">length</span><span class="p">,</span> <span class="n">order</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Return  the indices of interactions with the given order. </span>
 <span class="sd">        </span>
-<span class="sd">        Args:</span>
-<span class="sd">        ----</span>
-<span class="sd">        length: int</span>
-<span class="sd">            length of the sequences</span>
-<span class="sd">        order: int</span>
-<span class="sd">            order of interactions to return</span>
+<span class="sd">        __Arguments__:</span>
+<span class="sd">        </span>
+<span class="sd">        `length` [int] : length of the sequences</span>
+<span class="sd">        </span>
+<span class="sd">        `order` [int] : order of interactions to return</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">start</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">sum</span><span class="p">([</span><span class="n">comb</span><span class="p">(</span><span class="n">length</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">order</span><span class="p">)]))</span>
     <span class="n">stop</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">start</span> <span class="o">+</span> <span class="n">comb</span><span class="p">(</span><span class="n">length</span><span class="p">,</span> <span class="n">order</span><span class="p">))</span>
@@ -1516,25 +1493,17 @@ up to a given order.</p></div>
 
     
   
-    <div class="desc"><h2>Args:</h2>
-<p>mutations: dict
-    mapping each site to their accessible mutations alphabet.</p>
-<div class="codehilite"><pre>```
-mutations = {site_number : alphabet}
-
-If site does not mutate, value should be None.
-```
+    <div class="desc"><p><strong>Arguments</strong>:</p>
+<p><code>mutations</code> [dict] : mapping each site to their accessible mutations alphabet.</p>
+<div class="codehilite"><pre>mutations = {site_number : alphabet}
 </pre></div>
 
 
-<h2>Returns:</h2>
-<p>mutations: dict</p>
-<div class="codehilite"><pre>`mutations = { site_number : indices }`. If the site 
-alphabet is note included, the model will assume binary 
-between wildtype and derived.
-
-``` 
-mutations = {
+<p>If site does not mutate, value should be None.</p>
+<p><strong>Returns</strong>:</p>
+<p><code>mutations</code> [dict] : <code>mutations = { site_number : indices }</code>. If the site alphabet is 
+    note included, the model will assume binary between wildtype and derived.</p>
+<div class="codehilite"><pre>mutations = {
     0: [indices],
     1: [indices],
 
@@ -1546,26 +1515,20 @@ mutations = {
   <div id="source-epistasis.utils.params_index_map" class="source">
     <div class="codehilite"><pre><span class="k">def</span> <span class="nf">params_index_map</span><span class="p">(</span><span class="n">mutations</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Args:</span>
-<span class="sd">        ----</span>
-<span class="sd">        mutations: dict</span>
-<span class="sd">            mapping each site to their accessible mutations alphabet.</span>
+<span class="sd">        __Arguments__:</span>
+<span class="sd">        </span>
+<span class="sd">        `mutations` [dict] : mapping each site to their accessible mutations alphabet.</span>
 <span class="sd">            </span>
-<span class="sd">            ```</span>
+<span class="sd">            </span>
 <span class="sd">            mutations = {site_number : alphabet}</span>
 <span class="sd">            </span>
-<span class="sd">            If site does not mutate, value should be None.</span>
-<span class="sd">            ```</span>
-<span class="sd">    </span>
-<span class="sd">        Returns:</span>
-<span class="sd">        -------</span>
-<span class="sd">        mutations: dict</span>
-<span class="sd">                         </span>
-<span class="sd">            `mutations = { site_number : indices }`. If the site </span>
-<span class="sd">            alphabet is note included, the model will assume binary </span>
-<span class="sd">            between wildtype and derived.</span>
+<span class="sd">        If site does not mutate, value should be None.</span>
+<span class="sd">            </span>
+<span class="sd">        __Returns__:</span>
+<span class="sd">        </span>
+<span class="sd">        `mutations` [dict] : `mutations = { site_number : indices }`. If the site alphabet is </span>
+<span class="sd">            note included, the model will assume binary between wildtype and derived.</span>
 
-<span class="sd">            ``` </span>
 <span class="sd">            mutations = {</span>
 <span class="sd">                0: [indices],</span>
 <span class="sd">                1: [indices],</span>

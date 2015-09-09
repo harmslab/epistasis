@@ -1,3 +1,5 @@
+__doc__ = """ Submodule of linear epistasis models. Includes full local and global epistasis models and regression model for low order models."""
+
 # ------------------------------------------------------------
 # Imports
 # ------------------------------------------------------------
@@ -51,18 +53,17 @@ class LocalEpistasisModel(BaseModel):
             i.e.
             Phenotype = K_0 + sum(K_i) + sum(K_ij) + sum(K_ijk) + ...
             
-            Args:
-            ----
-            wildtype: str
-                Wildtype genotype. Wildtype phenotype will be used as reference state.
-            genotypes: array-like, dtype=str
-                Genotypes in map. Can be binary strings, or not.
-            phenotypes: array-like
-                Quantitative phenotype values
-            errors: array-like
-                List of phenotype errors.
-            log_transform: bool
-                If True, log transform the phenotypes.
+            __Arguments__:
+            
+            `wildtype` [str] : Wildtype genotype. Wildtype phenotype will be used as reference state.
+            
+            `genotypes` [array-like, dtype=str] : Genotypes in map. Can be binary strings, or not.
+            
+            `phenotypes` [array-like] : Quantitative phenotype values
+            
+            `errors` [array-like] : List of phenotype errors.
+            
+            `log_transform` [bool] : If True, log transform the phenotypes.
         """
         # Populate Epistasis Map
         super(LocalEpistasisModel, self).__init__(wildtype, genotypes, phenotypes, errors=errors, log_transform=log_transform, mutations=mutations)
@@ -99,21 +100,21 @@ class GlobalEpistasisModel(BaseModel):
     
     def __init__(self, wildtype, genotypes, phenotypes, errors=None, log_transform=False):
         """ Create a map of the global epistatic effects using Hadamard approach.
+            
             This is the related to LocalEpistasisMap by the discrete Fourier 
             transform of mutant cycle approach. 
             
-            Args:
-            ----
-            wildtype: str
-                Wildtype genotype. Wildtype phenotype will be used as reference state.
-            genotypes: array-like, dtype=str
-                Genotypes in map. Can be binary strings, or not.
-            phenotypes: array-like
-                Quantitative phenotype values
-            errors: array-like
-                List of phenotype errors.
-            log_transform: bool
-                If True, log transform the phenotypes.
+            __Arguments__:
+            
+            `wildtype` [str] : Wildtype genotype. Wildtype phenotype will be used as reference state.
+            
+            `genotypes` [array-like, dtype=str] : Genotypes in map. Can be binary strings, or not.
+            
+            `phenotypes` [array-like] : Quantitative phenotype values
+            
+            `errors` [array-like] : List of phenotype errors.
+            
+            `log_transform` [bool] : If True, log transform the phenotypes.
         """
         # Populate Epistasis Map
         super(GlobalEpistasisModel, self).__init__(wildtype, genotypes, phenotypes, errors, log_transform)
@@ -153,22 +154,21 @@ class ProjectedEpistasisModel(BaseModel):
         """ Create a map from local epistasis model projected into lower order
             order epistasis interactions. Requires regression to estimate values.
             
-            Args:
-            ----
-            wildtype: str
-                Wildtype genotype. Wildtype phenotype will be used as reference state.
-            genotypes: array-like, dtype=str
-                Genotypes in map. Can be binary strings, or not.
-            phenotypes: array-like
-                Quantitative phenotype values
-            order: int
-                Order of regression; if None, parameters must be passed in manually as parameters=<list of lists>
-            parameters: dict
-                interaction keys with their values expressed as lists.
-            errors: array-like
-                List of phenotype errors.
-            log_transform: bool
-                If True, log transform the phenotypes.
+            __Arguments__:
+            
+            `wildtype` [str] : Wildtype genotype. Wildtype phenotype will be used as reference state.
+            
+            `genotypes` [array-like, dtype=str] : Genotypes in map. Can be binary strings, or not.
+            
+            `phenotypes` [array-like] : Quantitative phenotype values
+            
+            `order` [int] : Order of regression; if None, parameters must be passed in manually as parameters=<list of lists>
+            
+            `parameters` [dict] : interaction keys with their values expressed as lists.
+            
+            `errors` [array-like] : List of phenotype errors.
+            
+            `log_transform` [bool] : If True, log transform the phenotypes.
         """
         # Populate Epistasis Map
         super(ProjectedEpistasisModel, self).__init__(wildtype, genotypes, phenotypes, errors, log_transform, mutations)
@@ -219,12 +219,11 @@ class ProjectedEpistasisModel(BaseModel):
     def predict(self):
         """ Infer the phenotypes from model.
             
-            Returns:
-            -------
-            genotypes: array
-                array of genotypes -- in same order as phenotypes
-            phenotypes: array
-                array of quantitative phenotypes.
+            __Returns__:
+            
+            `genotypes` [array] : array of genotypes -- in same order as phenotypes
+            
+            `phenotypes` [array] : array of quantitative phenotypes.
         """
         phenotypes = np.zeros(len(self.genotypes), dtype=float)
         binaries = self.Binary.genotypes

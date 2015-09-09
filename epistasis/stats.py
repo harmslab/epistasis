@@ -1,3 +1,5 @@
+__doc__ = """Submodule with useful statistics functions for epistasis model."""
+
 import numpy as np
 
 from epistasis.models import ProjectedEpistasisModel
@@ -96,21 +98,19 @@ def false_positive_rate(known, predicted, errors, sigmas=2):
     """ Calculate the false positive rate of predicted. Known, predicted 
         and errors must all be the same length.
         
-        Parameters:
-        ----------
-        known: array-like
-            Known values for comparing false positives
-        predicted: array-like
-            Predicted values
-        errors: array-like
-            Standard error from model
-        sigma: int (default=2)
-            How many standard errors away (2 == 0.05 false positive rate)
+        __Arguments__:
+        
+        `known` [array-like] : Known values for comparing false positives
+        
+        `predicted` [array-like] : Predicted values
+        
+        `errors` [array-like] : Standard error from model
+        
+        `sigma` [int (default=2)] : How many standard errors away (2 == 0.05 false positive rate)
             
-        Returns:
-        -------
-        Rate: float
-            False positive rate in data
+        __Returns__:
+        
+        `rate` [float] : False positive rate in data
     """
     
     N = len(known)

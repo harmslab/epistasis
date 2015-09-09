@@ -1,3 +1,7 @@
+__doc__ = """
+Submodule with classes for comparing two epistasis models. 
+"""
+
 import numpy as np
 
 def overlap(items1, items2):

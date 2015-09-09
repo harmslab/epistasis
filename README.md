@@ -16,6 +16,10 @@ Should work in Python 2.6+ and Python 3+
 
 **NOTE:** This repository is still private. It will be public as soon as it's ready for publication. 
 
+## API reference
+
+API documentation can be viewed [here](harmslab.github.io/epistasis/docs).
+
 ## Dependencies
 
 * [Seqspace](https://github.com/harmslab/seqspace): Module for constructing powerful genotype-phenotype map python data-structures. 

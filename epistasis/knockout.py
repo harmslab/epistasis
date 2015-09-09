@@ -1,3 +1,7 @@
+__doc__ = """
+Submodule with classes for projecting spaces after knocking out epistatic interactions.
+"""
+
 # Knockout epistatic interactions from a space from Epistasis map
 import numpy as np
 
