@@ -33,7 +33,7 @@ class BaseArtificialMap(EpistasisMap):
 
             `order` [int] : order of epistasis in model.
             
-            `log_transform` [bool]: log transform the phenotypes if true.
+            `log_transform` [bool] : log transform the phenotypes if true.
         """
         wildtype = '0'*length
         mutant = '1'*length
@@ -53,8 +53,28 @@ class BaseArtificialMap(EpistasisMap):
         raise Exception( """ Must be implemented in subclass. """)
         
     def random_epistasis(self, low, high, allow_neg=True):
-        """Assign random values to epistatic terms. """ 
+        """ Generate random values for epistatic interactions (with equal magnitude sampling). 
+        
+            __Arguments__:
+            
+            `low` [int] : minimum values to select from uniform random distribution  
+            
+            `high` [int] : maximum values to select from uniform random distribution
+            
+            `allow_neg` [bool] : If False, all random values will be positive.
+            
+            __Returns__:
+            
+            `vals` [array] : array of random values with length == number of Interactions.
+            
+        """ 
+        
+        # if negatives are not allowed, compute set lower limit to zero.
+        if allow_neg is False:
+            low = 0
+            
         vals = (high-low) * np.random.random(size=len(self.Interactions.labels)) + low
+        
         return vals
         
     def random_knockout(self, n_knockouts):
@@ -182,7 +202,7 @@ class ThresholdEpistasisMap(BaseArtificialMap):
     
     """Generate genotype-phenotype map with thresholding behavior."""
     
-    def __init__(self, length, order, threshold, sharpness, magnitude):
+    def __init__(self, length, order, threshold, sharpness, magnitude, allow_neg=True):
         """ Build an epistatic genotype phenotype map with thresholding behavior. Built from
             the function:
             
@@ -200,12 +220,19 @@ class ThresholdEpistasisMap(BaseArtificialMap):
             
             `sharpness` [float] : rate of exponential growth towards thresholding value.
             
-            `log_transform` [bool] : return the log_transformed phenotypes.
+            `magnitude` [float] : the limits of the random epistatic terms centered around 1.
+            
+            `allow_neg` [bool, default=True] : If false, no deleterious interactions will be set (i.e. < 1.0)
+             
         """
         super(ThresholdEpistasisMap,self).__init__(length, order, log_transform=False)
-        #if magnitude > threshold:
-         #   raise Warning(""" Magnitude of epistasis could be greater than thesholding value. """)
-        vals = self.random_epistasis(1, 1+magnitude, allow_neg=False)
+
+        high = 1+magnitude
+        low = 1-magnitude
+        if allow_neg is False:
+            low = 1
+        
+        vals = self.random_epistasis(low, high, allow_neg=True)
         #vals[0] = 1.0
         self.Interactions.values = vals
         self.raw_phenotypes = self.build_phenotypes()
