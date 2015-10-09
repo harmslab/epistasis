@@ -1,9 +1,9 @@
 # Try using setuptools first, if it's installed
 try:
     from setuptools import setup
-except: 
+except:
     from distutils.core import setup
-    
+
 from distutils.extension import Extension
 
 
@@ -19,7 +19,6 @@ setup(name='epistasis',
           'seqspace',
           'numpy',
           'scipy',
-          'pandas',
           'scikit-learn',
           'networkx',
           'lmfit'

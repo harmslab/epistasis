@@ -1,6 +1,6 @@
-__doc__ = """ 
+__doc__ = """
 
-A python package for estimating high order epistasis in genotype-phenotype maps. This package includes both linear and non-linear epistasis models, as well as various tools for analyzing these spaces. 
+A python package for estimating high order epistasis in genotype-phenotype maps. This package includes both linear and non-linear epistasis models, as well as various tools for analyzing these spaces.
 
 The source code can be found at www.github.com/harmslab/epistasis.
 
@@ -12,3 +12,5 @@ To install:
 
 
 """
+
+__all__ = ["models", "simulate","plotting", "stats"]
