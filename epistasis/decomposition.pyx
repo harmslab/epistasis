@@ -1,3 +1,7 @@
+# ---------------------------------------------------
+# Decomposition matrix for epistasis models
+# ---------------------------------------------------
+
 import numpy as np
 
 def generate_dv_matrix(sequences, interactions, encoding={"1": 1, "0": 0}):
@@ -20,7 +24,9 @@ def generate_dv_matrix(sequences, interactions, encoding={"1": 1, "0": 0}):
         # Skip first index -- this is wildtype
         for i in range(1,dim2):
 
+            # initialize element encoding
             element = 1
+
             # Iterate through interactions terms
             for j in range(len(interactions[i])):
 
@@ -29,17 +35,8 @@ def generate_dv_matrix(sequences, interactions, encoding={"1": 1, "0": 0}):
 
                 element = element * encoding[sequences[n][m]]
 
-                #
-                #if k == 0:
-                #    pass
-                #elif sequences[n][m] == "1":
-                #    x[n][i] = 1
-                #else:
-                #    x[n][i] = 0
-                #    k = 0
-
+            # add final element to matrix
             x[n][i] = element
-            #k = 1
 
     # Returns the dummy matrix
     return np.asarray(x)
