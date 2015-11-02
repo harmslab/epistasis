@@ -13,7 +13,7 @@ import numpy as np
 # seqspace module. 
 # ----------------------------------------------------------
 
-from seqspace.gpm import GenoPhenoMap
+from seqspace.gpm import GenotypePhenotypeMap
 from seqspace.utils import hamming_distance, encode_mutations, construct_genotypes
 
 # ----------------------------------------------------------
@@ -28,7 +28,7 @@ from epistasis.utils import params_index_map, build_model_params
 # Notice: mapping inherits seqspace base mapping object
 # ----------------------------------------------------------
 
-class EpistasisMap(GenoPhenoMap):
+class EpistasisMap(GenotypePhenotypeMap):
     
     def __init__(self, wildtype, genotypes, phenotypes, errors=None, log_transform=False, mutations=None):
         """
