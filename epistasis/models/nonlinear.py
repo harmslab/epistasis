@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 #from epistasis.stats import r_squared
 from epistasis.utils import label_to_lmfit
-from epistasis.regression_ext import generate_dv_matrix
+from epistasis.decomposition import generate_dv_matrix
 from epistasis.models.base import BaseModel
 
 # ------------------------------------------

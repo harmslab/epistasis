@@ -2,5 +2,5 @@ from distutils.core import setup
 from Cython.Build import cythonize
 
 setup(
-    ext_modules = cythonize("regression_ext.pyx")
+    ext_modules = cythonize("decomposition.pyx")
 )

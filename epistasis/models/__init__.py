@@ -10,5 +10,6 @@ from epistasis.models.nonlinear import (NonlinearEpistasisModel,
                                         ThresholdingEpistasisModel)
 # Import linear models
 from epistasis.models.linear import (LocalEpistasisModel,
-                                    GlobalEpistasisModel,
-                                    ProjectedEpistasisModel)
+                                    GlobalEpistasisModel)
+
+from epistasis.models.regression import EpistasisRegression

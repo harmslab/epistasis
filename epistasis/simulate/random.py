@@ -7,7 +7,7 @@ __doc__ = """Submodule with various classes for generating/simulating genotype-p
 import numpy as np
 
 # local imports
-from epistasis.regression_ext import generate_dv_matrix
+from epistasis.decomposition import generate_dv_matrix
 from epistasis.simulate.base import BaseArtificialMap
 
 # ------------------------------------------------------------

@@ -5,7 +5,7 @@ __doc__ = """ Principal component analysis for genotype-phenotype maps in submod
 # ----------------------------------------------------
 
 from sklearn.decomposition import PCA
-from epistasis.regression_ext import generate_dv_matrix
+from epistasis.decomposition import generate_dv_matrix
 from epistasis.models.base import BaseModel
 
 class EpistasisPCA(BaseModel):

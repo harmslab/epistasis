@@ -7,7 +7,7 @@ except:
 from distutils.extension import Extension
 
 
-extension1 = Extension('epistasis.regression_ext', ["epistasis/regression_ext.c"])
+extension1 = Extension('epistasis.decomposition', ["epistasis/decomposition.c"])
 
 setup(name='epistasis',
       version='0.1',
