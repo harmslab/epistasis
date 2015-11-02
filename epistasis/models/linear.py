@@ -226,10 +226,13 @@ class ProjectedEpistasisModel(BaseModel):
 
             `phenotypes` [array] : array of quantitative phenotypes.
         """
-        phenotypes = np.zeros(len(self.genotypes), dtype=float)
-        binaries = self.Binary.genotypes
+        phenotypes = np.zeros(len(self.complete_genotypes), dtype=float)
+        binaries = self.Binary.complete_genotypes
         X = generate_dv_matrix(binaries, self.Interactions.labels)
-        bit_phenotypes = self.regression_model.predict(X)
-        for i in range(len(self.Binary.indices)):
-            phenotypes[self.Binary.indices[i]] = bit_phenotypes[i]
+        phenotypes = self.regression_model.predict(X)
+
+        # If log_transform, unscale phenotypes
+        if self.log_transform:
+            phenotypes = np.exp(phenotypes)
+
         return phenotypes
