@@ -96,7 +96,7 @@ class LocalEpistasisModel(BaseModel):
 
 class GlobalEpistasisModel(BaseModel):
 
-    def __init__(self, wildtype, genotypes, phenotypes, errors=None, log_transform=False):
+    def __init__(self, wildtype, genotypes, phenotypes, errors=None, log_transform=False, mutations=None):
         """ Create a map of the global epistatic effects using Hadamard approach (defined by XX)
 
             This is the related to LocalEpistasisMap by the discrete Fourier
@@ -115,7 +115,7 @@ class GlobalEpistasisModel(BaseModel):
             `log_transform` [bool] : If True, log transform the phenotypes.
         """
         # Populate Epistasis Map
-        super(GlobalEpistasisModel, self).__init__(wildtype, genotypes, phenotypes, errors, log_transform)
+        super(GlobalEpistasisModel, self).__init__(wildtype, genotypes, phenotypes, errors, log_transform, mutations=mutations)
         self.order = self.length
 
         # Construct the Interactions mapping -- Interactions Subclass is added to model
