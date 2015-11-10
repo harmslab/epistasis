@@ -20,7 +20,7 @@ class RandomEpistasisMap(BaseArtificialMap):
 
     """ Generate genotype-phenotype map from random epistatic interactions. """
 
-    def __init__(self, length, order, magnitude, log_transform=False):
+    def __init__(self, length, order, magnitude, model='local', log_transform=False):
         """ Choose random values for epistatic terms below and construct a genotype-phenotype map.
 
             ASSUMES ADDITIVE MODEL (UNLESS LOG TRANSFORMED).
@@ -38,9 +38,9 @@ class RandomEpistasisMap(BaseArtificialMap):
         """
         super(RandomEpistasisMap,self).__init__(length, order, log_transform)
         self.Interactions.values = self.random_epistasis(-1,1)
-        self.phenotypes = self.build_phenotypes()
+        self.phenotypes = self.build_phenotypes(model=model)
 
-    def build_phenotypes(self, values=None):
+    def build_phenotypes(self, values=None, module_type='local'):
         """ Build the phenotype map from epistatic interactions. """
         # Allocate phenotype numpy array
         phenotypes = np.zeros(self.n, dtype=float)
@@ -49,8 +49,16 @@ class RandomEpistasisMap(BaseArtificialMap):
         if values is None:
             values = self.Interactions.values
 
-        # Build phenotypes for binary representation of space
-        self.X = generate_dv_matrix(self.Binary.genotypes, self.Interactions.labels)
+        # Get model type:
+        if model == "local":
+            encoding = {"1": 1, "0": 0}
+        elif model == "global":
+            encoding = {"1": 1, "0": -1}
+        else:
+            raise Exception("Invalid model type given.")
+
+        # Build phenotypes from binary representation of space
+        self.X = generate_dv_matrix(self.Binary.genotypes, self.Interactions.labels, encoding=encoding)
         self.Binary.phenotypes = bit_phenotypes = np.dot(self.X,values)
 
         # Handle log_transformed phenotypes

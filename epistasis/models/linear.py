@@ -10,29 +10,24 @@ import numpy as np
 # seqspace imports
 # ------------------------------------------------------------
 
-from seqspace.utils import list_binary, enumerate_space, encode_mutations, construct_genotypes
+from seqspace.utils import (list_binary,
+                            enumerate_space,
+                            encode_mutations,
+                            construct_genotypes)
 
 # ------------------------------------------------------------
 # Local imports
 # ------------------------------------------------------------
 
 from epistasis.decomposition import generate_dv_matrix
-from epistasis.utils import epistatic_order_indices, build_model_params
 from epistasis.models.base import BaseModel
+from epistasis.utils import (epistatic_order_indices,
+                            build_model_params,
+                            hadamard_weight_vector)
 
 # ------------------------------------------------------------
 # Unique Epistasis Functions
 # ------------------------------------------------------------
-
-def hadamard_weight_vector(genotypes):
-    """ Build the hadamard weigth vector. """
-    l = len(genotypes)
-    n = len(genotypes[0])
-    weights = np.zeros((l, l), dtype=float)
-    for g in range(l):
-        epistasis = float(genotypes[g].count("1"))
-        weights[g][g] = ((-1)**epistasis)/(2**(n-epistasis))
-    return weights
 
 def cut_interaction_labels(labels, order):
     """ Cut off interaction labels at certain order of interactions. """

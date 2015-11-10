@@ -16,8 +16,11 @@ from seqspace.utils import list_binary, enumerate_space, encode_mutations, const
 # ------------------------------------------------------------
 
 from epistasis.decomposition import generate_dv_matrix
-from epistasis.utils import epistatic_order_indices, build_model_params
 from epistasis.models.base import BaseModel
+from epistasis.utils import (epistatic_order_indices,
+                                build_model_params,
+                                hadamard_weight_vector)
+
 
 # ------------------------------------------------------------
 # Unique Epistasis Functions
@@ -80,7 +83,6 @@ class EpistasisRegression(BaseModel):
         # Regression properties
         self.regression_model = LinearRegression(fit_intercept=False)
         self.error_model = LinearRegression(fit_intercept=False)
-
 
     @property
     def score(self):
