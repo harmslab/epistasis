@@ -40,7 +40,7 @@ class RandomEpistasisMap(BaseArtificialMap):
         self.Interactions.values = self.random_epistasis(-1,1)
         self.phenotypes = self.build_phenotypes(model=model)
 
-    def build_phenotypes(self, values=None, module_type='local'):
+    def build_phenotypes(self, values=None, model='local'):
         """ Build the phenotype map from epistatic interactions. """
         # Allocate phenotype numpy array
         phenotypes = np.zeros(self.n, dtype=float)
