@@ -15,6 +15,17 @@ from seqspace.utils import enumerate_space, binary_mutations_map
 
 from epistasis.mapping.epistasis import EpistasisMap
 
+class Sample:
+
+    def __init__(self, replicate_genotypes, replicate_phenotypes, indices=None):
+        """ Sample from simulated experiment """
+        self.replicate_genotypes = replicate_genotypes
+        self.replicate_phenotypes = replicate_phenotypes
+        self.genotypes = self.replicate_genotypes[:,0]
+        self.phenotypes = np.mean(self.replicate_phenotypes, axis=1)
+        self.errors = np.std(self.replicate_phenotypes, axis=1)
+        self.indices = indices
+
 
 class BaseArtificialMap(EpistasisMap):
 
@@ -96,14 +107,10 @@ class BaseArtificialMap(EpistasisMap):
 
             __Return__:
 
-            `genotypes` [array of str] : sampled genotypes
-
-            `phenotype` [array of floats] : sampled phenotypes
-
-            `random_indices` [array of ints] : indices of sampled genotypes
+            `samples` [Sample object]: returns this object with all stats on experiment
         """
         # make sure fraction is float between 0 and 1
-        if fraction < 0 or fraction >= 1:
+        if fraction < 0 or fraction > 1:
             raise Exception("fraction is invalid.")
 
         # fractional length of space.
@@ -131,7 +138,8 @@ class BaseArtificialMap(EpistasisMap):
             genotypes = np.array([self.genotypes[i] for i in random_indices])
             phenotypes = np.array([self.phenotypes[i] for i in random_indices])
 
-        return genotypes, phenotypes, random_indices
+        samples = Sample(genotypes, phenotypes, random_indices)
+        return samples
 
     def model_input(self):
         """ Get input for a generic Epistasis Model.
