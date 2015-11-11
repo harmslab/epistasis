@@ -117,7 +117,8 @@ class GlobalEpistasisModel(BaseModel):
         self._construct_interactions()
 
         # Generate basis matrix for mutant cycle approach to epistasis.
-        self.weight_vector = hadamard_weight_vector(self.Binary.genotypes)
+        #self.weight_vector = hadamard_weight_vector(self.Binary.genotypes)
+        self.weight = 1.0/self.n
         self.X = generate_dv_matrix(self.Binary.genotypes, self.Interactions.labels, encoding={"1": 1, "0": -1})
         self.X_inv = np.linalg.inv(self.X)
 
@@ -125,7 +126,7 @@ class GlobalEpistasisModel(BaseModel):
         """ Estimate the values of all epistatic interactions using the hadamard
         matrix transformation.
         """
-        self.Interactions.values = np.dot(self.weight_vector,np.dot(self.X_inv, self.Binary.phenotypes))
+        self.Interactions.values = (1.0/self.weight)*np.dot(self.X_inv, self.Binary.phenotypes)
 
     def fit_error(self):
         """ Estimate the error of each epistatic interaction by standard error
@@ -134,9 +135,8 @@ class GlobalEpistasisModel(BaseModel):
         if self.log_transform is True:
             # If log-transformed, fit assymetric errorbars correctly
             # upper and lower are unweighted tranformations
-            upper = np.sqrt(np.dot(abs(self.X_inv), self.Binary.errors[0]**2))
-            lower = np.sqrt(np.dot(abs(self.X_inv), self.Binary.errors[1]**2))
-            self.Interactions.errors = np.array((np.dot(self.weight_vector, lower), np.dot(self.weight_vector, upper)))
+            upper = np.sqrt(np.dot(abs(self.X_inv), (1.0/self.weight) * self.Binary.errors[0]**2))
+            lower = np.sqrt(np.dot(abs(self.X_inv), (1.0/self.weight) * self.Binary.errors[1]**2))
+            self.Interactions.errors = np.array((upper,lower))
         else:
-            unweighted = np.sqrt(np.dot(abs(self.X_inv), self.Binary.errors**2))
-            self.Interactions.errors = np.dot(self.weight_vector, unweighted)
+            self.Interactions.errors = np.sqrt(np.dot(abs(self.X_inv), (1.0/self.weight) * self.Binary.errors**2))

@@ -68,7 +68,6 @@ class EpistasisRegression(BaseModel):
             raise Exception("""Need to specify the model's `order` argument or manually
                                 list model parameters as `parameters` argument.""")
 
-
         # Get model type:
         if model == "local":
             encoding = {"1": 1, "0": 0}
