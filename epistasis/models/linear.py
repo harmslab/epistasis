@@ -135,8 +135,8 @@ class GlobalEpistasisModel(BaseModel):
         if self.log_transform is True:
             # If log-transformed, fit assymetric errorbars correctly
             # upper and lower are unweighted tranformations
-            upper = np.sqrt(np.dot(abs(self.X_inv), (1.0/self.weight) * self.Binary.errors[0]**2))
-            lower = np.sqrt(np.dot(abs(self.X_inv), (1.0/self.weight) * self.Binary.errors[1]**2))
+            upper = np.sqrt(np.dot(abs(self.X_inv), (1.0/self.weight)**2 * self.Binary.errors[0]**2))
+            lower = np.sqrt(np.dot(abs(self.X_inv), (1.0/self.weight)**2 * self.Binary.errors[1]**2))
             self.Interactions.errors = np.array((upper,lower))
         else:
-            self.Interactions.errors = np.sqrt(np.dot(abs(self.X_inv), (1.0/self.weight) * self.Binary.errors**2))
+            self.Interactions.errors = np.sqrt(np.dot(abs(self.X_inv), (1.0/self.weight)**2 * self.Binary.errors**2))

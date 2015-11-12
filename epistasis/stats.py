@@ -4,7 +4,7 @@ import numpy as np
 
 from epistasis.models.linear import ProjectedEpistasisModel
 
-def r_squared(y_obs, y_pred):
+def generalized_r2(y_obs, y_pred):
     """ Calculate the rquared between the observed and predicted y.
         See wikipedia definition of `coefficient of determination`.
     """
@@ -15,6 +15,18 @@ def r_squared(y_obs, y_pred):
     # Sum of squares of residuals
     ss_residuals = sum((y_obs - y_pred)**2)
     r_squared = 1 - (ss_residuals/ss_total)
+    return r_squared
+
+def explained_variance(y_obs, y_pred):
+    """ Returns the explained variance
+    """
+    # Mean fo the y observed
+    y_obs_mean = np.mean(y_obs)
+    # Total sum of the squares
+    ss_total = sum((y_obs - y_obs_mean)**2)
+    # Sum of squares of residuals
+    ss_regression = sum((y_pred - y_obs_mean)**2)
+    r_squared = (ss_regression/ss_total)
     return r_squared
 
 def ss_residuals(y_obs, y_pred):
