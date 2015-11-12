@@ -2,7 +2,7 @@ __doc__ = """Submodule with useful statistics functions for epistasis model."""
 
 import numpy as np
 
-from epistasis.models.linear import ProjectedEpistasisModel
+from epistasis.models.regression import EpistasisRegression
 
 def generalized_r2(y_obs, y_pred):
     """ Calculate the rquared between the observed and predicted y.
@@ -55,8 +55,6 @@ def AIC(model):
     aic = 2 * k - 2 * log_likelihood(model)
     return aic
 
-#def f_statistic(model):
- #   """ """
 
 def log_likelihood_ratio(model1, model2):
     """ Calculate the likelihood ratio two regressed epistasis models.
