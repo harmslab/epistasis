@@ -12,4 +12,5 @@ from epistasis.models.nonlinear import (NonlinearEpistasisModel,
 from epistasis.models.linear import (LocalEpistasisModel,
                                     GlobalEpistasisModel)
 
-from epistasis.models.regression import EpistasisRegression
+# Need to remove this later
+from epistasis.models.regression import EpistasisRegression as ProjectedEpistasisModel

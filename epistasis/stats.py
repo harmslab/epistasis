@@ -4,6 +4,28 @@ import numpy as np
 
 from epistasis.models.regression import EpistasisRegression
 
+def pearson(y_obs, y_pred):
+    """ Calculate pearson coefficient. """
+    x = y_obs
+    y = y_pred
+
+    xbar = np.mean(y_obs)
+    ybar = np.mean(y_pred)
+
+    terms = np.zeros(len(x), dtype=float)
+
+    for i in range(len(x)):
+        terms[i] = (x[i] - xbar) * (y[i] - ybar)
+
+    numerator = sum(terms)
+
+    # calculate denominator
+    xdenom = sum((x - xbar)**2)
+    ydenom = sum((y - ybar)**2)
+    denominator = np.sqrt(xdenom)*np.sqrt(ydenom)
+
+    return numerator/denominator
+
 def generalized_r2(y_obs, y_pred):
     """ Calculate the rquared between the observed and predicted y.
         See wikipedia definition of `coefficient of determination`.
@@ -24,7 +46,7 @@ def explained_variance(y_obs, y_pred):
     y_obs_mean = np.mean(y_obs)
     # Total sum of the squares
     ss_total = sum((y_obs - y_obs_mean)**2)
-    # Sum of squares of residuals
+    # Explained sum of squares
     ss_regression = sum((y_pred - y_obs_mean)**2)
     r_squared = (ss_regression/ss_total)
     return r_squared
