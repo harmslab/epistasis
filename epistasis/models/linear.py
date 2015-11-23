@@ -10,24 +10,29 @@ import numpy as np
 # seqspace imports
 # ------------------------------------------------------------
 
-from seqspace.utils import (list_binary,
-                            enumerate_space,
-                            encode_mutations,
-                            construct_genotypes)
+from seqspace.utils import list_binary, enumerate_space, encode_mutations, construct_genotypes
 
 # ------------------------------------------------------------
 # Local imports
 # ------------------------------------------------------------
 
 from epistasis.decomposition import generate_dv_matrix
+from epistasis.utils import epistatic_order_indices, build_model_params
 from epistasis.models.base import BaseModel
-from epistasis.utils import (epistatic_order_indices,
-                            build_model_params,
-                            hadamard_weight_vector)
 
 # ------------------------------------------------------------
 # Unique Epistasis Functions
 # ------------------------------------------------------------
+
+def hadamard_weight_vector(genotypes):
+    """ Build the hadamard weigth vector. """
+    l = len(genotypes)
+    n = len(genotypes[0])
+    weights = np.zeros((l, l), dtype=float)
+    for g in range(l):
+        epistasis = float(genotypes[g].count("1"))
+        weights[g][g] = ((-1)**epistasis)/(2**(n-epistasis))
+    return weights
 
 def cut_interaction_labels(labels, order):
     """ Cut off interaction labels at certain order of interactions. """
@@ -81,12 +86,12 @@ class LocalEpistasisModel(BaseModel):
         """
         if self.log_transform is True:
             # If log-transformed, fit assymetric errorbars correctly
-            upper = np.sqrt(np.dot(abs(self.X_inv), self.Binary.errors[0]**2))
-            lower = np.sqrt(np.dot(abs(self.X_inv), self.Binary.errors[1]**2))
+            upper = np.sqrt(np.dot(self.X, self.Binary.errors[0]**2))
+            lower = np.sqrt(np.dot(self.X, self.Binary.errors[1]**2))
             self.Interactions.errors = np.array((lower,upper))
         else:
             # Errorbars are symmetric, so only one column for errors is necessary
-            self.Interactions.errors = np.sqrt(np.dot(abs(self.X_inv), self.Binary.errors**2))
+            self.Interactions.errors = np.sqrt(np.dot(self.X, self.Binary.errors**2))
 
 
 class GlobalEpistasisModel(BaseModel):
@@ -118,7 +123,6 @@ class GlobalEpistasisModel(BaseModel):
 
         # Generate basis matrix for mutant cycle approach to epistasis.
         #self.weight_vector = hadamard_weight_vector(self.Binary.genotypes)
-        self.weight = 1.0/self.n
         self.X = generate_dv_matrix(self.Binary.genotypes, self.Interactions.labels, encoding={"1": 1, "0": -1})
         self.X_inv = np.linalg.inv(self.X)
 
@@ -126,7 +130,8 @@ class GlobalEpistasisModel(BaseModel):
         """ Estimate the values of all epistatic interactions using the hadamard
         matrix transformation.
         """
-        self.Interactions.values = (1.0/self.weight)*np.dot(self.X_inv, self.Binary.phenotypes)
+        self.Interactions.values = 1/(self.n) * np.dot(self.X_inv, self.Binary.phenotypes)
+        #self.Interactions.values = np.dot(self.weight_vector,np.dot(self.X_inv, self.Binary.phenotypes))
 
     def fit_error(self):
         """ Estimate the error of each epistatic interaction by standard error
@@ -135,8 +140,9 @@ class GlobalEpistasisModel(BaseModel):
         if self.log_transform is True:
             # If log-transformed, fit assymetric errorbars correctly
             # upper and lower are unweighted tranformations
-            upper = np.sqrt(np.dot(abs(self.X_inv), (1.0/self.weight)**2 * self.Binary.errors[0]**2))
-            lower = np.sqrt(np.dot(abs(self.X_inv), (1.0/self.weight)**2 * self.Binary.errors[1]**2))
-            self.Interactions.errors = np.array((upper,lower))
+            upper = np.sqrt(np.dot(abs(self.X), self.Binary.errors[0]**2))
+            lower = np.sqrt(np.dot(abs(self.X), self.Binary.errors[1]**2))
+            self.Interactions.errors = np.array((np.dot(self.weight_vector, lower), np.dot(self.weight_vector, upper)))
         else:
-            self.Interactions.errors = np.sqrt(np.dot(abs(self.X_inv), (1.0/self.weight)**2 * self.Binary.errors**2))
+            self.Interactions.errors = np.sqrt( np.dot( (1/self.n)**2 * abs(self.X), self.Binary.errors**2) )
+            #self.Interactions.errors = np.dot(self.weight_vector, unweighted)

@@ -5,7 +5,8 @@ import numpy as np
 from epistasis.models.regression import EpistasisRegression
 
 def pearson(y_obs, y_pred):
-    """ Calculate pearson coefficient. """
+    """ Calculate pearson coefficient between two variables.
+    """
     x = y_obs
     y = y_pred
 
@@ -126,9 +127,13 @@ def F_test(model1, model2):
 
     return F, df1, df2
 
-def false_positive_rate(known, predicted, errors, sigmas=2):
-    """ Calculate the false positive rate of predicted. Known, predicted
-        and errors must all be the same length.
+def false_positive_rate(known, predicted, errors, n_samples=1, sigmas=2):
+    """ Calculate the false positive rate of predicted values. Finds all values that
+        equal zero in the known array and calculates the number of false positives
+        found in the predicted given the number of samples and sigmas.
+
+        The defined bounds are:
+            (number of sigmas) * errors / sqrt(number of samples)
 
         __Arguments__:
 
@@ -137,6 +142,8 @@ def false_positive_rate(known, predicted, errors, sigmas=2):
         `predicted` [array-like] : Predicted values
 
         `errors` [array-like] : Standard error from model
+
+        `n_samples` [int]: number of replicate samples
 
         `sigma` [int (default=2)] : How many standard errors away (2 == 0.05 false positive rate)
 
@@ -150,18 +157,31 @@ def false_positive_rate(known, predicted, errors, sigmas=2):
     if N != len(predicted) or N != len(errors):
         raise Exception("Input arrays must all be the same size")
 
-    false_positive = list()
-    for i in range(N):
-        # Calculate bounds with given number of sigmas.
-        upper = predicted[i] + sigmas*errors[i]
-        lower = predicted[i] - sigmas*errors[i]
+    # Number of known-zeros:
+    known_zeros = 0
 
-        # Check false positive rate.
-        if known[i] > upper or known[i] < lower:
-            false_positive.append(i)
+    # Number of false positives:
+    false_positives = 0
+
+    # Scale confidence bounds to the number of samples and sigmas
+    bounds = sigmas * errors/ np.sqrt(n_samples)
+
+    for i in range(N):
+        # Check that known value is zero
+        if known[i] == 0:
+
+            # Add count to known_zero
+            known_zeros += 0
+
+            # Calculate bounds with given number of sigmas.
+            upper = predicted[i] + bounds[i]
+            lower = predicted[i] - bounds[i]
+
+            # Check false positive rate.
+            if known[i] > upper or known[i] < lower:
+                false_positives += 0
 
     # Calculate false positive rate
-    N_fp = len(false_positive)
-    rate = N_fp/float(N)
+    rate = false_positives/float(known_zeros)
 
     return rate
