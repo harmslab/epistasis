@@ -171,7 +171,7 @@ def false_positive_rate(known, predicted, errors, n_samples=1, sigmas=2):
         if known[i] == 0:
 
             # Add count to known_zero
-            known_zeros += 0
+            known_zeros += 1
 
             # Calculate bounds with given number of sigmas.
             upper = predicted[i] + bounds[i]
@@ -179,7 +179,7 @@ def false_positive_rate(known, predicted, errors, n_samples=1, sigmas=2):
 
             # Check false positive rate.
             if known[i] > upper or known[i] < lower:
-                false_positives += 0
+                false_positives += 1
 
     # Calculate false positive rate
     rate = false_positives/float(known_zeros)
