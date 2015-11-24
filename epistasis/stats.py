@@ -185,7 +185,7 @@ def F_test(model1, model2):
     p1 = len(model1.Interactions.values)
     p2 = len(model2.Interactions.values)
     df1 = p2-p1
-    df2 = n_obs - p2 + 1
+    df2 = n_obs - p2 - 1
 
     # Sum of square residuals for each model.
     sse1 = ss_residuals(model1.phenotypes, model1.predict())
@@ -195,8 +195,8 @@ def F_test(model1, model2):
     F = ( (sse1 - sse2) / df1 ) / (sse2 / df2)
 
     # get f-statistic from F-distribution
-    f_stat = f.pdf(F, df1, df2)
-    return f_stat
+    p_value = 1 - f.cdf(F, df1, df2)
+    return p_value
 
 # -----------------------------------------------------------------------
 # Model Specifier Object
@@ -240,10 +240,11 @@ class ModelSpecifier:
             model_stat = self.test_method(self.model, alt_model)
             self.test_stats.append(model_stat)
 
-            # If test statistic is not less than f-statistic cutoff, than keep alternative model
+            # If test statistic is less than f-statistic cutoff, than keep alternative model
             if model_stat < test_cutoff:
+                self.model = alt_model
+            # Else, the null model is sufficient and we keep it
+            else:
                 self.model_order = order-1
                 self.model_stat = model_stat
                 break
-            else:
-                self.model = alt_model
