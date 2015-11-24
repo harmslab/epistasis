@@ -68,13 +68,8 @@ class EpistasisRegression(BaseModel):
             raise Exception("""Need to specify the model's `order` argument or manually
                                 list model parameters as `parameters` argument.""")
 
-        # Get model type:
-        if model == "local":
-            encoding = {"1": 1, "0": 0}
-        elif model == "global":
-            encoding = {"1": 1, "0": -1}
-        else:
-            raise Exception("Invalid model type given.")
+        model_types = {"local":  {"1": 1, "0": 0}, "global": {"1": 1, "0": -1}}
+        encoding = model_types[model_type]
 
         # Construct x matrix
         self.X = generate_dv_matrix(self.Binary.genotypes, self.Interactions.labels, encoding=encoding)

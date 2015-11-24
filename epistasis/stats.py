@@ -1,8 +1,18 @@
 __doc__ = """Submodule with useful statistics functions for epistasis model."""
 
 import numpy as np
+from scipy.stats import f
 
+# imports from seqspace dependency
+from seqspace.utils import farthest_genotype, binary_mutations_map
+
+from epistasis.models.base import BaseModel
 from epistasis.models.regression import EpistasisRegression
+from epistasis.models.linear import LocalEpistasisModel, GlobalEpistasisModel
+
+# -----------------------------------------------------------------------
+# Useful statistical metrics as methods
+# -----------------------------------------------------------------------
 
 def pearson(y_obs, y_pred):
     """ Calculate pearson coefficient between two variables.
@@ -60,13 +70,73 @@ def chi_squared(y_obs, y_pred):
     """ Calculate the chi squared between observed and predicted y. """
     return sum( (y_obs - y_pred)**2/ y_pred )
 
+def false_positive_rate(y_obs, y_pred, errors, n_samples=1, sigmas=2):
+    """ Calculate the false positive rate of predicted values. Finds all values that
+        equal zero in the known array and calculates the number of false positives
+        found in the predicted given the number of samples and sigmas.
+
+        The defined bounds are:
+            (number of sigmas) * errors / sqrt(number of samples)
+
+        __Arguments__:
+
+        `known` [array-like] : Known values for comparing false positives
+
+        `predicted` [array-like] : Predicted values
+
+        `errors` [array-like] : Standard error from model
+
+        `n_samples` [int]: number of replicate samples
+
+        `sigma` [int (default=2)] : How many standard errors away (2 == 0.05 false positive rate)
+
+        __Returns__:
+
+        `rate` [float] : False positive rate in data
+    """
+
+    N = len(y_obs)
+    # Check that known, predicted, and errors are the same size.
+    if N != len(y_pred) or N != len(errors):
+        raise Exception("Input arrays must all be the same size")
+
+    # Number of known-zeros:
+    known_zeros = 0
+
+    # Number of false positives:
+    false_positives = 0
+
+    # Scale confidence bounds to the number of samples and sigmas
+    bounds = sigmas * errors/ np.sqrt(n_samples)
+
+    for i in range(N):
+        # Check that known value is zero
+        if y_obs[i] == 0:
+
+            # Add count to known_zero
+            known_zeros += 1
+
+            # Calculate bounds with given number of sigmas.
+            upper = y_pred[i] + bounds[i]
+            lower = y_pred[i] - bounds[i]
+
+            # Check false positive rate.
+            if y_obs[i] > upper or y_obs[i] < lower:
+                false_positives += 1
+
+    # Calculate false positive rate
+    rate = false_positives/float(known_zeros)
+
+    return rate
+
 # -----------------------------------------------------------------------
-# Comparing two models.
+# Methods for model comparison
 # -----------------------------------------------------------------------
 
 def log_likelihood(model):
     """ Calculate the maximum likelihood estimate from sum of squared residuals."""
-    ssr = ss_residuals(model.phenotypes, model.predict())
+
+
     N = model.n
     sigma = float(ssr/ N)
     L = N * np.log(1.0 / np.sqrt(2*np.pi*sigma)) - (1.0 / (2.0*sigma)) * ssr
@@ -77,7 +147,6 @@ def AIC(model):
     k = len(model.Interactions.values)
     aic = 2 * k - 2 * log_likelihood(model)
     return aic
-
 
 def log_likelihood_ratio(model1, model2):
     """ Calculate the likelihood ratio two regressed epistasis models.
@@ -116,72 +185,58 @@ def F_test(model1, model2):
     p1 = len(model1.Interactions.values)
     p2 = len(model2.Interactions.values)
     df1 = p2-p1
-    df2 = n_obs - p2
+    df2 = n_obs - p2 + 1
 
     # Sum of square residuals for each model.
     sse1 = ss_residuals(model1.phenotypes, model1.predict())
     sse2 = ss_residuals(model2.phenotypes, model2.predict())
 
-    # F-test
+    # F-score
     F = ( (sse1 - sse2) / df1 ) / (sse2 / df2)
 
-    return F, df1, df2
+    # get f-statistic from F-distribution
+    f_stat = f.pdf(F, d1, d2)
+    return f_stat
 
-def false_positive_rate(known, predicted, errors, n_samples=1, sigmas=2):
-    """ Calculate the false positive rate of predicted values. Finds all values that
-        equal zero in the known array and calculates the number of false positives
-        found in the predicted given the number of samples and sigmas.
+# -----------------------------------------------------------------------
+# Model Specifier Object
+# -----------------------------------------------------------------------
 
-        The defined bounds are:
-            (number of sigmas) * errors / sqrt(number of samples)
+class ModelSpecifier:
 
-        __Arguments__:
+    def __init__(self, wildtype, genotypes, phenotypes, log_transform=False, mutations=None, model_type="local", test_type="ftest"):
+        """
+        Model specifier. Chooses the order of model based on specified test.
+        """
+        # Defaults to binary mapping if not specific mutations are named
+        if mutations is None:
+            mutant = farthest_genotype(wildtype, genotypes)
+            mutations = binary_mutations_map(wildtype, mutant)
 
-        `known` [array-like] : Known values for comparing false positives
+        # Select the statistical test for specifying model
+        test_types = {"likelihood": log_likelihood_test, "ftest": F_test}
 
-        `predicted` [array-like] : Predicted values
+        self.test_type = test_type
+        self.test_method = test_types[test_type]
+        self.model_type = model_type
 
-        `errors` [array-like] : Standard error from model
+        # Construct the range of order
+        orders = range(2, self.length+1)
 
-        `n_samples` [int]: number of replicate samples
+        # calculate null model
+        self.model = EpistasisRegression(wildtype, genotypes, phenotypes, order=order-1, log_transform=log_transform, mutations=mutations, model=self.model_type)
 
-        `sigma` [int (default=2)] : How many standard errors away (2 == 0.05 false positive rate)
+        # Iterate through orders until we reach our significance statistic
+        for order in orders:
+            # alternative model
+            alt_model = EpistasisRegression(wildtype, genotypes, phenotypes, order=order, log_transform=log_transform, mutations=mutations, model=self.model_type)
 
-        __Returns__:
+            # Run test and append statistic to test_stats
+            test_stat = self.test_method(self.model, alt_model)
 
-        `rate` [float] : False positive rate in data
-    """
-
-    N = len(known)
-    # Check that known, predicted, and errors are the same size.
-    if N != len(predicted) or N != len(errors):
-        raise Exception("Input arrays must all be the same size")
-
-    # Number of known-zeros:
-    known_zeros = 0
-
-    # Number of false positives:
-    false_positives = 0
-
-    # Scale confidence bounds to the number of samples and sigmas
-    bounds = sigmas * errors/ np.sqrt(n_samples)
-
-    for i in range(N):
-        # Check that known value is zero
-        if known[i] == 0:
-
-            # Add count to known_zero
-            known_zeros += 1
-
-            # Calculate bounds with given number of sigmas.
-            upper = predicted[i] + bounds[i]
-            lower = predicted[i] - bounds[i]
-
-            # Check false positive rate.
-            if known[i] > upper or known[i] < lower:
-                false_positives += 1
-
-    # Calculate false positive rate
-    rate = false_positives/float(known_zeros)
-
-    return rate
+            # If test statistic is not less than f-statistic cutoff, than keep alternative model
+            if test_stat < cutoff:
+                self.model_order = order-1
+                break
+            else:
+                self.model = alt_model
