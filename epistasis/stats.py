@@ -195,7 +195,7 @@ def F_test(model1, model2):
     F = ( (sse1 - sse2) / df1 ) / (sse2 / df2)
 
     # get f-statistic from F-distribution
-    f_stat = f.pdf(F, d1, d2)
+    f_stat = f.pdf(F, df1, df2)
     return f_stat
 
 # -----------------------------------------------------------------------
@@ -214,30 +214,36 @@ class ModelSpecifier:
             mutations = binary_mutations_map(wildtype, mutant)
 
         # Select the statistical test for specifying model
-        test_types = {"likelihood": log_likelihood_test, "ftest": F_test}
+        test_types = {"likelihood": log_likelihood_ratio, "ftest": F_test}
 
         self.test_type = test_type
         self.test_method = test_types[test_type]
-        self.test_cutoff = cutoff
+        self.test_cutoff = test_cutoff
         self.model_type = model_type
 
         # Construct the range of order
-        orders = range(2, self.length+1)
+        orders = range(2, len(wildtype)+1)
 
         # calculate null model
-        self.model = EpistasisRegression(wildtype, genotypes, phenotypes, order=order-1, log_transform=log_transform, mutations=mutations, model=self.model_type)
+        self.model = EpistasisRegression(wildtype, genotypes, phenotypes, order=1, log_transform=log_transform, mutations=mutations, model_type=self.model_type)
+        self.model.fit()
+
+        self.test_stats = []
 
         # Iterate through orders until we reach our significance statistic
         for order in orders:
             # alternative model
-            alt_model = EpistasisRegression(wildtype, genotypes, phenotypes, order=order, log_transform=log_transform, mutations=mutations, model=self.model_type)
+            alt_model = EpistasisRegression(wildtype, genotypes, phenotypes, order=order, log_transform=log_transform, mutations=mutations, model_type=self.model_type)
+            alt_model.fit()
 
             # Run test and append statistic to test_stats
-            test_stat = self.test_method(self.model, alt_model)
+            model_stat = self.test_method(self.model, alt_model)
+            self.test_stats.append(model_stat)
 
             # If test statistic is not less than f-statistic cutoff, than keep alternative model
-            if test_stat < cutoff:
+            if model_stat < test_cutoff:
                 self.model_order = order-1
+                self.model_stat = model_stat
                 break
             else:
                 self.model = alt_model

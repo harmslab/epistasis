@@ -28,7 +28,7 @@ from epistasis.utils import (epistatic_order_indices,
 
 class EpistasisRegression(BaseModel):
 
-    def __init__(self, wildtype, genotypes, phenotypes, order=None, parameters=None, errors=None, log_transform=False, mutations=None, model="local"):
+    def __init__(self, wildtype, genotypes, phenotypes, order=None, parameters=None, errors=None, log_transform=False, mutations=None, model_type="local"):
         """ Create a map from local epistasis model projected into lower order
             order epistasis interactions. Requires regression to estimate values.
 
