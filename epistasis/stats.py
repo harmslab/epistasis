@@ -204,7 +204,7 @@ def F_test(model1, model2):
 
 class ModelSpecifier:
 
-    def __init__(self, wildtype, genotypes, phenotypes, log_transform=False, mutations=None, model_type="local", test_type="ftest"):
+    def __init__(self, wildtype, genotypes, phenotypes, test_cutoff=0.05, log_transform=False, mutations=None, model_type="local", test_type="ftest"):
         """
         Model specifier. Chooses the order of model based on specified test.
         """
@@ -218,6 +218,7 @@ class ModelSpecifier:
 
         self.test_type = test_type
         self.test_method = test_types[test_type]
+        self.test_cutoff = cutoff
         self.model_type = model_type
 
         # Construct the range of order
