@@ -1,6 +1,8 @@
 #
 # Class for specifying the order of regresssion by given test
 #
+# imports from seqspace dependency
+from seqspace.utils import farthest_genotype, binary_mutations_map
 
 from epistasis.stats import log_likelihood_ratio, F_test
 from epistasis.models.regression import EpistasisRegression
@@ -59,14 +61,15 @@ class ModelSpecifier:
             alt_model.fit()
 
             # Run test and append statistic to test_stats
-            model_stat = self.test_method(self.model, alt_model)
+            model_stat, p_value = self.test_method(self.model, alt_model)
             self.test_stats.append(model_stat)
 
             # If test statistic is less than f-statistic cutoff, than keep alternative model
-            if model_stat < test_cutoff:
+            if p_value < self.test_cutoff:
                 self.model = alt_model
             # Else, the null model is sufficient and we keep it
             else:
                 self.model_order = order-1
                 self.model_stat = model_stat
+                self.model_p_value = p_value
                 break
