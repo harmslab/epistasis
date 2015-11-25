@@ -3,13 +3,6 @@ __doc__ = """Submodule with useful statistics functions for epistasis model."""
 import numpy as np
 from scipy.stats import f
 
-# imports from seqspace dependency
-from seqspace.utils import farthest_genotype, binary_mutations_map
-
-from epistasis.models.base import BaseModel
-from epistasis.models.regression import EpistasisRegression
-from epistasis.models.linear import LocalEpistasisModel, GlobalEpistasisModel
-
 # -----------------------------------------------------------------------
 # Useful statistical metrics as methods
 # -----------------------------------------------------------------------
@@ -153,9 +146,6 @@ def log_likelihood_ratio(model1, model2):
 
         Models must be instances of ProjectedEpistasisModel
     """
-    if isinstance(model1, ProjectedEpistasisModel) != True and isinstance(model2, ProjectedEpistasisModel) != True:
-        raise Exception("Models must be instances of the ProjectedEpistasisModel.")
-
     ssr1 = ss_residuals(model1.phenotypes, model1.predict())
     ssr2 = ss_residuals(model2.phenotypes, model2.predict())
 
@@ -194,57 +184,6 @@ def F_test(model1, model2):
     # F-score
     F = ( (sse1 - sse2) / df1 ) / (sse2 / df2)
 
-    # get f-statistic from F-distribution
+    # get p-value from F-distribution
     p_value = 1 - f.cdf(F, df1, df2)
-    return p_value
-
-# -----------------------------------------------------------------------
-# Model Specifier Object
-# -----------------------------------------------------------------------
-
-class ModelSpecifier:
-
-    def __init__(self, wildtype, genotypes, phenotypes, test_cutoff=0.05, log_transform=False, mutations=None, model_type="local", test_type="ftest"):
-        """
-        Model specifier. Chooses the order of model based on specified test.
-        """
-        # Defaults to binary mapping if not specific mutations are named
-        if mutations is None:
-            mutant = farthest_genotype(wildtype, genotypes)
-            mutations = binary_mutations_map(wildtype, mutant)
-
-        # Select the statistical test for specifying model
-        test_types = {"likelihood": log_likelihood_ratio, "ftest": F_test}
-
-        self.test_type = test_type
-        self.test_method = test_types[test_type]
-        self.test_cutoff = test_cutoff
-        self.model_type = model_type
-
-        # Construct the range of order
-        orders = range(2, len(wildtype)+1)
-
-        # calculate null model
-        self.model = EpistasisRegression(wildtype, genotypes, phenotypes, order=1, log_transform=log_transform, mutations=mutations, model_type=self.model_type)
-        self.model.fit()
-
-        self.test_stats = []
-
-        # Iterate through orders until we reach our significance statistic
-        for order in orders:
-            # alternative model
-            alt_model = EpistasisRegression(wildtype, genotypes, phenotypes, order=order, log_transform=log_transform, mutations=mutations, model_type=self.model_type)
-            alt_model.fit()
-
-            # Run test and append statistic to test_stats
-            model_stat = self.test_method(self.model, alt_model)
-            self.test_stats.append(model_stat)
-
-            # If test statistic is less than f-statistic cutoff, than keep alternative model
-            if model_stat < test_cutoff:
-                self.model = alt_model
-            # Else, the null model is sufficient and we keep it
-            else:
-                self.model_order = order-1
-                self.model_stat = model_stat
-                break
+    return F, p_value
