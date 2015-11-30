@@ -52,7 +52,7 @@ class BaseModel(EpistasisMap):
     # ---------------------------------------------------------------------------------
         
     @classmethod    
-    def from_gpm(cls, gpm):
+    def from_gpm(cls, gpm, **kwargs):
         """ Initialize an epistasis model from a Genotype-phenotype map object """
         # Grab each property from map
         model = cls(gpm.wildtype, 
@@ -60,7 +60,8 @@ class BaseModel(EpistasisMap):
                     gpm.phenotypes, 
                     errors = gpm.errors, 
                     mutations = gpm.mutations,
-                    log_transform= gpm.log_transform)
+                    log_transform= gpm.log_transform,
+                    **kwargs)
                     
         return model
         
