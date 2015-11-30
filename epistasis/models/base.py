@@ -46,8 +46,28 @@ class BaseModel(EpistasisMap):
         # Model error if given. 
         if errors is not None:
             self.errors = errors
-        
             
+    # ---------------------------------------------------------------------------------
+    # Loading method
+    # ---------------------------------------------------------------------------------
+        
+    @classmethod    
+    def from_gpm(cls, gpm):
+        """ Initialize an epistasis model from a Genotype-phenotype map object """
+        # Grab each property from map
+        model = cls(gpm.wildtype, 
+                    gpm.genotypes, 
+                    gpm.phenotypes, 
+                    errors = gpm.errors, 
+                    mutations = gpm.mutations,
+                    log_transform= gpm.log_transform)
+                    
+        return model
+        
+    # ---------------------------------------------------------------------------------
+    # Other methods
+    # ---------------------------------------------------------------------------------        
+        
     def get_order(self, order, errors=False, label="genotype"):
         """ Return a dict of interactions to values of a given order. """
         
