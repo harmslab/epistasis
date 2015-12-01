@@ -60,9 +60,12 @@ class BaseModel(EpistasisMap):
                     gpm.phenotypes, 
                     errors = gpm.errors, 
                     mutations = gpm.mutations,
-                    log_transform= gpm.log_transform,
+                    log_transform= False,
                     **kwargs)
-                    
+        
+        # Might need to change this later (kind of a hack)
+        model._log_transform = gpm.log_transform
+        
         return model
         
     # ---------------------------------------------------------------------------------
