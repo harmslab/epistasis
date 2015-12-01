@@ -84,14 +84,8 @@ class LocalEpistasisModel(BaseModel):
         """ Estimate the error of each epistatic interaction by standard error
             propagation of the phenotypes through the model.
         """
-        if self.log_transform is True:
-            # If log-transformed, fit assymetric errorbars correctly
-            upper = np.sqrt(np.dot(self.X, self.Binary.errors[0]**2))
-            lower = np.sqrt(np.dot(self.X, self.Binary.errors[1]**2))
-            self.Interactions.errors = np.array((lower,upper))
-        else:
-            # Errorbars are symmetric, so only one column for errors is necessary
-            self.Interactions.errors = np.sqrt(np.dot(self.X, self.Binary.errors**2))
+        # Errorbars are symmetric, so only one column for errors is necessary
+        self.Interactions.errors = np.sqrt(np.dot(self.X, self.Binary.errors**2))
 
 
 class GlobalEpistasisModel(BaseModel):
@@ -137,12 +131,4 @@ class GlobalEpistasisModel(BaseModel):
         """ Estimate the error of each epistatic interaction by standard error
             propagation of the phenotypes through the model.
         """
-        if self.log_transform is True:
-            # If log-transformed, fit assymetric errorbars correctly
-            # upper and lower are unweighted tranformations
-            upper = np.sqrt(np.dot(abs(self.X), self.Binary.errors[0]**2))
-            lower = np.sqrt(np.dot(abs(self.X), self.Binary.errors[1]**2))
-            self.Interactions.errors = np.array((np.dot(self.weight_vector, lower), np.dot(self.weight_vector, upper)))
-        else:
-            self.Interactions.errors = np.sqrt( np.dot( (1/self.n)**2 * abs(self.X), self.Binary.errors**2) )
-            #self.Interactions.errors = np.dot(self.weight_vector, unweighted)
+        self.Interactions.errors = np.sqrt( np.dot( (1/self.n)**2 * abs(self.X), self.Binary.errors**2) )

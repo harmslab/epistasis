@@ -58,10 +58,12 @@ class BaseModel(EpistasisMap):
         model = cls(gpm.wildtype, 
                     gpm.genotypes, 
                     gpm.phenotypes, 
-                    errors = gpm.errors, 
                     mutations = gpm.mutations,
                     log_transform= False,
                     **kwargs)
+        
+        # Set errors outside init to handle log transform
+        model._errors = gpm.errors
         
         # Might need to change this later (kind of a hack)
         model._log_transform = gpm.log_transform
