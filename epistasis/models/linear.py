@@ -21,24 +21,6 @@ from epistasis.utils import epistatic_order_indices, build_model_params
 from epistasis.models.base import BaseModel
 
 # ------------------------------------------------------------
-# Unique Epistasis Functions
-# ------------------------------------------------------------
-
-def hadamard_weight_vector(genotypes):
-    """ Build the hadamard weigth vector. """
-    l = len(genotypes)
-    n = len(genotypes[0])
-    weights = np.zeros((l, l), dtype=float)
-    for g in range(l):
-        epistasis = float(genotypes[g].count("1"))
-        weights[g][g] = ((-1)**epistasis)/(2**(n-epistasis))
-    return weights
-
-def cut_interaction_labels(labels, order):
-    """ Cut off interaction labels at certain order of interactions. """
-    return [l for l in labels if len(l) <= order]
-
-# ------------------------------------------------------------
 # Epistasis Mapping Classes
 # ------------------------------------------------------------
 
@@ -74,18 +56,29 @@ class LocalEpistasisModel(BaseModel):
         self.X = generate_dv_matrix(self.Binary.genotypes, self.Interactions.labels, encoding={"1": 1, "0": 0})
         self.X_inv = np.linalg.inv(self.X)
 
+
     def fit(self):
         """ Estimate the values of all epistatic interactions using the expanded
             mutant cycle method to order=number_of_mutations.
         """
         self.Interactions.values = np.dot(self.X_inv, self.Binary.phenotypes)
 
+
     def fit_error(self):
         """ Estimate the error of each epistatic interaction by standard error
             propagation of the phenotypes through the model.
         """
         # Errorbars are symmetric, so only one column for errors is necessary
-        self.Interactions.errors = np.sqrt(np.dot(self.X, self.Binary.errors**2))
+        
+        self.Interactions.errors.upper = np.sqrt(np.dot(self.X, self.Binary.errors.upper**2))
+        
+        # If the space is log transformed, then the errorbars are assymmetric
+        if self.log_transform is True:
+            self.Interactions.errors.lower = np.sqrt(np.dot(self.X, self.Binary.errors.lower**2))
+            
+        # Else, the lower errorbar is just upper
+        else:
+            self.Interactions.errors.lower = self.Interactions.errors.upper
 
 
 class GlobalEpistasisModel(BaseModel):
@@ -120,15 +113,24 @@ class GlobalEpistasisModel(BaseModel):
         self.X = generate_dv_matrix(self.Binary.genotypes, self.Interactions.labels, encoding={"1": 1, "0": -1})
         self.X_inv = np.linalg.inv(self.X)
 
+
     def fit(self):
         """ Estimate the values of all epistatic interactions using the hadamard
         matrix transformation.
         """
         self.Interactions.values = 1/(self.n) * np.dot(self.X_inv, self.Binary.phenotypes)
-        #self.Interactions.values = np.dot(self.weight_vector,np.dot(self.X_inv, self.Binary.phenotypes))
+
 
     def fit_error(self):
         """ Estimate the error of each epistatic interaction by standard error
             propagation of the phenotypes through the model.
         """
-        self.Interactions.errors = np.sqrt( np.dot( (1/self.n)**2 * abs(self.X), self.Binary.errors**2) )
+        self.Interactions.errors = np.sqrt( np.dot( (1/self.n)**2 * abs(self.X), self.Binary.errors.upper**2) )
+        
+        # If the space is log transformed, then the errorbars are assymmetric
+        if self.log_transform is True:
+            self.Interactions.errors.lower = np.sqrt( np.dot( (1/self.n)**2 * abs(self.X), self.Binary.errors.lower**2) )
+            
+        # Else, the lower errorbar is just -upper
+        else:
+            self.Interactions.errors.lower = self.Interactions.errors.upper

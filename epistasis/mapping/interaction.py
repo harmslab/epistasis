@@ -15,6 +15,7 @@ from collections import OrderedDict
 # ----------------------------------------------------------
 
 from seqspace.base import BaseMap
+from seqspace.errors import ErrorMap
 from epistasis.utils import params_index_map, build_model_params, label_to_key
 
 class InteractionMap(BaseMap):
@@ -28,6 +29,7 @@ class InteractionMap(BaseMap):
             `mutation_map` [MutationMap instance] : An already populated MutationMap instance.
         """
         self.Mutations = mutation_map
+        self._errors = ErrorMap()
     
     @property
     def log_transform(self):
@@ -136,18 +138,6 @@ class InteractionMap(BaseMap):
     def keys(self, keys):
         """ Manually set keys. NEED TO do some quality control here. """
         self._keys = keys
-        
-    @errors.setter
-    def errors(self, errors):
-        """ Set the interaction errors of the system, set by an Epistasis model (see ..models.py)."""
-        if self.log_transform is True:
-            if np.array(errors).shape != (2, len(self.labels)):
-                raise Exception("""interaction_errors is not the right shape (should include 2 elements
-                                    for each interaction, upper and lower bounds).""")
-        else:
-            if len(errors) != len(self.labels):    
-                raise Exception("Number of interactions give to map is different than was defined. ")
-        self._errors = errors
 
     @log_transform.setter
     def log_transform(self, boolean):

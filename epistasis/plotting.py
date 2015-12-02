@@ -225,13 +225,13 @@ def bar_with_xbox(model,
     # ---------------------- #
     # Deal with significance #
     # ---------------------- #
+    
+    # NEED TO RETURN TO SIGNIFICANCE FUNCTIONS
+    
     if sigmas == 0:
         significance = None
     else:
-        #if model.log_transform:
-         #   z_score = -model.Interactions.values[1:]/model.Interactions.errors[0][1:]
-        #else:
-        z_score = -model.Interactions.values[1:]/model.Interactions.errors[1:]
+        z_score = -model.Interactions.values[1:]/model.Interactions.errors.upper[1:]
 
     # straight p-values
     if significance == "p":
@@ -286,11 +286,9 @@ def bar_with_xbox(model,
     if sigmas == 0:
         ax_array[0].bar(range(len(bar_y)), bar_y, 0.9,color=colors_for_bar)
     else:
-      #  if model.log_transform:
-       #     yerr = model.Interactions.errors[0][1:]
-    #    else:
-        yerr = model.Interactions.errors[1:]
-        ax_array[0].bar(range(len(bar_y)), bar_y, 0.9, yerr=sigmas*yerr,color=colors_for_bar,
+
+        yerr = [sigmas*model.Interactions.errors.upper[1:], sigmas*model.Interactions.errors.lower[1:]]
+        ax_array[0].bar(range(len(bar_y)), bar_y, 0.9, yerr=yerr,color=colors_for_bar,
                         error_kw={"ecolor":"black"})
 
     # Label barplot y-axis
