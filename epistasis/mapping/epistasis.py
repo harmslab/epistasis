@@ -30,7 +30,7 @@ from epistasis.utils import params_index_map, build_model_params
 
 class EpistasisMap(GenotypePhenotypeMap):
 
-    def __init__(self, wildtype, genotypes, phenotypes, errors=None, log_transform=False, mutations=None):
+    def __init__(self, wildtype, genotypes, phenotypes, errors=None, log_transform=False, mutations=None, n_replicates=1):
         """
             Object that maps epistasis in a genotype-phenotype map.
 
@@ -54,7 +54,7 @@ class EpistasisMap(GenotypePhenotypeMap):
 
             `indices` [array] : genotype indices
         """
-        super(EpistasisMap, self).__init__(wildtype, genotypes, phenotypes, errors=errors, log_transform=log_transform, mutations=mutations)
+        super(EpistasisMap, self).__init__(wildtype, genotypes, phenotypes, errors=errors, log_transform=log_transform, mutations=mutations, n_replicates=n_replicates)
 
     # ------------------------------------------------------
     # Getter methods for attributes that can be set by user.

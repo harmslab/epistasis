@@ -160,4 +160,24 @@ class InteractionMap(BaseMap):
             mutation = self.Mutations.wildtype[array_index] + str(self.Mutations.indices[l-1]+1) + self.Mutations.mutations[array_index]
             genotype += mutation + ','
         # Return genotype without the last comma
-        return genotype[:-1]    
+        return genotype[:-1]
+        
+    def get_order(self, order):
+        """ Return a dictionary of interactions of a given order."""
+        
+        # Construct the set of model parameters for given order
+        labels = build_model_params(self.length,
+                            order,
+                            self.mutations,
+                            start_order=order)
+        
+        # Get a mapping of model labels to values
+        key2value = self.get_map("keys", "values")
+        
+        # Built a dict of order interactions to values
+        desired = {}
+        for label in labels:
+            key = label_to_key(label)
+            desired[key] = key2value[key]
+        
+        return desired

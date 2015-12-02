@@ -14,7 +14,7 @@ from epistasis.mapping.epistasis import EpistasisMap
 
 class BaseModel(EpistasisMap):
     
-    def __init__(self, wildtype, genotypes, phenotypes, errors=None, log_transform=False, mutations=None):
+    def __init__(self, wildtype, genotypes, phenotypes, errors=None, log_transform=False, mutations=None, n_replicates=1):
         """ Populate an Epistasis mapping object. 
         
             __Arguments__:
@@ -37,7 +37,7 @@ class BaseModel(EpistasisMap):
             mutant = farthest_genotype(wildtype, genotypes)
             mutations = binary_mutations_map(wildtype, mutant)
             
-        super(BaseModel, self).__init__(wildtype, genotypes, phenotypes, errors=errors, log_transform=log_transform, mutations=mutations)
+        super(BaseModel, self).__init__(wildtype, genotypes, phenotypes, errors=errors, log_transform=log_transform, mutations=mutations, n_replicates=n_replicates)
         
         # Construct a binary representation of the map (method inherited from parent class)
         # and make it a subclass of the model.
@@ -61,6 +61,7 @@ class BaseModel(EpistasisMap):
                     errors = gpm.Raw.errors.upper,
                     mutations = gpm.mutations,
                     log_transform= gpm.log_transform,
+                    n_replicates = gpm.n_replicates,
                     **kwargs)
         
         return model

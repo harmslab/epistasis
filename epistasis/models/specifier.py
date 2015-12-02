@@ -13,7 +13,7 @@ from epistasis.models.regression import EpistasisRegression
 
 class ModelSpecifier:
 
-    def __init__(self, wildtype, genotypes, phenotypes, test_cutoff=0.05, log_transform=False, mutations=None, model_type="local", test_type="ftest"):
+    def __init__(self, wildtype, genotypes, phenotypes, test_cutoff=0.05, log_transform=False, mutations=None, n_replicates=1, model_type="local", test_type="ftest"):
         """
         Model specifier. Chooses the order of model based on statistical test.
 
@@ -36,7 +36,7 @@ class ModelSpecifier:
         self.model_order = 1
         self.model_p_value = None
         self.model_stat = None
-        self.model = EpistasisRegression(wildtype, genotypes, phenotypes, order=self.model_order, log_transform=log_transform, mutations=mutations, model_type=self.model_type)
+        self.model = EpistasisRegression(wildtype, genotypes, phenotypes, order=self.model_order, log_transform=log_transform, mutations=mutations, n_replicates=n_replicates, model_type=self.model_type)
         self.model.fit()
         self._specifier()
 
@@ -45,9 +45,10 @@ class ModelSpecifier:
         # Get model specs
         wildtype = self.model.wildtype
         genotypes = self.model.genotypes
-        phenotypes = self.model.phenotypes
+        phenotypes = self.model.Raw.phenotypes
         log_transform = self.model.log_transform
         mutations = self.model.mutations
+        n_replicates = self.model.n_replicates
 
         # Construct the range of order
         orders = range(2, len(wildtype)+1)
@@ -57,7 +58,7 @@ class ModelSpecifier:
         # Iterate through orders until we reach our significance statistic
         for order in orders:
             # alternative model
-            alt_model = EpistasisRegression(wildtype, genotypes, phenotypes, order=order, log_transform=log_transform, mutations=mutations, model_type=self.model_type)
+            alt_model = EpistasisRegression(wildtype, genotypes, phenotypes, order=order, log_transform=log_transform, mutations=mutations, n_replicates=n_replicates, model_type=self.model_type)
             alt_model.fit()
 
             # Run test and append statistic to test_stats

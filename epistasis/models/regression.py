@@ -18,9 +18,7 @@ from seqspace.utils import list_binary, enumerate_space, encode_mutations, const
 from epistasis.decomposition import generate_dv_matrix
 from epistasis.models.base import BaseModel
 from epistasis.utils import (epistatic_order_indices,
-                                build_model_params,
-                                hadamard_weight_vector)
-
+                                build_model_params)
 
 # ------------------------------------------------------------
 # Unique Epistasis Functions
@@ -28,7 +26,7 @@ from epistasis.utils import (epistatic_order_indices,
 
 class EpistasisRegression(BaseModel):
 
-    def __init__(self, wildtype, genotypes, phenotypes, order=None, parameters=None, errors=None, log_transform=False, mutations=None, model_type="local"):
+    def __init__(self, wildtype, genotypes, phenotypes, order=None, parameters=None, errors=None, log_transform=False, mutations=None, n_replicates=1, model_type="local"):
         """ Create a map from local epistasis model projected into lower order
             order epistasis interactions. Requires regression to estimate values.
 
@@ -54,7 +52,7 @@ class EpistasisRegression(BaseModel):
                                 is cleverly chosen average state.
         """
         # Populate Epistasis Map
-        super(EpistasisRegression, self).__init__(wildtype, genotypes, phenotypes, errors, log_transform, mutations)
+        super(EpistasisRegression, self).__init__(wildtype, genotypes, phenotypes, errors, log_transform, mutations, n_replicates=n_replicates)
 
         # Generate basis matrix for mutant cycle approach to epistasis.
         if order is not None:

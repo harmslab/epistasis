@@ -66,15 +66,6 @@ def build_interaction_labels(length, order):
             labels.append(list(label))
     return labels
 
-def hadamard_weight_vector(genotypes):
-    """ Build the hadamard weigth vector. """
-    l = len(genotypes)
-    n = len(genotypes[0])
-    weights = np.zeros((l, l), dtype=float)
-    for g in range(l):
-        epistasis = float(genotypes[g].count("1"))
-        weights[g][g] = ((-1)**epistasis)/(2**(n-epistasis))
-    return weights
 
 def params_index_map(mutations):
     """
@@ -109,7 +100,7 @@ def params_index_map(mutations):
             n_sites += len(mutations[m])-1
     return param_map
 
-def build_model_params(length, order, mutations):
+def build_model_params(length, order, mutations, start_order=0):
     """ Build interaction labels up to nth order given a mutation alphabet.
 
         __Arguments__:
@@ -131,10 +122,16 @@ def build_model_params(length, order, mutations):
         `interactions` [list] : list of all interaction labels for system with
             sequences of a given length and epistasis with given order.
     """
+    # Include the intercept interaction?
+    if start_order == 0:
+        interactions = [[0]]
+        orders = range(1,order+1)
+    else:
+        interactions = list()
+        orders = range(start_order,order+1)
+
 
     # Recursive algorithm that's difficult to follow.
-    interactions = list()
-    orders = range(1,order+1)
 
     # Iterate through each order
     for o in orders:
@@ -156,7 +153,5 @@ def build_model_params(length, order, mutations):
                 for r in it.product(*lists):
                     interactions.append(list(r))
 
-    # Add intercept term (for wildtype)
-    interactions = [[0]] + interactions
 
     return interactions

@@ -26,7 +26,7 @@ from epistasis.models.base import BaseModel
 
 class LocalEpistasisModel(BaseModel):
 
-    def __init__(self, wildtype, genotypes, phenotypes, errors=None, log_transform=False, mutations=None):
+    def __init__(self, wildtype, genotypes, phenotypes, errors=None, log_transform=False, mutations=None, n_replicates=1):
         """ Create a map of the local epistatic effects using expanded mutant
             cycle approach.
 
@@ -46,7 +46,7 @@ class LocalEpistasisModel(BaseModel):
             `log_transform` [bool] : If True, log transform the phenotypes.
         """
         # Populate Epistasis Map
-        super(LocalEpistasisModel, self).__init__(wildtype, genotypes, phenotypes, errors=errors, log_transform=log_transform, mutations=mutations)
+        super(LocalEpistasisModel, self).__init__(wildtype, genotypes, phenotypes, errors=errors, log_transform=log_transform, mutations=mutations, n_replicates=n_replicates)
         self.order = self.length
 
         # Construct the Interactions mapping -- Interactions Subclass is added to model
