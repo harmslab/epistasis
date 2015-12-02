@@ -57,16 +57,11 @@ class BaseModel(EpistasisMap):
         # Grab each property from map
         model = cls(gpm.wildtype, 
                     gpm.genotypes, 
-                    gpm.phenotypes, 
+                    gpm.Raw.phenotypes, 
+                    errors = gpm.Raw.errors,
                     mutations = gpm.mutations,
-                    log_transform= False,
+                    log_transform= gpm.log_transform,
                     **kwargs)
-        
-        # Set errors outside init to handle log transform
-        model._errors = gpm.errors
-        
-        # Might need to change this later (kind of a hack)
-        model._log_transform = gpm.log_transform
         
         return model
         
