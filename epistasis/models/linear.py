@@ -26,7 +26,7 @@ from epistasis.models.base import BaseModel
 
 class LocalEpistasisModel(BaseModel):
 
-    def __init__(self, wildtype, genotypes, phenotypes, errors=None, log_transform=False, mutations=None, n_replicates=1):
+    def __init__(self, wildtype, genotypes, phenotypes, stdevs=None, log_transform=False, mutations=None, n_replicates=1):
         """ Create a map of the local epistatic effects using expanded mutant
             cycle approach.
 
@@ -41,12 +41,12 @@ class LocalEpistasisModel(BaseModel):
 
             `phenotypes` [array-like] : Quantitative phenotype values
 
-            `errors` [array-like] : List of phenotype errors.
+            `stdevs` [array-like] : List of phenotype errors.
 
             `log_transform` [bool] : If True, log transform the phenotypes.
         """
         # Populate Epistasis Map
-        super(LocalEpistasisModel, self).__init__(wildtype, genotypes, phenotypes, errors=errors, log_transform=log_transform, mutations=mutations, n_replicates=n_replicates)
+        super(LocalEpistasisModel, self).__init__(wildtype, genotypes, phenotypes, stdevs=stdevs, log_transform=log_transform, mutations=mutations, n_replicates=n_replicates)
         self.order = self.length
 
         # Construct the Interactions mapping -- Interactions Subclass is added to model
@@ -83,7 +83,7 @@ class LocalEpistasisModel(BaseModel):
 
 class GlobalEpistasisModel(BaseModel):
 
-    def __init__(self, wildtype, genotypes, phenotypes, errors=None, log_transform=False, mutations=None):
+    def __init__(self, wildtype, genotypes, phenotypes, stdevs=None, log_transform=False, mutations=None, n_replicates=1):
         """ Create a map of the global epistatic effects using Hadamard approach (defined by XX)
 
             This is the related to LocalEpistasisMap by the discrete Fourier
@@ -97,12 +97,12 @@ class GlobalEpistasisModel(BaseModel):
 
             `phenotypes` [array-like] : Quantitative phenotype values
 
-            `errors` [array-like] : List of phenotype errors.
+            `stdevs` [array-like] : List of phenotype errors.
 
             `log_transform` [bool] : If True, log transform the phenotypes.
         """
         # Populate Epistasis Map
-        super(GlobalEpistasisModel, self).__init__(wildtype, genotypes, phenotypes, errors, log_transform, mutations=mutations)
+        super(GlobalEpistasisModel, self).__init__(wildtype, genotypes, phenotypes, stdevs, log_transform, mutations=mutations, n_replicates=n_replicates)
         self.order = self.length
 
         # Construct the Interactions mapping -- Interactions Subclass is added to model

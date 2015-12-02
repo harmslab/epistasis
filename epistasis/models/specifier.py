@@ -74,3 +74,29 @@ class ModelSpecifier:
                 self.model_stat = model_stat
                 self.model_p_value = p_value
                 break
+
+
+    # ---------------------------------------------------------------------------------
+    # Loading method
+    # ---------------------------------------------------------------------------------
+        
+    @classmethod    
+    def from_gpm(cls, gpm, **kwargs):
+        """ Initialize an epistasis model from a Genotype-phenotypeMap object """
+        
+        # Grab un scaled phenotypes and errors
+        if gpm.log_transform is True:
+            _phenotypes = gpm.Raw.phenotypes
+        else:
+            _phenotypes = gpm.phenotypes
+        
+        # Grab each property from map
+        model = cls(gpm.wildtype, 
+                    gpm.genotypes, 
+                    _phenotypes, 
+                    mutations = gpm.mutations,
+                    log_transform= gpm.log_transform,
+                    n_replicates = gpm.n_replicates,
+                    **kwargs)
+        
+        return model

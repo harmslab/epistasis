@@ -14,7 +14,7 @@ from epistasis.mapping.epistasis import EpistasisMap
 
 class BaseModel(EpistasisMap):
     
-    def __init__(self, wildtype, genotypes, phenotypes, errors=None, log_transform=False, mutations=None, n_replicates=1):
+    def __init__(self, wildtype, genotypes, phenotypes, stdevs=None, log_transform=False, mutations=None, n_replicates=1):
         """ Populate an Epistasis mapping object. 
         
             __Arguments__:
@@ -25,7 +25,7 @@ class BaseModel(EpistasisMap):
             
             `phenotypes` [array-like] : Quantitative phenotype values
             
-            `errors` [array-like] : List of phenotype errors.
+            `stdevs` [array-like] : List of phenotype errors.
             
             `log_transform` [bool] : If True, log transform the phenotypes.
             
@@ -37,15 +37,15 @@ class BaseModel(EpistasisMap):
             mutant = farthest_genotype(wildtype, genotypes)
             mutations = binary_mutations_map(wildtype, mutant)
             
-        super(BaseModel, self).__init__(wildtype, genotypes, phenotypes, errors=errors, log_transform=log_transform, mutations=mutations, n_replicates=n_replicates)
+        super(BaseModel, self).__init__(wildtype, genotypes, phenotypes, stdevs=stdevs, log_transform=log_transform, mutations=mutations, n_replicates=n_replicates)
         
         # Construct a binary representation of the map (method inherited from parent class)
         # and make it a subclass of the model.
         self._construct_binary()
       
         # Model error if given. 
-        if errors is not None:
-            self.errors = errors
+        if stdevs is not None:
+            self.stdevs = stdevs
             
     # ---------------------------------------------------------------------------------
     # Loading method
@@ -54,11 +54,20 @@ class BaseModel(EpistasisMap):
     @classmethod    
     def from_gpm(cls, gpm, **kwargs):
         """ Initialize an epistasis model from a Genotype-phenotypeMap object """
+        
+        # Grab un scaled phenotypes and errors
+        if gpm.log_transform is True:
+            _phenotypes = gpm.Raw.phenotypes
+            _stdevs = gpm.Raw.stdevs
+        else:
+            _phenotypes = gpm.phenotypes
+            _stdevs = gpm.stdevs
+        
         # Grab each property from map
         model = cls(gpm.wildtype, 
                     gpm.genotypes, 
-                    gpm.Raw.phenotypes, 
-                    errors = gpm.Raw.errors.upper,
+                    _phenotypes, 
+                    stdevs = _stdevs,
                     mutations = gpm.mutations,
                     log_transform= gpm.log_transform,
                     n_replicates = gpm.n_replicates,
