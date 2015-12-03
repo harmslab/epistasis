@@ -44,8 +44,7 @@ class BaseModel(EpistasisMap):
         self._construct_binary()
       
         # Model error if given. 
-        if stdevs is not None:
-            self.stdevs = stdevs
+        self.stdevs = stdevs
             
     # ---------------------------------------------------------------------------------
     # Loading method

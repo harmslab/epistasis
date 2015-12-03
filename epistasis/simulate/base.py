@@ -52,6 +52,7 @@ class BaseArtificialMap(EpistasisMap):
         super(BaseArtificialMap, self).__init__(wildtype, genotypes, phenotypes, log_transform=log_transform, mutations=mutations)
         self.order = order
         self.log_transform = log_transform
+        self.stdevs = None
         self._construct_binary()
         self._construct_interactions()
 
@@ -94,7 +95,7 @@ class BaseArtificialMap(EpistasisMap):
         noise = np.empty(self.n, dtype=float)
         for i in range(self.n):
             noise[i] = percent*self.phenotypes[i]
-        self.errors = noise
+        self.stdevs = noise
 
     def sample(self, n_samples=1, fraction=1.0):
         """ Generate artificial data sampled from phenotype and percent error.
