@@ -67,10 +67,10 @@ class EpistasisRegression(BaseModel):
                                 list model parameters as `parameters` argument.""")
 
         model_types = {"local":  {"1": 1, "0": 0}, "global": {"1": 1, "0": -1}}
-        encoding = model_types[model_type]
+        self.encoding = model_types[model_type]
 
         # Construct x matrix
-        self.X = generate_dv_matrix(self.Binary.genotypes, self.Interactions.labels, encoding=encoding)
+        self.X = generate_dv_matrix(self.Binary.genotypes, self.Interactions.labels, encoding=self.encoding)
 
         # Regression properties
         self.regression_model = LinearRegression(fit_intercept=False)
@@ -111,7 +111,7 @@ class EpistasisRegression(BaseModel):
         """
         phenotypes = np.zeros(len(self.complete_genotypes), dtype=float)
         binaries = self.Binary.complete_genotypes
-        X = generate_dv_matrix(binaries, self.Interactions.labels, )
+        X = generate_dv_matrix(binaries, self.Interactions.labels, encoding=self.encoding)
         phenotypes = self.regression_model.predict(X)
         
         return phenotypes
