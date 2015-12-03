@@ -125,7 +125,7 @@ class GlobalEpistasisModel(BaseModel):
         """ Estimate the error of each epistatic interaction by standard error
             propagation of the phenotypes through the model.
         """
-        self.Interactions.errors = np.sqrt( np.dot( (1/self.n)**2 * abs(self.X), self.Binary.errors.upper**2) )
+        self.Interactions.errors.upper = np.sqrt( np.dot( (1/self.n)**2 * abs(self.X), self.Binary.errors.upper**2) )
         
         # If the space is log transformed, then the errorbars are assymmetric
         if self.log_transform is True:
