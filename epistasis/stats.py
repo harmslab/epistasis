@@ -63,7 +63,7 @@ def chi_squared(y_obs, y_pred):
     """ Calculate the chi squared between observed and predicted y. """
     return sum( (y_obs - y_pred)**2/ y_pred )
 
-def false_positive_rate(y_obs, y_pred, errors, n_samples=1, sigmas=2):
+def false_positive_rate(y_obs, y_pred, upper_ci, lower_ci, n_samples=1, sigmas=2):
     """ Calculate the false positive rate of predicted values. Finds all values that
         equal zero in the known array and calculates the number of false positives
         found in the predicted given the number of samples and sigmas.
@@ -90,7 +90,7 @@ def false_positive_rate(y_obs, y_pred, errors, n_samples=1, sigmas=2):
 
     N = len(y_obs)
     # Check that known, predicted, and errors are the same size.
-    if N != len(y_pred) or N != len(errors):
+    if N != len(y_pred) or N != len(upper_ci):
         raise Exception("Input arrays must all be the same size")
 
     # Number of known-zeros:
@@ -100,7 +100,8 @@ def false_positive_rate(y_obs, y_pred, errors, n_samples=1, sigmas=2):
     false_positives = 0
 
     # Scale confidence bounds to the number of samples and sigmas
-    bounds = sigmas * errors/ np.sqrt(n_samples)
+    upper_bounds = sigmas * upper_ci
+    lower_bounds = sigmas * lower_ci
 
     for i in range(N):
         # Check that known value is zero
@@ -110,8 +111,8 @@ def false_positive_rate(y_obs, y_pred, errors, n_samples=1, sigmas=2):
             known_zeros += 1
 
             # Calculate bounds with given number of sigmas.
-            upper = y_pred[i] + bounds[i]
-            lower = y_pred[i] - bounds[i]
+            upper = y_pred[i] + upper_bounds[i]
+            lower = y_pred[i] - lower_bounds[i]
 
             # Check false positive rate.
             if y_obs[i] > upper or y_obs[i] < lower:
