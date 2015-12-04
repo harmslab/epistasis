@@ -23,7 +23,7 @@ class Sample:
         self.replicate_phenotypes = replicate_phenotypes
         self.genotypes = self.replicate_genotypes[:,0]
         self.phenotypes = np.mean(self.replicate_phenotypes, axis=1)
-        self.errors = np.std(self.replicate_phenotypes, axis=1)
+        self.stdevs = np.std(self.replicate_phenotypes, axis=1)
         self.indices = indices
 
 
@@ -126,11 +126,11 @@ class BaseArtificialMap(EpistasisMap):
 
         # If errors are present, sample from error distribution
         try:
-            errors = self.errors
+            stdevs = self.stdevs
             for i in random_indices:
                 seq = self.genotypes[i]
                 genotypes[i] = np.array([seq for j in range(n_samples)])
-                phenotypes[i] = errors[i] * np.random.randn(n_samples) + self.phenotypes[i]
+                phenotypes[i] = stdevs[i] * np.random.randn(n_samples) + self.phenotypes[i]
         except:
             # Can't sample if no error distribution is given.
             if n_samples != 1:
