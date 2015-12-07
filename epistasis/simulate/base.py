@@ -56,7 +56,7 @@ class BaseArtificialMap(EpistasisMap):
         self._construct_binary()
         self._construct_interactions()
 
-    def build_phenotypes(self, values=None):
+    def build_phenotypes(self, values=None, **kwargs):
         """ Method for construction phenotypes from model. """
         raise Exception( """ Must be implemented in subclass. """)
 
@@ -86,9 +86,12 @@ class BaseArtificialMap(EpistasisMap):
 
     def rm_epistasis(self, n_terms):
         """ Remove a specified number of epistatic terms. Choose these terms randomly. """
-        indices = np.random.randint(len(self.Interactions.labels), size=n_knockouts)
-        for i in indices:
+        indices = np.random.randint(len(self.Interactions.labels), size=n_terms)
+        
+        for i in indices:    
             self.Interactions._values[i] = 0.0
+        
+        self.build_phenotypes()
 
     def add_noise(self, percent):
         """ Add noise to the phenotypes. """

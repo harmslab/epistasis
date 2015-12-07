@@ -105,7 +105,7 @@ def false_positive_rate(y_obs, y_pred, upper_ci, lower_ci, n_samples=1, sigmas=2
 
     for i in range(N):
         # Check that known value is zero
-        if y_obs[i] == 0:
+        if y_obs[i] == 0.0:
 
             # Add count to known_zero
             known_zeros += 1

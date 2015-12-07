@@ -10,6 +10,16 @@ import numpy as np
 from epistasis.decomposition import generate_dv_matrix
 from epistasis.simulate.base import BaseArtificialMap
 
+def hadamard_weight_vector(genotypes):
+    """ Build the hadamard weigth vector. """
+    l = len(genotypes)
+    n = len(genotypes[0])
+    weights = np.zeros((l, l), dtype=float)
+    for g in range(l):
+        epistasis = float(genotypes[g].count("1"))
+        weights[g][g] = ((-1)**epistasis)/(2**(n-epistasis))
+    return weights
+
 # ------------------------------------------------------------
 # ArtificialMap object can be used to quickly generating a toy
 # space for testing the EpistasisModels
@@ -20,7 +30,7 @@ class RandomEpistasisMap(BaseArtificialMap):
 
     """ Generate genotype-phenotype map from random epistatic interactions. """
 
-    def __init__(self, length, order, magnitude, model='local', log_transform=False):
+    def __init__(self, length, order, magnitude, log_transform=False, model='local'):
         """ Choose random values for epistatic terms below and construct a genotype-phenotype map.
 
             ASSUMES ADDITIVE MODEL (UNLESS LOG TRANSFORMED).
@@ -38,38 +48,43 @@ class RandomEpistasisMap(BaseArtificialMap):
         """
         super(RandomEpistasisMap,self).__init__(length, order, log_transform)
         self.Interactions.values = self.random_epistasis(-1,1)
-        self.phenotypes = self.build_phenotypes(model=model)
+        self.model = model
+        self.build_phenotypes()
 
-    def build_phenotypes(self, values=None, model='local'):
+    def build_phenotypes(self, values=None):
         """ Build the phenotype map from epistatic interactions. """
         # Allocate phenotype numpy array
-        phenotypes = np.zeros(self.n, dtype=float)
+        _phenotypes = np.zeros(self.n, dtype=float)
 
         # Check for custom values
         if values is None:
             values = self.Interactions.values
 
         # Get model type:
-        if model == "local":
+        if self.model == "local":
             encoding = {"1": 1, "0": 0}
-        elif model == "global":
+            
+            # Build phenotypes from binary representation of space
+            self.X = generate_dv_matrix(self.Binary.genotypes, self.Interactions.labels, encoding=encoding)
+            self.Binary.phenotypes = np.dot(self.X,values)
+            
+        elif self.model == "global":
+            # 
             encoding = {"1": 1, "0": -1}
+            self.weight_matrix = np.diag(np.diag(np.linalg.inv(hadamard_weight_vector(self.Binary.genotypes))))
+
+            # Build phenotypes from binary representation of space
+            self.X = generate_dv_matrix(self.Binary.genotypes, self.Interactions.labels, encoding=encoding)
+            self.Binary.phenotypes = np.dot( np.dot( self.weight_matrix, self.X) , values)
+        
         else:
             raise Exception("Invalid model type given.")
 
-        # Build phenotypes from binary representation of space
-        self.X = generate_dv_matrix(self.Binary.genotypes, self.Interactions.labels, encoding=encoding)
-        self.Binary.phenotypes = bit_phenotypes = np.dot(self.X,values)
-
-        # Handle log_transformed phenotypes
-        if self.log_transform:
-            self.Binary.phenotypes = 10**bit_phenotypes
-
         # Reorder phenotypes to map back to genotypes
         for i in range(len(self.Binary.indices)):
-            phenotypes[self.Binary.indices[i]] = self.Binary.phenotypes[i]
+            _phenotypes[self.Binary.indices[i]] = self.Binary.phenotypes[i]
 
-        return phenotypes
+        self.phenotypes = _phenotypes
 
 class ZeroTermsEpistasisMap(RandomEpistasisMap):
 
