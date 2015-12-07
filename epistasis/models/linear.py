@@ -121,27 +121,31 @@ class GlobalEpistasisModel(BaseModel):
 
         # Generate basis matrix for mutant cycle approach to epistasis.
         #self.weight_vector = hadamard_weight_vector(self.Binary.genotypes)
-        self.X = generate_dv_matrix(self.Binary.genotypes, self.Interactions.labels, encoding={"1": 1, "0": -1})
-        self.X_inv = np.linalg.inv(self.X)
-        self.weight_matrix = hadamard_weight_vector(self.Binary.genotypes)
+        self.X = generate_dv_matrix(self.Binary.genotypes, self.Interactions.labels, encoding={"1": -1, "0": 1})
+        self.X_inv = 1.0/self.n * self.X
+        #self.weight_matrix = hadamard_weight_vector(self.Binary.genotypes)
 
 
     def fit(self):
         """ Estimate the values of all epistatic interactions using the hadamard
-        matrix transformation.
+            matrix transformation.
         """
-        self.Interactions.values = np.dot(np.dot(self.weight_matrix, self.X_inv), self.Binary.phenotypes)
+        #self.Interactions.values = np.dot( np.dot( self.weight_matrix, self.X_inv), self.Binary.phenotypes)
+        self.Interactions.values = np.dot( self.X_inv, self.Binary.phenotypes)
 
 
     def fit_error(self):
         """ Estimate the error of each epistatic interaction by standard error
             propagation of the phenotypes through the model.
         """
-        self.Interactions.errors.upper = np.sqrt( np.dot( np.dot(np.square(self.weight_matrix),abs(self.X)), self.Binary.errors.upper**2) )
+        # self.Interactions.errors.upper = np.sqrt( np.dot( np.dot(np.square(self.weight_matrix), abs(self.X)), self.Binary.errors.upper**2) )
+
+        self.Interactions.errors.upper = (1.0/self.n) * np.sqrt( np.dot( np.square(self.X), self.Binary.errors.upper**2) )
         
         # If the space is log transformed, then the errorbars are assymmetric
         if self.log_transform is True:
-            self.Interactions.errors.lower = np.sqrt( np.dot( np.dot(np.square(self.weight_matrix),abs(self.X)), self.Binary.errors.lower**2) )
+            self.Interactions.errors.lower = (1.0/self.n) * np.sqrt( np.dot( np.square(self.X), self.Binary.errors.lower**2) )
+            #self.Interactions.errors.lower = np.sqrt( np.dot( np.dot(np.square(self.weight_matrix), abs(self.X)), self.Binary.errors.lower**2) )
             
         # Else, the lower errorbar is just -upper
         else:

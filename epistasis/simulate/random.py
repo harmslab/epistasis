@@ -69,13 +69,13 @@ class RandomEpistasisMap(BaseArtificialMap):
             self.Binary.phenotypes = np.dot(self.X,values)
             
         elif self.model == "global":
-            # 
-            encoding = {"1": 1, "0": -1}
-            self.weight_matrix = np.diag(np.diag(np.linalg.inv(hadamard_weight_vector(self.Binary.genotypes))))
+            encoding = {"1": -1, "0": 1}
+            #self.weight_matrix = np.diag(np.diag(np.linalg.inv(hadamard_weight_vector(self.Binary.genotypes))))
 
             # Build phenotypes from binary representation of space
             self.X = generate_dv_matrix(self.Binary.genotypes, self.Interactions.labels, encoding=encoding)
-            self.Binary.phenotypes = np.dot( np.dot( self.weight_matrix, self.X) , values)
+            self.Binary.phenotypes = np.dot( self.X, values)
+            #self.Binary.phenotypes = np.dot( np.dot( self.weight_matrix, self.X) , values)
         
         else:
             raise Exception("Invalid model type given.")
