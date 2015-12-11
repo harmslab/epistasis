@@ -30,7 +30,7 @@ class EpistasisRegression(BaseModel):
                 order=None, 
                 parameters=None, 
                 variances=None, 
-                stdeviations=stdeviations, 
+                stdeviations=None, 
                 log_transform=False, 
                 mutations=None, 
                 n_replicates=1, 
