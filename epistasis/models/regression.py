@@ -26,7 +26,16 @@ from epistasis.utils import (epistatic_order_indices,
 
 class EpistasisRegression(BaseModel):
 
-    def __init__(self, wildtype, genotypes, phenotypes, order=None, parameters=None, stdevs=None, log_transform=False, mutations=None, n_replicates=1, model_type="local"):
+    def __init__(self, wildtype, genotypes, phenotypes, 
+                order=None, 
+                parameters=None, 
+                variances=None, 
+                stdeviations=stdeviations, 
+                log_transform=False, 
+                mutations=None, 
+                n_replicates=1, 
+                model_type="local"):
+                
         """ Create a map from local epistasis model projected into lower order
             order epistasis interactions. Requires regression to estimate values.
 
@@ -52,7 +61,12 @@ class EpistasisRegression(BaseModel):
                                 is cleverly chosen average state.
         """
         # Populate Epistasis Map
-        super(EpistasisRegression, self).__init__(wildtype, genotypes, phenotypes, stdevs, log_transform, mutations, n_replicates=n_replicates)
+        super(EpistasisRegression, self).__init__(wildtype, genotypes, phenotypes, 
+                variances=variance, 
+                stdeviations=stdeviations, 
+                log_transform=log_transform, 
+                mutations=mutations, 
+                n_replicates=n_replicates)
 
         # Generate basis matrix for mutant cycle approach to epistasis.
         if order is not None:
