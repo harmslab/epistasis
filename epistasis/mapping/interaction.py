@@ -15,7 +15,6 @@ from collections import OrderedDict
 # ----------------------------------------------------------
 
 from seqspace.base import BaseMap
-from seqspace.errors import ErrorMap
 from epistasis.utils import params_index_map, build_model_params, label_to_key
 
 class InteractionMap(BaseMap):
@@ -29,7 +28,6 @@ class InteractionMap(BaseMap):
             `mutation_map` [MutationMap instance] : An already populated MutationMap instance.
         """
         self.Mutations = mutation_map
-        self._errors = ErrorMap()
     
     @property
     def log_transform(self):
@@ -55,11 +53,6 @@ class InteractionMap(BaseMap):
     def values(self):
         """ Get the values of the interaction in the system"""
         return self._values
-        
-    @property
-    def errors(self):
-        """ Get the value of the interaction errors in the system. """
-        return self._errors
         
     @property
     def indices(self):

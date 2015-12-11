@@ -23,7 +23,7 @@ class Sample:
         self.replicate_phenotypes = replicate_phenotypes
         self.genotypes = self.replicate_genotypes[:,0]
         self.phenotypes = np.mean(self.replicate_phenotypes, axis=1)
-        self.stdevs = np.std(self.replicate_phenotypes, axis=1)
+        self.stdevs = np.std(self.replicate_phenotypes, ddof=1, axis=1)
         self.indices = indices
 
 

@@ -1,10 +1,14 @@
 __doc__ = """Submodule with useful statistics functions for epistasis model."""
 
+# -----------------------------------------------------------------------
+# Useful statistical metrics as methods
+# -----------------------------------------------------------------------
+
 import numpy as np
 from scipy.stats import f
 
 # -----------------------------------------------------------------------
-# Useful statistical metrics as methods
+# Correlation metrics
 # -----------------------------------------------------------------------
 
 def pearson(y_obs, y_pred):
@@ -63,7 +67,11 @@ def chi_squared(y_obs, y_pred):
     """ Calculate the chi squared between observed and predicted y. """
     return sum( (y_obs - y_pred)**2/ y_pred )
 
-def false_positive_rate(y_obs, y_pred, upper_ci, lower_ci, n_samples=1, sigmas=2):
+# -----------------------------------------------------------------------
+# Model error statistics
+# -----------------------------------------------------------------------
+
+def false_positive_rate(y_obs, y_pred, upper_ci, lower_ci, sigmas=2):
     """ Calculate the false positive rate of predicted values. Finds all values that
         equal zero in the known array and calculates the number of false positives
         found in the predicted given the number of samples and sigmas.
@@ -159,7 +167,6 @@ def log_likelihood_ratio(model1, model2):
     AIC1 = 2*df1 - 2*L1
     AIC2 = 2*df2 - 2*L2
 
-    print(AIC1, AIC2)
     ratio = np.exp(AIC1-AIC2/2)
     return ratio
 

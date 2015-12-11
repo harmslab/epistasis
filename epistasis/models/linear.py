@@ -11,6 +11,7 @@ import numpy as np
 # ------------------------------------------------------------
 
 from seqspace.utils import list_binary, enumerate_space, encode_mutations, construct_genotypes
+from seqspace.errors import StandardErrorMap, StandardDeviationMap, VarianceMap
 
 # ------------------------------------------------------------
 # Local imports
@@ -20,16 +21,15 @@ from epistasis.decomposition import generate_dv_matrix
 from epistasis.utils import epistatic_order_indices, build_model_params
 from epistasis.models.base import BaseModel
 
-
-def hadamard_weight_vector(genotypes):
-    """ Build the hadamard weigth vector. """
-    l = len(genotypes)
-    n = len(genotypes[0])
-    weights = np.zeros((l, l), dtype=float)
-    for g in range(l):
-        epistasis = float(genotypes[g].count("1"))
-        weights[g][g] = ((-1)**epistasis)/(2**(n-epistasis))
-    return weights
+def add_error_map(method):
+    """ Decorates methods where errors are being created
+    """
+    def wrapper(self, *args, **kwargs):
+        self.Interactions.err = StandardErrorMap()
+        self.Interactions.std = StandardDeviationMap()
+        self.Interactions.var = VarianceMap()
+        method(self, *args, **kwargs)
+    return wrapper 
 
 # ------------------------------------------------------------
 # Epistasis Mapping Classes
@@ -37,7 +37,13 @@ def hadamard_weight_vector(genotypes):
 
 class LocalEpistasisModel(BaseModel):
 
-    def __init__(self, wildtype, genotypes, phenotypes, stdevs=None, log_transform=False, mutations=None, n_replicates=1):
+    def __init__(self, wildtype, genotypes, phenotypes, 
+                stdeviations=None, 
+                variances=None, 
+                log_transform=False, 
+                mutations=None, 
+                n_replicates=1):
+                
         """ Create a map of the local epistatic effects using expanded mutant
             cycle approach.
 
@@ -57,7 +63,13 @@ class LocalEpistasisModel(BaseModel):
             `log_transform` [bool] : If True, log transform the phenotypes.
         """
         # Populate Epistasis Map
-        super(LocalEpistasisModel, self).__init__(wildtype, genotypes, phenotypes, stdevs=stdevs, log_transform=log_transform, mutations=mutations, n_replicates=n_replicates)
+        super(LocalEpistasisModel, self).__init__(wildtype, genotypes, phenotypes,  
+                stdeviations=stdeviations, 
+                variances=variances, 
+                log_transform=log_transform, 
+                mutations=mutations, 
+                n_replicates=n_replicates)
+                
         self.order = self.length
 
         # Construct the Interactions mapping -- Interactions Subclass is added to model
@@ -80,21 +92,29 @@ class LocalEpistasisModel(BaseModel):
             propagation of the phenotypes through the model.
         """
         # Errorbars are symmetric, so only one column for errors is necessary
-        
-        self.Interactions.errors.upper = np.sqrt(np.dot(self.X, self.Binary.errors.upper**2))
+        _upper = np.dot(np.square(self.X_inv), self.Binary.var.upper)
         
         # If the space is log transformed, then the errorbars are assymmetric
         if self.log_transform is True:
-            self.Interactions.errors.lower = np.sqrt(np.dot(self.X, self.Binary.errors.lower**2))
-            
+            _lower = np.dot(np.square(self.X_inv), self.Binary.var.lower)
+    
         # Else, the lower errorbar is just upper
         else:
-            self.Interactions.errors.lower = self.Interactions.errors.upper
-
+            _lower = _upper
+            
+        self.Interactions.var = VarianceMap(_upper, _lower)
+        self.Interactions.std = StandardDeviationMap(_upper, _lower, n_replicates=self.n_replicates)
+        self.Interactions.err = StandardErrorMap(_upper, _lower, n_replicates=self.n_replicates)
 
 class GlobalEpistasisModel(BaseModel):
 
-    def __init__(self, wildtype, genotypes, phenotypes, stdevs=None, log_transform=False, mutations=None, n_replicates=1):
+    def __init__(self, wildtype, genotypes, phenotypes, 
+                stdeviations=None, 
+                variances=None, 
+                log_transform=False, 
+                mutations=None, 
+                n_replicates=1):
+                
         """ Create a map of the global epistatic effects using Hadamard approach (defined by XX)
 
             This is the related to LocalEpistasisMap by the discrete Fourier
@@ -113,7 +133,14 @@ class GlobalEpistasisModel(BaseModel):
             `log_transform` [bool] : If True, log transform the phenotypes.
         """
         # Populate Epistasis Map
-        super(GlobalEpistasisModel, self).__init__(wildtype, genotypes, phenotypes, stdevs, log_transform, mutations=mutations, n_replicates=n_replicates)
+        super(GlobalEpistasisModel, self).__init__(wildtype, genotypes, phenotypes, 
+                                                    stdeviations=stdeviations, 
+                                                    variances=variances,
+                                                    log_transform=log_transform, 
+                                                    mutations=mutations, 
+                                                    n_replicates=n_replicates)
+                
+                
         self.order = self.length
 
         # Construct the Interactions mapping -- Interactions Subclass is added to model
@@ -122,31 +149,33 @@ class GlobalEpistasisModel(BaseModel):
         # Generate basis matrix for mutant cycle approach to epistasis.
         #self.weight_vector = hadamard_weight_vector(self.Binary.genotypes)
         self.X = generate_dv_matrix(self.Binary.genotypes, self.Interactions.labels, encoding={"1": -1, "0": 1})
+        
+        # Inverse of the hadamard matrix is the hadamard divided by its dimension
         self.X_inv = 1.0/self.n * self.X
-        #self.weight_matrix = hadamard_weight_vector(self.Binary.genotypes)
-
 
     def fit(self):
         """ Estimate the values of all epistatic interactions using the hadamard
             matrix transformation.
         """
-        #self.Interactions.values = np.dot( np.dot( self.weight_matrix, self.X_inv), self.Binary.phenotypes)
-        self.Interactions.values = np.dot( self.X_inv, self.Binary.phenotypes)
+        self.Interactions.values = np.dot(self.X_inv, self.Binary.phenotypes)
 
 
     def fit_error(self):
         """ Estimate the error of each epistatic interaction by standard error
             propagation of the phenotypes through the model.
         """
-        # self.Interactions.errors.upper = np.sqrt( np.dot( np.dot(np.square(self.weight_matrix), abs(self.X)), self.Binary.errors.upper**2) )
-
-        self.Interactions.errors.upper = (1.0/self.n) * np.sqrt( np.dot( np.square(self.X), self.Binary.errors.upper**2) )
+        _upper = np.dot(np.square(self.X_inv), self.Binary.var.upper)
         
         # If the space is log transformed, then the errorbars are assymmetric
         if self.log_transform is True:
-            self.Interactions.errors.lower = (1.0/self.n) * np.sqrt( np.dot( np.square(self.X), self.Binary.errors.lower**2) )
-            #self.Interactions.errors.lower = np.sqrt( np.dot( np.dot(np.square(self.weight_matrix), abs(self.X)), self.Binary.errors.lower**2) )
-            
-        # Else, the lower errorbar is just -upper
+            _lower = np.dot(np.square(self.X_inv), self.Binary.var.lower)
+    
+        # Else, the lower errorbar is just upper
         else:
-            self.Interactions.errors.lower = self.Interactions.errors.upper
+            _lower = _upper
+            
+        self.Interactions.var = VarianceMap(_upper, _lower)
+        self.Interactions.std = StandardDeviationMap(_upper, _lower, n_replicates=self.n_replicates)
+        self.Interactions.err = StandardErrorMap(_upper, _lower, n_replicates=self.n_replicates)
+        
+            

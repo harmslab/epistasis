@@ -14,7 +14,13 @@ from epistasis.mapping.epistasis import EpistasisMap
 
 class BaseModel(EpistasisMap):
     
-    def __init__(self, wildtype, genotypes, phenotypes, stdevs=None, log_transform=False, mutations=None, n_replicates=1):
+    def __init__(self, wildtype, genotypes, phenotypes, 
+                    stdeviations=None, 
+                    variances=None, 
+                    log_transform=False, 
+                    mutations=None, 
+                    n_replicates=1):
+                    
         """ Populate an Epistasis mapping object. 
         
             __Arguments__:
@@ -37,15 +43,14 @@ class BaseModel(EpistasisMap):
             mutant = farthest_genotype(wildtype, genotypes)
             mutations = binary_mutations_map(wildtype, mutant)
             
-        super(BaseModel, self).__init__(wildtype, genotypes, phenotypes, stdevs=stdevs, log_transform=log_transform, mutations=mutations, n_replicates=n_replicates)
+        super(BaseModel, self).__init__(wildtype, genotypes, phenotypes, 
+                        stdeviations=stdeviations, 
+                        variances=variances, 
+                        log_transform=log_transform, 
+                        mutations=mutations, 
+                        n_replicates=n_replicates)
         
-        # Construct a binary representation of the map (method inherited from parent class)
-        # and make it a subclass of the model.
-        self._construct_binary()
-      
-        # Model error if given. 
-        self.stdevs = stdevs
-            
+
     # ---------------------------------------------------------------------------------
     # Loading method
     # ---------------------------------------------------------------------------------
