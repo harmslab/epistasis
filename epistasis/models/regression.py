@@ -62,7 +62,7 @@ class EpistasisRegression(BaseModel):
         """
         # Populate Epistasis Map
         super(EpistasisRegression, self).__init__(wildtype, genotypes, phenotypes, 
-                variances=variance, 
+                variances=variances, 
                 stdeviations=stdeviations, 
                 log_transform=log_transform, 
                 mutations=mutations, 
