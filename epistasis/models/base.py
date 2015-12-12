@@ -62,10 +62,11 @@ class BaseModel(EpistasisMap):
         # Grab un scaled phenotypes and errors
         if gpm.log_transform is True:
             _phenotypes = gpm.Raw.phenotypes
-            _stdevs = gpm.Raw.variances
+            _variances = gpm.Raw.variances
         else:
             _phenotypes = gpm.phenotypes
-            _stdevs = gpm.variances
+            _variances = gpm.variances
+
         
         # Grab each property from map
         model = cls(gpm.wildtype, 
