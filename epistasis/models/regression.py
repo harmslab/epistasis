@@ -80,7 +80,7 @@ class EpistasisRegression(BaseModel):
             raise Exception("""Need to specify the model's `order` argument or manually
                                 list model parameters as `parameters` argument.""")
 
-        model_types = {"local":  {"1": 1, "0": 0}, "global": {"1": 1, "0": -1}}
+        model_types = {"local":  {"1": 1, "0": 0}, "global": {"1": -1, "0": 1}}
         self.encoding = model_types[model_type]
 
         # Construct x matrix
