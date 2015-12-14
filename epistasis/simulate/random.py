@@ -30,7 +30,7 @@ class RandomEpistasisMap(BaseArtificialMap):
 
     """ Generate genotype-phenotype map from random epistatic interactions. """
 
-    def __init__(self, length, order, magnitude, log_transform=False, model='local'):
+    def __init__(self, length, order, magnitude, log_transform=False, model='local', allow_neg=True):
         """ Choose random values for epistatic terms below and construct a genotype-phenotype map.
 
             ASSUMES ADDITIVE MODEL (UNLESS LOG TRANSFORMED).
@@ -47,7 +47,13 @@ class RandomEpistasisMap(BaseArtificialMap):
 
         """
         super(RandomEpistasisMap,self).__init__(length, order, log_transform)
-        self.Interactions.values = self.random_epistasis(-1,1)
+        
+        high = magnitude
+        low = 0
+        if allow_neg:
+            low = -magnitude 
+        
+        self.Interactions.values = self.random_epistasis(low, high)
         self.model = model
         self.build_phenotypes()
 
