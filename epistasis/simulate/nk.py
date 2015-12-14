@@ -1,4 +1,5 @@
 import numpy as np
+import itertools as it
 
 from epistasis.simulate.base import BaseArtificialMap
 
