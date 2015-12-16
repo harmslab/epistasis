@@ -100,7 +100,7 @@ class BaseArtificialMap(EpistasisMap):
             noise[i] = percent*self.phenotypes[i]
         self.stdevs = noise
 
-    def sample(self, n_samples=1, fraction=1.0):
+    def sample(self, n_samples=1, fraction=1.0, derived=True):
         """ Generate artificial data sampled from phenotype and percent error.
 
             __Arguments__:
@@ -122,6 +122,11 @@ class BaseArtificialMap(EpistasisMap):
 
         # random genotypes and phenotypes to sample
         random_indices = np.sort(np.random.choice(range(self.n), size=frac_length, replace=False))
+        
+        # If sample must include derived, set the last random_indice to self.n-1
+        if derived:
+            random_indices[-1] = self.n-1
+            
 
         # initialize arrays
         phenotypes = np.empty((frac_length, n_samples), dtype=float)
@@ -130,10 +135,12 @@ class BaseArtificialMap(EpistasisMap):
         # If errors are present, sample from error distribution
         try:
             stdevs = self.stdevs
-            for i in random_indices:
-                seq = self.genotypes[i]
+            for i in range(len(random_indices)):
+                index = random_indices[i]
+                seq = self.genotypes[index]
                 genotypes[i] = np.array([seq for j in range(n_samples)])
-                phenotypes[i] = stdevs[i] * np.random.randn(n_samples) + self.phenotypes[i]
+                phenotypes[i] = stdevs[index] * np.random.randn(n_samples) + self.phenotypes[index]
+
         except:
             # Can't sample if no error distribution is given.
             if n_samples != 1:
@@ -141,7 +148,7 @@ class BaseArtificialMap(EpistasisMap):
 
             genotypes = np.array([self.genotypes[i] for i in random_indices])
             phenotypes = np.array([self.phenotypes[i] for i in random_indices])
-
+        
         samples = Sample(genotypes, phenotypes, random_indices)
         return samples
 

@@ -83,31 +83,6 @@ class BaseModel(EpistasisMap):
     # ---------------------------------------------------------------------------------
     # Other methods
     # ---------------------------------------------------------------------------------        
-        
-    def get_order(self, order, errors=False, label="genotype"):
-        """ Return a dict of interactions to values of a given order. """
-        
-        # get starting index of interactions
-        if order > self.order:
-            raise Exception("Order argument is higher than model's order")
-            
-        # Determine the indices of this order of interactions.
-        start, stop = epistatic_order_indices(self.length,order)
-        # Label type.
-        if label == "genotype":
-            keys = self.Interactions.genotypes
-        elif label == "keys":
-            keys = self.Interactions.keys
-        else:
-            raise Exception("Unknown keyword argument for label.")
-        
-        # Build dictionary of interactions
-        stuff = OrderedDict(zip(keys[start:stop], self.Interactions.values[start:stop]))
-        if errors:
-            errors = OrderedDict(zip(keys[start:stop], self.Interactions.errors[start:stop]))
-            return stuff, errors
-        else:
-            return stuff
             
     def fit(self):
         """ Fitting methods for epistasis models. """
