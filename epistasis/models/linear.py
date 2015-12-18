@@ -11,7 +11,7 @@ import numpy as np
 # ------------------------------------------------------------
 
 from seqspace.utils import list_binary, enumerate_space, encode_mutations, construct_genotypes
-from seqspace.errors import StandardErrorMap, StandardDeviationMap, VarianceMap
+from seqspace.errors import StandardErrorMap, StandardDeviationMap
 
 # ------------------------------------------------------------
 # Local imports
@@ -27,7 +27,6 @@ def add_error_map(method):
     def wrapper(self, *args, **kwargs):
         self.Interactions.err = StandardErrorMap()
         self.Interactions.std = StandardDeviationMap()
-        self.Interactions.var = VarianceMap()
         method(self, *args, **kwargs)
     return wrapper 
 
@@ -39,7 +38,6 @@ class LocalEpistasisModel(BaseModel):
 
     def __init__(self, wildtype, genotypes, phenotypes, 
                 stdeviations=None, 
-                variances=None, 
                 log_transform=False, 
                 mutations=None, 
                 n_replicates=1):
@@ -65,7 +63,6 @@ class LocalEpistasisModel(BaseModel):
         # Populate Epistasis Map
         super(LocalEpistasisModel, self).__init__(wildtype, genotypes, phenotypes,  
                 stdeviations=stdeviations, 
-                variances=variances, 
                 log_transform=log_transform, 
                 mutations=mutations, 
                 n_replicates=n_replicates)
@@ -90,27 +87,26 @@ class LocalEpistasisModel(BaseModel):
     def fit_error(self):
         """ Estimate the error of each epistatic interaction by standard error
             propagation of the phenotypes through the model.
-        """
-        # Errorbars are symmetric, so only one column for errors is necessary
-        _upper = np.dot(np.square(self.X_inv), self.Binary.var.upper)
+        """        
+        upper = np.sqrt(np.dot(np.square(self.X_inv), self.Binary.std.upper**2))
         
         # If the space is log transformed, then the errorbars are assymmetric
         if self.log_transform is True:
-            _lower = np.dot(np.square(self.X_inv), self.Binary.var.lower)
+            lower = np.sqrt(np.dot(np.square(self.X_inv), self.Binary.std.lower**2))
     
         # Else, the lower errorbar is just upper
         else:
-            _lower = _upper
-            
-        self.Interactions.var = VarianceMap(_upper, _lower)
-        self.Interactions.std = StandardDeviationMap(_upper, _lower, n_replicates=self.n_replicates)
-        self.Interactions.err = StandardErrorMap(_upper, _lower, n_replicates=self.n_replicates)
+            lower = upper
+
+        self.Interactions.std = StandardDeviationMap(self.phenotypes, upper, lower=lower)
+        self.Interactions.err = StandardErrorMap(self.phenotypes, upper, n_replicates=self.n_replicates, lower=lower)
+           
+        
 
 class GlobalEpistasisModel(BaseModel):
 
     def __init__(self, wildtype, genotypes, phenotypes, 
                 stdeviations=None, 
-                variances=None, 
                 log_transform=False, 
                 mutations=None, 
                 n_replicates=1):
@@ -135,7 +131,6 @@ class GlobalEpistasisModel(BaseModel):
         # Populate Epistasis Map
         super(GlobalEpistasisModel, self).__init__(wildtype, genotypes, phenotypes, 
                                                     stdeviations=stdeviations, 
-                                                    variances=variances,
                                                     log_transform=log_transform, 
                                                     mutations=mutations, 
                                                     n_replicates=n_replicates)
@@ -164,18 +159,15 @@ class GlobalEpistasisModel(BaseModel):
         """ Estimate the error of each epistatic interaction by standard error
             propagation of the phenotypes through the model.
         """
-        _upper = np.dot(np.square(self.X_inv), self.Binary.var.upper)
+        _upper = np.sqrt(np.dot(np.square(self.X_inv), self.Binary.std.upper**2))
         
         # If the space is log transformed, then the errorbars are assymmetric
         if self.log_transform is True:
-            _lower = np.dot(np.square(self.X_inv), self.Binary.var.lower)
+            _lower = np.sqrt(np.dot(np.square(self.X_inv), self.Binary.std.lower**2))
     
         # Else, the lower errorbar is just upper
         else:
             _lower = _upper
             
-        self.Interactions.var = VarianceMap(_upper, _lower)
-        self.Interactions.std = StandardDeviationMap(_upper, _lower, n_replicates=self.n_replicates)
-        self.Interactions.err = StandardErrorMap(_upper, _lower, n_replicates=self.n_replicates)
-        
-            
+        self.Interactions.std = StandardDeviationMap(self.phenotypes, _upper, lower=_lower)
+        self.Interactions.err = StandardErrorMap(self.phenotypes, _upper, lower=_lower, n_replicates=self.n_replicates)

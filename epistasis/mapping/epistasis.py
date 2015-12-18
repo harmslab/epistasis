@@ -15,8 +15,7 @@ import numpy as np
 
 from seqspace.gpm import GenotypePhenotypeMap
 from seqspace.utils import hamming_distance, encode_mutations, construct_genotypes
-from seqspace.errors import (VarianceMap, 
-                            StandardDeviationMap, 
+from seqspace.errors import (StandardDeviationMap, 
                             StandardErrorMap)
                             
 # ----------------------------------------------------------
@@ -35,7 +34,6 @@ class EpistasisMap(GenotypePhenotypeMap):
 
     def __init__(self, wildtype, genotypes, phenotypes, 
                     stdeviations=None, 
-                    variances=None, 
                     log_transform=False, 
                     mutations=None, 
                     n_replicates=1):
@@ -64,7 +62,6 @@ class EpistasisMap(GenotypePhenotypeMap):
         """
         super(EpistasisMap, self).__init__(wildtype, genotypes, phenotypes, 
                                         stdeviations=stdeviations,
-                                        variances=variances, 
                                         log_transform=log_transform, 
                                         mutations=mutations, 
                                         n_replicates=n_replicates)      

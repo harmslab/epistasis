@@ -29,7 +29,6 @@ class EpistasisRegression(BaseModel):
     def __init__(self, wildtype, genotypes, phenotypes, 
                 order=None, 
                 parameters=None, 
-                variances=None, 
                 stdeviations=None, 
                 log_transform=False, 
                 mutations=None, 
@@ -62,7 +61,6 @@ class EpistasisRegression(BaseModel):
         """
         # Populate Epistasis Map
         super(EpistasisRegression, self).__init__(wildtype, genotypes, phenotypes, 
-                variances=variances, 
                 stdeviations=stdeviations, 
                 log_transform=log_transform, 
                 mutations=mutations, 

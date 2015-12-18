@@ -17,6 +17,7 @@ from collections import OrderedDict
 from seqspace.base import BaseMap
 from epistasis.utils import params_index_map, build_model_params, label_to_key
 
+
 class InteractionMap(BaseMap):
     
     def __init__(self, mutation_map):

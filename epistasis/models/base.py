@@ -16,7 +16,6 @@ class BaseModel(EpistasisMap):
     
     def __init__(self, wildtype, genotypes, phenotypes, 
                     stdeviations=None, 
-                    variances=None, 
                     log_transform=False, 
                     mutations=None, 
                     n_replicates=1):
@@ -45,7 +44,6 @@ class BaseModel(EpistasisMap):
             
         super(BaseModel, self).__init__(wildtype, genotypes, phenotypes, 
                         stdeviations=stdeviations, 
-                        variances=variances, 
                         log_transform=log_transform, 
                         mutations=mutations, 
                         n_replicates=n_replicates)
@@ -62,17 +60,17 @@ class BaseModel(EpistasisMap):
         # Grab un scaled phenotypes and errors
         if gpm.log_transform is True:
             _phenotypes = gpm.Raw.phenotypes
-            _variances = gpm.Raw.variances
+            _stdeviations = gpm.Raw.stdeviations
         else:
             _phenotypes = gpm.phenotypes
-            _variances = gpm.variances
+            _stdeviations = gpm.stdeviations
 
         
         # Grab each property from map
         model = cls(gpm.wildtype, 
                     gpm.genotypes, 
                     _phenotypes,
-                    variances=_variances,
+                    stdeviations=_stdeviations,
                     mutations = gpm.mutations,
                     log_transform= gpm.log_transform,
                     n_replicates = gpm.n_replicates,

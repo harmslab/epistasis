@@ -231,7 +231,17 @@ def bar_with_xbox(model,
     if sigmas == 0:
         significance = None
     else:
-        z_score = -model.Interactions.values[1:]/model.Interactions.err.upper[1:]
+        # Calculate a z score
+        z_score = np.empty(len(model.Interactions.values[1:]), dtype=float)
+        # Iterate through and count 
+        for i in range(len(z_score)):
+            # Check to see if we should use upper or lower bound
+            if model.Interactions.values[i+1] >= 0: 
+                denom = model.Interactions.err.lower[i+1]
+            else:
+                denom = model.Interactions.err.upper[i+1]
+                
+            z_score[i] = model.Interactions.values[i+1]/denom
 
     # straight p-values
     if significance == "p":
