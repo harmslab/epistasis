@@ -156,10 +156,16 @@ def ensemble_bar(ensemble, title="Ensemble Epistasis"):
 
 def bar_with_xbox(model,
                   order_colors=("red","orange","green","purple","DeepSkyBlue","yellow","pink"),
-                  significance="bon",significance_cutoff=0.05,
-                  sigmas=2,y_scalar=1.5,y_axis_name="interaction",
-                  figsize=(8,10),height_ratio=12,
-                  star_cutoffs=(0.05,0.01,0.001),star_spacer=0.0075):
+                  significance="bon",
+                  significance_cutoff=0.05,
+                  sigmas=2,
+                  y_scalar=1.5,
+                  y_axis_name="interaction",
+                  figsize=(8,10),
+                  height_ratio=12,
+                  star_cutoffs=(0.05,0.01,0.001),
+                  star_spacer=0.0075,
+                  ybounds=None):
     """
     Create a barplot with the values from model, drawing the x-axis as a grid of
     boxes indicating the coordinate of the epistatic parameter. Should automatically
@@ -305,8 +311,12 @@ def bar_with_xbox(model,
     ax_array[0].set_ylabel(y_axis_name, fontsize=14)
 
     # Set barplot y-scale
-    ymin = -y_scalar*max(abs(bar_y))
-    ymax =  y_scalar*max(abs(bar_y))
+    if ybounds is None:
+        ymin = -y_scalar*max(abs(bar_y))
+        ymax =  y_scalar*max(abs(bar_y))
+    else:
+        ymin = ybounds[0]
+        ymax = ybounds[1]
 
     # Make axes pretty pretty
     ax_array[0].axis([-1, len(bar_y) + 1, ymin, ymax])
