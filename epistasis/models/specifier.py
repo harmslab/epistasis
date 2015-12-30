@@ -36,7 +36,16 @@ class ModelSpecifier:
         self.model_order = 1
         self.model_p_value = None
         self.model_stat = None
-        self.model = EpistasisRegression(wildtype, genotypes, phenotypes, order=self.model_order, log_transform=log_transform, mutations=mutations, n_replicates=n_replicates, model_type=self.model_type)
+        
+        # Construct a regression of the data
+        self.model = EpistasisRegression(wildtype, genotypes, phenotypes, 
+            order=self.model_order, 
+            log_transform=log_transform, 
+            mutations=mutations, 
+            n_replicates=n_replicates, 
+            model_type=self.model_type)
+            
+        # Fit the regression and specify the proper order using test statistic.
         self.model.fit()
         self._specifier()
 
@@ -45,7 +54,12 @@ class ModelSpecifier:
         # Get model specs
         wildtype = self.model.wildtype
         genotypes = self.model.genotypes
-        phenotypes = self.model.Raw.phenotypes
+        
+        if self.model.log_transform is True:
+            phenotypes = self.model.Raw.phenotypes
+        else:
+            phenotypes = self.model.phenotypes    
+        
         log_transform = self.model.log_transform
         mutations = self.model.mutations
         n_replicates = self.model.n_replicates
