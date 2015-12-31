@@ -165,7 +165,8 @@ def bar_with_xbox(model,
                   height_ratio=12,
                   star_cutoffs=(0.05,0.01,0.001),
                   star_spacer=0.0075,
-                  ybounds=None):
+                  ybounds=None,
+                  bar_borders=True):
     """
     Create a barplot with the values from model, drawing the x-axis as a grid of
     boxes indicating the coordinate of the epistatic parameter. Should automatically
@@ -300,12 +301,16 @@ def bar_with_xbox(model,
 
     # Plot error if sigmas are given.
     if sigmas == 0:
-        ax_array[0].bar(range(len(bar_y)), bar_y, 0.9,color=colors_for_bar)
+        ax_array[0].bar(range(len(bar_y)), bar_y, width=0.8, color=colors_for_bar, edgecolor="none")
     else:
 
         yerr = [sigmas*model.Interactions.err.upper[1:], sigmas*model.Interactions.err.lower[1:]]
-        ax_array[0].bar(range(len(bar_y)), bar_y, 0.9, yerr=yerr,color=colors_for_bar,
-                        error_kw={"ecolor":"black"})
+        ax_array[0].bar(range(len(bar_y)), bar_y, width=0.8, yerr=yerr, color=colors_for_bar,
+                        error_kw={"ecolor":"grey"},
+                        edgecolor="none",
+                        linewidth=2)
+                        
+    ax_array[0].hlines(0, 0, len(model.Interactions.values)-1, linewidth=1, linestyle="--")
 
     # Label barplot y-axis
     ax_array[0].set_ylabel(y_axis_name, fontsize=14)
