@@ -130,7 +130,69 @@ def false_positive_rate(y_obs, y_pred, upper_ci, lower_ci, sigmas=2):
     rate = false_positives/float(known_zeros)
 
     return rate
+    
+    
+def false_negative_rate(y_obs, y_pred, upper_ci, lower_ci=None):
+    """ Calculate the false negative rate of predicted values. Finds all values that
+        equal zero in the known array and calculates the number of false negatives
+        found in the predicted given the number of samples and sigmas.
 
+        The defined bounds are:
+            (number of sigmas) * errors / sqrt(number of samples)
+
+        __Arguments__:
+
+        `known` [array-like] : Known values for comparing false negatives
+
+        `predicted` [array-like] : Predicted values
+
+        `errors` [array-like] : Standard error from model
+
+        `n_samples` [int]: number of replicate samples
+
+        `sigma` [int (default=2)] : How many standard errors away (2 == 0.05 false negative rate)
+
+        __Returns__:
+
+        `rate` [float] : False negative rate in data
+    """
+
+    N = len(y_obs)
+    # Check that known, predicted, and errors are the same size.
+    if N != len(y_pred) or N != len(upper_ci):
+        raise Exception("Input arrays must all be the same size")
+
+    # Number of known-zeros:
+    known_nonzeros = 0
+
+    # Number of false negatives:
+    false_negatives = 0
+
+    # Scale confidence bounds to the number of samples and sigmas
+    upper_bounds = sigmas * upper_ci
+    lower_bounds = sigmas * lower_ci
+
+    for i in range(N):
+        # Check that known value is zero
+        if y_obs[i] != 0.0:
+
+            # Add count to known_zero
+            known_nonzeros += 1
+
+            # Calculate bounds with given number of sigmas.
+            upper = y_pred[i] + upper_bounds[i]
+            lower = y_pred[i] - lower_bounds[i]
+            
+            # Check false negative rate.
+            if lower < 0 < upper:
+                false_negatives += 1
+
+    # Calculate false positive rate
+    rate = false_negatives/float(known_nonzeros)
+
+    return rate
+    
+    
 # -----------------------------------------------------------------------
 # Methods for model comparison
 # -----------------------------------------------------------------------
