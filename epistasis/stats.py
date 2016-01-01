@@ -132,7 +132,7 @@ def false_positive_rate(y_obs, y_pred, upper_ci, lower_ci, sigmas=2):
     return rate
     
     
-def false_negative_rate(y_obs, y_pred, upper_ci, lower_ci=None):
+def false_negative_rate(y_obs, y_pred, upper_ci, lower_ci, sigmas=2):
     """ Calculate the false negative rate of predicted values. Finds all values that
         equal zero in the known array and calculates the number of false negatives
         found in the predicted given the number of samples and sigmas.
