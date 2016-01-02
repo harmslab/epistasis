@@ -37,12 +37,15 @@ def magnitude_vs_order(model, keep_sign=False,
     # Initialize the figure and axis
     fig, ax = plt.subplots(figsize=figsize)
     
-    ybounds = int(max(abs(np.array(magnitudes))))+1
-    
     # Create plot
     ax.plot(orders, magnitudes, marker=marker, color=color, linestyle=linestyle, **kwargs)
-    ax.axis([orders[0], orders[-1], -ybounds, ybounds])
     
+    # Steal the max bound, cause matplotlib does a great job of picking good axis
+    ylimits = max(list(ax.get_ylim()))
+    # Make y limits symmetric
+    ax.axis([orders[0], orders[-1], -ylimits, ylimits])
+    
+    # Add a line at zero if keeping sign
     if keep_sign:
         ax.hlines(0, orders[0], orders[-1], linestyle="--")
     
