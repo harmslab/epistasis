@@ -15,18 +15,6 @@ from seqspace.utils import enumerate_space, binary_mutations_map
 
 from epistasis.mapping.epistasis import EpistasisMap
 
-class Sample:
-
-    def __init__(self, replicate_genotypes, replicate_phenotypes, indices=None):
-        """ Sample from simulated experiment """
-        self.replicate_genotypes = replicate_genotypes
-        self.replicate_phenotypes = replicate_phenotypes
-        self.genotypes = self.replicate_genotypes[:,0]
-        self.phenotypes = np.mean(self.replicate_phenotypes, axis=1)
-        self.stdeviations = np.std(self.replicate_phenotypes, ddof=1, axis=1)
-        self.indices = indices
-
-
 class BaseArtificialMap(EpistasisMap):
 
     """ Base class for generating genotype-phenotype maps from epistasis interactions."""
@@ -100,57 +88,6 @@ class BaseArtificialMap(EpistasisMap):
             noise[i] = percent*self.phenotypes[i]
         self.stdevs = noise
 
-    def sample(self, n_samples=1, fraction=1.0, derived=True):
-        """ Generate artificial data sampled from phenotype and percent error.
-
-            __Arguments__:
-
-            `n_samples` [int] : Number of samples to take from space
-
-            `fraction` [float] : fraction of space to sample.
-
-            __Return__:
-
-            `samples` [Sample object]: returns this object with all stats on experiment
-        """
-        # make sure fraction is float between 0 and 1
-        if fraction < 0 or fraction > 1:
-            raise Exception("fraction is invalid.")
-
-        # fractional length of space.
-        frac_length = int(fraction * self.n)
-
-        # random genotypes and phenotypes to sample
-        random_indices = np.sort(np.random.choice(range(self.n), size=frac_length, replace=False))
-        
-        # If sample must include derived, set the last random_indice to self.n-1
-        if derived:
-            random_indices[-1] = self.n-1
-            
-
-        # initialize arrays
-        phenotypes = np.empty((frac_length, n_samples), dtype=float)
-        genotypes = np.empty((frac_length, n_samples), dtype='<U'+str(self.length))
-
-        # If errors are present, sample from error distribution
-        try:
-            stdevs = self.stdeviations
-            for i in range(len(random_indices)):
-                index = random_indices[i]
-                seq = self.genotypes[index]
-                genotypes[i] = np.array([seq for j in range(n_samples)])
-                phenotypes[i] = stdevs[index] * np.random.randn(n_samples) + self.phenotypes[index]
-
-        except:
-            # Can't sample if no error distribution is given.
-            if n_samples != 1:
-                raise Exception("Won't create samples if sample error is not given.")
-
-            genotypes = np.array([self.genotypes[i] for i in random_indices])
-            phenotypes = np.array([self.phenotypes[i] for i in random_indices])
-        
-        samples = Sample(genotypes, phenotypes, random_indices)
-        return samples
 
     def model_input(self):
         """ Get input for a generic Epistasis Model.
