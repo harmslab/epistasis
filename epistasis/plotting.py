@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 import matplotlib
 from scipy.stats import norm as scipy_norm
 
+from seqspace.errors import BaseErrorMap
+
 # ---------------------------------------------------
 # Epistasis Graphing
 # ---------------------------------------------------
@@ -183,28 +185,32 @@ def bar_with_xbox(model,
     # NEED TO RETURN TO SIGNIFICANCE FUNCTIONS
     
     if sigmas == 0:
+        
         significance = None
+    
     else:
-        # Calculate a z score
-        z_score = np.empty(len(model.Interactions.values[1:]), dtype=float)
-        # Iterate through and count 
-        for i in range(len(z_score)):
-            # Check to see if we should use upper or lower bound
-            if model.Interactions.values[i+1] >= 0: 
-                denom = model.Interactions.err.lower[i+1]
-            else:
-                denom = model.Interactions.err.upper[i+1]
-                
-            z_score[i] = model.Interactions.values[i+1]/denom
+        
+        # If log transformed, need to get raw values for normal distribution
+        if model.log_transform:
+            
+            beta = model.Interactions.Raw.values
+            sigma_beta = model.Interactions.Raw.err.upper
+            z_score = - abs( (beta - 1)/sigma_beta )
+            
+        # else, just grab standard values
+        else:
+            beta = model.Interactions.values
+            sigma_beta = model.Interactions.err.upper
+            z_score = - abs( (beta)/sigma_beta )
 
     # straight p-values
     if significance == "p":
-        p_values = 2*scipy_norm.cdf(-abs(z_score))
+        p_values = 2*scipy_norm.cdf( z_score )
 
     # bonferroni corrected p-values
     elif significance == "bon":
-        p_values = 2*scipy_norm.cdf(-abs(z_score))*len(model.Interactions.values)
-
+        p_values = 2*scipy_norm.cdf( z_score ) * len(beta)
+        
     # ignore p-values and color everything
     elif significance == None:
         p_values = [0 for i in range(len(labels))]
@@ -250,10 +256,17 @@ def bar_with_xbox(model,
     if sigmas == 0:
         ax_array[0].bar(range(len(bar_y)), bar_y, width=0.8, color=colors_for_bar, edgecolor="none")
     else:
-
-        yerr = [sigmas*model.Interactions.err.upper[1:], sigmas*model.Interactions.err.lower[1:]]
+        
+        if model.log_transform:
+            upper = BaseErrorMap.transform_upper(sigmas*model.Interactions.Raw.err.upper, model.Interactions.Raw.values)
+            lower = BaseErrorMap.transform_lower(sigmas*model.Interactions.Raw.err.lower, model.Interactions.Raw.values)
+        else:
+            upper = sigmas * model.Interactions.err.upper
+            lower = sigmas * model.Interactions.err.lower
+        
+        yerr = [lower[1:], upper[1:]]
         ax_array[0].bar(range(len(bar_y)), bar_y, width=0.8, yerr=yerr, color=colors_for_bar,
-                        error_kw={"ecolor":"grey"},
+                        error_kw={"ecolor":"black"},
                         edgecolor="none",
                         linewidth=2)
                         
@@ -284,7 +297,7 @@ def bar_with_xbox(model,
         if len(labels[i]) != previous_order:
             ax_array[0].add_artist(matplotlib.lines.Line2D((i,i),
                                                            (ymin,ymax),
-                                                           color="gray",
+                                                           color="black",
                                                            linestyle="--"))
             previous_order = len(labels[i])
 

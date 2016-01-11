@@ -17,10 +17,21 @@ from collections import OrderedDict
 from seqspace.base import BaseMap
 from epistasis.utils import params_index_map, build_model_params, label_to_key
 
+class RawInteractionMap(object):
+            
+    @property
+    def values(self):
+        """ Get the values of the interaction in the system"""
+        return self._values
+        
+    @values.setter
+    def values(self, values):
+        self._values = values
+
 
 class InteractionMap(BaseMap):
     
-    def __init__(self, mutation_map):
+    def __init__(self, mutation_map, log_transform):
         """ Mapping object for indexing and tracking interactions in an 
             epistasis map object. 
             
@@ -29,6 +40,10 @@ class InteractionMap(BaseMap):
             `mutation_map` [MutationMap instance] : An already populated MutationMap instance.
         """
         self.Mutations = mutation_map
+        self._log_transform = log_transform
+        
+        if self.log_transform:
+            self.Raw = RawInteractionMap()
     
     @property
     def log_transform(self):
@@ -127,6 +142,10 @@ class InteractionMap(BaseMap):
         if len(values) != len(self.labels):
             raise Exception("Number of interactions give to map is different than was defined. ")
         self._values = values
+        
+        # Set raw values
+        if self.log_transform:
+            self.Raw.values = 10**values
         
     @keys.setter
     def keys(self, keys):

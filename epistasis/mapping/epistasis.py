@@ -90,7 +90,7 @@ class EpistasisMap(GenotypePhenotypeMap):
 
             Must populate the Mutations subclass before setting interactions.
         """
-        self.Interactions = InteractionMap(self.Mutations)
+        self.Interactions = InteractionMap(self.Mutations, self.log_transform)
         self.Interactions._length = self.length
         self.Interactions.log_transform = self.log_transform
         self.Interactions.mutations = params_index_map(self.mutations) # construct the mutations mapping

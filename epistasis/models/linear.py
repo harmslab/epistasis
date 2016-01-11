@@ -87,19 +87,41 @@ class LocalEpistasisModel(BaseModel):
     def fit_error(self):
         """ Estimate the error of each epistatic interaction by standard error
             propagation of the phenotypes through the model.
-        """        
+            
+            
+            For multiplicative: 
+            ------------------
+                f_x = phenotype x 
+                sigma_f = standard deviation of phenotype x
+                beta_i = epistatic coefficient i
+            
+                (sigma_beta_i)**2 = (beta_i ** 2) *  ( (sigma_f_x ** 2) / (f_x ** 2) + ... )
+            
+        """
         upper = np.sqrt(np.dot(np.square(self.X_inv), self.Binary.std.upper**2))
         
         # If the space is log transformed, then the errorbars are assymmetric
         if self.log_transform is True:
-            lower = np.sqrt(np.dot(np.square(self.X_inv), self.Binary.std.lower**2))
-    
+            # Get variables
+            beta_i = self.Interactions.Raw.values
+            sigma_f_x = self.Raw.std.upper
+            f_x = self.Raw.phenotypes
+            
+            # Calculate unscaled terms
+            upper = np.sqrt( (beta_i**2) * np.dot(np.square(self.X_inv),(sigma_f_x**2/f_x**2))) 
+            lower = upper
+            
+            # Create a raw map of the errors
+            self.Interactions.Raw.std = StandardDeviationMap(self.Interactions.Raw.values, upper, lower=lower)
+            self.Interactions.Raw.err = StandardErrorMap(self.Interactions.Raw.values, upper, n_replicates=self.n_replicates, lower=lower)
+                
         # Else, the lower errorbar is just upper
         else:
+            upper = np.sqrt(np.dot(np.square(self.X_inv), self.Binary.std.upper**2))
             lower = upper
 
-        self.Interactions.std = StandardDeviationMap(self.phenotypes, upper, lower=lower)
-        self.Interactions.err = StandardErrorMap(self.phenotypes, upper, n_replicates=self.n_replicates, lower=lower)
+        self.Interactions.std = StandardDeviationMap(self.Interactions.Raw.values, upper, lower=lower, log_transform=self.log_transform)
+        self.Interactions.err = StandardErrorMap(self.Interactions.Raw.values, upper, n_replicates=self.n_replicates, lower=lower, log_transform=self.log_transform)
            
         
 
@@ -158,16 +180,39 @@ class GlobalEpistasisModel(BaseModel):
     def fit_error(self):
         """ Estimate the error of each epistatic interaction by standard error
             propagation of the phenotypes through the model.
+            
+            
+            For multiplicative: 
+            ------------------
+                f_x = phenotype x 
+                sigma_f = standard deviation of phenotype x
+                beta_i = epistatic coefficient i
+            
+                (sigma_beta_i)**2 = (beta_i ** 2) *  ( (sigma_f_x ** 2) / (f_x ** 2) + ... )
+            
         """
-        _upper = np.sqrt(np.dot(np.square(self.X_inv), self.Binary.std.upper**2))
+        upper = np.sqrt(np.dot(np.square(self.X_inv), self.Binary.std.upper**2))
         
         # If the space is log transformed, then the errorbars are assymmetric
         if self.log_transform is True:
-            _lower = np.sqrt(np.dot(np.square(self.X_inv), self.Binary.std.lower**2))
-    
+            # Get variables
+            beta_i = self.Interactions.Raw.values
+            sigma_f_x = self.Raw.std.upper
+            f_x = self.Raw.phenotypes
+            
+            # Calculate unscaled terms
+            upper = np.sqrt( (beta_i**2) * np.dot(np.square(self.X_inv),(sigma_f_x**2/f_x**2))) 
+            lower = upper
+            
+            # Create a raw map of the errors
+            self.Interactions.Raw.std = StandardDeviationMap(self.Interactions.Raw.values, upper, lower=lower)
+            self.Interactions.Raw.err = StandardErrorMap(self.Interactions.Raw.values, upper, n_replicates=self.n_replicates, lower=lower)
+                
         # Else, the lower errorbar is just upper
         else:
-            _lower = _upper
-            
-        self.Interactions.std = StandardDeviationMap(self.phenotypes, _upper, lower=_lower)
-        self.Interactions.err = StandardErrorMap(self.phenotypes, _upper, lower=_lower, n_replicates=self.n_replicates)
+            upper = np.sqrt(np.dot(np.square(self.X_inv), self.Binary.std.upper**2))
+            lower = upper
+
+        self.Interactions.std = StandardDeviationMap(self.Interactions.Raw.values, upper, lower=lower, log_transform=self.log_transform)
+        self.Interactions.err = StandardErrorMap(self.Interactions.Raw.values, upper, n_replicates=self.n_replicates, lower=lower, log_transform=self.log_transform)
+
