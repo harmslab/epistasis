@@ -11,6 +11,7 @@ from seqspace.errors import BaseErrorMap
 # Epistasis Graphing
 # ---------------------------------------------------
 
+
 def magnitude_vs_order(model, keep_sign=False, 
         marker="o", 
         color="b",

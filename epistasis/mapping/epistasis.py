@@ -64,7 +64,7 @@ class EpistasisMap(GenotypePhenotypeMap):
                                         stdeviations=stdeviations,
                                         log_transform=log_transform, 
                                         mutations=mutations, 
-                                        n_replicates=n_replicates)      
+                                        n_replicates=n_replicates)
 
     # ------------------------------------------------------
     # Getter methods for attributes that can be set by user.

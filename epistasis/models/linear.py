@@ -109,19 +109,17 @@ class LocalEpistasisModel(BaseModel):
             
             # Calculate unscaled terms
             upper = np.sqrt( (beta_i**2) * np.dot(np.square(self.X_inv),(sigma_f_x**2/f_x**2))) 
-            lower = upper
             
             # Create a raw map of the errors
-            self.Interactions.Raw.std = StandardDeviationMap(self.Interactions.Raw.values, upper, lower=lower)
-            self.Interactions.Raw.err = StandardErrorMap(self.Interactions.Raw.values, upper, n_replicates=self.n_replicates, lower=lower)
+            self.Interactions.Raw.std = StandardDeviationMap(self.Interactions.Raw.values, upper)
+            self.Interactions.Raw.err = StandardErrorMap(self.Interactions.Raw.values, upper, n_replicates=self.n_replicates)
                 
         # Else, the lower errorbar is just upper
         else:
             upper = np.sqrt(np.dot(np.square(self.X_inv), self.Binary.std.upper**2))
-            lower = upper
 
-        self.Interactions.std = StandardDeviationMap(self.Interactions.Raw.values, upper, lower=lower, log_transform=self.log_transform)
-        self.Interactions.err = StandardErrorMap(self.Interactions.Raw.values, upper, n_replicates=self.n_replicates, lower=lower, log_transform=self.log_transform)
+        self.Interactions.std = StandardDeviationMap(self.Interactions.Raw.values, upper, log_transform=self.log_transform)
+        self.Interactions.err = StandardErrorMap(self.Interactions.Raw.values, upper, n_replicates=self.n_replicates, log_transform=self.log_transform)
            
         
 
@@ -202,17 +200,15 @@ class GlobalEpistasisModel(BaseModel):
             
             # Calculate unscaled terms
             upper = np.sqrt( (beta_i**2) * np.dot(np.square(self.X_inv),(sigma_f_x**2/f_x**2))) 
-            lower = upper
             
             # Create a raw map of the errors
-            self.Interactions.Raw.std = StandardDeviationMap(self.Interactions.Raw.values, upper, lower=lower)
-            self.Interactions.Raw.err = StandardErrorMap(self.Interactions.Raw.values, upper, n_replicates=self.n_replicates, lower=lower)
+            self.Interactions.Raw.std = StandardDeviationMap(self.Interactions.Raw.values, upper)
+            self.Interactions.Raw.err = StandardErrorMap(self.Interactions.Raw.values, upper, n_replicates=self.n_replicates)
                 
         # Else, the lower errorbar is just upper
         else:
             upper = np.sqrt(np.dot(np.square(self.X_inv), self.Binary.std.upper**2))
-            lower = upper
 
-        self.Interactions.std = StandardDeviationMap(self.Interactions.Raw.values, upper, lower=lower, log_transform=self.log_transform)
-        self.Interactions.err = StandardErrorMap(self.Interactions.Raw.values, upper, n_replicates=self.n_replicates, lower=lower, log_transform=self.log_transform)
+        self.Interactions.std = StandardDeviationMap(self.Interactions.Raw.values, upper, log_transform=self.log_transform)
+        self.Interactions.err = StandardErrorMap(self.Interactions.Raw.values, upper, n_replicates=self.n_replicates, log_transform=self.log_transform)
 

@@ -10,7 +10,7 @@ from epistasis.models.base import BaseModel
 
 class EpistasisPCA(BaseModel):
 
-    def __init__(self, wildtype, genotypes, phenotypes, order=1, stdevs=None, log_transform=False, mutations=None, n_replicates=1):
+    def __init__(self, wildtype, genotypes, phenotypes, order=1, stdeviations=None, log_transform=False, mutations=None, n_replicates=1):
         """ Principal component analysis of the genotype-phenotype map.
             This module uses Scikit-learn's PCA class to perform the transformation.
 
@@ -19,7 +19,7 @@ class EpistasisPCA(BaseModel):
             and their epistatic coordinates that best describe the variation in
             phenotype.
         """
-        super(EpistasisPCA, self).__init__(wildtype, genotypes, phenotypes, stdevs, log_transform, mutations=mutations, n_replicates=n_replicates)
+        super(EpistasisPCA, self).__init__(wildtype, genotypes, phenotypes, stdeviations, log_transform, mutations=mutations, n_replicates=n_replicates)
 
         self.order = order
         self.model = PCA()
