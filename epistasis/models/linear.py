@@ -21,6 +21,7 @@ from epistasis.decomposition import generate_dv_matrix
 from epistasis.utils import epistatic_order_indices, build_model_params
 from epistasis.models.base import BaseModel
 
+
 def add_error_map(method):
     """ Decorates methods where errors are being created
     """

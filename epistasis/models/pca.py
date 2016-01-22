@@ -33,6 +33,6 @@ class EpistasisPCA(BaseModel):
 
     def fit(self):
         """ Estimate the principal components (i.e. maximum coordinates in phenotype variation.). """
-        self.X_new = self.model.fit_transform(self.X[:,1:])
+        self.X_new = self.model.fit_transform(self.X[:,:])
         self.explained_variance_ratio = self.model.explained_variance_ratio_
         self.components = self.model.components_
