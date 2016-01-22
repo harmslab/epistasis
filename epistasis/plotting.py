@@ -109,6 +109,7 @@ def bar_with_xbox(model,
                   significance="bon",
                   significance_cutoff=0.05,
                   sigmas=2,
+                  log_space=False,
                   y_scalar=1.5,
                   y_axis_name="interaction",
                   figsize=(8,10),
@@ -152,7 +153,7 @@ def bar_with_xbox(model,
         sigmas = 0
 
     # Grab the fit values and labels, tossing 0th-order term
-    bar_y = model.Interactions.values[1:]
+    
     labels = model.Interactions.labels[1:]
 
     # Figure out the length of the x-axis and the highest epistasis observed
@@ -258,12 +259,16 @@ def bar_with_xbox(model,
         ax_array[0].bar(range(len(bar_y)), bar_y, width=0.8, color=colors_for_bar, edgecolor="none")
     else:
         
-        if model.log_transform:
+        if log_space:
             upper = BaseErrorMap.transform_upper(sigmas*model.Interactions.Raw.err.upper, model.Interactions.Raw.values)
             lower = BaseErrorMap.transform_lower(sigmas*model.Interactions.Raw.err.lower, model.Interactions.Raw.values)
+            bar_y = model.Interactions.Raw.values[1:]
+            
         else:
             upper = sigmas * model.Interactions.err.upper
             lower = sigmas * model.Interactions.err.lower
+            bar_y = model.Interactions.values[1:]
+            
         
         yerr = [lower[1:], upper[1:]]
         ax_array[0].bar(range(len(bar_y)), bar_y, width=0.8, yerr=yerr, color=colors_for_bar,
@@ -357,6 +362,72 @@ def bar_with_xbox(model,
     fig.tight_layout()
 
     return fig, ax_array
+
+
+# -----------------------------
+# Plotting PCA
+# -----------------------------
+
+def principal_components(model, with_components=True, dimensions=3, figsize=[6,6], ac="r"):
+    """
+        Arguments:
+        ---------
+        model: EpistasisPCA object
+            PCA model of epistasis to plot
+        figsize: array like
+            Figure size
+        ac: str
+            Color for arrows representing principal components
+    
+    """
+    fig = plt.figure(figsize=figsize)
+    ax = fig.add_subplot(111, projection="3d")
+    
+    if dimensions > 3:
+        raise Exception(""" Cannot plot greater than 3 dimensions! """)
+
+    # Plot the principal components?
+    if with_components:
+
+        x,y,z  = 0,0,0
+
+        U1 = model.components[0][0] * 0.03
+        V1 = model.components[0][1] * 0.03
+        W1 = model.components[0][2] * 0.03
+        U2 = model.components[1][0] * 0.03
+        V2 = model.components[1][1] * 0.03
+        W2 = model.components[1][2] * 0.03
+        U3 = model.components[2][0] * 0.03
+        V3 = model.components[2][1] * 0.03
+        W3 = model.components[2][2] * 0.03
+
+        # PCA
+        a = Arrow3D([-U1,U1], [-V1,V1], [-W1,W1], mutation_scale=20, lw=2, arrowstyle="->", color="r")
+        b = Arrow3D([-U2,U2], [-V2,V2], [-W2,W2], mutation_scale=20, lw=2, arrowstyle="->", color="r")
+        c = Arrow3D([-U3,U3], [-V3,V3], [-W3,W3], mutation_scale=20, lw=2, arrowstyle="->", color="r")
+
+        ax.add_artist(a)
+        ax.add_artist(b)
+        ax.add_artist(c)
+
+    # Print transformed phenotypes?
+    for i in model.X_new:
+        ax.scatter(i[0],i[1],i[2], s=100)
+    
+    mapping = model.get_map("indices", "X_new")
+    model.Graph.build_graph()
+
+    for edge in model.Graph.edges():
+        ax.plot((mapping[edge[0]][0], mapping[edge[1]][0]),
+                (mapping[edge[0]][1], mapping[edge[1]][1]), 
+                (mapping[edge[0]][2], mapping[edge[1]][2]),
+                linewidth=2,
+               c='grey')
+    
+    @interact
+    def angle(angle=(0,360,10), elevation=(-100,100,10)):
+        ax.view_init(azim=angle, elev=elevation)
+        return fig
 
 
 # -----------------------------
