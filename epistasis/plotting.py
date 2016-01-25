@@ -8,6 +8,13 @@ from scipy.stats import norm as scipy_norm
 from seqspace.errors import BaseErrorMap
 
 # ---------------------------------------------------
+# Exceptions
+# ---------------------------------------------------
+
+class LogScalingException(Exception):
+    """ Exception for handling log scaling problems when plotting. """
+
+# ---------------------------------------------------
 # Epistasis Graphing
 # ---------------------------------------------------
 
@@ -108,7 +115,7 @@ def bar_with_xbox(model,
                   order_colors=("red","orange","green","purple","DeepSkyBlue","yellow","pink"),
                   significance="bon",
                   significance_cutoff=0.05,
-                  sigmas=2,
+                  sigmas=1,
                   log_space=False,
                   y_scalar=1.5,
                   y_axis_name="interaction",
@@ -195,23 +202,26 @@ def bar_with_xbox(model,
         # If log transformed, need to get raw values for normal distribution
         if model.log_transform:
             
-            beta = model.Interactions.Raw.values
-            sigma_beta = model.Interactions.Raw.err.upper
-            z_score = - abs( (beta - 1)/sigma_beta )
+            beta = model.Interactions.Raw.values[1:]
+            sigma_beta = model.Interactions.Raw.err.upper[1:]
+            z_score =  abs( (beta  - 1 )/sigma_beta )
             
         # else, just grab standard values
         else:
-            beta = model.Interactions.values
-            sigma_beta = model.Interactions.err.upper
-            z_score = - abs( (beta)/sigma_beta )
+            beta = model.Interactions.values[1:]
+            sigma_beta = model.Interactions.err.upper[1:]
+            z_score =  abs( (beta)/sigma_beta )
+            
+    # if z_score is > 5, set z_score to largest possible range where p-value is within floating point
+    z_score[z_score > 8.2] = 8.2
 
     # straight p-values
     if significance == "p":
-        p_values = 2*scipy_norm.cdf( z_score )
+        p_values = 2*(1 - scipy_norm.cdf( z_score ) )
 
     # bonferroni corrected p-values
     elif significance == "bon":
-        p_values = 2*scipy_norm.cdf( z_score ) * len(beta)
+        p_values = 2*(1 - scipy_norm.cdf( z_score ) ) * len(beta)
         
     # ignore p-values and color everything
     elif significance == None:
@@ -256,19 +266,49 @@ def bar_with_xbox(model,
 
     # Plot error if sigmas are given.
     if sigmas == 0:
-        ax_array[0].bar(range(len(bar_y)), bar_y, width=0.8, color=colors_for_bar, edgecolor="none")
-    else:
         
         if log_space:
-            upper = BaseErrorMap.transform_upper(sigmas*model.Interactions.Raw.err.upper, model.Interactions.Raw.values)
-            lower = BaseErrorMap.transform_lower(sigmas*model.Interactions.Raw.err.lower, model.Interactions.Raw.values)
-            bar_y = model.Interactions.Raw.values[1:]
+            # Make sure the space is log-transformed
+            if model.log_transform is False:
+                raise LogScalingException(""" A log scale cannot be used, because the genotype-phenotype map was never log-transformed.""")
+
+                               
+            else:
+                bar_y = model.Interactions.values[1:]
             
+        else:
+            if model.log_transform:
+                bar_y = model.Interactions.Raw.values[1:]
+            else:
+                bar_y = model.Interactions.values[1:]
+        
+        ax_array[0].bar(range(len(bar_y)), bar_y, width=0.8, color=colors_for_bar, edgecolor="none")
+
+    else:
+        
+        # Plot the graph on a log scale
+        if log_space:
+            
+            try:
+                upper = BaseErrorMap.transform_upper(sigmas*model.Interactions.Raw.err.upper, model.Interactions.Raw.values)
+                lower = BaseErrorMap.transform_lower(sigmas*model.Interactions.Raw.err.lower, model.Interactions.Raw.values)
+                bar_y = model.Interactions.values[1:]
+            
+            except AttributeError:
+                raise LogScalingException(""" A log scale cannot be used, because the genotype-phenotype map was never log-transformed.""")
+        
+        # else if the space is log transformed, plot the non-log interaction values
+        elif model.log_transform:
+            
+            upper = sigmas * model.Interactions.Raw.err.upper
+            lower = sigmas * model.Interactions.Raw.err.lower
+            bar_y = model.Interactions.Raw.values[1:]
+        
+        # Else plot the interaction values
         else:
             upper = sigmas * model.Interactions.err.upper
             lower = sigmas * model.Interactions.err.lower
             bar_y = model.Interactions.values[1:]
-            
         
         yerr = [lower[1:], upper[1:]]
         ax_array[0].bar(range(len(bar_y)), bar_y, width=0.8, yerr=yerr, color=colors_for_bar,

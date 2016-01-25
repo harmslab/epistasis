@@ -114,13 +114,16 @@ class LocalEpistasisModel(BaseModel):
             # Create a raw map of the errors
             self.Interactions.Raw.std = StandardDeviationMap(self.Interactions.Raw.values, upper)
             self.Interactions.Raw.err = StandardErrorMap(self.Interactions.Raw.values, upper, n_replicates=self.n_replicates)
-                
+            
+            values = beta_i
+            
         # Else, the lower errorbar is just upper
         else:
             upper = np.sqrt(np.dot(np.square(self.X_inv), self.Binary.std.upper**2))
+            values = self.Interactions.values
 
-        self.Interactions.std = StandardDeviationMap(self.Interactions.Raw.values, upper, log_transform=self.log_transform)
-        self.Interactions.err = StandardErrorMap(self.Interactions.Raw.values, upper, n_replicates=self.n_replicates, log_transform=self.log_transform)
+        self.Interactions.std = StandardDeviationMap(values, upper, log_transform=self.log_transform)
+        self.Interactions.err = StandardErrorMap(values, upper, n_replicates=self.n_replicates, log_transform=self.log_transform)
            
         
 
@@ -205,11 +208,14 @@ class GlobalEpistasisModel(BaseModel):
             # Create a raw map of the errors
             self.Interactions.Raw.std = StandardDeviationMap(self.Interactions.Raw.values, upper)
             self.Interactions.Raw.err = StandardErrorMap(self.Interactions.Raw.values, upper, n_replicates=self.n_replicates)
-                
+            
+            values = beta_i
+            
         # Else, the lower errorbar is just upper
         else:
             upper = np.sqrt(np.dot(np.square(self.X_inv), self.Binary.std.upper**2))
+            values = self.Interactions.values
 
-        self.Interactions.std = StandardDeviationMap(self.Interactions.Raw.values, upper, log_transform=self.log_transform)
-        self.Interactions.err = StandardErrorMap(self.Interactions.Raw.values, upper, n_replicates=self.n_replicates, log_transform=self.log_transform)
-
+        self.Interactions.std = StandardDeviationMap(values, upper, log_transform=self.log_transform)
+        self.Interactions.err = StandardErrorMap(values, upper, n_replicates=self.n_replicates, log_transform=self.log_transform)
+ 
