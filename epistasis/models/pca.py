@@ -10,7 +10,14 @@ from epistasis.models.base import BaseModel
 
 class EpistasisPCA(BaseModel):
 
-    def __init__(self, wildtype, genotypes, phenotypes, order=1, stdeviations=None, log_transform=False, mutations=None, n_replicates=1, n_components=None):
+    def __init__(self, wildtype, genotypes, phenotypes, 
+                    order=1, 
+                    stdeviations=None, 
+                    log_transform=False, 
+                    mutations=None, 
+                    n_replicates=1, 
+                    n_components=None,
+                    model_type="local"):
         """ Principal component analysis of the genotype-phenotype map.
             This module uses Scikit-learn's PCA class to perform the transformation.
 
@@ -27,9 +34,14 @@ class EpistasisPCA(BaseModel):
 
         # Construct the Interactions mapping -- Interactions Subclass is added to model
         self._construct_interactions()
+        
+        # Select type of model
+        self.model_type = model_type        
+        model_types = {"local":  {"1": 1, "0": 0}, "global": {"1": -1, "0": 1}}
+        encoding = model_types[self.model_type]
 
         # Construct a dummy variable matrix
-        self.X = (self.Binary.phenotypes*generate_dv_matrix(self.Binary.genotypes, self.Interactions.labels).T).T
+        self.X = (self.Binary.phenotypes*generate_dv_matrix(self.Binary.genotypes, self.Interactions.labels, encoding=encoding).T).T
 
     def fit(self):
         """ Estimate the principal components (i.e. maximum coordinates in phenotype variation.). """
