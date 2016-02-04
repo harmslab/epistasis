@@ -212,8 +212,8 @@ def bar_with_xbox(model,
             sigma_beta = model.Interactions.err.upper[1:]
             z_score =  abs( (beta)/sigma_beta )
             
-    # if z_score is > 5, set z_score to largest possible range where p-value is within floating point
-    z_score[z_score > 8.2] = 8.2
+        # if z_score is > 5, set z_score to largest possible range where p-value is within floating point
+        z_score[z_score > 8.2] = 8.2
 
     # straight p-values
     if significance == "p":
