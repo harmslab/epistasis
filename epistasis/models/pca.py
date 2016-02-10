@@ -6,7 +6,7 @@ __doc__ = """ Principal component analysis for genotype-phenotype maps in submod
 
 from sklearn.decomposition import PCA
 from epistasis.decomposition import generate_dv_matrix
-from epistasis.models.base import BaseModel
+from epistasis.models.regression import EpistasisRegression
 
 class PCAStats(object):
     
@@ -53,16 +53,17 @@ class PCAStats(object):
         return n_components 
         
 
-class EpistasisPCA(BaseModel):
+class EpistasisPCA(EpistasisRegression):
 
     def __init__(self, wildtype, genotypes, phenotypes, 
-        order=1, 
+        order=1,
+        n_components=None, 
         stdeviations=None, 
         log_transform=False, 
         mutations=None, 
         n_replicates=1, 
-        n_components=None,
-        model_type="local"):
+        model_type="local",
+        coordinate_type="epistasis"):
         
         """ 
         
@@ -75,9 +76,42 @@ class EpistasisPCA(BaseModel):
         phenotype.
             
             
-        """
-        super(EpistasisPCA, self).__init__(wildtype, genotypes, phenotypes, stdeviations, log_transform, mutations=mutations, n_replicates=n_replicates)
+        Arguments:
+        ---------
+        wildtype: str
+            Wildtype or ancestral genotype
+        genotypes: array-like of str
+            Array of genotypes
+        phenotypes: array-like of floats
+            Array of phenotypes
+        order: int
+            Order of epistasis for decomposition matrix
+        stdeviations: array-like of floats [default=None]
+            Standard deviations of the phenotype
+        log_transform: bool [default = False]
+            If True, log transform the phenotype
+        mutations: dict [default=None]
+            A mapping dictionary of mutations at each site
+        n_replicates: int
+            Number of replicate measurements of each phenotype
+        n_components: int [default=None]
+            Number of PCA components to include for model
+        model_type: str [default='local']
+            If 'local', use LocalEpistasisModel decomposition. If 'global', use GlobalEpistasisModel decomposition.
+        coordinate_type: str [default='epistasis']
+            If 'epistasis', project epistasis parameters onto decomposition matrix. If 'phenotypes', project
+            phenotypes onto decomposition matrix.
 
+        """
+        # Inherent parent class (Epistasis Regression)
+        super(EpistasisPCA, self).__init__(wildtype, genotypes, phenotypes, 
+            order=order,
+            stdeviations=stdeviations, 
+            log_transform=log_transform,
+            mutations=mutations, 
+            n_replicates=n_replicates,
+            model_type=model_type)
+            
         self.order = order
         self.n_components = n_components
         self.model = PCA(n_components=n_components)
@@ -85,16 +119,18 @@ class EpistasisPCA(BaseModel):
         # Construct the Interactions mapping -- Interactions Subclass is added to model
         self._construct_interactions()
         
-        # Select type of model
-        self.model_type = model_type        
-        model_types = {"local":  {"1": 1, "0": 0}, "global": {"1": -1, "0": 1}}
-        encoding = model_types[self.model_type]
-
-        # Construct a dummy variable matrix
-        self.X = (self.Binary.phenotypes*generate_dv_matrix(self.Binary.genotypes, self.Interactions.labels, encoding=encoding).T).T
+        # Construct a dummy variable matrix based on user preferences
+        if coordinate_type == "epistasis":
+            # Must fit space with regression first, then use those coordinates
+            super(EpistasisPCA, self).fit() 
+            self.X = self.X * self.Interactions.values
+            
+        elif coordinate_type == "phenotypes":
+            self.X = self.X * self.Binary.phenotypes
         
         # Add statistics object
         self.Stats = PCAStats(self)
+
 
     def fit(self):
         """ 
