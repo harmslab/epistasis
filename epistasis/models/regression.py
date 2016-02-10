@@ -24,6 +24,34 @@ from epistasis.utils import (epistatic_order_indices,
 # Unique Epistasis Functions
 # ------------------------------------------------------------
 
+class RegressionStats(object):
+    
+    def __init__(self, model):
+        
+        self.model = model
+        
+    @property
+    def score(self):
+        """ Get the epistasis model score after estimating interactions. """
+        return self.model._score
+        
+    def predict(self):
+        """ Infer the phenotypes from model.
+
+            __Returns__:
+
+            `genotypes` [array] : array of genotypes -- in same order as phenotypes
+
+            `phenotypes` [array] : array of quantitative phenotypes.
+        """
+        phenotypes = np.zeros(len(self.modelcomplete_genotypes), dtype=float)
+        binaries = self.model.Binary.complete_genotypes
+        X = generate_dv_matrix(binaries, self.model.Interactions.labels, encoding=self.model.encoding)
+        phenotypes = self.model.regression_model.predict(X)
+        
+        return phenotypes
+    
+
 class EpistasisRegression(BaseModel):
 
     def __init__(self, wildtype, genotypes, phenotypes, 
@@ -93,13 +121,9 @@ class EpistasisRegression(BaseModel):
 
         # Construct decomposition matrix
         self.X = generate_dv_matrix(self.Binary.genotypes, self.Interactions.labels, encoding=self.encoding)
-
-
-    @property
-    def score(self):
-        """ Get the epistasis model score after estimating interactions. """
-        return self._score
-
+        
+        # Initialize stats object
+        self.Stats = RegressionStats(self)
 
     def fit(self):
         """ Estimate the values of all epistatic interactions using the expanded
@@ -109,29 +133,3 @@ class EpistasisRegression(BaseModel):
         self.regression_model.fit(self.X, self.Binary.phenotypes)
         self._score = self.regression_model.score(self.X, self.Binary.phenotypes)
         self.Interactions.values = self.regression_model.coef_
-
-
-    def fit_error(self):
-        """ Estimate the error of each epistatic interaction by standard error
-            propagation of the phenotypes through the model.
-
-            CANNOT propagate error in regressed model.
-        """
-        self.error_model = LinearRegression(fit_intercept=False)
-        pass
-
-    def predict(self):
-        """ Infer the phenotypes from model.
-
-            __Returns__:
-
-            `genotypes` [array] : array of genotypes -- in same order as phenotypes
-
-            `phenotypes` [array] : array of quantitative phenotypes.
-        """
-        phenotypes = np.zeros(len(self.complete_genotypes), dtype=float)
-        binaries = self.Binary.complete_genotypes
-        X = generate_dv_matrix(binaries, self.Interactions.labels, encoding=self.encoding)
-        phenotypes = self.regression_model.predict(X)
-        
-        return phenotypes
