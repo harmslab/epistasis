@@ -78,15 +78,22 @@ class EpistasisRegression(BaseModel):
             raise Exception("""Need to specify the model's `order` argument or manually
                                 list model parameters as `parameters` argument.""")
 
-        model_types = {"local":  {"1": 1, "0": 0}, "global": {"1": -1, "0": 1}}
-        self.encoding = model_types[model_type]
+        # Define the encoding for different models
+        model_types = {
+            "local": {
+                "encoding": {"1": 1, "0": 0},       # Decomposition matrix encoding
+            }, 
+            "global": {
+                "encoding": {"1": -1, "0": 1},
+            }
+        }
+        
+        # Set encoding from model_type given
+        self.encoding = model_types[model_type]["encoding"]
 
-        # Construct x matrix
+        # Construct decomposition matrix
         self.X = generate_dv_matrix(self.Binary.genotypes, self.Interactions.labels, encoding=self.encoding)
 
-        # Regression properties
-        self.regression_model = LinearRegression(fit_intercept=False)
-        self.error_model = LinearRegression(fit_intercept=False)
 
     @property
     def score(self):
@@ -98,6 +105,7 @@ class EpistasisRegression(BaseModel):
         """ Estimate the values of all epistatic interactions using the expanded
             mutant cycle method to any order<=number of mutations.
         """
+        self.regression_model = LinearRegression(fit_intercept=False)
         self.regression_model.fit(self.X, self.Binary.phenotypes)
         self._score = self.regression_model.score(self.X, self.Binary.phenotypes)
         self.Interactions.values = self.regression_model.coef_
@@ -109,8 +117,8 @@ class EpistasisRegression(BaseModel):
 
             CANNOT propagate error in regressed model.
         """
+        self.error_model = LinearRegression(fit_intercept=False)
         pass
-
 
     def predict(self):
         """ Infer the phenotypes from model.
