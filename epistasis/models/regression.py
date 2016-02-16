@@ -44,7 +44,7 @@ class RegressionStats(object):
 
             `phenotypes` [array] : array of quantitative phenotypes.
         """
-        phenotypes = np.zeros(len(self.modelcomplete_genotypes), dtype=float)
+        phenotypes = np.zeros(len(self.model.complete_genotypes), dtype=float)
         binaries = self.model.Binary.complete_genotypes
         X = generate_dv_matrix(binaries, self.model.Interactions.labels, encoding=self.model.encoding)
         phenotypes = self.model.regression_model.predict(X)

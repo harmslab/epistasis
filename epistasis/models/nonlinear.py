@@ -1,324 +1,179 @@
 __doc__ = """ Submodule with nonlinear epistasis models for estimating epistatic interactions in nonlinear genotype-phenotype maps."""
 
 import numpy as np
-import itertools as it
-from scipy.optimize import curve_fit, basinhopping, minimize
-import matplotlib.pyplot as plt
+from scipy.optimize import curve_fit
 
 #from epistasis.stats import r_squared
-from epistasis.utils import label_to_lmfit
 from epistasis.decomposition import generate_dv_matrix
 from epistasis.models.base import BaseModel
-
-# ------------------------------------------
-# LMFIT imports
-# ------------------------------------------
-
-import lmfit
-
-# ------------------------------------------
-# Possible functions for nonlinear epistasis
-# ------------------------------------------
-
-def two_state_func(x, *args):
-    """ Two state boltzmann weighted nonlinear function."""
-    beta = args[-1]
-    params = args[:-1]
-    length = len(params)
-    params1 = np.array(params[0:int(length/2)])
-    params2 = np.array(params[int(length/2):])
-    X1 = np.exp(-np.dot(x[0:int(length/2),:].T, params1)/beta)
-    X2 = np.exp(-np.dot(x[int(length/2):-1,:].T, params2)/beta)
-    return -beta*np.log(X1 + X2)
-
-def threshold_func(params, x, y_obs):
-    """ LMFIT Threshold function.
-
-        P(p) = \theta (1 - exp(-\nu * p))
-
-        where p is a high order linear epistasis model.
-
-        __Arguments__:
-
-        `params` : LMFIT Parameters object
-    """
-    # Check parameters
-    if isinstance(params, lmfit.Parameters) is not True:
-        raise Exception(""" params must be LMFIT's Parameters object. """)
-    # Assign parameters
-    paramdict = params.valuesdict()
-    theta = paramdict["theta"]
-    del paramdict["theta"]
-    nu = paramdict["nu"]
-    del paramdict["nu"]
-    interactions = list(paramdict.values())
-
-    ###########   Model to minimize   #############
-    # ln[ln(\theta) - ln(\theta - P)] = ln(\nu) + ln(p)
-    y_pred = np.log(nu)+np.dot(x,interactions)          # right side
-    P = np.log(np.log(theta) - np.log(theta-y_obs))     # left side
-
-    # Residuals to minimize
-    residuals = P - y_pred
-    return residuals
-
+from epistasis.stats import pearson
 
 # -------------------------------------------------------------------------------
-# Classes for NonLinear modelling
+# Classes for Nonlinear modelling
 # -------------------------------------------------------------------------------
 
-class NonlinearEpistasisModel(BaseModel):
+from epistasis.models.regression import EpistasisRegression
 
-    def __init__(self, wildtype, genotypes, phenotypes, function, parameters, x, errors=None, log_transform=False, mutations=None):
-        """ Fit a nonlinear epistasis model to a genotype-phenotype map. The function and parameters must
-            specified prior.
+import inspect
 
-            Uses Scipy's curve_fit method.
+# -------------------------------------------------------------------------------
+# Classes for Nonlinear modelling
+# -------------------------------------------------------------------------------
 
-            __Arguments__:
+class Parameters:
+    
+    def __init__(self, **kwargs):
+        """ Extra non epistasis parameters in nonlinear epistasis models. """
+        self._n_params = 0
+        self._mapping = {}
+        for kw in kwargs:
+            self._mapping[self._n_params] = kw
+            setattr(self, kw, kwargs[kw])
+            self._n_params += 1
+            
+    def set_param(self, param, value):
+        """ Set attribute"""
+        
+        # If param is an index, get name from mappings
+        if type(param) == int or type(param) == float:
+            param = self._mapping[param]
+        
+        setattr(self, param, value)
+        
+    def get_params(self):
+        """ Get an ordered list of the parameters"""
+        return [getattr(self, self._mapping[i]) for i in range(len(self._mapping))]
+            
 
-            `wildtype` [str] : Wildtype genotype. Wildtype phenotype will be used as reference state.
+class NonlinearStats(object):
+    
+    def __init__(self, model):
+        self.model = model
 
-            `genotypes` [array-like, dtype=str] : Genotypes in map. Can be binary strings, or not.
+    @property
+    def score(self):
+        """ Get the epistasis model score after estimating interactions. """
+        return self.model._score
+        
+    def predict(self):
+        """ Infer the phenotypes from model.
 
-            `phenotypes` [array-like] : Quantitative phenotype values
+            __Returns__:
 
-            `function` [callable] : Function to fit the linear model. Must have the arguments that correspond to the parameters.
+            `genotypes` [array] : array of genotypes -- in same order as phenotypes
 
-            `x` [2d array] : Array of dummy variables for epistasis model fitting (use `generate_dv_matrix` in regression_ext)
-
-            `parameters` [dict] : interaction keys with their values expressed as lists.
-
-            `errors` [array-like] : List of phenotype errors.
-
-            `log_transform` [bool] : If True, log transform the phenotypes.
+            `phenotypes` [array] : array of quantitative phenotypes.
         """
-        # Populate Epistasis Map
-        super(NonlinearEpistasisModel, self).__init__(wildtype, genotypes, phenotypes, errors, log_transform, mutations=mutations)
+        phenotypes = np.zeros(len(self.model.complete_genotypes), dtype=float)
+        binaries = self.model.Binary.complete_genotypes
+        X = generate_dv_matrix(binaries, self.model.Interactions.labels, encoding=self.model.encoding)
+        
+        popt = list(self.model.Interactions.values) + self.model.Parameters.get_params()
+        phenotypes = self.model._wrapped_function(X, *popt)
+        
+        return phenotypes
+        
 
-        # Generate basis matrix for mutant cycle approach to epistasis.
-        if parameters is not None:
-            self._construct_interactions()
-            self.Interactions.labels = parameters
-        else:
-            raise Exception("""Need to specify the model's `order` argument or manually
-                                list model parameters as `parameters` argument.""")
-
-        self.X = x
-        self.function = function
-
-    def fit(self, p0=None, *args):
-        """ Fit the nonlinear function """
-
-        # Try initial guess
-        if p0 == None:
-            p0 = 0.1*np.ones(len(self.Interactions.labels), dtype=float)
-
-        self.results = minimize(self.function,
-                                p0,
-                                args=(self.X, self.Binary.phenotypes),
-                                method="L-BFGS-B",
-                                options={ "maxiter":100000, "ftol":1.e-25})
-
-        self.Interactions.values = self.results.x[:]
-
-
-class LMFITEpistasisModel(BaseModel):
-
-    def __init__(self, wildtype, genotypes, phenotypes, function, x, parameters, errors=None, log_transform=False, mutations=None):
-        """ Fit a nonlinear epistasis model to a genotype-phenotype map. The function and parameters must
-            specified prior.
-
-            Uses LMFIT's pa
-
-            __Arguments__:
-
-            `wildtype` [str] : Wildtype genotype. Wildtype phenotype will be used as reference state.
-
-            `genotypes` [array-like, dtype=str] : Genotypes in map. Can be binary strings, or not.
-
-            `phenotypes` [array-like] : Quantitative phenotype values
-
-            `function` [callable] : Function to fit the linear model. Must have the arguments that correspond to the parameters.
-
-            `x` [2d array] : Array of dummy variables for epistasis model fitting (use `generate_dv_matrix` in regression_ext)
-
-            `parameters` [lmfit.Parameters class] : Parameters as specified by lmfit
-
-            `errors` [array-like] : List of phenotype errors.
-
-            `log_transform` [bool] : If True, log transform the phenotypes.
+class NonlinearEpistasisModel(EpistasisRegression):
+    
+    
+    def __init__(self, wildtype, genotypes, phenotypes, function, 
+        order=None, 
+        parameters=None, 
+        stdeviations=None, 
+        log_transform=False, 
+        mutations=None, 
+        n_replicates=1, 
+        model_type="local"):
+        
         """
-        # Populate Epistasis Map
-        super(LMFITEpistasisModel, self).__init__(wildtype, genotypes, phenotypes, errors, log_transform, mutations=mutations)
-
-        # Generate basis matrix for mutant cycle approach to epistasis.
-        if parameters is not None:
-            self._construct_interactions()
-            self.parameters = parameters
-            params = parameters.valuesdict()
-            self.Interactions.keys = list(params.keys())
-            self.Interactions.labels = list(params.keys())
-            self.Interactions.values = list(params.values())
-        else:
-            raise Exception("""Need to specify the model's `order` argument or manually
-                                list model parameters as `parameters` argument.""")
-
-        self.X = x
-        self.function = function
-
-
-    def fit(self, method="leastsq", **kwargs):
-        """ Fit the nonlinear function """
-        self.minimizer = lmfit.minimize(self.function, self.parameters, args=(self.X, self.Binary.phenotypes,), method=method, **kwargs)
-        self.Interactions.values = np.array(list(self.minimizer.params.valuesdict().values()))
-
-    def update_param_value(self, **kwargs):
-        """ Update a LMFIT parameters guess value and propagate through mapping. """
-        mapping = self.Interactions.key2index
-        for k in kwargs:
-            self.parameters[k].value = kwargs[k]
-            self.parameters[k].vary = False
-            self.Interactions.values[mapping[k]] = kwargs[k]
-
-
-class GlobalNonlinearEpistasisModel(BaseModel):
-
-    def __init__(self, wildtype, genotypes, phenotypes, function, x, parameters, errors=None, log_transform=False, mutations=None):
-        """ Fit a nonlinear epistasis model to a genotype-phenotype map. The function and parameters must
-            specified prior.
-
-            Uses Scipy's basinhopping method.
-
-            __Arguments__:
-
-            `wildtype` [str] : Wildtype genotype. Wildtype phenotype will be used as reference state.
-
-            `genotypes` [array-like, dtype=str] : Genotypes in map. Can be binary strings, or not.
-
-            `phenotypes` [array-like] : Quantitative phenotype values
-
-            `function` [callable] : Function to fit the linear model. Must have the arguments that correspond to the parameters.
-
-            `x` [2d array] : Array of dummy variables for epistasis model fitting (use `generate_dv_matrix` in regression_ext)
-
-            `parameters` [dict] : interaction keys with their values expressed as lists.
-
-            `errors` [array-like] : List of phenotype errors.
-
-            `log_transform` [bool] : If True, log transform the phenotypes.
+        Performs minimization on a non-linear epistasis model function.
+        
+        `function` must be a callable function whose first argument is a decomposition matrix.
+        Other arguments are extra coefficients/parameters in the nonlinear function
+        
+        Example:
+        -------
+        
+        # nonlinear function to minimize
+        def func 
+        
         """
-        # Populate Epistasis Map
-        super(GlobalNonlinearEpistasisModel, self).__init__(wildtype, genotypes, phenotypes, errors, log_transform, mutations=mutations)
-
-        # Generate basis matrix for mutant cycle approach to epistasis.
-        if parameters is not None:
-            self._construct_interactions()
-            self.Interactions.keys = list(parameters.values())
-            self.Interactions.labels = list(parameters.values())
-        else:
-            raise Exception("""Need to specify the model's `order` argument or manually
-                                list model parameters as `parameters` argument.""")
-
-        self.X = x
+        
+        super(NonlinearEpistasisModel, self).__init__(wildtype, genotypes, phenotypes,
+            order=order, 
+            parameters=parameters, 
+            stdeviations=stdeviations, 
+            log_transform=log_transform, 
+            mutations=mutations, 
+            n_replicates=n_replicates, 
+            model_type=model_type)
+        
+        # Set the nonlinear function    
         self.function = function
+        
+        # Get the parameters from the nonlinear function argument list
+        function_sign = inspect.signature(self.function)
+        parameters = list(function_sign.parameters.keys())
+        
+        # Check that the first argument is epistasis
+        if parameters[0] != "x":
+            raise Exception(""" First argument of the nonlinear function must be `x`. """)
+        else:
+            # Build kwargs dict with all parameters set to zero as default.
+            parameters_kw = dict([(p, 0) for p in parameters[1:]])
+            
+        # Construct parameters object
+        self.Parameters = Parameters(**parameters_kw)
+        self.Stats = NonlinearStats(self)
+        
+        
+    def _nonlinear_function_wrapper(self, function):
+        """ 
+            Nonlinear function wrapper adding epistasis as an argument to user defined function
+        """
+        
+        def inner(*args):
+            """ 
+                Convert the user defined function to a new function which fits epistasis
+                coefficients as well
+            """
+            
+            ###### Deconstruct the arguments in user's function
+            # X is the first argument
+            x = args[0]
+            
+            # The epistasis coefficients are the next set of arguments
+            n_coeffs = len(self.Interactions.labels)
+            betas = args[1:1+n_coeffs]
 
-    def fit(self, p0=None):
-        """ Fit the nonlinear function """
+            # The user defined arguments from nonlinear function are the final set.
+            other_args = args[n_coeffs+1:]
 
-        # Try initial guess
-        if p0 == None:
-            p0 = 0.1*np.ones(len(self.Interactions.labels), dtype=float)
+            return function(np.dot(x,betas), *other_args)
 
-
-        results = basinhopping(self.function, p0, niter=1000,
-                                minimizer_kwargs={"args": (self.Binary.phenotypes,self.X.T)})
-
-        self.Interactions.values = results.x
-        # Setting error if covariance was estimated, else pass.
-        try:
-            self.errors = cov[:]
-        except:
-            pass
+        return inner
 
 
-# -------------------------------------------------------------------------------
-# Examples of nonlinear models
-# -------------------------------------------------------------------------------
-
-class ThresholdingEpistasisModel(LMFITEpistasisModel, BaseModel):
-
-    def __init__(self, wildtype, genotypes, phenotypes, order, errors=None, log_transform=False, mutations=None):
+    def fit(self, guess=None, **kwargs):
         """ """
-        # Construct initial base map
-        BaseModel.__init__(self, wildtype, genotypes, phenotypes, errors=errors, log_transform=log_transform, mutations=mutations)
-
-        # Construct the linear epistasis model
-        self.order = order
-        self._construct_interactions()
-
-        # Construct LMFIT parameters properly
-        labels = self.Interactions.labels
-        x = generate_dv_matrix(self.Binary.genotypes, labels)
-        keys = [label_to_lmfit(l) for l in labels]
-
-        params = lmfit.Parameters()
-        params.add("K0", value=0, vary=False)
-        for i in range(1,len(keys)):
-            params.add(keys[i], value=1, vary=True)
-
-        params.add("theta", value=100, vary=True)
-        params.add("nu", value=1, vary=True)
-
-        # Construct nonlinear modelling map
-        LMFITEpistasisModel.__init__(self, wildtype, genotypes, phenotypes,
-                                            threshold_func,
-                                            x,
-                                            params,
-                                            errors=errors,
-                                            log_transform=log_transform,
-                                            mutations=mutations)
-
-
-    def fit(self, **kwargs):
-        """ Fit nonlinear thresholding epistasis model."""
-        # Use LMFIT fit method above.
-        self.update_param_value(**kwargs)
-        LMFITEpistasisModel.fit(self)
-
-    def linear_phenotypes(self):
-        """ Get phenotypes after removing thresholding effect. """
-        return np.exp(np.dot(self.X, self.Interactions.values[:-2]))
-
-    def plot_interactions(self, sigmas=0, title="Epistatic interactions", string_labels=False, ax=None, color='b', figsize=[6,4]):
-        """ """
-        if ax is None:
-            fig, ax = plt.subplots(1,1, figsize=figsize)
-        else:
-            fig = ax.get_figure()
-
-        y = self.Interactions.values[:-2]
-        if string_labels is True:
-            xtick = self.Interactions.genotypes[:-2]
-        else:
-            xtick = self.Interactions.keys[:-2]
-            xlabel = "Interaction Indices"
-
-        # plot error if sigmas are given.
-        if sigmas == 0:
-            ax.bar(range(len(y)), y, 0.9, alpha=0.4, align="center", color=color) #, **kwargs)
-        else:
-            yerr = self.Interactions.errors[:-2]
-            ax.bar(range(len(y)), y, 0.9, yerr=sigmas*yerr, alpha=0.4, align="center", color=color) #,**kwargs)
-
-        # vertically label each interaction by their index
-        plt.xticks(range(len(y)), np.array(xtick), rotation="vertical", family='monospace',fontsize=7)
-        ax.set_ylabel("Interaction Value", fontsize=14)
-        try:
-            ax.set_xlabel(xlabel, fontsize=14)
-        except:
-            pass
-        ax.set_title(title, fontsize=12)
-        ax.axis([-.5, len(y)-.5, -max(abs(y)), max(abs(y))])
-        ax.hlines(0,0,len(y), linestyles="dashed")
-        return fig, ax
+        # Create an initial guess array
+        if guess is None:
+            guess = np.ones(len(self.Interactions.labels) + self.Parameters._n_params)
+                    
+        # Wrap user function to add epistasis parameters
+        self._wrapped_function = self._nonlinear_function_wrapper(self.function)
+        
+        # Curve fit the data using a nonlinear least squares fit
+        popt, pcov = curve_fit(self._wrapped_function, self.X, self.phenotypes, p0=guess, **kwargs)
+        
+        # Set the Interaction values
+        self.Interactions.values = popt[0:len(self.Interactions.labels)]
+        
+        # Set the other parameters from nonlinear function to fit results
+        for i in range(0, self.Parameters._n_params):
+            self.Parameters.set_param(i, popt[len(self.Interactions.labels)+i])
+            
+        y_pred = self._wrapped_function(self.X, *popt)
+        
+        self._score = pearson(self.phenotypes, y_pred)
