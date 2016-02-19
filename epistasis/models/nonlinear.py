@@ -24,17 +24,19 @@ except ImportError:
 
 class Parameters:
     
-    def __init__(self, **kwargs):
-        """ Extra non epistasis parameters in nonlinear epistasis models. """
-        self.n = 0
+    def __init__(self, params):
+        """ Extra non epistasis parameters in nonlinear epistasis models. 
+        
+            Sets the params to 0 initially
+        """
+        self._param_list = params
+        self.n = len(self._param_list)
         self._mapping, self._mapping_  = {}, {}
         
-        # Construct parameter mapping
-        for kw in kwargs:
-            self._mapping_[self.n] = kw
-            self._mapping[kw] = self.n
-            setattr(self, kw, kwargs[kw])
-            self.n += 1
+        for i in range(self.n):
+            setattr(self, self._param_list[i], 0)
+            self._mapping_[i] = self._param_list[i]
+            self._mapping[self._param_list[i]] = i
             
     def _set_param(self, param, value):
         """ Set Parameter value. 
@@ -129,12 +131,9 @@ class NonlinearEpistasisModel(EpistasisRegression):
         # Check that the first argument is epistasis
         if parameters[0] != "x":
             raise Exception(""" First argument of the nonlinear function must be `x`. """)
-        else:
-            # Build kwargs dict with all parameters set to zero as default.
-            parameters_kw = dict([(p, 0) for p in parameters[1:]])
             
         # Construct parameters object
-        self.Parameters = Parameters(**parameters_kw)
+        self.Parameters = Parameters(parameters[1:])
         self.Stats = NonlinearStats(self)
         
         # Add a plotting object if matplotlib exists
@@ -203,25 +202,27 @@ class NonlinearEpistasisModel(EpistasisRegression):
         self._score = pearson(self.phenotypes, y_pred)
     
     @ipywidgets_missing
-    def fit_widget(self, **kwargs):
+    def fit_widget(self, show_stats=True, **kwargs):
         """
             Simple IPython widget for trying initial guesses of the nonlinear parameters.
+        
+            This works by, first, fitting the coefficients using a linear epistasis model as initial
+            guesses (along with user defined kwargs) for the nonlinear model. 
             
             kwargs should be ranges of guess values for each parameter. They are are turned into 
             slider widgets for varying these guesses easily. The kwarg needs to match the name of
             the parameter in the nonlinear fit.
             
         """
-        
-        # Fit with a linear epistasis model first, and use those values as initial guesses.
-        super(NonlinearEpistasisModel, self).fit()
-        
-        # Construct an array of guesses, using the scale specified by user.
-        guess = np.ones(self.Interactions.n + self.Parameters.n)
-        
         # Build fitting method to pass into widget box
         def fitting(**kwargs):
             """ Callable to be controlled by widgets. """
+            # Fit with a linear epistasis model first, and use those values as initial guesses.
+            super(NonlinearEpistasisModel, self).fit()
+        
+            # Construct an array of guesses, using the scale specified by user.
+            guess = np.ones(self.Interactions.n + self.Parameters.n)
+            
             # Add linear guesses to guess array
             guess[:self.Interactions.n] = self.Interactions.values
         
@@ -232,6 +233,15 @@ class NonlinearEpistasisModel(EpistasisRegression):
             
             # Fit the nonlinear least squares fit
             self.fit(guess=guess)
+            
+            if show_stats:
+                # Print score
+                print("R-squared of fit: " + str(self.Stats.score))
+                
+                # Print parameters
+                for kw in self.Parameters._mapping:
+                    print(kw + ": " + str(getattr(self.Parameters, kw)))
+            
             
             # Plot if available
             if hasattr(self, "Plot"):

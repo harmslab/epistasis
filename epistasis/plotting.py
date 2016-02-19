@@ -89,14 +89,40 @@ class NonlinearPlotting(RegressionPlotting):
         fig, ax = plt.subplots()
         
         known = self.model.phenotypes
-        predicted = self.model.X * self.model.Interactions.values
+        predicted = np.dot(self.model.X,  self.model.Interactions.values)
         
         # Add scatter plot points on correlation grid
-        ax.plot(known, 'b-')
-        ax.plot(predicted, 'r-')
+        ax.plot(predicted, known, 'b.')
         
-        ax.set_xlabel("nonlinear phenotypes")
-        ax.set_ylabel("phenotypes")
+        ax.set_xlabel("linear phenotypes")
+        ax.set_ylabel("nonlinear phenotypes")
+        
+        return fig, ax
+        
+    def nonlinear_function(self, xbounds=None):
+        """ Plot the input function for set of phenotypes. """
+        fig, ax = plt.subplots()
+        
+        params = self.model.Parameters._param_list
+        
+        # Get the values
+        values = [getattr(self.model.Parameters, p) for p in params]
+        
+        if xbounds is None:
+            predicted = np.dot(self.model.X,  self.model.Interactions.values)
+        
+            max_p = max(predicted)
+            min_p = min(predicted)
+            
+        else:
+            max_p = xbounds[1]
+            min_p = xbounds[0]
+        
+        x = np.linspace(min_p, max_p, 1000)
+        y = self.model.function(x, *values)
+        plt.plot(x,y, 'b-')
+        
+        return fig, ax
         
 # ---------------------------------------------------
 # Epistasis Graphing
