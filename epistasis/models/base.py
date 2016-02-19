@@ -12,6 +12,8 @@ from seqspace.utils import farthest_genotype, binary_mutations_map
 from epistasis.utils import epistatic_order_indices
 from epistasis.mapping.epistasis import EpistasisMap
 
+from epistasis.plotting import EpistasisPlotting
+
 class BaseModel(EpistasisMap):
     
     def __init__(self, wildtype, genotypes, phenotypes, 
@@ -47,7 +49,12 @@ class BaseModel(EpistasisMap):
                         log_transform=log_transform, 
                         mutations=mutations, 
                         n_replicates=n_replicates)
-        
+                        
+        # Add plotting object if matplotlib is installed
+        try:
+            self.Plot = EpistasisPlotting(self)
+        except Warning:
+            pass
 
     # ---------------------------------------------------------------------------------
     # Loading method

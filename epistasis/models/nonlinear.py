@@ -1,20 +1,22 @@
 __doc__ = """ Submodule with nonlinear epistasis models for estimating epistatic interactions in nonlinear genotype-phenotype maps."""
 
+import inspect
 import numpy as np
 from scipy.optimize import curve_fit
 
-#from epistasis.stats import r_squared
 from epistasis.decomposition import generate_dv_matrix
-from epistasis.models.base import BaseModel
 from epistasis.stats import pearson
-
-# -------------------------------------------------------------------------------
-# Classes for Nonlinear modelling
-# -------------------------------------------------------------------------------
-
 from epistasis.models.regression import EpistasisRegression
+from epistasis.plotting import NonlinearPlotting
 
-import inspect
+from seqspace.utils import ipywidgets_missing
+from seqspace.plotting import mpl_missing
+
+# Try to import ipython specific tools
+try:
+    import ipywidgets
+except ImportError:
+    pass
 
 # -------------------------------------------------------------------------------
 # Classes for Nonlinear modelling
@@ -24,25 +26,33 @@ class Parameters:
     
     def __init__(self, **kwargs):
         """ Extra non epistasis parameters in nonlinear epistasis models. """
-        self._n_params = 0
-        self._mapping = {}
+        self.n = 0
+        self._mapping, self._mapping_  = {}, {}
+        
+        # Construct parameter mapping
         for kw in kwargs:
-            self._mapping[self._n_params] = kw
+            self._mapping_[self.n] = kw
+            self._mapping[kw] = self.n
             setattr(self, kw, kwargs[kw])
-            self._n_params += 1
+            self.n += 1
             
-    def set_param(self, param, value):
-        """ Set attribute"""
+    def _set_param(self, param, value):
+        """ Set Parameter value. 
+        
+            Method is not exposed to user.
+            
+            `param` can be either the name of the parameter or its index in this object.
+        """
         
         # If param is an index, get name from mappings
         if type(param) == int or type(param) == float:
-            param = self._mapping[param]
+            param = self._mapping_[param]
         
         setattr(self, param, value)
         
     def get_params(self):
-        """ Get an ordered list of the parameters"""
-        return [getattr(self, self._mapping[i]) for i in range(len(self._mapping))]
+        """ Get an ordered list of the parameters."""
+        return [getattr(self, self._mapping_[i]) for i in range(len(self._mapping_))]
             
 
 class NonlinearStats(object):
@@ -127,6 +137,12 @@ class NonlinearEpistasisModel(EpistasisRegression):
         self.Parameters = Parameters(**parameters_kw)
         self.Stats = NonlinearStats(self)
         
+        # Add a plotting object if matplotlib exists
+        try:
+            self.Plot = NonlinearPlotting(self)
+        except Warning:
+            pass
+        
         
     def _nonlinear_function_wrapper(self, function):
         """ 
@@ -156,10 +172,18 @@ class NonlinearEpistasisModel(EpistasisRegression):
 
 
     def fit(self, guess=None, **kwargs):
-        """ """
+        """ 
+            Fit using nonlinear least squares regression.
+            
+            Arguments:
+            ---------
+            guess: array of guesses
+            
+            kwargs are passed directly to scipy's curve_fit function
+        """
         # Create an initial guess array
         if guess is None:
-            guess = np.ones(len(self.Interactions.labels) + self.Parameters._n_params)
+            guess = np.ones(len(self.Interactions.labels) + self.Parameters.n)
                     
         # Wrap user function to add epistasis parameters
         self._wrapped_function = self._nonlinear_function_wrapper(self.function)
@@ -171,9 +195,52 @@ class NonlinearEpistasisModel(EpistasisRegression):
         self.Interactions.values = popt[0:len(self.Interactions.labels)]
         
         # Set the other parameters from nonlinear function to fit results
-        for i in range(0, self.Parameters._n_params):
-            self.Parameters.set_param(i, popt[len(self.Interactions.labels)+i])
+        for i in range(0, self.Parameters.n):
+            self.Parameters._set_param(i, popt[len(self.Interactions.labels)+i])
             
         y_pred = self._wrapped_function(self.X, *popt)
         
         self._score = pearson(self.phenotypes, y_pred)
+    
+    @ipywidgets_missing
+    def fit_widget(self, **kwargs):
+        """
+            Simple IPython widget for trying initial guesses of the nonlinear parameters.
+            
+            kwargs should be ranges of guess values for each parameter. They are are turned into 
+            slider widgets for varying these guesses easily. The kwarg needs to match the name of
+            the parameter in the nonlinear fit.
+            
+        """
+        
+        # Fit with a linear epistasis model first, and use those values as initial guesses.
+        super(NonlinearEpistasisModel, self).fit()
+        
+        # Construct an array of guesses, using the scale specified by user.
+        guess = np.ones(self.Interactions.n + self.Parameters.n)
+        
+        # Build fitting method to pass into widget box
+        def fitting(**kwargs):
+            """ Callable to be controlled by widgets. """
+            # Add linear guesses to guess array
+            guess[:self.Interactions.n] = self.Interactions.values
+        
+            # Add guesses to input array
+            for kw in kwargs:
+                index = self.Parameters._mapping[kw] 
+                guess[self.Interactions.n + index] = kwargs[kw]
+            
+            # Fit the nonlinear least squares fit
+            self.fit(guess=guess)
+            
+            # Plot if available
+            if hasattr(self, "Plot"):
+                self.Plot.predicted_phenotypes()
+        
+        # Construct and return the widget box
+        widgetbox = ipywidgets.interactive(fitting, **kwargs)
+        return widgetbox
+        
+        
+        
+        

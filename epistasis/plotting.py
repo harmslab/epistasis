@@ -1,4 +1,4 @@
-__doc__ = """ Plotting submodule for epistasis models."""
+__doc__ = """ Plotting module setup for matplotlib to plot the results of epistasis models."""
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -6,6 +6,7 @@ import matplotlib
 from scipy.stats import norm as scipy_norm
 
 from seqspace.errors import BaseErrorMap
+from seqspace.plotting import PlottingContainer
 
 # ---------------------------------------------------
 # Exceptions
@@ -14,6 +15,89 @@ from seqspace.errors import BaseErrorMap
 class LogScalingException(Exception):
     """ Exception for handling log scaling problems when plotting. """
 
+# ---------------------------------------------------
+# Various plotting classes
+# ---------------------------------------------------
+
+class EpistasisPlotting(PlottingContainer):
+    
+    def __init__(self, model):
+        """ Plots for epistasis models. """
+        self.model = model
+        super(EpistasisPlotting, self).__init__(self.model)
+        
+    def interactions(self, figsize=(6,4), **kwargs):
+        fig, ax = bar_with_xbox(self.model, **kwargs)
+        return fig, ax
+
+class RegressionPlotting(EpistasisPlotting):
+    
+    def __init__(self, model):
+        """ Reference by model or gpm."""
+        self.model = model
+        super(RegressionPlotting, self).__init__(self.model)
+    
+    def correlation(self, figsize=(6,4), **kwargs):
+        """ Draw a correlation plot of data. """
+        
+        fig, ax = plt.subplots()
+        
+        max_p = max(self.model.phenotypes)
+        min_p = min(self.model.phenotypes)
+        
+        known = self.model.phenotypes
+        predicted = self.model.Stats.predict()
+        
+        # Add scatter plot points on correlation grid
+        ax.plot(known, predicted, 'b.')
+        
+        # Add 1:1 correlation line
+        ax.plot(np.linspace(min,max, 10), np.linspace(min,max, 10), 'r-')
+        
+        ax.set_xlabel("known")
+        ax.set_ylabel("learned")
+        
+        return fig, ax
+        
+    def predicted_phenotypes(self, figsize=(6,4), **kwargs):
+        """
+            Plots the predicted phenotypes
+        """
+        fig, ax = plt.subplots()
+        
+        known = self.model.phenotypes
+        predicted = self.model.Stats.predict()
+        
+        # Add scatter plot points on correlation grid
+        ax.plot(known, 'b-')
+        ax.plot(predicted, 'r-')
+        
+        ax.set_ylabel("phenotypes")
+        ax.set_xlabel("genotypes")
+        
+        return fig, ax
+
+class NonlinearPlotting(RegressionPlotting):
+    
+    def __init__(self, model):
+        """ Reference by model or gpm."""
+        self.model = model
+        super(NonlinearPlotting, self).__init__(self.model)
+        
+    def linear_phenotypes(self):
+        """ P vs. p plot. """
+        fig, ax = plt.subplots()
+        
+        known = self.model.phenotypes
+        predicted = self.model.X * self.model.Interactions.values
+        
+        # Add scatter plot points on correlation grid
+        ax.plot(known, 'b-')
+        ax.plot(predicted, 'r-')
+        
+        ax.set_xlabel("nonlinear phenotypes")
+        ax.set_ylabel("phenotypes")
+        
 # ---------------------------------------------------
 # Epistasis Graphing
 # ---------------------------------------------------

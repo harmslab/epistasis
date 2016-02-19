@@ -9,7 +9,11 @@ from sklearn.linear_model import LinearRegression
 # seqspace imports
 # ------------------------------------------------------------
 
-from seqspace.utils import list_binary, enumerate_space, encode_mutations, construct_genotypes
+from seqspace.utils import (list_binary, 
+                            enumerate_space, 
+                            encode_mutations, 
+                            construct_genotypes)
+                            
 
 # ------------------------------------------------------------
 # Local imports
@@ -17,8 +21,10 @@ from seqspace.utils import list_binary, enumerate_space, encode_mutations, const
 
 from epistasis.decomposition import generate_dv_matrix
 from epistasis.models.base import BaseModel
+from epistasis.plotting import RegressionPlotting
 from epistasis.utils import (epistatic_order_indices,
                                 build_model_params)
+                                
 
 # ------------------------------------------------------------
 # Unique Epistasis Functions
@@ -122,8 +128,14 @@ class EpistasisRegression(BaseModel):
         # Construct decomposition matrix
         self.X = generate_dv_matrix(self.Binary.genotypes, self.Interactions.labels, encoding=self.encoding)
         
-        # Initialize stats object
+        # Initialize useful objects to model object
         self.Stats = RegressionStats(self)
+        
+        # Try to add plotting module if matplotlib is installed
+        try:
+            self.Plot = RegressionPlotting(self)
+        except Warning:
+            pass
 
     def fit(self):
         """ Estimate the values of all epistatic interactions using the expanded

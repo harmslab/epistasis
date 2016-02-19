@@ -46,6 +46,11 @@ class InteractionMap(BaseMap):
             self.Raw = RawInteractionMap()
     
     @property
+    def n(self):
+        """ Return the number of Interactions. """
+        return len(self.labels)
+    
+    @property
     def log_transform(self):
         """ Boolean argument telling whether space is log transformed. """
         return self._log_transform
