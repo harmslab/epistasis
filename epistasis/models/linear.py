@@ -77,9 +77,6 @@ class LinearEpistasisModel(BaseModel):
         # Order of model is equal to number of mutations
         self.order = self.length
 
-        # Construct the Interactions mapping -- Interactions Subclass is added to model
-        self._construct_interactions()
-
         # Generate basis matrix for mutant cycle approach to epistasis.
         self.X = generate_dv_matrix(self.Binary.genotypes, self.Interactions.labels, encoding=self.encoding)
         

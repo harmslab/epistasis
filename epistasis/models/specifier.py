@@ -11,32 +11,86 @@ from epistasis.models.regression import EpistasisRegression
 # Model Specifier Object
 # -----------------------------------------------------------------------
 
+class BestModel(object):
+    
+    def __init__(self, model):
+        """ Container for statistics for specifier class. """
+        self.model = model
+        self.p_value = 0
+        self.stat = 0
+    
+    @property
+    def score(self):
+        return self._model.score
+        
+    @property
+    def order(self):
+        return self._model.order
+
+class StatisticTest(object):
+    
+    def __init__(self, test_type, cutoff):
+        """ Container for specs on the statistical test used in specifier class below. s"""
+        
+        # Select the statistical test for specifying model
+        test_types = {
+            "likelihood": log_likelihood_ratio, 
+            "ftest": F_test
+        }
+        
+        self.cutoff = cutoff
+        self.type = test_type
+        self.method = test_types[self.type]
+
 class ModelSpecifier:
 
-    def __init__(self, wildtype, genotypes, phenotypes, test_cutoff=0.05, log_transform=False, mutations=None, n_replicates=1, model_type="local", test_type="ftest"):
+    def __init__(self, wildtype, genotypes, phenotypes, 
+        test_cutoff=0.05, 
+        log_transform=False, 
+        mutations=None, 
+        n_replicates=1, 
+        model_type="local", 
+        test_type="ftest"):
+        
         """
-        Model specifier. Chooses the order of model based on statistical test.
-
+            Model specifier. Chooses the order of model based on any statistical test.
+            
+            On initialization, this class automatically finds the appropriate model
+            based on cutoffs and test type. 
+    
+            Default statistical test is F-test. 
+            
         """
         # Defaults to binary mapping if not specific mutations are named
         if mutations is None:
             mutant = farthest_genotype(wildtype, genotypes)
             mutations = binary_mutations_map(wildtype, mutant)
 
-        # Select the statistical test for specifying model
-        test_types = {"likelihood": log_likelihood_ratio, "ftest": F_test}
-
         # Testing specs
-        self.test_type = test_type
-        self.test_method = test_types[test_type]
-        self.test_cutoff = test_cutoff
+        self.Stats = StatisticTest(test_type, test_cutoff)
 
         # Best fit model specs
         self.model_type = model_type
         self.model_order = 1
         self.model_p_value = None
         self.model_stat = None
-        
+
+
+    def compare_models(self, null_order, test_order):
+        """
+            Test a higher model against a null model.
+        """
+        null_model = EpistasisRegression(wildtype, genotypes, phenotypes, 
+            order=null_order, 
+            log_transform=log_transform, 
+            mutations=mutations, 
+            n_replicates=n_replicates, 
+            model_type=self.model_type
+        )
+            
+
+    def fit(self):
+        """ Run the specifier method. """
         # Construct a regression of the data
         self.model = EpistasisRegression(wildtype, genotypes, phenotypes, 
             order=self.model_order, 
@@ -47,10 +101,7 @@ class ModelSpecifier:
             
         # Fit the regression and specify the proper order using test statistic.
         self.model.fit()
-        self._specifier()
-
-    def _specifier(self):
-        """ Run the specifier method. """
+        
         # Get model specs
         wildtype = self.model.wildtype
         genotypes = self.model.genotypes
@@ -82,6 +133,7 @@ class ModelSpecifier:
             # If test statistic is less than f-statistic cutoff, than keep alternative model
             if p_value < self.test_cutoff:
                 self.model = alt_model
+            
             # Else, the null model is sufficient and we keep it
             else:
                 self.model_order = order-1

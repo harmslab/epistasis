@@ -103,8 +103,7 @@ class EpistasisRegression(BaseModel):
         # Generate basis matrix for mutant cycle approach to epistasis.
         if order is not None:
             self.order = order
-            # Construct the Interactions mapping -- Interactions Subclass is added to model
-            self._construct_interactions()
+            
         elif parameters is not None:
             self._construct_interactions()
             self.Interactions.labels = list(parameters.values())

@@ -83,7 +83,12 @@ class EpistasisMap(GenotypePhenotypeMap):
     def order(self, order):
         """ Set the order of epistasis in the system. As a consequence,
             this mapping object creates the """
-        self._order = order
+        self._order = order        
+        
+        #### NOTE: Setting the order also sets the interactions. 
+        
+        # Construct the Interactions mapping -- Interactions Subclass is added to model
+        self._construct_interactions()
 
     def _construct_interactions(self):
         """ Construct the interactions mapping for an epistasis model.
