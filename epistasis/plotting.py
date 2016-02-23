@@ -27,7 +27,7 @@ class EpistasisPlotting(PlottingContainer):
         super(EpistasisPlotting, self).__init__(self.model)
         
     def interactions(self, figsize=(6,4), **kwargs):
-        fig, ax = bar_with_xbox(self.model, **kwargs)
+        fig, ax = bar_with_xbox(self.model, figsize=figsize, **kwargs)
         return fig, ax
 
 class RegressionPlotting(EpistasisPlotting):
