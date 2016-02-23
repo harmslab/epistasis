@@ -60,12 +60,12 @@ class Parameters:
 class NonlinearStats(object):
     
     def __init__(self, model):
-        self.model = model
+        self._model = model
 
     @property
     def score(self):
         """ Get the epistasis model score after estimating interactions. """
-        return self.model._score
+        return self._model._score
         
     def predict(self):
         """ Infer the phenotypes from model.
@@ -76,12 +76,12 @@ class NonlinearStats(object):
 
             `phenotypes` [array] : array of quantitative phenotypes.
         """
-        phenotypes = np.zeros(len(self.model.complete_genotypes), dtype=float)
-        binaries = self.model.Binary.complete_genotypes
-        X = generate_dv_matrix(binaries, self.model.Interactions.labels, encoding=self.model.encoding)
+        phenotypes = np.zeros(len(self._model.complete_genotypes), dtype=float)
+        binaries = self._model.Binary.complete_genotypes
+        X = generate_dv_matrix(binaries, self._model.Interactions.labels, encoding=self._model.encoding)
         
-        popt = list(self.model.Interactions.values) + self.model.Parameters.get_params()
-        phenotypes = self.model._wrapped_function(X, *popt)
+        popt = list(self._model.Interactions.values) + self._model.Parameters.get_params()
+        phenotypes = self._model._wrapped_function(X, *popt)
         
         return phenotypes
         

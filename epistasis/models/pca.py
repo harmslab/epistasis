@@ -14,13 +14,13 @@ class PCAStats(object):
         """
         Object that holds different statistical readouts of PCA analysis 
         """
-        self.model = model
+        self._model = model
     
     def cumulative_variance(self, n_components):
         """ 
         Return the cumulative explained variance for a given number of components.
         """
-        return sum(self.model.explained_variance_ratio[:n_components])
+        return sum(self._model.explained_variance_ratio[:n_components])
         
     def variance_cutoff(self, variance_ratio):
         """

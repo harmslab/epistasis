@@ -34,12 +34,12 @@ class RegressionStats(object):
     
     def __init__(self, model):
         
-        self.model = model
+        self._model = model
         
     @property
     def score(self):
         """ Get the epistasis model score after estimating interactions. """
-        return self.model._score
+        return self._model._score
         
     def predict(self):
         """ Infer the phenotypes from model.
@@ -50,10 +50,10 @@ class RegressionStats(object):
 
             `phenotypes` [array] : array of quantitative phenotypes.
         """
-        phenotypes = np.zeros(len(self.model.complete_genotypes), dtype=float)
-        binaries = self.model.Binary.complete_genotypes
-        X = generate_dv_matrix(binaries, self.model.Interactions.labels, encoding=self.model.encoding)
-        phenotypes = self.model.regression_model.predict(X)
+        phenotypes = np.zeros(len(self._model.complete_genotypes), dtype=float)
+        binaries = self._model.Binary.complete_genotypes
+        X = generate_dv_matrix(binaries, self._model.Interactions.labels, encoding=self._model.encoding)
+        phenotypes = self._model.regression_model.predict(X)
         
         return phenotypes
     
