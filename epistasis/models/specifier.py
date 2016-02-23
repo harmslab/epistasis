@@ -1,7 +1,10 @@
 #
 # Class for specifying the order of regresssion by given test
 #
+import json
+
 # imports from seqspace dependency
+from seqspace.gpm import GenotypePhenotypeMap
 from seqspace.utils import farthest_genotype, binary_mutations_map
 
 from epistasis.stats import log_likelihood_ratio, F_test
@@ -11,25 +14,9 @@ from epistasis.models.regression import EpistasisRegression
 # Model Specifier Object
 # -----------------------------------------------------------------------
 
-class BestModel(object):
+class StatisticalTest(object):
     
-    def __init__(self, model):
-        """ Container for statistics for specifier class. """
-        self.model = model
-        self.p_value = 0
-        self.stat = 0
-    
-    @property
-    def score(self):
-        return self._model.score
-        
-    @property
-    def order(self):
-        return self._model.order
-
-class StatisticTest(object):
-    
-    def __init__(self, test_type, cutoff):
+    def __init__(self, test_type="ftest", cutoff=0.05):
         """ Container for specs on the statistical test used in specifier class below. s"""
         
         # Select the statistical test for specifying model
@@ -38,11 +25,38 @@ class StatisticTest(object):
             "ftest": F_test
         }
         
+        # p-value cutoff
         self.cutoff = cutoff
+        
+        # Set the test type
         self.type = test_type
+        
+        # Testing function used.
         self.method = test_types[self.type]
+        
+    @property
+    def order(self):
+        """ Return the order of the best model"""
+        return self.best_model.order
+        
+    def compare(self, null_model, alt_model):
+        """
+            Compare two models based on statistic test given
+            
+            Return the test's statistic value and p-value.
+        """
+        self.statistic, self.p_value = self.method(null_model, alt_model)
+        
+        # If test statistic is less than f-statistic cutoff, than keep alternative model
+        if self.p_value < self.cutoff:
+            self.best_model = alt_model
+        # Else, the null model is sufficient and we keep it
+        else:
+            self.best_model = null_model
+            
+        return self.statistic, self.p_value
 
-class ModelSpecifier:
+class LinearEpistasisSpecifier:
 
     def __init__(self, wildtype, genotypes, phenotypes, 
         test_cutoff=0.05, 
@@ -61,24 +75,33 @@ class ModelSpecifier:
             Default statistical test is F-test. 
             
         """
+        self.gpm = GenotypePhenotypeMap(
+            wildtype,
+            genotypes,
+            phenotypes,
+            log_transform=log_transform,
+            mutations=mutations,
+            n_replicates=n_replicates        
+        )
+        
+        self.model_type = model_type
+        
         # Defaults to binary mapping if not specific mutations are named
         if mutations is None:
             mutant = farthest_genotype(wildtype, genotypes)
             mutations = binary_mutations_map(wildtype, mutant)
 
         # Testing specs
-        self.Stats = StatisticTest(test_type, test_cutoff)
-
-        # Best fit model specs
-        self.model_type = model_type
-        self.model_order = 1
-        self.model_p_value = None
-        self.model_stat = None
+        self.StatisticalTest = StatisticalTest(test_type, test_cutoff)
 
 
-    def compare_models(self, null_order, test_order):
+    def compare(self, null_order, alt_order):
         """
             Test a higher model against a null model.
+            
+            This is just a useful utility function for the user... not actually used in this class.
+            
+            Returns a StatisticalTest object with the best model chosen.
         """
         null_model = EpistasisRegression(wildtype, genotypes, phenotypes, 
             order=null_order, 
@@ -88,58 +111,67 @@ class ModelSpecifier:
             model_type=self.model_type
         )
             
-
-    def fit(self):
-        """ Run the specifier method. """
-        # Construct a regression of the data
-        self.model = EpistasisRegression(wildtype, genotypes, phenotypes, 
-            order=self.model_order, 
+        alt_model =  EpistasisRegression(wildtype, genotypes, phenotypes, 
+            order=alt_order, 
             log_transform=log_transform, 
             mutations=mutations, 
             n_replicates=n_replicates, 
-            model_type=self.model_type)
-            
-        # Fit the regression and specify the proper order using test statistic.
-        self.model.fit()
+            model_type=self.model_type
+        )
         
-        # Get model specs
-        wildtype = self.model.wildtype
-        genotypes = self.model.genotypes
+        statistical_test = StatisticalTest(self.test_type, self.StatisticalTest.cutoff)
+        return statistical_test.compare(null_model, alt_model)
         
-        if self.model.log_transform is True:
-            phenotypes = self.model.Raw.phenotypes
-        else:
-            phenotypes = self.model.phenotypes    
+    def fit(self):
+        """ Run the specifier method. """
         
-        log_transform = self.model.log_transform
-        mutations = self.model.mutations
-        n_replicates = self.model.n_replicates
+        # Begin by starting with a null model. 
+        null_model = EpistasisRegression.from_gpm(self.gpm, 
+            order=1, 
+            model_type=self.model_type
+        )
+        
+        null_model.fit()
 
         # Construct the range of order
-        orders = range(2, len(wildtype)+1)
+        orders = range(2, self.gpm.length+1)
 
-        self.test_stats = []
+        self.tests = []
 
         # Iterate through orders until we reach our significance statistic
         for order in orders:
             # alternative model
-            alt_model = EpistasisRegression(wildtype, genotypes, phenotypes, order=order, log_transform=log_transform, mutations=mutations, n_replicates=n_replicates, model_type=self.model_type)
+            
+            alt_model = EpistasisRegression.from_gpm(self.gpm,
+                order=order,
+                model_type=self.model_type
+            )
             alt_model.fit()
 
-            # Run test and append statistic to test_stats
-            model_stat, p_value = self.test_method(self.model, alt_model)
-            self.test_stats.append(model_stat)
+            # Initialize statistical test.
+            test = StatisticalTest(self.StatisticalTest.type, self.StatisticalTest.cutoff)
 
-            # If test statistic is less than f-statistic cutoff, than keep alternative model
-            if p_value < self.test_cutoff:
-                self.model = alt_model
+            # Run test and append statistic to test_stats
+            model_stat, p_value = test.compare(null_model, alt_model)
+            self.tests.append(test)
             
-            # Else, the null model is sufficient and we keep it
+            # Set the last test to the most recent.
+            self.StatisticalTest = test
+            
+            # If test statistic is not better than f-statistic cutoff, break loop and choose null
+            if p_value < self.StatisticalTest.cutoff:
+                null_model = alt_model
             else:
-                self.model_order = order-1
-                self.model_stat = model_stat
-                self.model_p_value = p_value
                 break
+                
+    @property
+    def p_values(self):
+        """ Return list of p-values from all tests in Specifier. """
+        return [t.p_value for t in self.tests]
+        
+    @property
+    def scores(self):
+        return [t.best_model.Stats.score for t in self.tests[:-1]]
 
 
     # ---------------------------------------------------------------------------------
@@ -166,3 +198,46 @@ class ModelSpecifier:
                     **kwargs)
         
         return model
+        
+        
+    @classmethod
+    def from_json(cls, filename, **kwargs):
+        """ Load from json file."""
+
+        # Open, json load, and close a json file
+        f = open(filename, "r")
+        data = json.load(f)
+        f.close()
+    
+        # Grab all properties from data-structure
+        args = ["wildtype", "genotypes", "phenotypes"]
+        options = {
+            "log_transform": False, 
+            "mutations": None,
+            "n_replicates": 1,
+            "model_type":"local",
+            "test_type": "ftest"
+        }
+    
+        # Grab all arguments and order them
+        for i in range(len(args)):
+            # Get all args
+            try: 
+                args[i] = data[args[i]]
+            except KeyError:
+                raise LoadingException("""No `%s` property in json data. Must have %s for GPM construction. """ % (args[i], args[i]) )
+    
+        # Get all options for map and order them
+        for key in options:
+            # See if options are in json data
+            try:
+                options[key] = data[key]
+            except:
+                pass
+    
+        # Override any properties with specified kwargs passed directly into method
+        options.update(kwargs)
+    
+        # Create an instance
+        specifier = cls(args[0], args[1], args[2], **options)
+        return specifier

@@ -124,6 +124,13 @@ class NonlinearPlotting(RegressionPlotting):
         
         return fig, ax
         
+
+class SpecifierPlotting(PlottingContainer):
+    
+    def __init__(self, specifier):
+        """ Specifier Plotting object. """
+        self.specifier        
+
 # ---------------------------------------------------
 # Epistasis Graphing
 # ---------------------------------------------------

@@ -9,6 +9,7 @@ from epistasis.stats import pearson
 from epistasis.models.regression import EpistasisRegression
 from epistasis.plotting import NonlinearPlotting
 
+# decorators for catching errors
 from seqspace.utils import ipywidgets_missing
 from seqspace.plotting import mpl_missing
 

@@ -199,8 +199,6 @@ def false_negative_rate(y_obs, y_pred, upper_ci, lower_ci, sigmas=2):
 
 def log_likelihood(model):
     """ Calculate the maximum likelihood estimate from sum of squared residuals."""
-
-
     N = model.n
     sigma = float(ssr/ N)
     L = N * np.log(1.0 / np.sqrt(2*np.pi*sigma)) - (1.0 / (2.0*sigma)) * ssr
@@ -217,8 +215,8 @@ def log_likelihood_ratio(model1, model2):
 
         Models must be instances of ProjectedEpistasisModel
     """
-    ssr1 = ss_residuals(model1.phenotypes, model1.predict())
-    ssr2 = ss_residuals(model2.phenotypes, model2.predict())
+    ssr1 = ss_residuals(model1.phenotypes, model1.Stats.predict())
+    ssr2 = ss_residuals(model2.phenotypes, model2.Stats.predict())
 
     sigma1 = float(ssr1/model1.n)
     sigma2 = float(ssr2/model2.n)
@@ -248,8 +246,8 @@ def F_test(model1, model2):
     df2 = n_obs - p2 - 1
 
     # Sum of square residuals for each model.
-    sse1 = ss_residuals(model1.phenotypes, model1.predict())
-    sse2 = ss_residuals(model2.phenotypes, model2.predict())
+    sse1 = ss_residuals(model1.phenotypes, model1.Stats.predict())
+    sse2 = ss_residuals(model2.phenotypes, model2.Stats.predict())
 
     # F-score
     F = ( (sse1 - sse2) / df1 ) / (sse2 / df2)
