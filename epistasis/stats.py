@@ -6,6 +6,7 @@ __doc__ = """Submodule with useful statistics functions for epistasis model."""
 
 import numpy as np
 from scipy.stats import f, norm
+from epistasis.plotting import FDistributionPlotting
 
 # -----------------------------------------------------------------------
 # Correlation metrics
@@ -197,18 +198,85 @@ def false_negative_rate(y_obs, y_pred, upper_ci, lower_ci, sigmas=2):
 # Methods for model comparison
 # -----------------------------------------------------------------------
 
+class StatisticalTest(object):
+    
+    def __init__(self, test_type="ftest", cutoff=0.05):
+        """ Container for specs on the statistical test used in specifier class below. s"""
+        
+        # Select the statistical test for specifying model
+        test_types = {
+            "likelihood": log_likelihood_ratio, 
+            "ftest": F_test
+        }
+        
+        # p-value cutoff
+        self.cutoff = cutoff
+        
+        # Set the test type
+        self.type = test_type
+        
+        # Testing function used.
+        self.method = test_types[self.type]
+        
+    @property
+    def order(self):
+        """ Return the order of the best model"""
+        return self.best_model.order
+        
+    @property
+    def p_value(self):
+        """ Get p_value"""
+        return self.distribution.p_value(self.statistic)
+        
+    def compare(self, null_model, alt_model):
+        """
+            Compare two models based on statistic test given
+            
+            Return the test's statistic value and p-value.
+        """
+        self.statistic, self.distribution = self.method(null_model, alt_model)
+        
+        # If test statistic is less than f-statistic cutoff, than keep alternative model
+        if self.p_value < self.cutoff:
+            self.best_model = alt_model
+        # Else, the null model is sufficient and we keep it
+        else:
+            self.best_model = null_model
+            
+        return self.statistic, self.p_value
+
+
 def log_likelihood(model):
     """ Calculate the maximum likelihood estimate from sum of squared residuals."""
     N = model.n
+    ssr = ss_residuals(model.phenotypes, model.Stats.predict())
     sigma = float(ssr/ N)
     L = N * np.log(1.0 / np.sqrt(2*np.pi*sigma)) - (1.0 / (2.0*sigma)) * ssr
     return L
 
 def AIC(model):
     """ Calculate the Akaike information criterion score for a model. """
-    k = len(model.Interactions.values)
+    
+    # Check that 
+    extra = 0
+    if hasattr(model, "Parameters"):
+        extra = model.Parameters.n
+        
+    # Get number of parameters
+    k = len(model.Interactions.values) + extra
+    
     aic = 2 * k - 2 * log_likelihood(model)
     return aic
+
+
+def AIC_comparison(null, alt):
+    """ 
+        Do a AIC comparison. Useful for comparing nonlinear model to linear model.
+    """
+    aic1 = AIC(null)
+    aic2 = AIC(alt)
+    return np.exp((aic1-aic2)/2)
+    
 
 def log_likelihood_ratio(model1, model2):
     """ Calculate the likelihood ratio two regressed epistasis models.
@@ -218,6 +286,7 @@ def log_likelihood_ratio(model1, model2):
     ssr1 = ss_residuals(model1.phenotypes, model1.Stats.predict())
     ssr2 = ss_residuals(model2.phenotypes, model2.Stats.predict())
 
+    # Calculate the average residual across the coefficients.
     sigma1 = float(ssr1/model1.n)
     sigma2 = float(ssr2/model2.n)
 
@@ -230,6 +299,48 @@ def log_likelihood_ratio(model1, model2):
     ratio = np.exp(AIC1-AIC2/2)
     return ratio
 
+class FDistribution(object):
+    
+    def __init__(self, dfn, dfd, loc=0, scale=1):
+        """
+            Create a f-distribution.
+        """
+        self.dfn = dfn 
+        self.dfd = dfd
+        self.loc = loc
+        self.scale = scale
+        
+        self.Plot = FDistributionPlotting(self)
+
+    def pdf(self, F):
+        return f.pdf(F, self.dfn, self.dfd, loc=self.loc, scale=self.scale)
+    
+    def cdf(self, F):
+        return f.cdf(F, self.dfn, self.dfd, loc=self.loc, scale=self.scale)
+    
+    def ppf(self, percent):
+        return f.ppf(percent, self.dfn, self.dfd, loc=self.loc, scale=self.scale)
+        
+    def p_value(self, F):
+        return 1 - f.cdf(F, self.dfn, self.dfd, loc=self.loc, scale=self.scale)        
+
+    @property
+    def median(self):
+        return f.mean(self.dfn, self.dfd, loc=self.loc, scale=self.scale)
+        
+    @property
+    def mean(self):
+        return f.mean(self.dfn, self.dfd, loc=self.loc, scale=self.scale)
+    
+    @property
+    def var(self):
+        return f.var(self.dfn, self.dfd, loc=self.loc, scale=self.scale)
+        
+    @property
+    def std(self):
+        return f.std(self.dfn, self.dfd, loc=self.loc, scale=self.scale)
+
+
 def F_test(model1, model2):
     """ Compare two models. """
     # Check that model1 is nested in model2. Not an intelligent test of this, though.
@@ -239,19 +350,23 @@ def F_test(model1, model2):
     # number of observations
     n_obs = len(model1.phenotypes)
 
+    # If nonlinear model, get parameter count
+    n_extra=0
+    if hasattr(model1, "Parameters"):
+        n_extra = model1.Parameters.n
+
     # Number of parameters in each model
-    p1 = len(model1.Interactions.values)
-    p2 = len(model2.Interactions.values)
-    df1 = p2-p1
+    p1 = len(model1.Interactions.values) + n_extra
+    p2 = len(model2.Interactions.values) + n_extra
+    df1 = p2 - p1
     df2 = n_obs - p2 - 1
 
     # Sum of square residuals for each model.
     sse1 = ss_residuals(model1.phenotypes, model1.Stats.predict())
     sse2 = ss_residuals(model2.phenotypes, model2.Stats.predict())
-
+    
     # F-score
     F = ( (sse1 - sse2) / df1 ) / (sse2 / df2)
 
-    # get p-value from F-distribution
-    p_value = 1 - f.cdf(F, df1, df2)
-    return F, p_value
+    f_distribution = FDistribution(df1, df2)
+    return F, f_distribution

@@ -4,9 +4,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib
 from scipy.stats import norm as scipy_norm
+from scipy.stats import f
 
 from seqspace.errors import BaseErrorMap
-from seqspace.plotting import PlottingContainer
+from seqspace.plotting import PlottingContainer, mpl_missing
 
 # ---------------------------------------------------
 # Exceptions
@@ -131,6 +132,45 @@ class SpecifierPlotting(PlottingContainer):
         """ Specifier Plotting object. """
         self.specifier        
 
+class FDistributionPlotting(object):
+    
+    @mpl_missing # Don't use this plotting object in outside classes if mpl is not installed
+    def __init__(self, FDistribution):
+        """Plotting a distribution. """
+        self._dist = FDistribution
+        
+    def pdf(self, percent_start=0.0001, percent_end=0.9999, figsize=(6,4), **kwargs):
+        """ Plot the distribution. """
+        #Build distribution
+        x = np.linspace(self._dist.ppf(percent_start), 
+                        self._dist.ppf(percent_end), 1000)
+                        
+        y = self._dist.pdf(x)
+        
+        # Plot
+        fig, ax = plt.subplots(figsize=figsize)
+        ax.plot(x, y, **kwargs)
+        ax.set_title("Probability density function")
+        ax.set_xlabel("F-statistic")
+        ax.set_ylabel("Probability density")
+        return fig, ax
+        
+    def cdf(self, percent_start=0.0001, percent_end=0.9999, figsize=(6,4), **kwargs):
+        #Build distribution
+        x = np.linspace(self._dist.ppf(percent_start), 
+                        self._dist.ppf(percent_end), 1000)
+                        
+        y = self._dist.cdf(x)
+        
+        # Plot
+        fig, ax = plt.subplots(figsize=figsize)
+        ax.plot(x, y, **kwargs)
+        ax.set_title("Cumulative distribution function")
+        ax.set_xlabel("F-statistic")
+        ax.set_ylabel("Cumulative probability")
+        
+        return fig, ax    
+    
 # ---------------------------------------------------
 # Epistasis Graphing
 # ---------------------------------------------------

@@ -10,6 +10,13 @@ from sklearn.metrics import mean_squared_error
 from collections import OrderedDict
 
 # -------------------------------------------------------
+#
+# -------------------------------------------------------
+
+class SubclassException(Exception):
+    """ For methods that must be implemented in a subclass. """
+
+# -------------------------------------------------------
 # Model Parameter methods
 # -------------------------------------------------------
 

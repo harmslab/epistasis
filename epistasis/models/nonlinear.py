@@ -171,7 +171,7 @@ class NonlinearEpistasisModel(EpistasisRegression):
         return inner
 
 
-    def fit(self, guess=None, **kwargs):
+    def fit(self, guess_coeffs=None, fit_kwargs={}, **kwargs):
         """ 
             Fit using nonlinear least squares regression.
             
@@ -179,17 +179,35 @@ class NonlinearEpistasisModel(EpistasisRegression):
             ---------
             guess: array of guesses
             
-            kwargs are passed directly to scipy's curve_fit function
+            fit_kwargs are passed to scipy's curvefit function
+            
+            **kwargs are used as parameters.
         """
-        # Create an initial guess array
-        if guess is None:
-            guess = np.ones(len(self.Interactions.labels) + self.Parameters.n)
-                    
+        # Construct an array of guesses, using the scale specified by user.
+        guess = np.ones(self.Interactions.n + self.Parameters.n)
+    
+        # Add model's extra parameter guesses to input array
+        for kw in kwargs:
+            index = self.Parameters._mapping[kw] 
+            guess[self.Interactions.n + index] = kwargs[kw]
+        
+        # Create an initial guess array using fit values
+        if guess_coeffs is None: 
+            # Fit with a linear epistasis model first, and use those values as initial guesses.
+            super(NonlinearEpistasisModel, self).fit()
+            
+            # Add linear guesses to guess array
+            guess[:self.Interactions.n] = self.Interactions.values
+                
+        else:
+            # Add user specified guess interactions
+            guess[:self.Interactions.n] = guess_coeff
+
         # Wrap user function to add epistasis parameters
         self._wrapped_function = self._nonlinear_function_wrapper(self.function)
         
         # Curve fit the data using a nonlinear least squares fit
-        popt, pcov = curve_fit(self._wrapped_function, self.X, self.phenotypes, p0=guess, **kwargs)
+        popt, pcov = curve_fit(self._wrapped_function, self.X, self.phenotypes, p0=guess, **fit_kwargs)
         
         # Set the Interaction values
         self.Interactions.values = popt[0:len(self.Interactions.labels)]
@@ -200,10 +218,10 @@ class NonlinearEpistasisModel(EpistasisRegression):
             
         y_pred = self._wrapped_function(self.X, *popt)
         
-        self._score = pearson(self.phenotypes, y_pred)
+        self._score = pearson(self.phenotypes, y_pred)**2
     
     @ipywidgets_missing
-    def fit_widget(self, show_stats=True, **kwargs):
+    def fit_widget(self, print_stats=True, **kwargs):
         """
             Simple IPython widget for trying initial guesses of the nonlinear parameters.
         
@@ -217,32 +235,17 @@ class NonlinearEpistasisModel(EpistasisRegression):
         """
         # Build fitting method to pass into widget box
         def fitting(**kwargs):
-            """ Callable to be controlled by widgets. """
-            # Fit with a linear epistasis model first, and use those values as initial guesses.
-            super(NonlinearEpistasisModel, self).fit()
-        
-            # Construct an array of guesses, using the scale specified by user.
-            guess = np.ones(self.Interactions.n + self.Parameters.n)
-            
-            # Add linear guesses to guess array
-            guess[:self.Interactions.n] = self.Interactions.values
-        
-            # Add guesses to input array
-            for kw in kwargs:
-                index = self.Parameters._mapping[kw] 
-                guess[self.Interactions.n + index] = kwargs[kw]
-            
+            """ Callable to be controlled by widgets. """            
             # Fit the nonlinear least squares fit
-            self.fit(guess=guess)
+            self.fit(**kwargs)
             
-            if show_stats:
+            if print_stats:
                 # Print score
                 print("R-squared of fit: " + str(self.Stats.score))
                 
                 # Print parameters
                 for kw in self.Parameters._mapping:
                     print(kw + ": " + str(getattr(self.Parameters, kw)))
-            
             
             # Plot if available
             if hasattr(self, "Plot"):

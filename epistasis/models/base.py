@@ -9,7 +9,7 @@ from collections import OrderedDict
 from seqspace.utils import farthest_genotype, binary_mutations_map
 
 # Local imports
-from epistasis.utils import epistatic_order_indices
+from epistasis.utils import epistatic_order_indices, SubclassException
 from epistasis.mapping.epistasis import EpistasisMap
 
 from epistasis.plotting import EpistasisPlotting
@@ -91,9 +91,9 @@ class BaseModel(EpistasisMap):
             
     def fit(self):
         """ Fitting methods for epistasis models. """
-        raise Exception("""Must be implemented in a subclass.""")
+        raise SubclassException("""Must be implemented in a subclass.""")
         
     def fit_error(self):
         """ Fitting method for errors in the epistatic parameters. """
-        raise Exception("""Must be implemented in a subclass.""")
+        raise SubclassException("""Must be implemented in a subclass.""")
             
