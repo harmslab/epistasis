@@ -162,8 +162,8 @@ class LinearEpistasisSpecifier(BaseSpecifier):
             log_transform=False, 
             mutations=mutations, 
             n_replicates=1, 
-            model_type="local", 
-            test_type="ftest")
+            model_type=model_type, 
+            test_type=test_type)
 
     def compare(self, null_order, alt_order):
         """
@@ -259,8 +259,8 @@ class NonlinearEpistasisSpecifier(BaseSpecifier):
             log_transform=False, 
             mutations=mutations, 
             n_replicates=1, 
-            model_type="local", 
-            test_type="ftest")
+            model_type=model_type, 
+            test_type=test_type)
             
         self.function = function
 

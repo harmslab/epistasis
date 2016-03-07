@@ -75,7 +75,7 @@ class BaseArtificialMap(EpistasisMap):
     def rm_epistasis(self, n_terms):
         """ Remove a specified number of epistatic terms. Choose these terms randomly. """
         indices = np.random.randint(len(self.Interactions.labels), size=n_terms)
-        
+
         for i in indices:    
             self.Interactions._values[i] = 0.0
         

@@ -69,6 +69,10 @@ class NonlinearStats(object):
         """ Get the epistasis model score after estimating interactions. """
         return self._model._score
         
+    def linear(self):
+        """"""
+        return np.dot(self._model.X, self._model.Interactions.values)
+        
     def predict(self):
         """ Infer the phenotypes from model.
 

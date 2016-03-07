@@ -27,7 +27,7 @@ class EpistasisPlotting(PlottingContainer):
         self.model = model
         super(EpistasisPlotting, self).__init__(self.model)
         
-    def interactions(self, figsize=(6,4), **kwargs):
+    def interactions(self, figsize=(6,4), **kwargs):        
         fig, ax = bar_with_xbox(self.model, figsize=figsize, **kwargs)
         return fig, ax
 
@@ -38,10 +38,12 @@ class RegressionPlotting(EpistasisPlotting):
         self.model = model
         super(RegressionPlotting, self).__init__(self.model)
     
-    def correlation(self, figsize=(6,4), **kwargs):
+    def correlation(self, ax=None, figsize=(6,4), **kwargs):
         """ Draw a correlation plot of data. """
-        
-        fig, ax = plt.subplots()
+        if ax is None:
+            fig, ax = plt.subplots()
+        else:
+            fig = ax.get_figure()
         
         max_p = max(self.model.phenotypes)
         min_p = min(self.model.phenotypes)
@@ -60,12 +62,15 @@ class RegressionPlotting(EpistasisPlotting):
         
         return fig, ax
         
-    def predicted_phenotypes(self, figsize=(6,4), **kwargs):
+    def predicted_phenotypes(self, ax=None, figsize=(6,4), **kwargs):
         """
             Plots the predicted phenotypes
         """
-        fig, ax = plt.subplots()
-        
+        if ax is None:
+            fig, ax = plt.subplots()
+        else:
+            fig = ax.get_figure()
+                    
         known = self.model.phenotypes
         predicted = self.model.Stats.predict()
         
@@ -77,6 +82,64 @@ class RegressionPlotting(EpistasisPlotting):
         ax.set_xlabel("genotypes")
         
         return fig, ax
+        
+    def residuals(self, ax=None):
+        """ Get figure, return figure. """
+        if ax is None:
+            fig, ax = plt.subplots()
+        else:
+            fig = ax.get_figure()
+    
+        theory = self.model.Stats.predict()
+        observed = self.model.phenotypes
+
+        # Calculate residuals
+        residuals =  theory - observed
+    
+        # Build array of residuals next to theoretical value
+        # then sort those columns in ascending order of theoretical
+        # value for plotting.
+        data = np.array((theory, residuals))
+        data = data[:, data[0, :].argsort()]
+
+        ylim = max([abs(min(residuals)), abs(max(residuals))])
+    
+        # Create a stem plot of the data
+        markerline, stemlines, baseline = ax.stem(data[0], data[1], markerfmt=" ", linewidth=6, color='b')
+        plt.setp(markerline, 'markerfacecolor', 'b')
+        plt.setp(stemlines, 'linewidth', 1.5)
+        plt.setp(baseline, 'color','r', 'linewidth', 1)
+        ax.set_ylim([-ylim, ylim])
+        return fig, ax
+        
+    def best_fit(self, ax=None, kwargs1={}, kwargs2={}, **kwargs):
+        """ Plot model line through date. """
+        # Add to axis if given, else create new plot.
+        if ax is None:
+            fig, ax = plt.subplots()
+        else:
+            fig = ax.get_figure()
+
+        # Plot line through data
+        theory = self.model.Stats.predict()
+        observed = self.model.phenotypes
+
+        # Sort the theory for line plot
+        sorted_theory = np.sort(theory)
+    
+        # Plot the line through data
+        ax.plot(theory, observed, '.', **kwargs1)
+        ax.plot(sorted_theory, sorted_theory, color="r", **kwargs2)
+
+        return fig, ax
+        
+    def summary(self, ):
+        """ Plot a summary of the model. Includes a plot of 
+            the model with residuals plotted underneath. 
+        """
+        pass
+        
+        
 
 class NonlinearPlotting(RegressionPlotting):
     
@@ -92,6 +155,7 @@ class NonlinearPlotting(RegressionPlotting):
         known = self.model.phenotypes
         predicted = np.dot(self.model.X,  self.model.Interactions.values)
         
+        
         # Add scatter plot points on correlation grid
         ax.plot(predicted, known, 'b.')
         
@@ -100,9 +164,9 @@ class NonlinearPlotting(RegressionPlotting):
         
         return fig, ax
         
-    def nonlinear_function(self, xbounds=None):
+    def nonlinear_function(self, xbounds=None, figsize=(6,4), **kwargs):
         """ Plot the input function for set of phenotypes. """
-        fig, ax = plt.subplots()
+        fig, ax = plt.subplots(figsize=figsize)
         
         params = self.model.Parameters._param_list
         
@@ -121,10 +185,64 @@ class NonlinearPlotting(RegressionPlotting):
         
         x = np.linspace(min_p, max_p, 1000)
         y = self.model.function(x, *values)
-        plt.plot(x,y, 'b-')
+        plt.plot(x,y, **kwargs)
         
         return fig, ax
         
+        
+    def best_fit(self, ax=None, kwargs1={}, kwargs2={}, **kwargs):
+        """ Plot model line through date. """
+        # Add to axis if given, else create new plot.
+        if ax is None:
+            fig, ax = plt.subplots()
+        else:
+            fig = ax.get_figure()
+
+        # Plot line through data
+        linear = self.model.Stats.linear()
+        theory = self.model.Stats.predict()
+        observed = self.model.phenotypes
+
+        data = np.array((linear, theory))
+        data = data[:, data[0, :].argsort()]
+    
+        # Plot the line through data
+        ax.plot(linear, observed, '.', **kwargs1)
+        ax.plot(data[0], data[1], color="r", **kwargs2)
+
+        return fig, ax
+        
+    def residuals(self, ax=None):
+        """ Get figure, return figure. """
+    
+        if ax is None:
+            fig, ax = plt.subplots()
+        else:
+            fig = ax.get_figure()
+    
+    
+        theory = self.model.Stats.predict()
+        linear = self.model.Stats.linear()
+        observed = self.model.phenotypes
+
+        # Calculate residuals
+        residuals =  theory - observed
+    
+        # Build array of residuals next to theoretical value
+        # then sort those columns in ascending order of theoretical
+        # value for plotting.
+        data = np.array((linear, residuals))
+        data = data[:, data[0, :].argsort()]
+
+        ylim = max([abs(min(residuals)), abs(max(residuals))])
+    
+        # Create a stem plot of the data
+        markerline, stemlines, baseline = ax.stem(data[0], data[1], markerfmt=" ", linewidth=6, color='b')
+        plt.setp(markerline, 'markerfacecolor', 'b')
+        plt.setp(stemlines, 'linewidth', 1.5)
+        plt.setp(baseline, 'color','r', 'linewidth', 1)
+        ax.set_ylim([-ylim, ylim])
+        return fig, ax
 
 class SpecifierPlotting(PlottingContainer):
     
