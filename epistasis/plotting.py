@@ -2,7 +2,7 @@ __doc__ = """ Plotting module setup for matplotlib to plot the results of epista
 
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib
+import matplotlib as mpl
 from scipy.stats import norm as scipy_norm
 from scipy.stats import f
 
@@ -41,7 +41,7 @@ class RegressionPlotting(EpistasisPlotting):
     def correlation(self, ax=None, figsize=(6,4), **kwargs):
         """ Draw a correlation plot of data. """
         if ax is None:
-            fig, ax = plt.subplots()
+            fig, ax = plt.subplots(figsize=figsize)
         else:
             fig = ax.get_figure()
         
@@ -67,7 +67,7 @@ class RegressionPlotting(EpistasisPlotting):
             Plots the predicted phenotypes
         """
         if ax is None:
-            fig, ax = plt.subplots()
+            fig, ax = plt.subplots(figsize=figsize)
         else:
             fig = ax.get_figure()
                     
@@ -83,10 +83,10 @@ class RegressionPlotting(EpistasisPlotting):
         
         return fig, ax
         
-    def residuals(self, ax=None):
+    def residuals(self, ax=None, stem=False, figsize=(6,4)):
         """ Get figure, return figure. """
         if ax is None:
-            fig, ax = plt.subplots()
+            fig, ax = plt.subplots(figsize=figsize)
         else:
             fig = ax.get_figure()
     
@@ -105,18 +105,23 @@ class RegressionPlotting(EpistasisPlotting):
         ylim = max([abs(min(residuals)), abs(max(residuals))])
     
         # Create a stem plot of the data
-        markerline, stemlines, baseline = ax.stem(data[0], data[1], markerfmt=" ", linewidth=6, color='b')
-        plt.setp(markerline, 'markerfacecolor', 'b')
-        plt.setp(stemlines, 'linewidth', 1.5)
-        plt.setp(baseline, 'color','r', 'linewidth', 1)
+        if stem:
+            markerline, stemlines, baseline = ax.stem(data[0], data[1], markerfmt=" ", linewidth=6, color='b')
+            plt.setp(markerline, 'markerfacecolor', 'b')
+            plt.setp(stemlines, 'linewidth', 1.5)
+            plt.setp(baseline, 'color','r', 'linewidth', 1)
+        else:
+            ax.plot(data[0], data[1], '.')
+            ax.hlines(0, min(data[0]), max(data[0]))
         ax.set_ylim([-ylim, ylim])
         return fig, ax
         
-    def best_fit(self, ax=None, kwargs1={}, kwargs2={}, **kwargs):
+    def best_fit(self, ax=None, kwargs1={}, kwargs2={}, figsize=(6,4), errorbars=False, axis=None, **kwargs):
         """ Plot model line through date. """
+        
         # Add to axis if given, else create new plot.
         if ax is None:
-            fig, ax = plt.subplots()
+            fig, ax = plt.subplots(figsize=figsize)
         else:
             fig = ax.get_figure()
 
@@ -128,9 +133,24 @@ class RegressionPlotting(EpistasisPlotting):
         sorted_theory = np.sort(theory)
     
         # Plot the line through data
-        ax.plot(theory, observed, '.', **kwargs1)
+        
+        if errorbars is True:
+            
+                if self.model.log_transform:
+                    upper = np.log(1 + self.model.stdeviations/self.model.Raw.phenotypes)
+                    lower = np.log(1 - self.model.stdeviations/self.model.Raw.phenotypes)
+
+                else: 
+                    upper = self.stdeviations
+                    lower = upper
+                ax.errorbar(theory, observed, yerr=[upper,abs(lower)], fmt=".")
+        else:
+            ax.plot(theory, observed, '.', **kwargs1)
         ax.plot(sorted_theory, sorted_theory, color="r", **kwargs2)
 
+        if axis is not None:
+            ax.axis(axis)
+            
         return fig, ax
         
     def summary(self, ):
@@ -190,11 +210,11 @@ class NonlinearPlotting(RegressionPlotting):
         return fig, ax
         
         
-    def best_fit(self, ax=None, kwargs1={}, kwargs2={}, **kwargs):
+    def best_fit(self, ax=None, kwargs1={}, kwargs2={}, figsize=(6,4), errorbars=False, axis=None, **kwargs):
         """ Plot model line through date. """
         # Add to axis if given, else create new plot.
         if ax is None:
-            fig, ax = plt.subplots()
+            fig, ax = plt.subplots(figsize=figsize)
         else:
             fig = ax.get_figure()
 
@@ -207,16 +227,32 @@ class NonlinearPlotting(RegressionPlotting):
         data = data[:, data[0, :].argsort()]
     
         # Plot the line through data
-        ax.plot(linear, observed, '.', **kwargs1)
+        
+        if errorbars is True:
+                if self.model.log_transform:
+                    upper = np.log(1 + self.model.stdeviations/self.model.Raw.phenotypes)
+                    lower = np.log(1 - self.model.stdeviations/self.model.Raw.phenotypes)
+
+                else: 
+                    upper = self.stdeviations
+                    lower = upper
+                    
+                ax.errorbar(linear, observed, yerr=[upper,abs(lower)], fmt=".")
+        else:
+            ax.plot(linear, observed, '.', **kwargs1)
+        
         ax.plot(data[0], data[1], color="r", **kwargs2)
+        
+        if axis is not None:
+            ax.axis(axis)
 
         return fig, ax
         
-    def residuals(self, ax=None):
+    def residuals(self, ax=None, figsize=(6,4), stem=False):
         """ Get figure, return figure. """
     
         if ax is None:
-            fig, ax = plt.subplots()
+            fig, ax = plt.subplots(figsize=figsize)
         else:
             fig = ax.get_figure()
     
@@ -237,10 +273,14 @@ class NonlinearPlotting(RegressionPlotting):
         ylim = max([abs(min(residuals)), abs(max(residuals))])
     
         # Create a stem plot of the data
-        markerline, stemlines, baseline = ax.stem(data[0], data[1], markerfmt=" ", linewidth=6, color='b')
-        plt.setp(markerline, 'markerfacecolor', 'b')
-        plt.setp(stemlines, 'linewidth', 1.5)
-        plt.setp(baseline, 'color','r', 'linewidth', 1)
+        if stem:
+            markerline, stemlines, baseline = ax.stem(data[0], data[1], markerfmt=" ", linewidth=6, color='b')
+            plt.setp(markerline, 'markerfacecolor', 'b')
+            plt.setp(stemlines, 'linewidth', 1.5)
+            plt.setp(baseline, 'color','r', 'linewidth', 1)
+        else:
+            ax.plot(data[0], data[1], '.')
+            ax.hlines(0, min(data[0]), max(data[0]))
         ax.set_ylim([-ylim, ylim])
         return fig, ax
 
@@ -399,7 +439,8 @@ def bar_with_xbox(model,
                   star_cutoffs=(0.05,0.01,0.001),
                   star_spacer=0.0075,
                   ybounds=None,
-                  bar_borders=True):
+                  bar_borders=True,
+                  capsize=2):
     """
     Create a barplot with the values from model, drawing the x-axis as a grid of
     boxes indicating the coordinate of the epistatic parameter. Should automatically
@@ -521,14 +562,14 @@ def bar_with_xbox(model,
     # ---------------- #
 
     # Make a color map
-    cmap = matplotlib.colors.ListedColormap(colors=order_colors)
+    cmap = mpl.colors.ListedColormap(colors=order_colors)
     cmap.set_bad(color='w', alpha=0) # set the 'bad' values (nan) to be white and transparent
     bounds = range(-1,len(order_colors))
-    norm = matplotlib.colors.BoundaryNorm(bounds, cmap.N)
+    norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
 
     # Create a plot with an upper and lower panel, sharing the x-axis
     fig = plt.figure(figsize=figsize)
-    gs = matplotlib.gridspec.GridSpec(2, 1, height_ratios=[height_ratio, 1])
+    gs = mpl.gridspec.GridSpec(2, 1, height_ratios=[height_ratio, 1])
     ax_array = [plt.subplot(gs[0])]
     ax_array.append(plt.subplot(gs[1],sharex=ax_array[0]))
 
@@ -537,7 +578,7 @@ def bar_with_xbox(model,
     # ------------------ #
 
     # set up bar colors
-    colors_for_bar = np.array([matplotlib.colors.colorConverter.to_rgba(order_colors[(i+1)]) for i in color_array])
+    colors_for_bar = np.array([mpl.colors.colorConverter.to_rgba(order_colors[(i+1)]) for i in color_array])
 
     # Plot error if sigmas are given.
     if sigmas == 0:
@@ -587,9 +628,10 @@ def bar_with_xbox(model,
         
         yerr = [lower[1:], upper[1:]]
         ax_array[0].bar(range(len(bar_y)), bar_y, width=0.8, yerr=yerr, color=colors_for_bar,
-                        error_kw={"ecolor":"black"},
+                        error_kw={"ecolor":"black", "capsize":capsize},
                         edgecolor="none",
-                        linewidth=2)
+                        linewidth=2,
+                        )
                         
     ax_array[0].hlines(0, 0, len(model.Interactions.values)-1, linewidth=1, linestyle="--")
 
@@ -610,13 +652,13 @@ def bar_with_xbox(model,
     ax_array[0].get_xaxis().set_visible(False)
     ax_array[0].get_yaxis().tick_left()
     ax_array[0].get_yaxis().set_tick_params(direction='out')
-    ax_array[0].add_artist(matplotlib.lines.Line2D((-1,-1), (ax_array[0].get_yticks()[1], ax_array[0].get_yticks()[-2]), color='black', linewidth=1))
+    ax_array[0].add_artist(mpl.lines.Line2D((-1,-1), (ax_array[0].get_yticks()[1], ax_array[0].get_yticks()[-2]), color='black', linewidth=1))
 
     # add vertical lines between order breaks
     previous_order = 1
     for i in range(len(labels)):
         if len(labels[i]) != previous_order:
-            ax_array[0].add_artist(matplotlib.lines.Line2D((i,i),
+            ax_array[0].add_artist(mpl.lines.Line2D((i,i),
                                                            (ymin,ymax),
                                                            color="black",
                                                            linestyle="--"))
@@ -653,12 +695,12 @@ def bar_with_xbox(model,
 
     # draw the grid
     for i in range(num_terms + 1):
-        ax_array[1].add_artist(matplotlib.lines.Line2D((i,i),
+        ax_array[1].add_artist(mpl.lines.Line2D((i,i),
                                                        (0,num_sites),
                                                        color="black"))
 
     for i in range(num_sites + 1):
-        ax_array[1].add_artist(matplotlib.lines.Line2D((0,num_terms),
+        ax_array[1].add_artist(mpl.lines.Line2D((0,num_terms),
                                                        (i,i),
                                                        color="black"))
 
