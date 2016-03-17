@@ -83,7 +83,7 @@ class RegressionPlotting(EpistasisPlotting):
         
         return fig, ax
         
-    def residuals(self, ax=None, stem=False, figsize=(6,4)):
+    def residuals(self, ax=None, stem=False, figsize=(6,4), axis=None):
         """ Get figure, return figure. """
         if ax is None:
             fig, ax = plt.subplots(figsize=figsize)
@@ -114,6 +114,10 @@ class RegressionPlotting(EpistasisPlotting):
             ax.plot(data[0], data[1], '.')
             ax.hlines(0, min(data[0]), max(data[0]))
         ax.set_ylim([-ylim, ylim])
+        
+        if axis is not None:
+            ax.axis(axis)
+            
         return fig, ax
         
     def best_fit(self, ax=None, kwargs1={}, kwargs2={}, figsize=(6,4), errorbars=False, axis=None, **kwargs):
@@ -248,7 +252,7 @@ class NonlinearPlotting(RegressionPlotting):
 
         return fig, ax
         
-    def residuals(self, ax=None, figsize=(6,4), stem=False):
+    def residuals(self, ax=None, figsize=(6,4), stem=False, axis=None):
         """ Get figure, return figure. """
     
         if ax is None:
@@ -282,6 +286,11 @@ class NonlinearPlotting(RegressionPlotting):
             ax.plot(data[0], data[1], '.')
             ax.hlines(0, min(data[0]), max(data[0]))
         ax.set_ylim([-ylim, ylim])
+        
+        # Set axis if given
+        if axis is not None:
+            ax.axis(axis)
+            
         return fig, ax
 
 class SpecifierPlotting(PlottingContainer):
@@ -342,6 +351,7 @@ def magnitude_vs_order(model, keep_sign=False,
         ylabel="Magnitude", 
         title="", 
         figsize=(6,4),
+        errorbars=True,
         **kwargs):
     """
         Generate a plot of magnitude versus order.
@@ -349,81 +359,41 @@ def magnitude_vs_order(model, keep_sign=False,
     """    
     orders = range(1, model.length+1)
     magnitudes = []
+    errors = []
     for i in orders:
         coeffs = np.array(list(model.Interactions.get_order(i).values()))
         
         # Do we care about signs? 
         if keep_sign is False:
             coeffs = abs(coeffs)
-        
+
         # Add magnitudes
         magnitudes.append(np.mean(coeffs))
+        errors.append(np.std(coeffs))
     
     # Initialize the figure and axis
     fig, ax = plt.subplots(figsize=figsize)
     
     # Create plot
-    ax.plot(orders, magnitudes, marker=marker, color=color, linestyle=linestyle, **kwargs)
+    if errorbars:
+        ax.errorbar(orders, magnitudes, yerr=errors, marker=marker, color=color, linestyle=linestyle, **kwargs)
+    
+    else:
+        ax.plot(orders, magnitudes, marker=marker, color=color, linestyle=linestyle, **kwargs)
     
     # Steal the max bound, cause matplotlib does a great job of picking good axis
     ylimits = max(list(ax.get_ylim()))
     # Make y limits symmetric
     ax.axis([orders[0], orders[-1], -ylimits, ylimits])
     
+        
+        
+    
     # Add a line at zero if keeping sign
     if keep_sign:
         ax.hlines(0, orders[0], orders[-1], linestyle="--")
-    
-    # ---------------------------------
-    # Plot styling
-    # ---------------------------------
-    
-    extra_limit_frac = 0.05
-    spine_widths = 1.35
-    line_widths = 1.5
-    
-    # Get current axis limits
-    xlimits = list(ax.get_xlim())
-    ylimits = list(ax.get_ylim())
-    xticks = list(ax.get_xticks())
-    yticks = list(ax.get_yticks())
-
-    # Extend the graph by 5 percent on all sides
-    xextra = extra_limit_frac*(xlimits[1] - xlimits[0])
-    yextra = extra_limit_frac*(ylimits[1] - ylimits[0])
-
-    # set ticks and tick labels
-    ax.set_xlim(xlimits[0] - xextra, xlimits[1] + xextra)
-    ax.set_ylim(ylimits[0] - yextra, ylimits[1] + yextra)
-
-    # Remove right and top spines
-    ax.spines['right'].set_visible(False)
-    ax.spines['top'].set_visible(False)
-
-    # Set the bounds for visible axes
-    ax.spines['bottom'].set_bounds(xlimits[0], xlimits[1])
-    ax.spines['left'].set_bounds(ylimits[0], ylimits[1])
-
-    # Thicken the spines
-    ax.spines['bottom'].set_linewidth(spine_widths)
-    ax.spines['left'].set_linewidth(spine_widths)
-
-    # Only show ticks on the left and bottom spines
-    ax.yaxis.set_ticks_position('left')
-    ax.xaxis.set_ticks_position('bottom')
-
-    # Make ticks face outward and thicken them
-    ax.tick_params(direction='out', width=spine_widths)
-
-    if xticks[-1] > xlimits[1]:
-        xticks = xticks[:-1]
-       
-    if yticks[-1] > ylimits[1]:
-        yticks = yticks[:-1]
-    
-    ax.set_xticks(xticks)
-    ax.set_yticks(yticks)
-
+        
+    return fig, ax
 
 
 def bar_with_xbox(model,
