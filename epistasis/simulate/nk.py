@@ -15,7 +15,7 @@ class NKEpistasisMap(BaseArtificialMap):
         self.nk_table = self.build_nk_table(magnitude)
 
         # Use binary genotypes to set the phenotypes using NK table
-        self.Binary.phenotypes = self.build_phenotypes()
+        self.Binary.phenotypes = self.build()
 
         # Reorder the phenotypes properly
         phenotypes = np.zeros(len(self.Binary.phenotypes), dtype=float)
@@ -34,7 +34,7 @@ class NKEpistasisMap(BaseArtificialMap):
             nk_table[s] = m*magnitude*np.random.rand()*(-1)**np.random.randint(10)
         return nk_table
 
-    def build_phenotypes(self):
+    def build(self):
         """ Build phenotypes from NK table"""
 
         # Check that nk table exists

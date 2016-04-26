@@ -47,17 +47,17 @@ class RandomEpistasisMap(BaseArtificialMap):
 
         """
         super(RandomEpistasisMap,self).__init__(length, order, log_transform)
-        
+
         high = magnitude
         low = 0
         if allow_neg:
-            low = -magnitude 
-        
+            low = -magnitude
+
         self.Interactions.values = self.random_epistasis(low, high)
         self.model = model
-        self.build_phenotypes()
+        self.build()
 
-    def build_phenotypes(self, values=None):
+    def build(self, values=None):
         """ Build the phenotype map from epistatic interactions. """
         # Allocate phenotype numpy array
         _phenotypes = np.zeros(self.n, dtype=float)
@@ -69,11 +69,11 @@ class RandomEpistasisMap(BaseArtificialMap):
         # Get model type:
         if self.model == "local":
             encoding = {"1": 1, "0": 0}
-            
+
             # Build phenotypes from binary representation of space
             self.X = generate_dv_matrix(self.Binary.genotypes, self.Interactions.labels, encoding=encoding)
             self.Binary.phenotypes = np.dot(self.X,values)
-            
+
         elif self.model == "global":
             encoding = {"1": -1, "0": 1}
             #self.weight_matrix = np.diag(np.diag(np.linalg.inv(hadamard_weight_vector(self.Binary.genotypes))))
@@ -82,7 +82,7 @@ class RandomEpistasisMap(BaseArtificialMap):
             self.X = generate_dv_matrix(self.Binary.genotypes, self.Interactions.labels, encoding=encoding)
             self.Binary.phenotypes = np.dot( self.X, values)
             #self.Binary.phenotypes = np.dot( np.dot( self.weight_matrix, self.X) , values)
-        
+
         else:
             raise Exception("Invalid model type given.")
 

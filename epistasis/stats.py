@@ -370,3 +370,21 @@ def F_test(model1, model2):
 
     f_distribution = FDistribution(df1, df2)
     return F, f_distribution
+
+
+def p_value_to_sigma(p_value):
+    """ 
+        Convert a p-value to a sigma-cutoff.
+        
+        Example:
+        -------
+        Distribution is centered on zero, and symmetric. 
+        
+    """
+    # Just look at the right side of the distribution, and get sigma at that cutff.
+    right_side_p_value = 1 - float(p_value)/2
+    
+    # Use the percent point function
+    sigma = norm.ppf(right_side_p_value)
+    
+    return sigma
