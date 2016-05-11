@@ -402,20 +402,21 @@ def magnitude_vs_order(model, keep_sign=False,
 
 
 def bar_with_xbox(model,
-                  order_colors=("red","orange","green","purple","DeepSkyBlue","yellow","pink"),
-                  significance="bon",
-                  significance_cutoff=0.05,
-                  sigmas=1,
-                  log_space=False,
-                  y_scalar=1.5,
-                  y_axis_name="interaction",
-                  figsize=(8,10),
-                  height_ratio=12,
-                  star_cutoffs=(0.05,0.01,0.001),
-                  star_spacer=0.0075,
-                  ybounds=None,
-                  bar_borders=True,
-                  capsize=2):
+    order_colors=("red","orange","green","purple","DeepSkyBlue","yellow","pink"),
+    significance="bon",
+    significance_cutoff=0.05,
+    sigmas=1,
+    log_space=False,
+    y_scalar=1.5,
+    y_axis_name="interaction",
+    figsize=(8,10),
+    height_ratio=12,
+    star_cutoffs=(0.05,0.01,0.001),
+    star_spacer=0.0075,
+    ybounds=None,
+    bar_borders=True,
+    capsize=2,
+    xgrid=True):
     """
     Create a barplot with the values from model, drawing the x-axis as a grid of
     boxes indicating the coordinate of the epistatic parameter. Should automatically
@@ -542,11 +543,52 @@ def bar_with_xbox(model,
     bounds = range(-1,len(order_colors))
     norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
 
-    # Create a plot with an upper and lower panel, sharing the x-axis
-    fig = plt.figure(figsize=figsize)
-    gs = mpl.gridspec.GridSpec(2, 1, height_ratios=[height_ratio, 1])
-    ax_array = [plt.subplot(gs[0])]
-    ax_array.append(plt.subplot(gs[1],sharex=ax_array[0]))
+    if xgrid is True:
+        fig = plt.figure(figsize=figsize)
+
+        # Create a plot with an upper and lower panel, sharing the x-axis
+        gs = mpl.gridspec.GridSpec(2, 1, height_ratios=[height_ratio, 1])
+        ax = [plt.subplot(gs[0])]
+        ax.append(plt.subplot(gs[1],sharex=ax_array[0]))
+        bar_axis = ax_array[0]
+        grid_axis = ax_array[1]
+
+        ###### Create the box-array x-axis
+
+        # make an empty data set
+        data = np.ones((num_sites,num_terms),dtype=int)*np.nan
+
+        # Make entries corresponding to each coordinate 1
+        for i, l in enumerate(labels):
+            for j in l:
+                data[(j-1),i] = color_array[i]
+
+        # draw the grid
+        for i in range(num_terms + 1):
+            grid_axis.add_artist(mpl.lines.Line2D((i,i),
+                                                           (0,num_sites),
+                                                           color="black"))
+
+        for i in range(num_sites + 1):
+            grid_axis.add_artist(mpl.lines.Line2D((0,num_terms),
+                                                           (i,i),
+                                                           color="black"))
+
+        # draw the boxes
+        grid_axis.imshow(data, interpolation='nearest',cmap=cmap,norm=norm,
+                           extent=[0, num_terms, 0, num_sites], zorder=0)
+
+        # turn off the axis labels
+        grid_axis.set_frame_on(False)
+        grid_axis.axis("off")
+        grid_axis.set_xticklabels([])
+        grid_axis.set_yticklabels([])
+
+    else:
+
+        fig, ax = plt.subplots(figsize=figsize)
+        bar_axis = ax
+
 
     # ------------------ #
     # Create the barplot #
@@ -573,7 +615,7 @@ def bar_with_xbox(model,
             else:
                 bar_y = model.Interactions.values[1:]
 
-        ax_array[0].bar(range(len(bar_y)), bar_y, width=0.8, color=colors_for_bar, edgecolor="none")
+        bar_axis.bar(range(len(bar_y)), bar_y, width=0.8, color=colors_for_bar, edgecolor="none")
 
     else:
 
@@ -602,16 +644,16 @@ def bar_with_xbox(model,
             bar_y = model.Interactions.values[1:]
 
         yerr = [lower[1:], upper[1:]]
-        ax_array[0].bar(range(len(bar_y)), bar_y, width=0.8, yerr=yerr, color=colors_for_bar,
+        bar_axis.bar(range(len(bar_y)), bar_y, width=0.8, yerr=yerr, color=colors_for_bar,
                         error_kw={"ecolor":"black", "capsize":capsize},
                         edgecolor="none",
                         linewidth=2,
                         )
 
-    ax_array[0].hlines(0, 0, len(model.Interactions.values)-1, linewidth=1, linestyle="--")
+    bar_axis.hlines(0, 0, len(model.Interactions.values)-1, linewidth=1, linestyle="--")
 
     # Label barplot y-axis
-    ax_array[0].set_ylabel(y_axis_name, fontsize=14)
+    bar_axis.set_ylabel(y_axis_name, fontsize=14)
 
     # Set barplot y-scale
     if ybounds is None:
@@ -622,18 +664,18 @@ def bar_with_xbox(model,
         ymax = ybounds[1]
 
     # Make axes pretty pretty
-    ax_array[0].axis([-1, len(bar_y) + 1, ymin, ymax])
-    ax_array[0].set_frame_on(False) #axis("off")
-    ax_array[0].get_xaxis().set_visible(False)
-    ax_array[0].get_yaxis().tick_left()
-    ax_array[0].get_yaxis().set_tick_params(direction='out')
-    ax_array[0].add_artist(mpl.lines.Line2D((-1,-1), (ax_array[0].get_yticks()[1], ax_array[0].get_yticks()[-2]), color='black', linewidth=1))
+    bar_axis.axis([-1, len(bar_y) + 1, ymin, ymax])
+    bar_axis.set_frame_on(False) #axis("off")
+    bar_axis.get_xaxis().set_visible(False)
+    bar_axis.get_yaxis().tick_left()
+    bar_axis.get_yaxis().set_tick_params(direction='out')
+    bar_axis.add_artist(mpl.lines.Line2D((-1,-1), (bar_axis.get_yticks()[1], bar_axis.get_yticks()[-2]), color='black', linewidth=1))
 
     # add vertical lines between order breaks
     previous_order = 1
     for i in range(len(labels)):
         if len(labels[i]) != previous_order:
-            ax_array[0].add_artist(mpl.lines.Line2D((i,i),
+            bar_axis.add_artist(mpl.lines.Line2D((i,i),
                                                            (ymin,ymax),
                                                            color="black",
                                                            linestyle="--"))
@@ -654,46 +696,15 @@ def bar_with_xbox(model,
                     break
 
             for j in range(star_counter):
-                ax_array[0].text(x=(i+0.5),y=ymin+(j*min_offset),s="*")
+                bar_axis.text(x=(i+0.5),y=ymin+(j*min_offset),s="*")
 
-    # --------------------------- #
-    # Create the box-array x-axis #
-    # --------------------------- #
-
-    # make an empty data set
-    data = np.ones((num_sites,num_terms),dtype=int)*np.nan
-
-    # Make entries corresponding to each coordinate 1
-    for i, l in enumerate(labels):
-        for j in l:
-            data[(j-1),i] = color_array[i]
-
-    # draw the grid
-    for i in range(num_terms + 1):
-        ax_array[1].add_artist(mpl.lines.Line2D((i,i),
-                                                       (0,num_sites),
-                                                       color="black"))
-
-    for i in range(num_sites + 1):
-        ax_array[1].add_artist(mpl.lines.Line2D((0,num_terms),
-                                                       (i,i),
-                                                       color="black"))
-
-    # draw the boxes
-    ax_array[1].imshow(data, interpolation='nearest',cmap=cmap,norm=norm,
-                       extent=[0, num_terms, 0, num_sites], zorder=0)
-
-    # turn off the axis labels
-    ax_array[1].set_frame_on(False)
-    ax_array[1].axis("off")
-    ax_array[1].set_xticklabels([])
-    ax_array[1].set_yticklabels([])
+    # remove x tick labels
     plt.setp([a.get_xticklabels() for a in fig.axes[:-1]], visible=False)
 
     # Draw the final figure
     fig.tight_layout()
 
-    return fig, ax_array
+    return fig, ax
 
 
 # -----------------------------

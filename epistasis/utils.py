@@ -50,8 +50,8 @@ def epistatic_order_indices(length, order):
 
 
 def genotype_params(genotype, order=None):
-    """ List the possible parameters (as label form) for a binary genotype
-        up to a given order.
+    """List the possible parameters (as label form) for a binary genotype
+    up to a given order.
     """
     if order is None:
         order = len(genotype)
@@ -66,36 +66,38 @@ def genotype_params(genotype, order=None):
     return params
 
 def build_interaction_labels(length, order):
-    """ Return interactions labels for building X matrix. """
+    """Return interactions labels for building X matrix. """
     labels = [[0]]
     for o in range(1,order+1):
         for label in it.combinations(range(1,length+1), o):
             labels.append(list(label))
     return labels
 
-
 def params_index_map(mutations):
-    """
-        __Arguments__:
+    """Write a dictionary that maps mutations dictionary to indices in dummy
+    variable matrix.
 
-        `mutations` [dict] : mapping each site to their accessible mutations alphabet.
+    Parameters
+    ----------
+    mutations : dict
+        mapping each site to their accessible mutations alphabet.
+        mutations = {site_number : alphabet}
 
+    If site does not mutate, value should be None.
 
-            mutations = {site_number : alphabet}
+    Returns
+    -------
+    mutations : dict
+        `mutations = { site_number : indices }`. If the site alphabet is
+        note included, the model will assume binary between wildtype and derived.
 
-        If site does not mutate, value should be None.
-
-        __Returns__:
-
-        `mutations` [dict] : `mutations = { site_number : indices }`. If the site alphabet is
-            note included, the model will assume binary between wildtype and derived.
-
-            mutations = {
-                0: [indices],
-                1: [indices],
-
-            }
-            ```
+        ```
+        mutations = {
+            0: [indices],
+            1: [indices],
+            ...
+        }
+        ```
     """
     param_map = dict()
     n_sites = 1
@@ -110,24 +112,28 @@ def params_index_map(mutations):
 def build_model_params(length, order, mutations, start_order=0):
     """ Build interaction labels up to nth order given a mutation alphabet.
 
-        __Arguments__:
+    Parameters
+    ----------
+    n : int
+        order of interactions
+    mutations  : dict
+        `mutations = { site_number : indices }`. If the site
+        alphabet is note included, the model will assume binary
+        between wildtype and derived.
 
-        `n` [int] : order of interactions
-
-        `mutations` [dict] : `mutations = { site_number : indices }`. If the site
-            alphabet is note included, the model will assume binary
-            between wildtype and derived.
-
-            mutations = {
-                0: [indices],
-                1: [indices],
-
-            }
-
-        __Returns__:
-
-        `interactions` [list] : list of all interaction labels for system with
-            sequences of a given length and epistasis with given order.
+        Example
+        ```
+        mutations = {
+            0: [indices],
+            1: [indices],
+            ...
+        }
+        ```
+    Returns
+    -------
+    interactions : list
+        list of all interaction labels for system with
+        sequences of a given length and epistasis with given order.
     """
     # Include the intercept interaction?
     if start_order == 0:
