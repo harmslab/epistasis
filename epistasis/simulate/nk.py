@@ -3,10 +3,15 @@ import itertools as it
 
 from epistasis.simulate.base import BaseArtificialMap
 
-class NKEpistasisMap(BaseArtificialMap):
+def nktable(n, k):
+    """Build an NK model table."""
+    pass
 
-    """ Generate genotype-phenotype map from NK fitness models. """
 
+class NKSimulation(BaseArtificialMap):
+    """ Generate genotype-phenotype map from NK fitness models.
+
+    """
     def __init__(self, length, order, magnitude):
         """ Construct a genotype phenotype map from NK epistatic landscape. """
         super(NKEpistasisMap,self).__init__(length, order, log_transform=False)
@@ -35,8 +40,9 @@ class NKEpistasisMap(BaseArtificialMap):
         return nk_table
 
     def build(self):
-        """ Build phenotypes from NK table"""
+        """Build phenotypes from NK table
 
+        """
         # Check that nk table exists
         if hasattr(self, "nk_table") == False:
             raise Exception("NK table must be constructed before building phenotypes.")

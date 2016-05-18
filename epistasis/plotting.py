@@ -549,9 +549,10 @@ def bar_with_xbox(model,
         # Create a plot with an upper and lower panel, sharing the x-axis
         gs = mpl.gridspec.GridSpec(2, 1, height_ratios=[height_ratio, 1])
         ax = [plt.subplot(gs[0])]
-        ax.append(plt.subplot(gs[1],sharex=ax_array[0]))
-        bar_axis = ax_array[0]
-        grid_axis = ax_array[1]
+        ax.append(plt.subplot(gs[1],sharex=ax[0]))
+        bar_axis = ax[0]
+        grid_axis = ax[1]
+
 
         ###### Create the box-array x-axis
 
@@ -676,9 +677,9 @@ def bar_with_xbox(model,
     for i in range(len(labels)):
         if len(labels[i]) != previous_order:
             bar_axis.add_artist(mpl.lines.Line2D((i,i),
-                                                           (ymin,ymax),
-                                                           color="black",
-                                                           linestyle="--"))
+               (ymin,ymax),
+               color="black",
+               linestyle="--"))
             previous_order = len(labels[i])
 
     # ------------------------- #

@@ -1,3 +1,6 @@
+__doc__ = """
+Simulate genotype-phenotype maps constructed from epistatic interactions.
+"""
 __all__ = ["nk", "random", "threshold"]
 
 from epistasis.simulate.nk import NKEpistasisMap
