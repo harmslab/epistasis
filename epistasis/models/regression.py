@@ -9,11 +9,11 @@ from sklearn.linear_model import LinearRegression
 # seqspace imports
 # ------------------------------------------------------------
 
-from seqspace.utils import (list_binary, 
-                            enumerate_space, 
-                            encode_mutations, 
+from seqspace.utils import (list_binary,
+                            enumerate_space,
+                            encode_mutations,
                             construct_genotypes)
-                            
+
 
 # ------------------------------------------------------------
 # Local imports
@@ -24,23 +24,23 @@ from epistasis.models.base import BaseModel
 from epistasis.plotting import RegressionPlotting
 from epistasis.utils import (epistatic_order_indices,
                                 build_model_params)
-                                
+
 
 # ------------------------------------------------------------
 # Unique Epistasis Functions
 # ------------------------------------------------------------
 
 class RegressionStats(object):
-    
+
     def __init__(self, model):
-        
+
         self._model = model
-        
+
     @property
     def score(self):
         """ Get the epistasis model score after estimating interactions. """
         return self._model._score
-        
+
     def predict(self):
         """ Infer the phenotypes from model.
 
@@ -54,21 +54,22 @@ class RegressionStats(object):
         binaries = self._model.Binary.complete_genotypes
         X = generate_dv_matrix(binaries, self._model.Interactions.labels, encoding=self._model.encoding)
         phenotypes = self._model.regression_model.predict(X)
-        
+
         return phenotypes
-    
+
 
 class EpistasisRegression(BaseModel):
 
-    def __init__(self, wildtype, genotypes, phenotypes, 
-                order=None, 
-                parameters=None, 
-                stdeviations=None, 
-                log_transform=False, 
-                mutations=None, 
-                n_replicates=1, 
-                model_type="local"):
-                
+    def __init__(self, wildtype, genotypes, phenotypes,
+                order=None,
+                parameters=None,
+                stdeviations=None,
+                log_transform=False,
+                mutations=None,
+                n_replicates=1,
+                model_type="local",
+                logbase=np.log10):
+
         """ Create a map from local epistasis model projected into lower order
             order epistasis interactions. Requires regression to estimate values.
 
@@ -94,16 +95,17 @@ class EpistasisRegression(BaseModel):
                                 is cleverly chosen average state.
         """
         # Populate Epistasis Map
-        super(EpistasisRegression, self).__init__(wildtype, genotypes, phenotypes, 
-                stdeviations=stdeviations, 
-                log_transform=log_transform, 
-                mutations=mutations, 
-                n_replicates=n_replicates)
+        super(EpistasisRegression, self).__init__(wildtype, genotypes, phenotypes,
+                stdeviations=stdeviations,
+                log_transform=log_transform,
+                mutations=mutations,
+                n_replicates=n_replicates,
+                logbase=logbase)
 
         # Generate basis matrix for mutant cycle approach to epistasis.
         if order is not None:
             self.order = order
-            
+
         elif parameters is not None:
             self._construct_interactions()
             self.Interactions.labels = list(parameters.values())
@@ -115,21 +117,21 @@ class EpistasisRegression(BaseModel):
         model_types = {
             "local": {
                 "encoding": {"1": 1, "0": 0},       # Decomposition matrix encoding
-            }, 
+            },
             "global": {
                 "encoding": {"1": -1, "0": 1},
             }
         }
-        
+
         # Set encoding from model_type given
         self.encoding = model_types[model_type]["encoding"]
 
         # Construct decomposition matrix
         self.X = generate_dv_matrix(self.Binary.genotypes, self.Interactions.labels, encoding=self.encoding)
-        
+
         # Initialize useful objects to model object
         self.Stats = RegressionStats(self)
-        
+
         # Try to add plotting module if matplotlib is installed
         try:
             self.Plot = RegressionPlotting(self)

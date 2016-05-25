@@ -18,68 +18,68 @@ from seqspace.base import BaseMap
 from epistasis.utils import params_index_map, build_model_params, label_to_key
 
 class RawInteractionMap(object):
-            
+
     @property
     def values(self):
         """ Get the values of the interaction in the system"""
         return self._values
-        
+
     @values.setter
     def values(self, values):
         self._values = values
 
 
 class InteractionMap(BaseMap):
-    
-    def __init__(self, mutation_map, log_transform):
-        """ Mapping object for indexing and tracking interactions in an 
-            epistasis map object. 
-            
+
+    def __init__(self, mutation_map, log_transform, logbase=np.log10):
+        """ Mapping object for indexing and tracking interactions in an
+            epistasis map object.
+
             __Arguments__:
-            
+
             `mutation_map` [MutationMap instance] : An already populated MutationMap instance.
         """
         self.Mutations = mutation_map
         self._log_transform = log_transform
-        
+
         if self.log_transform:
             self.Raw = RawInteractionMap()
-    
+
     @property
     def n(self):
         """ Return the number of Interactions. """
         return len(self.labels)
-    
+
     @property
     def log_transform(self):
         """ Boolean argument telling whether space is log transformed. """
         return self._log_transform
-    
+
     @property
     def length(self):
         """ Length of sequences. """
         return self._length
-    
+
     @property
     def order(self):
         """ Get order of epistasis in system. """
         return self._order
-        
+
     @property
     def keys(self):
         """ Get the interaction keys. (type==list of str, see self._build_interaction_labels)"""
         return self._keys
-            
+
     @property
     def values(self):
         """ Get the values of the interaction in the system"""
         return self._values
-        
+
     @property
     def indices(self):
         """ Get the interaction index in interaction matrix. """
         return self._indices
-        
+
     @property
     def mutations(self):
         """ Get the interaction index in interaction matrix. """
@@ -91,7 +91,7 @@ class InteractionMap(BaseMap):
             the genotypes. (type==list of lists, see self._build_interaction_labels)
         """
         return self._labels
-    
+
     @property
     def keys(self):
         """ Get interactions as string-keys. """
@@ -99,7 +99,7 @@ class InteractionMap(BaseMap):
             return self._keys
         else:
             return np.array([label_to_key(lab) for lab in self.labels])
-        
+
     @property
     def genotypes(self):
         """ Get the interaction genotype. """
@@ -107,22 +107,22 @@ class InteractionMap(BaseMap):
         for label in self._labels[1:]:
             elements.append(self._label_to_genotype(label))
         return elements
-        
+
     # ----------------------------------------------
     # Setter Functions
     # ----------------------------------------------
     @order.setter
     def order(self, order):
-        """ Set the order of epistasis in the system. As a consequence, 
+        """ Set the order of epistasis in the system. As a consequence,
             this mapping object creates the """
-        self._order = order        
-        
+        self._order = order
+
     @mutations.setter
     def mutations(self, mutations):
         """ Set the indices of where mutations occur in the wildtype genotype.
-                 
-            `mutations = { site_number : indices }`. If the site 
-            alphabet is note included, the model will assume binary 
+
+            `mutations = { site_number : indices }`. If the site
+            alphabet is note included, the model will assume binary
             between wildtype and derived.
 
                 #!python
@@ -131,10 +131,10 @@ class InteractionMap(BaseMap):
                     1: [indices],
 
                 }
-            
+
         """
         self._mutations = mutations
-        
+
     @labels.setter
     def labels(self, labels):
         """ Manually set the interactions considered in the map. Useful for building epistasis models manually. """
@@ -147,11 +147,11 @@ class InteractionMap(BaseMap):
         if len(values) != len(self.labels):
             raise Exception("Number of interactions give to map is different than was defined. ")
         self._values = values
-        
+
         # Set raw values
         if self.log_transform:
             self.Raw.values = 10**values
-        
+
     @keys.setter
     def keys(self, keys):
         """ Manually set keys. NEED TO do some quality control here. """
@@ -161,14 +161,14 @@ class InteractionMap(BaseMap):
     def log_transform(self, boolean):
         """ True/False to log transform the space. """
         self._log_transform = boolean
-        
+
     # ----------------------------------------------
     # Methods
-    # ----------------------------------------------    
+    # ----------------------------------------------
 
     def _label_to_genotype(self, label):
-        """ Convert a label (list(3,4,5)) to its genotype representation ('A3V, A4V, A5V'). 
-        
+        """ Convert a label (list(3,4,5)) to its genotype representation ('A3V, A4V, A5V').
+
             NEED TO REFACTOR
         """
         genotype = ""
@@ -179,23 +179,23 @@ class InteractionMap(BaseMap):
             genotype += mutation + ','
         # Return genotype without the last comma
         return genotype[:-1]
-        
+
     def get_order(self, order):
         """ Return a dictionary of interactions of a given order."""
-        
+
         # Construct the set of model parameters for given order
         labels = build_model_params(self.length,
                             order,
                             self.mutations,
                             start_order=order)
-        
+
         # Get a mapping of model labels to values
         key2value = self.get_map("keys", "values")
-        
+
         # Built a dict of order interactions to values
         desired = {}
         for label in labels:
             key = label_to_key(label)
             desired[key] = key2value[key]
-        
+
         return desired

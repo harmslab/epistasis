@@ -58,14 +58,16 @@ class EpistasisMap(GenotypePhenotypeMap):
             stdeviations=None,
             log_transform=False,
             mutations=None,
-            n_replicates=1
+            n_replicates=1,
+            logbase=np.log10,
         ):
 
         super(EpistasisMap, self).__init__(wildtype, genotypes, phenotypes,
             stdeviations=stdeviations,
             log_transform=log_transform,
             mutations=mutations,
-            n_replicates=n_replicates
+            n_replicates=n_replicates,
+            logbase=logbase
         )
 
     # ------------------------------------------------------
@@ -97,7 +99,7 @@ class EpistasisMap(GenotypePhenotypeMap):
 
             Must populate the Mutations subclass before setting interactions.
         """
-        self.Interactions = InteractionMap(self.Mutations, self.log_transform)
+        self.Interactions = InteractionMap(self.Mutations, self.log_transform, logbase=self.logbase)
         self.Interactions._length = self.length
         self.Interactions.log_transform = self.log_transform
         self.Interactions.mutations = params_index_map(self.mutations) # construct the mutations mapping

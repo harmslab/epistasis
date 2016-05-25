@@ -3,70 +3,72 @@ __doc__ = """ Principal component analysis for genotype-phenotype maps in submod
 # -------------------------------------- -------------
 # Module for Principal Component Analysis of Epistasis
 # ----------------------------------------------------
+import numpy as np
 
 from sklearn.decomposition import PCA
 from epistasis.decomposition import generate_dv_matrix
 from epistasis.models.regression import EpistasisRegression
 
 class PCAStats(object):
-    
+
     def __init__(self, model):
         """
-        Object that holds different statistical readouts of PCA analysis 
+        Object that holds different statistical readouts of PCA analysis
         """
         self._model = model
-    
+
     def cumulative_variance(self, n_components):
-        """ 
+        """
         Return the cumulative explained variance for a given number of components.
         """
         return sum(self._model.explained_variance_ratio[:n_components])
-        
+
     def variance_cutoff(self, variance_ratio):
         """
         Return the number of components whose cumulative sum explain the ratio of variance given.
-        
+
         Arguments:
         ---------
         variance_fraction: float
             fraction of explained variance to find.
-            
+
         Returns:
         -------
         n_components: int
             number of components that explain the given explained variance ratio
         """
-        if variance_ratio > 1.0 or variance_ratio < 0.0: 
+        if variance_ratio > 1.0 or variance_ratio < 0.0:
             raise Exception(""" variance_ratio must be between 0.0 and 1.0. """)
-        
+
         # Init fractions
-        fraction = 0 
+        fraction = 0
         n_components = 0
-        
-        # Add principal components until their cumulative sum 
+
+        # Add principal components until their cumulative sum
         while fraction < variance_ratio:
             n_components += 1
             # Calculate cumulative variance
             fraction = self.cumulative_variance(n_components)
-        
+
         # Return the number of components
-        return n_components 
-        
+        return n_components
+
 
 class EpistasisPCA(EpistasisRegression):
 
-    def __init__(self, wildtype, genotypes, phenotypes, 
+    def __init__(self, wildtype, genotypes, phenotypes,
         order=1,
-        n_components=None, 
-        stdeviations=None, 
-        log_transform=False, 
-        mutations=None, 
-        n_replicates=1, 
+        n_components=None,
+        stdeviations=None,
+        log_transform=False,
+        mutations=None,
+        n_replicates=1,
         model_type="local",
-        coordinate_type="epistasis"):
-        
-        """ 
-        
+        coordinate_type="epistasis",
+        logbase=np.log10):
+
+        """
+
         Principal component analysis of the genotype-phenotype map.
         This module uses Scikit-learn's PCA class to perform the transformation.
 
@@ -74,8 +76,8 @@ class EpistasisPCA(EpistasisRegression):
         dummy variable matrix, thereby finding the linear combination of mutations
         and their epistatic coordinates that best describe the variation in
         phenotype.
-            
-            
+
+
         Arguments:
         ---------
         wildtype: str
@@ -104,37 +106,38 @@ class EpistasisPCA(EpistasisRegression):
 
         """
         # Inherent parent class (Epistasis Regression)
-        super(EpistasisPCA, self).__init__(wildtype, genotypes, phenotypes, 
+        super(EpistasisPCA, self).__init__(wildtype, genotypes, phenotypes,
             order=order,
-            stdeviations=stdeviations, 
+            stdeviations=stdeviations,
             log_transform=log_transform,
-            mutations=mutations, 
+            mutations=mutations,
             n_replicates=n_replicates,
-            model_type=model_type)
-            
+            model_type=model_type,
+            logbase=logbase)
+
         self.order = order
         self.n_components = n_components
         self.model = PCA(n_components=n_components)
 
         # Construct the Interactions mapping -- Interactions Subclass is added to model
         self._construct_interactions()
-        
+
         # Construct a dummy variable matrix based on user preferences
         if coordinate_type == "epistasis":
             # Must fit space with regression first, then use those coordinates
-            super(EpistasisPCA, self).fit() 
+            super(EpistasisPCA, self).fit()
             self.X = self.X * self.Interactions.values
-            
+
         elif coordinate_type == "phenotypes":
             self.X = self.X * self.Binary.phenotypes
-        
+
         # Add statistics object
         self.Stats = PCAStats(self)
 
 
     def fit(self):
-        """ 
-        Estimate the principal components (i.e. maximum coordinates in phenotype variation.). 
+        """
+        Estimate the principal components (i.e. maximum coordinates in phenotype variation.).
         """
         self.X_new = self.model.fit_transform(self.X[:,:])
         self.explained_variance_ratio = self.model.explained_variance_ratio_
