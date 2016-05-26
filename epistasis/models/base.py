@@ -83,7 +83,7 @@ class BaseModel(EpistasisMap):
                     mutations = gpm.mutations,
                     log_transform= gpm.log_transform,
                     n_replicates = gpm.n_replicates,
-                    logbase=gpm.logbase
+                    logbase=gpm.logbase,
                     **kwargs)
 
         return model
