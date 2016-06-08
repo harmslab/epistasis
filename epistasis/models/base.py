@@ -65,34 +65,13 @@ class BaseModel(EpistasisMap):
     @classmethod
     def from_gpm(cls, gpm, **kwargs):
         """ Initialize an epistasis model from a Genotype-phenotypeMap object """
-
-        # Grab un scaled phenotypes and errors
-        if gpm.log_transform is True:
-            _phenotypes = gpm.Raw.phenotypes
-            _stdeviations = gpm.Raw.stdeviations
-        else:
-            _phenotypes = gpm.phenotypes
-            _stdeviations = gpm.stdeviations
-
         # Grab all properties from data-structure
-        args = ["wildtype", "genotypes", "phenotypes"]
         options = {
-            "stdeviations": None,
             "log_transform": False,
             "mutations": None,
             "n_replicates": 1,
             "logbase": np.log10
         }
-
-        # Grab all arguments and order them
-        for i in range(len(args)):
-            # Get all args
-            try:
-                args[i] = getattr(gpm, args[i])
-            except KeyError:
-                raise LoadingException("""No `%s` property in \
-                GenotypePhenotypeMap. Must have %s for Model construction."""
-                % (args[i], args[i]) )
 
         # Get all options for map and order them
         for key in options:
@@ -102,9 +81,23 @@ class BaseModel(EpistasisMap):
             except:
                 pass
 
+        options["stdeviations"] = stdeviations
+
         # Override any properties with specified kwargs passed directly into method
         options.update(kwargs)
 
+        # Grab un scaled phenotypes and errors
+        if gpm.log_transform is True:
+            wildtype = gpm.wildtype
+            genotypes = gpm.genotypes
+            phenotypes = gpm.Raw.phenotypes
+            stdeviations = gpm.Raw.stdeviations
+        else:
+            wildtype = gpm.wildtype
+            genotypes = gpm.genotypes
+            phenotypes = gpm.phenotypes
+            stdeviations = gpm.stdeviations
+            
         # Create an instance
         model = cls(args[0], args[1], args[2], **options)
 
