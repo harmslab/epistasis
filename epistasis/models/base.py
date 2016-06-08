@@ -81,8 +81,6 @@ class BaseModel(EpistasisMap):
             except:
                 pass
 
-        options["stdeviations"] = stdeviations
-
         # Override any properties with specified kwargs passed directly into method
         options.update(kwargs)
 
@@ -97,7 +95,8 @@ class BaseModel(EpistasisMap):
             genotypes = gpm.genotypes
             phenotypes = gpm.phenotypes
             stdeviations = gpm.stdeviations
-            
+
+        options["stdeviations"] = stdeviations
         # Create an instance
         model = cls(args[0], args[1], args[2], **options)
 
