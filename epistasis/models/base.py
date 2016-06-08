@@ -98,7 +98,7 @@ class BaseModel(EpistasisMap):
 
         options["stdeviations"] = stdeviations
         # Create an instance
-        model = cls(args[0], args[1], args[2], **options)
+        model = cls(wildtype, genotypes, phenotypes, **options)
 
         return model
 
