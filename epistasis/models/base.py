@@ -74,17 +74,39 @@ class BaseModel(EpistasisMap):
             _phenotypes = gpm.phenotypes
             _stdeviations = gpm.stdeviations
 
+        # Grab all properties from data-structure
+        args = ["wildtype", "genotypes", "phenotypes"]
+        options = {
+            "stdeviations": None,
+            "log_transform": False,
+            "mutations": None,
+            "n_replicates": 1,
+            "logbase": np.log10
+        }
 
-        # Grab each property from map
-        model = cls(gpm.wildtype,
-                    gpm.genotypes,
-                    _phenotypes,
-                    stdeviations=_stdeviations,
-                    mutations = gpm.mutations,
-                    log_transform= gpm.log_transform,
-                    n_replicates = gpm.n_replicates,
-                    logbase=gpm.logbase,
-                    **kwargs)
+        # Grab all arguments and order them
+        for i in range(len(args)):
+            # Get all args
+            try:
+                args[i] = getattr(gpm, args[i])
+            except KeyError:
+                raise LoadingException("""No `%s` property in \
+                GenotypePhenotypeMap. Must have %s for Model construction."""
+                % (args[i], args[i]) )
+
+        # Get all options for map and order them
+        for key in options:
+            # See if options are in json data
+            try:
+                options[key] = getattr(gpm, key)
+            except:
+                pass
+
+        # Override any properties with specified kwargs passed directly into method
+        options.update(kwargs)
+
+        # Create an instance
+        model = cls(args[0], args[1], args[2], **options)
 
         return model
 

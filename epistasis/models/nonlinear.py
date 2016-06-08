@@ -71,8 +71,10 @@ class NonlinearStats(object):
         """ Get the epistasis model score after estimating interactions. """
         return self._model._score
 
-    def subtract_function(self):
+    def _subtract_function(self):
         """Returns phenotypes without the nonlinear function.
+
+        Not developed yet.
         """
         pass
 
@@ -80,7 +82,10 @@ class NonlinearStats(object):
         """Return phenotypes composed of only the Interaction values determined by
         fit. Removes the nonlinear function from the data.
         """
-        return np.dot(self._model.X, self._model.Interactions.values)
+        if self._model.Linear.log_transform:
+            return 10**np.dot(self._model.X, self._model.Interactions.values)
+        else:
+            return np.dot(self._model.X, self._model.Interactions.values)
 
     def predict(self):
         """ Infer the phenotypes from model.
@@ -93,12 +98,12 @@ class NonlinearStats(object):
         """
         phenotypes = np.zeros(len(self._model.complete_genotypes), dtype=float)
         binaries = self._model.Binary.complete_genotypes
+
         X = generate_dv_matrix(binaries, self._model.Interactions.labels, encoding=self._model.encoding)
 
         popt = list(self._model.Interactions.values) + self._model.Parameters.get_params()
         phenotypes = self._model._wrapped_function(X, *popt)
         return phenotypes
-
 
 
 class EnsembleStats(object):
@@ -133,8 +138,23 @@ class EnsembleStats(object):
 
 
 class NonlinearEpistasisModel(EpistasisRegression):
+    """ Runs a nonlinear least squares fit to regress epistatic coefficients from
+    a genotype-phenotype map which exhibits global nonlinearity in the phenotype.
 
+    This fitting class works in two-steps:
+        1. Fit the phenotypes with a nonlinear function (provided by you) that
+        captures global structure/scale in the data.
+        2. Fit the leftover variation with a linear epistasis model (via linear regression),
+        calculating the deviation from additivity/multiplicity in the genotypes.
 
+    The construction of this object, then, has a self.Linear object within, which
+    holds the output/results of step 2.
+
+    If the expected effects of mutations are multiplicative, a log transformation
+    is applied to the data after step 1 to make fitting the epistatic coefficients
+    a simple linear regression. Note: `self.log_transform` will return False still;
+    however, self.Linear.log_transform will return True.
+    """
     def __init__(self, wildtype, genotypes, phenotypes, function,
         order=None,
         parameters=None,
@@ -145,29 +165,22 @@ class NonlinearEpistasisModel(EpistasisRegression):
         model_type="local",
         logbase=np.log10):
 
-        """
-        Performs minimization on a non-linear epistasis model function.
-
-        `function` must be a callable function whose first argument is a decomposition matrix.
-        Other arguments are extra coefficients/parameters in the nonlinear function
-
-        Example:
-        -------
-
-        # nonlinear function to minimize
-        def func
-
-        """
-
+        # Inherit parent class __init__
         super(NonlinearEpistasisModel, self).__init__(wildtype, genotypes, phenotypes,
             order=order,
             parameters=parameters,
             stdeviations=stdeviations,
-            log_transform=log_transform,
+            log_transform=False,    # Set this log transformation to False
             mutations=mutations,
             n_replicates=n_replicates,
             model_type=model_type,
             logbase=logbase)
+
+        # Initialize the linear function
+        self._Linear = EpistasisRegression.from_gpm(self,
+            log_transform=log_transform,
+            order=order,
+        )
 
         # Set the nonlinear function
         self.function = function
@@ -213,7 +226,12 @@ class NonlinearEpistasisModel(EpistasisRegression):
             # The user defined arguments from nonlinear function are the final set.
             other_args = args[n_coeffs+1:]
 
-            return function(np.dot(x,betas), *other_args)
+            # If the underlying genotype map is to be log_transformed
+            if self._Linear.log_transform:
+                new_x = 10**(np.dot(x,betas))
+            else:
+                new_x = np.dot(x, betas)
+            return function(new_x, *other_args)
 
         return inner
 
@@ -264,6 +282,11 @@ class NonlinearEpistasisModel(EpistasisRegression):
             self.Parameters._set_param(i, popt[len(self.Interactions.labels)+i])
 
         y_pred = self._wrapped_function(self.X, *popt)
+
+        # Expose the Linear stuff to user and fill in important stuff.
+        self.Linear = self._Linear
+        self.Linear.phenotypes = y_pred
+        self.Linear.Interactions.values = self.Interactions.values
 
         self._score = pearson(self.phenotypes, y_pred)**2
 

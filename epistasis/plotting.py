@@ -204,6 +204,9 @@ class NonlinearPlotting(RegressionPlotting):
         if xbounds is None:
             predicted = np.dot(self.model.X,  self.model.Interactions.values)
 
+            if self.model.Linear.log_transform:
+                predicted = 10**predicted
+
             max_p = max(predicted)
             min_p = min(predicted)
 
@@ -219,7 +222,14 @@ class NonlinearPlotting(RegressionPlotting):
 
 
     def best_fit(self, ax=None, figsize=(6,4), errorbars=False, axis=None, **kwargs):
-        """ Plot model line through date. """
+        """ Plot model line through data.
+
+        Parameters:
+        ----------
+        ax : matplotlib.Axis
+            matplotlib object to add best fit data to.
+
+        """
         # Add to axis if given, else create new plot.
         if ax is None:
             fig, ax = plt.subplots(figsize=figsize)
@@ -237,12 +247,12 @@ class NonlinearPlotting(RegressionPlotting):
         # Plot the line through data
 
         if errorbars is True:
-                if self.model.log_transform:
-                    upper = np.log10(1 + self.model.stdeviations/self.model.Raw.phenotypes)
-                    lower = np.log10(1 - self.model.stdeviations/self.model.Raw.phenotypes)
+                if self.model.Linear.log_transform:
+                    upper = np.log10(1 + self.model.stdeviations/self.model.phenotypes)
+                    lower = np.log10(1 - self.model.stdeviations/self.model.phenotypes)
 
                 else:
-                    upper = self.stdeviations
+                    upper = self.model.stdeviations
                     lower = upper
 
                 ax.errorbar(linear, observed, yerr=[upper,abs(lower)], **kwargs)
@@ -288,7 +298,7 @@ class NonlinearPlotting(RegressionPlotting):
             plt.setp(stemlines, 'linewidth', 1.5)
             plt.setp(baseline, 'color','r', 'linewidth', 1)
         else:
-            ax.plot(data[0], data[1], **kwargs)
+            ax.errorbar(data[0], data[1], **kwargs)
             ax.hlines(0, min(data[0]), max(data[0]), linestyle="dotted")
         ax.set_ylim([-ylim, ylim])
 
@@ -725,7 +735,8 @@ def interactions(beta,
     ybounds=None,
     bar_borders=True,
     capsize=2,
-    xgrid=True):
+    xgrid=True,
+    colorall=False):
     """
     Create a barplot with the values from model, drawing the x-axis as a grid of
     boxes indicating the coordinate of the epistatic parameter. Should automatically
@@ -757,13 +768,20 @@ def interactions(beta,
     if labels[0] == [0] :
         labels = labels[1:]
         beta = beta[1:]
-        err = err[1:]
 
     # Sanity check on the errors
     if sigmas == 0:
         significance = None
     elif significance == None:
         sigmas = 0
+
+    # If two errorbars are given, assume assymmetry.
+    if len(err) == 2:
+        lower = err[0][1:]
+        upper = err[1][1:]
+    else:
+        lower = err[1:]
+        upper = err[1:]
 
     # Figure out the length of the x-axis and the highest epistasis observed
     num_terms = len(labels)
@@ -799,7 +817,16 @@ def interactions(beta,
         significance = None
     else:
         if log_space == True:
-            z_score = abs( (beta - 1) / err )
+            error_array = np.empty(len(beta), dtype=float)
+
+            # Find indices of negative betas
+            negative = np.arange(len(beta), dtype=int)[beta<1]
+            positive = np.arange(len(beta), dtype=int)[beta>1]
+
+            error_array[negative] = upper[negative]
+            error_array[positive] = lower[positive]
+            z_score = abs( (beta - 1) / error_array )
+
         else:
             z_score = abs( (beta - 1) / err )
         # if z_score is > 5, set z_score to largest possible range where p-value is within floating point
@@ -808,6 +835,7 @@ def interactions(beta,
     # straight p-values
     if significance == "p":
         p_values = 2*(1 - scipy_norm.cdf( z_score ) )
+        print(p_values[-1])
 
     # bonferroni corrected p-values
     elif significance == "bon":
@@ -820,16 +848,19 @@ def interactions(beta,
 
     # or die
     else:
-        err = "signifiance argument {:s} not recognized\n".format(significance)
+        err = "significance argument {:s} not recognized\n".format(significance)
         raise ValueError(err)
 
     # Create color array based on significance
     color_array = np.zeros((len(labels)),dtype=int)
     for i, l in enumerate(labels):
-        if p_values[i] < significance_cutoff:
+        if colorall == True:
             color_array[i] = len(l) - 1
         else:
-            color_array[i] = -1
+            if p_values[i] < significance_cutoff:
+                color_array[i] = len(l) - 1
+            else:
+                color_array[i] = -1
 
     # ---------------- #
     # Create the plots #
@@ -909,18 +940,23 @@ def interactions(beta,
 
         # Plot the graph on a log scale
         if log_space:
-            upper = sigmas*np.log10(1 + err/beta)
-            lower = sigmas*abs(np.log10(1 - err/beta))
+            upper = sigmas*np.log10(1 + upper/beta)
+            lower = sigmas*abs(np.log10(1 - lower/beta))
             lower = np.nan_to_num(lower)
             lower[lower == 0] = 10e100
 
             bar_y = np.log10(beta)
         else:
-            upper = sigmas*err
-            lower = sigmas*err
+            upper = sigmas*upper
+            lower = sigmas*lower
             bar_y = beta
 
+
+        lower[lower > y_scalar*max(abs(bar_y))] = max(abs(bar_y)) + y_scalar*max(abs(bar_y))
+        upper[upper > y_scalar*max(abs(bar_y))] =  max(abs(bar_y)) + y_scalar*max(abs(bar_y))
+
         yerr = [lower, upper]
+
         bar_axis.bar(range(len(bar_y)), bar_y, width=0.8, yerr=yerr, color=colors_for_bar,
                         error_kw={"ecolor":"black", "capsize":capsize},
                         edgecolor="none",
