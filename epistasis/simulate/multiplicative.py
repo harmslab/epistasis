@@ -21,9 +21,30 @@ from seqspace.utils import encode_mutations, construct_genotypes
 # ------------------------------------------------------------
 
 class MultiplicativeSimulation(EpistasisMap, BaseSimulation):
-    """ Construct an epistatic genotype-phenotype with a multiplicative scale.
+    """ Construct an genotype-phenotype from multiplicative building blocks and
+    epistatic coefficients.
 
-    All epistatic coefficients must be positive for this function to work.
+    Example
+    -------
+    Phenotype = b0 * b1 * b2 * b3 * b12 * b13 * b13 * b123
+    or
+    log(phenotype) = log(b0) + log(b1) + log(b2) + log(b3) + log(b12)
+        + log(b13) + log(b13) + log(b123)
+
+    Arguments
+    ---------
+    wildtype : str
+        Wildtype genotype
+    mutations : dict
+        Mapping for each site to its alphabet
+    order : int
+        Order of epistasis in simulated genotype-phenotype map
+    betas : array-like
+        values of epistatic coefficients (must be positive for this function
+        to work. Log is taken)
+    model_type : str
+        Use a local or global (i.e. Walsh space) epistasis model to construct
+        phenotypes
     """
     def __init__(self, wildtype,
             mutations,

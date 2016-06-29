@@ -17,8 +17,27 @@ from epistasis.mapping.epistasis import EpistasisMap
 # ------------------------------------------------------------
 
 class AdditiveSimulation(EpistasisMap, BaseSimulation):
-    """ Generate genotype-phenotype map from random epistatic interactions.
+    """Construct an genotype-phenotype from additive building blocks and
+    epistatic coefficients.
 
+    Example
+    -------
+    Phenotype = b0 + b1 + b2 + b3 + b12 + b13 + b13 + b123
+
+    Arguments
+    ---------
+    wildtype : str
+        Wildtype genotype
+    mutations : dict
+        Mapping for each site to its alphabet
+    order : int
+        Order of epistasis in simulated genotype-phenotype map
+    betas : array-like
+        values of epistatic coefficients (must be positive for this function
+        to work. Log is taken)
+    model_type : str
+        Use a local or global (i.e. Walsh space) epistasis model to construct
+        phenotypes
     """
     def __init__(self, wildtype, mutations, order,
             magnitude=1.0,
