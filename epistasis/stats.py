@@ -12,6 +12,88 @@ from epistasis.plotting import FDistributionPlotting
 # Correlation metrics
 # -----------------------------------------------------------------------
 
+def resample_to_convergence(function, sample_size=50, rtol=10e-2, *args, **kwargs):
+    """Repeat a calculation until the mean and standard deviations of the samples
+    converge to a specified tolerance level (note that the tolerances are relative.)
+
+    Parameters
+    ----------
+    function : callable
+        Function to repeat until convergence.
+    sample_size : int
+        number of samples to draw before recalculating the statistics for convergence.
+    rtol : float
+        relative tolerance for convergence over sampling
+
+    *args : position arguments for the callable function that is resampled
+    **kwargs : keyword arguments for the callable function that is sampled.
+
+    Returns
+    -------
+    samples : numpy.array
+        array containing the samples. Each column is a sample. Rows are the different
+        values from the output of the callable
+    mean : numpy.array
+        means of the samples
+    std : numpy.array
+        standard deviations of samples
+    count : int
+        number of samples needed to reach convergence test.
+
+    """
+    tests = (False,False)
+    count = 0
+
+    while False in tests:
+        ############### Create a sample ###############
+        init_sample = function(*args, **kwargs)
+        # If init_sample is array
+        try:
+            # Allocate a 2d array with proper size.
+            new_samples = np.empty((sample_size, len(init_sample)), dtype=float)
+
+            # Populate the array with various samples
+            new_samples[0, :] = init_sample
+            for i in range(1,sample_size):
+                new_samples[i, :] = function(*args, **kwargs)
+
+        # If it is a value
+        except TypeError:
+            # Allocate memory in 1d array
+            new_samples = np.empty(sample_size, float)
+            new_samples[0] = init_sample
+
+            for i in range(1,sample_size):
+                new_samples[i] = function(*args, **kwargs)
+
+        ############ Check for convergence ##############
+        try:
+            samples = np.concatenate((samples, new_samples), axis=0)
+            # Calculate the statistics on the mean and sample.
+            mean = np.mean(samples, axis=0)
+            std = np.std(samples, ddof=1, axis=0)
+
+            # Check values for
+            check_mean = np.isclose(mean, old_mean, rtol=rtol)
+            check_std = np.isclose(std, old_std, rtol=rtol)
+            test1 = np.all(check_mean)
+            test2 = np.all(check_std)
+            tests = (test1, test2)
+
+        # If this is the first iteration, don't check for convergence.
+        except NameError:
+            samples = new_samples
+            mean = np.mean(samples, axis=0)
+            std = np.std(samples, ddof=1, axis=0)
+
+        old_mean = mean
+        old_std = std
+
+        count += sample_size
+
+    return samples, mean, std, count
+
+
 def pearson(y_obs, y_pred):
     """ Calculate pearson coefficient between two variables.
     """
@@ -131,8 +213,8 @@ def false_positive_rate(y_obs, y_pred, upper_ci, lower_ci, sigmas=2):
     rate = false_positives/float(known_zeros)
 
     return rate
-    
-    
+
+
 def false_negative_rate(y_obs, y_pred, upper_ci, lower_ci, sigmas=2):
     """ Calculate the false negative rate of predicted values. Finds all values that
         equal zero in the known array and calculates the number of false negatives
@@ -183,7 +265,7 @@ def false_negative_rate(y_obs, y_pred, upper_ci, lower_ci, sigmas=2):
             # Calculate bounds with given number of sigmas.
             upper = y_pred[i] + upper_bounds[i]
             lower = y_pred[i] - lower_bounds[i]
-            
+
             # Check false negative rate.
             if lower < 0 < upper:
                 false_negatives += 1
@@ -192,57 +274,57 @@ def false_negative_rate(y_obs, y_pred, upper_ci, lower_ci, sigmas=2):
     rate = false_negatives/float(known_nonzeros)
 
     return rate
-    
-    
+
+
 # -----------------------------------------------------------------------
 # Methods for model comparison
 # -----------------------------------------------------------------------
 
 class StatisticalTest(object):
-    
+
     def __init__(self, test_type="ftest", cutoff=0.05):
         """ Container for specs on the statistical test used in specifier class below. s"""
-        
+
         # Select the statistical test for specifying model
         test_types = {
-            "likelihood": log_likelihood_ratio, 
+            "likelihood": log_likelihood_ratio,
             "ftest": F_test
         }
-        
+
         # p-value cutoff
         self.cutoff = cutoff
-        
+
         # Set the test type
         self.type = test_type
-        
+
         # Testing function used.
         self.method = test_types[self.type]
-        
+
     @property
     def order(self):
         """ Return the order of the best model"""
         return self.best_model.order
-        
+
     @property
     def p_value(self):
         """ Get p_value"""
         return self.distribution.p_value(self.statistic)
-        
+
     def compare(self, null_model, alt_model):
         """
             Compare two models based on statistic test given
-            
+
             Return the test's statistic value and p-value.
         """
         self.statistic, self.distribution = self.method(null_model, alt_model)
-        
+
         # If test statistic is less than f-statistic cutoff, than keep alternative model
         if self.p_value < self.cutoff:
             self.best_model = alt_model
         # Else, the null model is sufficient and we keep it
         else:
             self.best_model = null_model
-            
+
         return self.statistic, self.p_value
 
 
@@ -256,27 +338,27 @@ def log_likelihood(model):
 
 def AIC(model):
     """ Calculate the Akaike information criterion score for a model. """
-    
-    # Check that 
+
+    # Check that
     extra = 0
     if hasattr(model, "Parameters"):
         extra = model.Parameters.n
-        
+
     # Get number of parameters
     k = len(model.Interactions.values) + extra
-    
+
     aic = 2 * k - 2 * log_likelihood(model)
     return aic
 
 
 def AIC_comparison(null, alt):
-    """ 
+    """
         Do a AIC comparison. Useful for comparing nonlinear model to linear model.
     """
     aic1 = AIC(null)
     aic2 = AIC(alt)
     return np.exp((aic1-aic2)/2)
-    
+
 
 def log_likelihood_ratio(model1, model2):
     """ Calculate the likelihood ratio two regressed epistasis models.
@@ -300,42 +382,42 @@ def log_likelihood_ratio(model1, model2):
     return ratio
 
 class FDistribution(object):
-    
+
     def __init__(self, dfn, dfd, loc=0, scale=1):
         """
             Create a f-distribution.
         """
-        self.dfn = dfn 
+        self.dfn = dfn
         self.dfd = dfd
         self.loc = loc
         self.scale = scale
-        
+
         self.Plot = FDistributionPlotting(self)
 
     def pdf(self, F):
         return f.pdf(F, self.dfn, self.dfd, loc=self.loc, scale=self.scale)
-    
+
     def cdf(self, F):
         return f.cdf(F, self.dfn, self.dfd, loc=self.loc, scale=self.scale)
-    
+
     def ppf(self, percent):
         return f.ppf(percent, self.dfn, self.dfd, loc=self.loc, scale=self.scale)
-        
+
     def p_value(self, F):
-        return 1 - f.cdf(F, self.dfn, self.dfd, loc=self.loc, scale=self.scale)        
+        return 1 - f.cdf(F, self.dfn, self.dfd, loc=self.loc, scale=self.scale)
 
     @property
     def median(self):
         return f.mean(self.dfn, self.dfd, loc=self.loc, scale=self.scale)
-        
+
     @property
     def mean(self):
         return f.mean(self.dfn, self.dfd, loc=self.loc, scale=self.scale)
-    
+
     @property
     def var(self):
         return f.var(self.dfn, self.dfd, loc=self.loc, scale=self.scale)
-        
+
     @property
     def std(self):
         return f.std(self.dfn, self.dfd, loc=self.loc, scale=self.scale)
@@ -364,7 +446,7 @@ def F_test(model1, model2):
     # Sum of square residuals for each model.
     sse1 = ss_residuals(model1.phenotypes, model1.Stats.predict())
     sse2 = ss_residuals(model2.phenotypes, model2.Stats.predict())
-    
+
     # F-score
     F = ( (sse1 - sse2) / df1 ) / (sse2 / df2)
 
@@ -373,18 +455,18 @@ def F_test(model1, model2):
 
 
 def p_value_to_sigma(p_value):
-    """ 
+    """
         Convert a p-value to a sigma-cutoff.
-        
+
         Example:
         -------
-        Distribution is centered on zero, and symmetric. 
-        
+        Distribution is centered on zero, and symmetric.
+
     """
     # Just look at the right side of the distribution, and get sigma at that cutff.
     right_side_p_value = 1 - float(p_value)/2
-    
+
     # Use the percent point function
     sigma = norm.ppf(right_side_p_value)
-    
+
     return sigma

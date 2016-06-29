@@ -22,6 +22,7 @@ from seqspace.utils import (list_binary,
 from epistasis.decomposition import generate_dv_matrix
 from epistasis.models.base import BaseModel
 from epistasis.plotting import RegressionPlotting
+from epistasis.stats import resample_to_convergence
 from epistasis.utils import (epistatic_order_indices,
                                 build_model_params)
 
@@ -146,3 +147,18 @@ class EpistasisRegression(BaseModel):
         self.regression_model.fit(self.X, self.Binary.phenotypes)
         self._score = self.regression_model.score(self.X, self.Binary.phenotypes)
         self.Interactions.values = self.regression_model.coef_
+
+
+    def fit_error(self, ):
+        """Estimate the error in the epistatic coefficients by bootstrapping.
+        Draws random samples of the phenotypes from the experimental standard
+        error. The main assumption of this method is that the error is normally
+        distributed and independent. Sampling is finished once the standard
+        deviation
+        """
+
+        interactions, mean, std, count = resample_to_convergence(self.fit(),
+            sample_size=sample_size,
+            rtol=1e-3
+        )
+        self.Interactions.values = mean

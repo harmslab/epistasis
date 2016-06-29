@@ -14,7 +14,6 @@ from seqspace.utils import enumerate_space, binary_mutations_map
 
 from epistasis.mapping.epistasis import EpistasisMap
 
-
 def construct(self, length, order, log_transform=False, mutations=None):
 
     if mutations is None:

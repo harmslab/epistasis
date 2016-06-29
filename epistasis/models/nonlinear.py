@@ -1,4 +1,6 @@
-__doc__ = """ Submodule with nonlinear epistasis models for estimating epistatic interactions in nonlinear genotype-phenotype maps."""
+__doc__ = """Submodule with nonlinear epistasis models for estimating epistatic
+interactions in nonlinear genotype-phenotype maps.
+"""
 
 import inspect
 import numpy as np
@@ -281,13 +283,16 @@ class NonlinearEpistasisModel(EpistasisRegression):
         for i in range(0, self.Parameters.n):
             self.Parameters._set_param(i, popt[len(self.Interactions.labels)+i])
 
-        y_pred = self._wrapped_function(self.X, *popt)
-
         # Expose the Linear stuff to user and fill in important stuff.
         self.Linear = self._Linear
-        self.Linear.phenotypes = y_pred
         self.Linear.Interactions.values = self.Interactions.values
+        linear_phenotypes = np.dot(self.X, self.Interactions.values)
+        if self.Linear.log_transform:
+            linear_phenotypes = 10**linear_phenotypes
+        self.Linear.phenotypes = linear_phenotypes
 
+        # Score the fit
+        y_pred = self._wrapped_function(self.X, *popt)
         self._score = pearson(self.phenotypes, y_pred)**2
 
     @ipywidgets_missing
