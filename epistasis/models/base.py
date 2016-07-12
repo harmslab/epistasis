@@ -7,50 +7,52 @@ from collections import OrderedDict
 
 # imports from seqspace dependency
 from seqspace.utils import farthest_genotype, binary_mutations_map
+from seqspace.gpm import GenotypePhenotypeMap
 
 # Local imports
 from epistasis.utils import epistatic_order_indices, SubclassException
-from epistasis.mapping.epistasis import EpistasisMap
-
 from epistasis.plotting import EpistasisPlotting
 
-class BaseModel(EpistasisMap):
+class BaseModel(GenotypePhenotypeMap):
+    """ Populate an Epistasis mapping object.
 
+    Parameters
+    ----------
+    wildtype : str
+        Wildtype genotype. Wildtype phenotype will be used as reference state.
+    genotypes : array-like
+        Genotypes in map. Can be binary strings, or not.
+    phenotypes : array-like
+        Quantitative phenotype values
+    stdevs : array-like
+        List of phenotype errors.
+    log_transform : bool
+        If True, log transform the phenotypes.
+    mutations : dict
+        Mapping dictionary for mutations at each site.
+
+    Attributes
+    ----------
+    See seqspace package for all attributes in GenotypePhenotypeMap
+    """
     def __init__(self, wildtype, genotypes, phenotypes,
-                    stdeviations=None,
-                    log_transform=False,
-                    mutations=None,
-                    n_replicates=1,
-                    logbase=np.log10):
+        stdeviations=None,
+        log_transform=False,
+        mutations=None,
+        n_replicates=1,
+        logbase=np.log10):
 
-        """ Populate an Epistasis mapping object.
-
-            __Arguments__:
-
-            `wildtype` [str] : Wildtype genotype. Wildtype phenotype will be used as reference state.
-
-            `genotypes` [array-like, dtype=str] : Genotypes in map. Can be binary strings, or not.
-
-            `phenotypes` [array-like] : Quantitative phenotype values
-
-            `stdevs` [array-like] : List of phenotype errors.
-
-            `log_transform` [bool] : If True, log transform the phenotypes.
-
-            `mutations` [dict]: Mapping dictionary for mutations at each site.
-
-        """
         # Defaults to binary mapping if not specific mutations are named
         if mutations is None:
             mutant = farthest_genotype(wildtype, genotypes)
             mutations = binary_mutations_map(wildtype, mutant)
 
         super(BaseModel, self).__init__(wildtype, genotypes, phenotypes,
-                        stdeviations=stdeviations,
-                        log_transform=log_transform,
-                        mutations=mutations,
-                        n_replicates=n_replicates,
-                        logbase=logbase)
+            stdeviations=stdeviations,
+            log_transform=log_transform,
+            mutations=mutations,
+            n_replicates=n_replicates,
+            logbase=logbase)
 
         # Add plotting object if matplotlib is installed
         try:
@@ -89,12 +91,18 @@ class BaseModel(EpistasisMap):
             wildtype = gpm.wildtype
             genotypes = gpm.genotypes
             phenotypes = gpm.Raw.phenotypes
-            stdeviations = gpm.Raw.stdeviations
+            try:
+                stdeviations = gpm.Raw.stdeviations
+            except AttributeError:
+                stdeviations = None
         else:
             wildtype = gpm.wildtype
             genotypes = gpm.genotypes
             phenotypes = gpm.phenotypes
-            stdeviations = gpm.stdeviations
+            try:
+                stdeviations = gpm.stdeviations
+            except AttributeError:
+                stdeviations = None
 
         options["stdeviations"] = stdeviations
         # Create an instance

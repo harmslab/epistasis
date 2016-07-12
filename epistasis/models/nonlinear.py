@@ -521,14 +521,14 @@ class EnsembleEpistasisModel(BaseModel):
     @ipywidgets_missing
     def fit_widget(self, print_stats=True, **kwargs):
         """
-            Simple IPython widget for trying initial guesses of the nonlinear parameters.
+        Simple IPython widget for trying initial guesses of the nonlinear parameters.
 
-            This works by, first, fitting the coefficients using a linear epistasis model as initial
-            guesses (along with user defined kwargs) for the nonlinear model.
+        This works by, first, fitting the coefficients using a linear epistasis model as initial
+        guesses (along with user defined kwargs) for the nonlinear model.
 
-            kwargs should be ranges of guess values for each parameter. They are are turned into
-            slider widgets for varying these guesses easily. The kwarg needs to match the name of
-            the parameter in the nonlinear fit.
+        kwargs should be ranges of guess values for each parameter. They are are turned into
+        slider widgets for varying these guesses easily. The kwarg needs to match the name of
+        the parameter in the nonlinear fit.
 
         """
         # Build fitting method to pass into widget box

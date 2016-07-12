@@ -26,7 +26,41 @@ from epistasis.models.base import BaseModel
 # ------------------------------------------------------------
 
 class LinearEpistasisModel(BaseModel):
+    """ Create a map of the local epistatic effects using expanded mutant
+    cycle approach.
 
+    i.e.
+    Phenotype = K_0 + sum(K_i) + sum(K_ij) + sum(K_ijk) + ...
+
+    Parameters
+    ----------
+    wildtype : str
+        Wildtype genotype. Wildtype phenotype will be used as reference state.
+    genotypes : array-like, dtype=str
+        Genotypes in map. Can be binary strings, or not.
+    phenotypes : array-like
+        Quantitative phenotype values
+    stdeviations : array-like
+        List of phenotype errors.
+    log_transform : bool
+        If True, log transform the phenotypes.
+    mutations : dict
+        Mapping sites to mutational alphabet.
+    n_replicates : int
+        number of replicates.
+    model_type : str
+        type of model to use.
+    logbase : callable
+        log spaces to transform phenotypes.
+
+
+    Attributes
+    ----------
+    See seqspace package for more docs.
+
+    Interactions : InteractionsMap
+        object containing epistatic interactions values
+    """
     def __init__(self, wildtype, genotypes, phenotypes,
         stdeviations=None,
         log_transform=False,
@@ -35,24 +69,6 @@ class LinearEpistasisModel(BaseModel):
         model_type="local",
         logbase=np.log10):
 
-        """ Create a map of the local epistatic effects using expanded mutant
-            cycle approach.
-
-            i.e.
-            Phenotype = K_0 + sum(K_i) + sum(K_ij) + sum(K_ijk) + ...
-
-            __Arguments__:
-
-            `wildtype` [str] : Wildtype genotype. Wildtype phenotype will be used as reference state.
-
-            `genotypes` [array-like, dtype=str] : Genotypes in map. Can be binary strings, or not.
-
-            `phenotypes` [array-like] : Quantitative phenotype values
-
-            `stdevs` [array-like] : List of phenotype errors.
-
-            `log_transform` [bool] : If True, log transform the phenotypes.
-        """
         # Populate Epistasis Map
         super(LinearEpistasisModel, self).__init__(wildtype, genotypes, phenotypes,
             stdeviations=stdeviations,
@@ -84,6 +100,26 @@ class LinearEpistasisModel(BaseModel):
 
         # Calculate the inverse of the matrix
         self.X_inv = model_types[model_type]["inverse"] * np.linalg.inv(self.X)
+
+    @property
+    def metadata(self):
+        """Return the metadata for this model."""
+        return {
+            "wildtype" : self.wildtype,
+            "genotypes" : self.genotypes,
+            "phenotypes" : self.Raw.phenotypes,
+            "stdeviations" : self.stdeviations,
+            "n_replicates" : self.n_replicates,
+            "mutations" : self.mutations,
+            "log_transform" : self.log_transform,
+            "order" : self.order,
+            "interactions" : {
+                "keys" : self.Interactions.keys,
+                "values" : self.Interactions.values,
+                
+            }
+
+        }
 
 
     def fit(self):
