@@ -129,7 +129,7 @@ class EpistasisPCA(EpistasisRegression):
             self.X = self.X * self.Interactions.values
 
         elif coordinate_type == "phenotypes":
-            self.X = self.X * self.Binary.phenotypes
+            self.X = self.X * self.binary.phenotypes
 
         # Add statistics object
         self.Stats = PCAStats(self)

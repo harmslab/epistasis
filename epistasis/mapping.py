@@ -15,20 +15,37 @@ from collections import OrderedDict
 # ----------------------------------------------------------
 
 from seqspace.base import BaseMap
+from seqspace.errors import StandardErrorMap, StandardDeviationMap
 from epistasis.utils import (params_index_map,
     build_model_params,
     label_to_key)
 
-class RawInteractionMap(object):
+class TransformEpistasisMap(object):
+
+    def __init__(self, EpistasisMap):
+        self._epistasis = EpistasisMap
+        self.transformed = True
+        self.std = StandardDeviationMap(self)
+        self.err = StandardErrorMap(self)
+
+    @property
+    def logbase(self):
+        """Get base of logarithm for tranformed epistasis"""
+        return self._epistasis.logbase
 
     @property
     def values(self):
         """ Get the values of the interaction in the system"""
-        return self._values
+        return self.logbase(self._epistasis.values)
+
+    @property
+    def stdeviations(self):
+        """Get the standard deviations of the epistasis coefficients."""
+        return self._stdeviations
 
     @values.setter
     def values(self, values):
-        self._values = values
+        """Set the non-log-epistasis."""
 
 
 class EpistasisMap(BaseMap):
@@ -43,16 +60,31 @@ class EpistasisMap(BaseMap):
             Epistasis Model to attach
         """
         self._Model = Model
+        self.transformed = False
+        if self._Model.log_transform:
+            self.log = TransformEpistasisMap(self)
+        self.std = StandardDeviationMap(self)
+        self.err = StandardErrorMap(self)
 
     def build(self):
         """Build a mapping object for epistatic interactions."""
         # construct the mutations mapping
         self._params = params_index_map(self._Model.mutations)
         self._labels = build_model_params(
-            self.Interactions.length,
-            self.Interactions.order,
-            self.Interactions.params
+            self.length,
+            self.order,
+            self.params
         )
+
+    @property
+    def base(self):
+        """Return base of logarithm tranform."""
+        return self._Model.base
+
+    @property
+    def logbase(self):
+        """Return logarithmic function"""
+        return self._Model.logbase
 
     @property
     def n(self):
@@ -91,18 +123,21 @@ class EpistasisMap(BaseMap):
 
     @property
     def params(self):
-        """ Get the interaction index in interaction matrix.
+        """ Get the site-number-to-matrix-index mapping. This property is set in
+        the build method.
 
-        params = { site_number : indices }`. If the site
-        alphabet is note included, the model will assume binary
-        between wildtype and derived.
+        Returns
+        -------
+        params : dict
+            { site_number : indices }`. If the site
+            alphabet is note included, the model will assume binary
+            between wildtype and derived.
+            Example::
+                mutations = {
+                    0: [indices],
+                    1: [indices],
 
-            #!python
-            mutations = {
-                0: [indices],
-                1: [indices],
-
-            }
+                }
         """
         return self._params
 
@@ -145,10 +180,6 @@ class EpistasisMap(BaseMap):
         if len(values) != len(self.labels):
             raise Exception("Number of interactions give to map is different than was defined. ")
         self._values = values
-
-        # Set raw values
-        if self.log_transform:
-            self.Raw.values = 10**values
 
     @keys.setter
     def keys(self, keys):

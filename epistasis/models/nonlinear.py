@@ -99,7 +99,7 @@ class NonlinearStats(object):
             `phenotypes` [array] : array of quantitative phenotypes.
         """
         phenotypes = np.zeros(len(self._model.complete_genotypes), dtype=float)
-        binaries = self._model.Binary.complete_genotypes
+        binaries = self._model.binary.complete_genotypes
 
         X = generate_dv_matrix(binaries, self._model.Interactions.labels, encoding=self._model.encoding)
 
@@ -156,10 +156,31 @@ class NonlinearEpistasisModel(EpistasisRegression):
     is applied to the data after step 1 to make fitting the epistatic coefficients
     a simple linear regression. Note: `self.log_transform` will return False still;
     however, self.Linear.log_transform will return True.
+
+
+    Parameters
+    ----------
+    wildtype : str
+        wildtype sequence to be used as the reference state.
+    genotypes : array-like
+        list of genotypes
+    phenotypes : array-like
+        list of the phenotypes in same order as their genotype
+    function : callable
+        nonlinear function for scaling phenotypes
+    order : int
+        order of epistasis model
+    parameters : array-like
+
+    stdeviations : array-like
+    log_transform : bool
+    mutations : dict
+    n_replicates : int
+    model_type : str
+    logbase : callable
     """
     def __init__(self, wildtype, genotypes, phenotypes, function,
         order=None,
-        parameters=None,
         stdeviations=None,
         log_transform=False,
         mutations=None,
@@ -170,7 +191,6 @@ class NonlinearEpistasisModel(EpistasisRegression):
         # Inherit parent class __init__
         super(NonlinearEpistasisModel, self).__init__(wildtype, genotypes, phenotypes,
             order=order,
-            parameters=parameters,
             stdeviations=stdeviations,
             log_transform=False,    # Set this log transformation to False
             mutations=mutations,

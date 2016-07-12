@@ -10,6 +10,7 @@ from seqspace.utils import farthest_genotype, binary_mutations_map
 from seqspace.gpm import GenotypePhenotypeMap
 
 # Local imports
+from epistasis.mapping import EpistasisMap
 from epistasis.utils import epistatic_order_indices, SubclassException
 from epistasis.plotting import EpistasisPlotting
 
@@ -54,6 +55,8 @@ class BaseModel(GenotypePhenotypeMap):
             n_replicates=n_replicates,
             logbase=logbase)
 
+        # Attach the epistasis model.
+        self.epistasis = EpistasisMap(self)
         # Add plotting object if matplotlib is installed
         try:
             self.Plot = EpistasisPlotting(self)

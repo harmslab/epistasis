@@ -52,7 +52,7 @@ class RegressionStats(object):
             `phenotypes` [array] : array of quantitative phenotypes.
         """
         phenotypes = np.zeros(len(self._model.complete_genotypes), dtype=float)
-        binaries = self._model.Binary.complete_genotypes
+        binaries = self._model.binary.complete_genotypes
         X = generate_dv_matrix(binaries, self._model.Interactions.labels, encoding=self._model.encoding)
         phenotypes = self._model.regression_model.predict(X)
 
@@ -128,7 +128,7 @@ class EpistasisRegression(BaseModel):
         self.encoding = model_types[model_type]["encoding"]
 
         # Construct decomposition matrix
-        self.X = generate_dv_matrix(self.Binary.genotypes, self.Interactions.labels, encoding=self.encoding)
+        self.X = generate_dv_matrix(self.binary.genotypes, self.Interactions.labels, encoding=self.encoding)
 
         # Initialize useful objects to model object
         self.Stats = RegressionStats(self)
@@ -144,8 +144,8 @@ class EpistasisRegression(BaseModel):
             mutant cycle method to any order<=number of mutations.
         """
         self.regression_model = LinearRegression(fit_intercept=False)
-        self.regression_model.fit(self.X, self.Binary.phenotypes)
-        self._score = self.regression_model.score(self.X, self.Binary.phenotypes)
+        self.regression_model.fit(self.X, self.binary.phenotypes)
+        self._score = self.regression_model.score(self.X, self.binary.phenotypes)
         self.Interactions.values = self.regression_model.coef_
 
 

@@ -26,9 +26,8 @@ from epistasis.models.base import BaseModel
 # ------------------------------------------------------------
 
 class LinearEpistasisModel(BaseModel):
-    """ Create a map of the local epistatic effects using expanded mutant
-    cycle approach.
-
+    """Construct a genotype-phenotype map and fit with a linear epistasis model,
+    defined as follows:
     i.e.
     Phenotype = K_0 + sum(K_i) + sum(K_ij) + sum(K_ijk) + ...
 
@@ -58,7 +57,7 @@ class LinearEpistasisModel(BaseModel):
     ----------
     See seqspace package for more docs.
 
-    Interactions : InteractionsMap
+    Epistasis : EpistasisMap
         object containing epistatic interactions values
     """
     def __init__(self, wildtype, genotypes, phenotypes,
@@ -68,7 +67,6 @@ class LinearEpistasisModel(BaseModel):
         n_replicates=1,
         model_type="local",
         logbase=np.log10):
-
         # Populate Epistasis Map
         super(LinearEpistasisModel, self).__init__(wildtype, genotypes, phenotypes,
             stdeviations=stdeviations,
@@ -88,16 +86,18 @@ class LinearEpistasisModel(BaseModel):
                 "inverse": 1.0/self.n
             }
         }
-
+        # Set order of model.
+        self.order = len(self.mutations)
+        # Build EpistasisMap
+        self.epistasis.build()
         # Set encoding from model_type given
         self.encoding = model_types[model_type]["encoding"]
-
-        # Order of model is equal to number of mutations
-        self.order = self.length
-
         # Generate basis matrix for mutant cycle approach to epistasis.
-        self.X = generate_dv_matrix(self.Binary.genotypes, self.Interactions.labels, encoding=self.encoding)
-
+        self.X = generate_dv_matrix(
+            self.binary.genotypes,
+            self.epistasis.labels,
+            encoding=self.encoding
+        )
         # Calculate the inverse of the matrix
         self.X_inv = model_types[model_type]["inverse"] * np.linalg.inv(self.X)
 
@@ -113,62 +113,49 @@ class LinearEpistasisModel(BaseModel):
             "mutations" : self.mutations,
             "log_transform" : self.log_transform,
             "order" : self.order,
-            "interactions" : {
-                "keys" : self.Interactions.keys,
-                "values" : self.Interactions.values,
-                
+            "epistasis" : {
+                "keys" : self.epistasis.keys,
+                "values" : self.epistasis.values,
             }
-
         }
 
 
     def fit(self):
         """ Estimate the values of all epistatic interactions using the expanded
-            mutant cycle method to order=number_of_mutations.
+        mutant cycle method to order=number_of_mutations.
         """
-        self.Interactions.values = np.dot(self.X_inv, self.Binary.phenotypes)
-
+        # Check if log transform is necessary.
+        if self.log_transform:
+            values = self.base**np.dot(self.X_inv, self.binary.log.phenotypes)
+        else:
+            values = np.dot(self.X_inv, self.binary.phenotypes)
+        self.epistasis.values = values
 
     def fit_error(self):
         """ Estimate the error of each epistatic interaction by standard error
-            propagation of the phenotypes through the model.
+        propagation of the phenotypes through the model.
 
+        For multiplicative:
+        ------------------
+        f_x = phenotype x
+        sigma_f = standard deviation of phenotype x
+        beta_i = epistatic coefficient i
 
-            For multiplicative:
-            ------------------
-                f_x = phenotype x
-                sigma_f = standard deviation of phenotype x
-                beta_i = epistatic coefficient i
-
-                (sigma_beta_i)**2 = (beta_i ** 2) *  ( (sigma_f_x ** 2) / (f_x ** 2) + ... )
-
+        (sigma_beta_i)**2 = (beta_i ** 2) *  ( (sigma_f_x ** 2) / (f_x ** 2) + ... )
         """
-        upper = np.sqrt(np.dot(np.square(self.X_inv), self.Binary.std.upper**2))
-
         # If the space is log transformed, then the errorbars are assymmetric
-        if self.log_transform is True:
+        if self.log_transform:
             # Get variables
-            beta_i = self.Interactions.Raw.values
-            sigma_f_x = self.Raw.std.upper
-            f_x = self.Raw.phenotypes
-
+            beta_i = self.epistasis.values
+            sigma_f_x = self.std.upper
+            f_x = self.phenotypes
             # Calculate unscaled terms
-            upper = np.sqrt( (beta_i**2) * np.dot(np.square(self.X_inv),(sigma_f_x**2/f_x**2)))
-
-            # Create a raw map of the errors
-            self.Interactions.Raw.std = StandardDeviationMap(self.Interactions.Raw.values, upper)
-            self.Interactions.Raw.err = StandardErrorMap(self.Interactions.Raw.values, upper, n_replicates=self.n_replicates)
-
-            values = beta_i
-
+            stdeviations = np.sqrt( (beta_i**2) * np.dot(np.square(self.X_inv),(sigma_f_x**2/f_x**2)))
         # Else, the lower errorbar is just upper
         else:
-            upper = np.sqrt(np.dot(np.square(self.X_inv), self.Binary.std.upper**2))
-            values = self.Interactions.values
-
-        self.Interactions.std = StandardDeviationMap(values, upper, log_transform=self.log_transform, logbase=self.logbase)
-        self.Interactions.err = StandardErrorMap(values, upper, n_replicates=self.n_replicates, log_transform=self.log_transform, logbase=self.logbase)
-
+            stdeviations = np.sqrt(np.dot(np.square(self.X_inv), self.binary.std.upper**2))
+        #Set stdeviation for epistasis.
+        self.epistasis.stdeviatons = stdeviations
 
 
 class LocalEpistasisModel(LinearEpistasisModel):
