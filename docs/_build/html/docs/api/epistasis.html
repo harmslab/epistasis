@@ -1,0 +1,793 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>epistasis package &mdash; epistasis 0.1 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="epistasis 0.1 documentation" href="../../index.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> epistasis
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../models.html">Linear models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../models.html#nonlinear-epistasis-model">Nonlinear Epistasis model</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../../index.html">epistasis</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../index.html">Docs</a> &raquo;</li>
+      
+    <li>epistasis package</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../../_sources/docs/api/epistasis.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="epistasis-package">
+<h1>epistasis package<a class="headerlink" href="#epistasis-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="epistasis.models.html">epistasis.models package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="epistasis.models.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="epistasis.models.tests.html">epistasis.models.tests package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="epistasis.models.tests.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="epistasis.models.tests.html#module-epistasis.models.tests.base">epistasis.models.tests.base module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="epistasis.models.tests.html#module-epistasis.models.tests.test_linear">epistasis.models.tests.test_linear module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="epistasis.models.tests.html#module-epistasis.models.tests.test_nonlinear">epistasis.models.tests.test_nonlinear module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="epistasis.models.tests.html#module-epistasis.models.tests.test_regression">epistasis.models.tests.test_regression module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="epistasis.models.tests.html#module-epistasis.models.tests">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="epistasis.models.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="epistasis.models.html#module-epistasis.models.base">epistasis.models.base module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="epistasis.models.html#module-epistasis.models.linear">epistasis.models.linear module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="epistasis.models.html#module-epistasis.models.nonlinear">epistasis.models.nonlinear module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="epistasis.models.html#module-epistasis.models.pca">epistasis.models.pca module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="epistasis.models.html#module-epistasis.models.regression">epistasis.models.regression module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="epistasis.models.html#module-epistasis.models.specifier">epistasis.models.specifier module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="epistasis.models.html#module-epistasis.models">Module contents</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="epistasis.models.html#linear-models">Linear models</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="epistasis.models.html#localepistasismodel"><cite>LocalEpistasisModel</cite></a></li>
+<li class="toctree-l4"><a class="reference internal" href="epistasis.models.html#globalepistasismodel"><cite>GlobalEpistasisModel</cite></a></li>
+<li class="toctree-l4"><a class="reference internal" href="epistasis.models.html#epistasisregression"><cite>EpistasisRegression</cite></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="epistasis.models.html#nonlinear-epistasis-model">Nonlinear Epistasis model</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="epistasis.plotting.html">epistasis.plotting package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="epistasis.plotting.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="epistasis.plotting.html#module-epistasis.plotting.epistasis">epistasis.plotting.epistasis module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="epistasis.plotting.html#module-epistasis.plotting.models">epistasis.plotting.models module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="epistasis.plotting.html#module-epistasis.plotting.nonlinear">epistasis.plotting.nonlinear module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="epistasis.plotting.html#module-epistasis.plotting.pca">epistasis.plotting.pca module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="epistasis.plotting.html#module-epistasis.plotting.regression">epistasis.plotting.regression module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="epistasis.plotting.html#module-epistasis.plotting.stats">epistasis.plotting.stats module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="epistasis.plotting.html#module-epistasis.plotting">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="epistasis.simulate.html">epistasis.simulate package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="epistasis.simulate.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="epistasis.simulate.html#epistasis-simulate-additive-module">epistasis.simulate.additive module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="epistasis.simulate.html#epistasis-simulate-base-module">epistasis.simulate.base module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="epistasis.simulate.html#module-epistasis.simulate.mask">epistasis.simulate.mask module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="epistasis.simulate.html#epistasis-simulate-multiplicative-module">epistasis.simulate.multiplicative module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="epistasis.simulate.html#epistasis-simulate-nk-module">epistasis.simulate.nk module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="epistasis.simulate.html#epistasis-simulate-nonlinear-module">epistasis.simulate.nonlinear module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="epistasis.simulate.html#epistasis-simulate-simulation-module">epistasis.simulate.simulation module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="epistasis.simulate.html#module-epistasis.simulate.utils">epistasis.simulate.utils module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="epistasis.simulate.html#module-epistasis.simulate">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-epistasis.decomposition">
+<span id="epistasis-decomposition-module"></span><h2>epistasis.decomposition module<a class="headerlink" href="#module-epistasis.decomposition" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="epistasis.decomposition.generate_dv_matrix">
+<code class="descclassname">epistasis.decomposition.</code><code class="descname">generate_dv_matrix</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.decomposition.generate_dv_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build the X matrix of dummy variable for linear regression
+in epistasis model.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-epistasis.mapping">
+<span id="epistasis-mapping-module"></span><h2>epistasis.mapping module<a class="headerlink" href="#module-epistasis.mapping" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="epistasis.mapping.EpistasisMap">
+<em class="property">class </em><code class="descclassname">epistasis.mapping.</code><code class="descname">EpistasisMap</code><span class="sig-paren">(</span><em>Model</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.mapping.EpistasisMap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">seqspace.base.BaseMap</span></code></p>
+<dl class="attribute">
+<dt id="epistasis.mapping.EpistasisMap.base">
+<code class="descname">base</code><a class="headerlink" href="#epistasis.mapping.EpistasisMap.base" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return base of logarithm tranform.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="epistasis.mapping.EpistasisMap.build">
+<code class="descname">build</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.mapping.EpistasisMap.build" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build a mapping object for epistatic interactions.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="epistasis.mapping.EpistasisMap.genotypes">
+<code class="descname">genotypes</code><a class="headerlink" href="#epistasis.mapping.EpistasisMap.genotypes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the interaction genotype.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="epistasis.mapping.EpistasisMap.get_order">
+<code class="descname">get_order</code><span class="sig-paren">(</span><em>order</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.mapping.EpistasisMap.get_order" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a dictionary of interactions of a given order.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="epistasis.mapping.EpistasisMap.indices">
+<code class="descname">indices</code><a class="headerlink" href="#epistasis.mapping.EpistasisMap.indices" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the interaction index in interaction matrix.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="epistasis.mapping.EpistasisMap.keys">
+<code class="descname">keys</code><a class="headerlink" href="#epistasis.mapping.EpistasisMap.keys" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get interactions as string-keys.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="epistasis.mapping.EpistasisMap.labels">
+<code class="descname">labels</code><a class="headerlink" href="#epistasis.mapping.EpistasisMap.labels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the interaction labels, which describe the position of interacting mutations in
+the genotypes. (type==list of lists, see self._build_interaction_labels)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="epistasis.mapping.EpistasisMap.length">
+<code class="descname">length</code><a class="headerlink" href="#epistasis.mapping.EpistasisMap.length" title="Permalink to this definition">¶</a></dt>
+<dd><p>Length of sequences.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="epistasis.mapping.EpistasisMap.log_transform">
+<code class="descname">log_transform</code><a class="headerlink" href="#epistasis.mapping.EpistasisMap.log_transform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Boolean argument telling whether space is log transformed.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="epistasis.mapping.EpistasisMap.logbase">
+<code class="descname">logbase</code><a class="headerlink" href="#epistasis.mapping.EpistasisMap.logbase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return logarithmic function</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="epistasis.mapping.EpistasisMap.n">
+<code class="descname">n</code><a class="headerlink" href="#epistasis.mapping.EpistasisMap.n" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the number of Interactions.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="epistasis.mapping.EpistasisMap.n_replicates">
+<code class="descname">n_replicates</code><a class="headerlink" href="#epistasis.mapping.EpistasisMap.n_replicates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get number of replicate measurements for observed phenotypes</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="epistasis.mapping.EpistasisMap.order">
+<code class="descname">order</code><a class="headerlink" href="#epistasis.mapping.EpistasisMap.order" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get order of epistasis in system.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="epistasis.mapping.EpistasisMap.params">
+<code class="descname">params</code><a class="headerlink" href="#epistasis.mapping.EpistasisMap.params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the site-number-to-matrix-index mapping. This property is set in
+the build method.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>params</strong> &#8211; { site_number : indices }`. If the site
+alphabet is note included, the model will assume binary
+between wildtype and derived.
+Example:<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mutations</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="mi">0</span><span class="p">:</span> <span class="p">[</span><span class="n">indices</span><span class="p">],</span>
+    <span class="mi">1</span><span class="p">:</span> <span class="p">[</span><span class="n">indices</span><span class="p">],</span>
+
+<span class="p">}</span>
+</pre></div>
+</div>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">dict</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="epistasis.mapping.EpistasisMap.stdeviations">
+<code class="descname">stdeviations</code><a class="headerlink" href="#epistasis.mapping.EpistasisMap.stdeviations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get standard deviations from model</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="epistasis.mapping.EpistasisMap.values">
+<code class="descname">values</code><a class="headerlink" href="#epistasis.mapping.EpistasisMap.values" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the values of the interaction in the system</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="epistasis.mapping.TransformEpistasisMap">
+<em class="property">class </em><code class="descclassname">epistasis.mapping.</code><code class="descname">TransformEpistasisMap</code><span class="sig-paren">(</span><em>EpistasisMap</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.mapping.TransformEpistasisMap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Mapping object that log transforms an EpistasisMap.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>EpistasisMap</strong> (<em>EpistasisMap object</em>) &#8211; Map to log transform</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="epistasis.mapping.TransformEpistasisMap.keys">
+<code class="descname">keys</code><a class="headerlink" href="#epistasis.mapping.TransformEpistasisMap.keys" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="epistasis.mapping.TransformEpistasisMap.labels">
+<code class="descname">labels</code><a class="headerlink" href="#epistasis.mapping.TransformEpistasisMap.labels" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="epistasis.mapping.TransformEpistasisMap.logbase">
+<code class="descname">logbase</code><a class="headerlink" href="#epistasis.mapping.TransformEpistasisMap.logbase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get base of logarithm for tranformed epistasis</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="epistasis.mapping.TransformEpistasisMap.n_replicates">
+<code class="descname">n_replicates</code><a class="headerlink" href="#epistasis.mapping.TransformEpistasisMap.n_replicates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get number of replicates for each observable.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="epistasis.mapping.TransformEpistasisMap.stdeviations">
+<code class="descname">stdeviations</code><a class="headerlink" href="#epistasis.mapping.TransformEpistasisMap.stdeviations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the standard deviations of the epistasis coefficients.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="epistasis.mapping.TransformEpistasisMap.values">
+<code class="descname">values</code><a class="headerlink" href="#epistasis.mapping.TransformEpistasisMap.values" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the values of the interaction in the system</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="epistasis-setup-module">
+<h2>epistasis.setup module<a class="headerlink" href="#epistasis-setup-module" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-epistasis.stats">
+<span id="epistasis-stats-module"></span><h2>epistasis.stats module<a class="headerlink" href="#module-epistasis.stats" title="Permalink to this headline">¶</a></h2>
+<p>Submodule with useful statistics functions for epistasis model.</p>
+<dl class="function">
+<dt id="epistasis.stats.AIC">
+<code class="descclassname">epistasis.stats.</code><code class="descname">AIC</code><span class="sig-paren">(</span><em>model</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.stats.AIC" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the Akaike information criterion score for a model.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="epistasis.stats.AIC_comparison">
+<code class="descclassname">epistasis.stats.</code><code class="descname">AIC_comparison</code><span class="sig-paren">(</span><em>null</em>, <em>alt</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.stats.AIC_comparison" title="Permalink to this definition">¶</a></dt>
+<dd><p>Do a AIC comparison. Useful for comparing nonlinear model to linear model.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="epistasis.stats.FDistribution">
+<em class="property">class </em><code class="descclassname">epistasis.stats.</code><code class="descname">FDistribution</code><span class="sig-paren">(</span><em>dfn</em>, <em>dfd</em>, <em>loc=0</em>, <em>scale=1</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.stats.FDistribution" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="epistasis.stats.FDistribution.cdf">
+<code class="descname">cdf</code><span class="sig-paren">(</span><em>F</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.stats.FDistribution.cdf" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="epistasis.stats.FDistribution.mean">
+<code class="descname">mean</code><a class="headerlink" href="#epistasis.stats.FDistribution.mean" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="epistasis.stats.FDistribution.median">
+<code class="descname">median</code><a class="headerlink" href="#epistasis.stats.FDistribution.median" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="epistasis.stats.FDistribution.p_value">
+<code class="descname">p_value</code><span class="sig-paren">(</span><em>F</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.stats.FDistribution.p_value" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="epistasis.stats.FDistribution.pdf">
+<code class="descname">pdf</code><span class="sig-paren">(</span><em>F</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.stats.FDistribution.pdf" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="epistasis.stats.FDistribution.ppf">
+<code class="descname">ppf</code><span class="sig-paren">(</span><em>percent</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.stats.FDistribution.ppf" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="epistasis.stats.FDistribution.std">
+<code class="descname">std</code><a class="headerlink" href="#epistasis.stats.FDistribution.std" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="epistasis.stats.FDistribution.var">
+<code class="descname">var</code><a class="headerlink" href="#epistasis.stats.FDistribution.var" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="epistasis.stats.F_test">
+<code class="descclassname">epistasis.stats.</code><code class="descname">F_test</code><span class="sig-paren">(</span><em>model1</em>, <em>model2</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.stats.F_test" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compare two models.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="epistasis.stats.StatisticalTest">
+<em class="property">class </em><code class="descclassname">epistasis.stats.</code><code class="descname">StatisticalTest</code><span class="sig-paren">(</span><em>test_type='ftest'</em>, <em>cutoff=0.05</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.stats.StatisticalTest" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="epistasis.stats.StatisticalTest.compare">
+<code class="descname">compare</code><span class="sig-paren">(</span><em>null_model</em>, <em>alt_model</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.stats.StatisticalTest.compare" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compare two models based on statistic test given</p>
+<p>Return the test&#8217;s statistic value and p-value.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="epistasis.stats.StatisticalTest.order">
+<code class="descname">order</code><a class="headerlink" href="#epistasis.stats.StatisticalTest.order" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the order of the best model</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="epistasis.stats.StatisticalTest.p_value">
+<code class="descname">p_value</code><a class="headerlink" href="#epistasis.stats.StatisticalTest.p_value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get p_value</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="epistasis.stats.chi_squared">
+<code class="descclassname">epistasis.stats.</code><code class="descname">chi_squared</code><span class="sig-paren">(</span><em>y_obs</em>, <em>y_pred</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.stats.chi_squared" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the chi squared between observed and predicted y.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="epistasis.stats.explained_variance">
+<code class="descclassname">epistasis.stats.</code><code class="descname">explained_variance</code><span class="sig-paren">(</span><em>y_obs</em>, <em>y_pred</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.stats.explained_variance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the explained variance</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="epistasis.stats.false_negative_rate">
+<code class="descclassname">epistasis.stats.</code><code class="descname">false_negative_rate</code><span class="sig-paren">(</span><em>y_obs</em>, <em>y_pred</em>, <em>upper_ci</em>, <em>lower_ci</em>, <em>sigmas=2</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.stats.false_negative_rate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the false negative rate of predicted values. Finds all values that
+equal zero in the known array and calculates the number of false negatives
+found in the predicted given the number of samples and sigmas.</p>
+<dl class="docutils">
+<dt>The defined bounds are:</dt>
+<dd>(number of sigmas) * errors / sqrt(number of samples)</dd>
+</dl>
+<p>__Arguments__:</p>
+<p><cite>known</cite> [array-like] : Known values for comparing false negatives</p>
+<p><cite>predicted</cite> [array-like] : Predicted values</p>
+<p><cite>errors</cite> [array-like] : Standard error from model</p>
+<p><cite>n_samples</cite> [int]: number of replicate samples</p>
+<p><cite>sigma</cite> [int (default=2)] : How many standard errors away (2 == 0.05 false negative rate)</p>
+<p>__Returns__:</p>
+<p><cite>rate</cite> [float] : False negative rate in data</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="epistasis.stats.false_positive_rate">
+<code class="descclassname">epistasis.stats.</code><code class="descname">false_positive_rate</code><span class="sig-paren">(</span><em>y_obs</em>, <em>y_pred</em>, <em>upper_ci</em>, <em>lower_ci</em>, <em>sigmas=2</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.stats.false_positive_rate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the false positive rate of predicted values. Finds all values that
+equal zero in the known array and calculates the number of false positives
+found in the predicted given the number of samples and sigmas.</p>
+<dl class="docutils">
+<dt>The defined bounds are:</dt>
+<dd>(number of sigmas) * errors / sqrt(number of samples)</dd>
+</dl>
+<p>__Arguments__:</p>
+<p><cite>known</cite> [array-like] : Known values for comparing false positives</p>
+<p><cite>predicted</cite> [array-like] : Predicted values</p>
+<p><cite>errors</cite> [array-like] : Standard error from model</p>
+<p><cite>n_samples</cite> [int]: number of replicate samples</p>
+<p><cite>sigma</cite> [int (default=2)] : How many standard errors away (2 == 0.05 false positive rate)</p>
+<p>__Returns__:</p>
+<p><cite>rate</cite> [float] : False positive rate in data</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="epistasis.stats.generalized_r2">
+<code class="descclassname">epistasis.stats.</code><code class="descname">generalized_r2</code><span class="sig-paren">(</span><em>y_obs</em>, <em>y_pred</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.stats.generalized_r2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the rquared between the observed and predicted y.
+See wikipedia definition of <cite>coefficient of determination</cite>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="epistasis.stats.log_likelihood">
+<code class="descclassname">epistasis.stats.</code><code class="descname">log_likelihood</code><span class="sig-paren">(</span><em>model</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.stats.log_likelihood" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the maximum likelihood estimate from sum of squared residuals.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="epistasis.stats.log_likelihood_ratio">
+<code class="descclassname">epistasis.stats.</code><code class="descname">log_likelihood_ratio</code><span class="sig-paren">(</span><em>model1</em>, <em>model2</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.stats.log_likelihood_ratio" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the likelihood ratio two regressed epistasis models.</p>
+<p>Models must be instances of ProjectedEpistasisModel</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="epistasis.stats.p_value_to_sigma">
+<code class="descclassname">epistasis.stats.</code><code class="descname">p_value_to_sigma</code><span class="sig-paren">(</span><em>p_value</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.stats.p_value_to_sigma" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a p-value to a sigma-cutoff.</p>
+<p>Distribution is centered on zero, and symmetric.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="epistasis.stats.pearson">
+<code class="descclassname">epistasis.stats.</code><code class="descname">pearson</code><span class="sig-paren">(</span><em>y_obs</em>, <em>y_pred</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.stats.pearson" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate pearson coefficient between two variables.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="epistasis.stats.resample_to_convergence">
+<code class="descclassname">epistasis.stats.</code><code class="descname">resample_to_convergence</code><span class="sig-paren">(</span><em>function</em>, <em>sample_size=50</em>, <em>rtol=0.1</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.stats.resample_to_convergence" title="Permalink to this definition">¶</a></dt>
+<dd><p>Repeat a calculation until the mean and standard deviations of the samples
+converge to a specified tolerance level (note that the tolerances are relative.)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>function</strong> (<em>callable</em>) &#8211; Function to repeat until convergence.</li>
+<li><strong>sample_size</strong> (<em>int</em>) &#8211; number of samples to draw before recalculating the statistics for convergence.</li>
+<li><strong>rtol</strong> (<em>float</em>) &#8211; relative tolerance for convergence over sampling</li>
+<li><strong>*args</strong> (<em>position arguments for the callable function that is resampled</em>) &#8211; </li>
+<li><strong>**kwargs</strong> (<em>keyword arguments for the callable function that is sampled.</em>) &#8211; </li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
+<li><strong>samples</strong> (<em>numpy.array</em>) &#8211; array containing the samples. Each column is a sample. Rows are the different
+values from the output of the callable</li>
+<li><strong>mean</strong> (<em>numpy.array</em>) &#8211; means of the samples</li>
+<li><strong>std</strong> (<em>numpy.array</em>) &#8211; standard deviations of samples</li>
+<li><strong>count</strong> (<em>int</em>) &#8211; number of samples needed to reach convergence test.</li>
+</ul>
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="epistasis.stats.ss_residuals">
+<code class="descclassname">epistasis.stats.</code><code class="descname">ss_residuals</code><span class="sig-paren">(</span><em>y_obs</em>, <em>y_pred</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.stats.ss_residuals" title="Permalink to this definition">¶</a></dt>
+<dd><p>calculate residuals</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-epistasis.utils">
+<span id="epistasis-utils-module"></span><h2>epistasis.utils module<a class="headerlink" href="#module-epistasis.utils" title="Permalink to this headline">¶</a></h2>
+<p>Submodule with handy utilities for constructing epistasis models.</p>
+<dl class="exception">
+<dt id="epistasis.utils.SubclassException">
+<em class="property">exception </em><code class="descclassname">epistasis.utils.</code><code class="descname">SubclassException</code><a class="headerlink" href="#epistasis.utils.SubclassException" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">Exception</span></code></p>
+<p>For methods that must be implemented in a subclass.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="epistasis.utils.build_interaction_labels">
+<code class="descclassname">epistasis.utils.</code><code class="descname">build_interaction_labels</code><span class="sig-paren">(</span><em>length</em>, <em>order</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.utils.build_interaction_labels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return interactions labels for building X matrix.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="epistasis.utils.build_model_params">
+<code class="descclassname">epistasis.utils.</code><code class="descname">build_model_params</code><span class="sig-paren">(</span><em>length</em>, <em>order</em>, <em>mutations</em>, <em>start_order=0</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.utils.build_model_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build interaction labels up to nth order given a mutation alphabet.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>n</strong> (<em>int</em>) &#8211; order of interactions</li>
+<li><strong>mutations</strong> (<em>dict</em>) &#8211; <p><cite>mutations = { site_number : indices }</cite>. If the site
+alphabet is note included, the model will assume binary
+between wildtype and derived.</p>
+<p class="rubric">Example</p>
+<dl class="docutils">
+<dt>mutations = {</dt>
+<dd>0: [indices],
+1: [indices],
+...</dd>
+</dl>
+</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>interactions</strong> &#8211; list of all interaction labels for system with
+sequences of a given length and epistasis with given order.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="epistasis.utils.epistatic_order_indices">
+<code class="descclassname">epistasis.utils.</code><code class="descname">epistatic_order_indices</code><span class="sig-paren">(</span><em>length</em>, <em>order</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.utils.epistatic_order_indices" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return  the indices of interactions with the given order.</p>
+<p>__Arguments__:</p>
+<p><cite>length</cite> [int] : length of the sequences</p>
+<p><cite>order</cite> [int] : order of interactions to return</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="epistasis.utils.genotype_params">
+<code class="descclassname">epistasis.utils.</code><code class="descname">genotype_params</code><span class="sig-paren">(</span><em>genotype</em>, <em>order=None</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.utils.genotype_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>List the possible parameters (as label form) for a binary genotype
+up to a given order.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="epistasis.utils.key_to_label">
+<code class="descclassname">epistasis.utils.</code><code class="descname">key_to_label</code><span class="sig-paren">(</span><em>key</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.utils.key_to_label" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert an interaction key to label.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="epistasis.utils.label_to_key">
+<code class="descclassname">epistasis.utils.</code><code class="descname">label_to_key</code><span class="sig-paren">(</span><em>label</em>, <em>state=''</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.utils.label_to_key" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert interaction label to key. <cite>state</cite> is added to end of key.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="epistasis.utils.label_to_lmfit">
+<code class="descclassname">epistasis.utils.</code><code class="descname">label_to_lmfit</code><span class="sig-paren">(</span><em>label</em>, <em>state=''</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.utils.label_to_lmfit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="epistasis.utils.params_index_map">
+<code class="descclassname">epistasis.utils.</code><code class="descname">params_index_map</code><span class="sig-paren">(</span><em>mutations</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.utils.params_index_map" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write a dictionary that maps mutations dictionary to indices in dummy
+variable matrix.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>mutations</strong> (<em>dict</em>) &#8211; mapping each site to their accessible mutations alphabet.
+mutations = {site_number : alphabet}</li>
+<li><strong>site does not mutate, value should be None.</strong> (<em>If</em>) &#8211; </li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><p><strong>mutations</strong> &#8211; <cite>mutations = { site_number : indices }</cite>. If the site alphabet is
+note included, the model will assume binary between wildtype and derived.</p>
+<p><a href="#id1"><span class="problematic" id="id2">``</span></a>`
+mutations = {</p>
+<blockquote>
+<div><p>0: [indices],
+1: [indices],
+...</p>
+</div></blockquote>
+</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">dict</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-epistasis">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-epistasis" title="Permalink to this headline">¶</a></h2>
+<p>A python package for estimating high order epistasis in genotype-phenotype maps. This package includes both linear and non-linear epistasis models, as well as various tools for analyzing these spaces.</p>
+<p>The source code can be found at www.github.com/harmslab/epistasis.</p>
+<p>The main documentation for this package can be found on the source-codes wiki page.</p>
+<p>To install:</p>
+<blockquote>
+<div>python setup.py install</div></blockquote>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Zach Sailer.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

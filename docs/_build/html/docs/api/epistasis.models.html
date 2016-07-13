@@ -1,0 +1,749 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>epistasis.models package &mdash; epistasis 0.1 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="epistasis 0.1 documentation" href="../../index.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> epistasis
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../models.html">Linear models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../models.html#nonlinear-epistasis-model">Nonlinear Epistasis model</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../../index.html">epistasis</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../index.html">Docs</a> &raquo;</li>
+      
+    <li>epistasis.models package</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../../_sources/docs/api/epistasis.models.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="epistasis-models-package">
+<h1>epistasis.models package<a class="headerlink" href="#epistasis-models-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="epistasis.models.tests.html">epistasis.models.tests package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="epistasis.models.tests.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="epistasis.models.tests.html#module-epistasis.models.tests.base">epistasis.models.tests.base module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="epistasis.models.tests.html#module-epistasis.models.tests.test_linear">epistasis.models.tests.test_linear module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="epistasis.models.tests.html#module-epistasis.models.tests.test_nonlinear">epistasis.models.tests.test_nonlinear module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="epistasis.models.tests.html#module-epistasis.models.tests.test_regression">epistasis.models.tests.test_regression module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="epistasis.models.tests.html#module-epistasis.models.tests">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-epistasis.models.base">
+<span id="epistasis-models-base-module"></span><h2>epistasis.models.base module<a class="headerlink" href="#module-epistasis.models.base" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="epistasis.models.base.BaseModel">
+<em class="property">class </em><code class="descclassname">epistasis.models.base.</code><code class="descname">BaseModel</code><span class="sig-paren">(</span><em>wildtype</em>, <em>genotypes</em>, <em>phenotypes</em>, <em>stdeviations=None</em>, <em>log_transform=False</em>, <em>mutations=None</em>, <em>n_replicates=1</em>, <em>logbase=&lt;ufunc 'log10'&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.models.base.BaseModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">seqspace.gpm.GenotypePhenotypeMap</span></code></p>
+<p>Populate an Epistasis mapping object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>wildtype</strong> (<em>str</em>) &#8211; Wildtype genotype. Wildtype phenotype will be used as reference state.</li>
+<li><strong>genotypes</strong> (<em>array-like</em>) &#8211; Genotypes in map. Can be binary strings, or not.</li>
+<li><strong>phenotypes</strong> (<em>array-like</em>) &#8211; Quantitative phenotype values</li>
+<li><strong>stdevs</strong> (<em>array-like</em>) &#8211; List of phenotype errors.</li>
+<li><strong>log_transform</strong> (<em>bool</em>) &#8211; If True, log transform the phenotypes.</li>
+<li><strong>mutations</strong> (<em>dict</em>) &#8211; Mapping dictionary for mutations at each site.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt>
+<code class="descname">See seqspace package for all attributes in GenotypePhenotypeMap</code></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="epistasis.models.base.BaseModel.fit">
+<code class="descname">fit</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.models.base.BaseModel.fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fitting methods for epistasis models.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="epistasis.models.base.BaseModel.fit_error">
+<code class="descname">fit_error</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.models.base.BaseModel.fit_error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fitting method for errors in the epistatic parameters.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="epistasis.models.base.BaseModel.from_gpm">
+<em class="property">classmethod </em><code class="descname">from_gpm</code><span class="sig-paren">(</span><em>gpm</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.models.base.BaseModel.from_gpm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize an epistasis model from a Genotype-phenotypeMap object</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-epistasis.models.linear">
+<span id="epistasis-models-linear-module"></span><h2>epistasis.models.linear module<a class="headerlink" href="#module-epistasis.models.linear" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="epistasis.models.linear.GlobalEpistasisModel">
+<em class="property">class </em><code class="descclassname">epistasis.models.linear.</code><code class="descname">GlobalEpistasisModel</code><span class="sig-paren">(</span><em>wildtype</em>, <em>genotypes</em>, <em>phenotypes</em>, <em>stdeviations=None</em>, <em>log_transform=False</em>, <em>mutations=None</em>, <em>n_replicates=1</em>, <em>logbase=&lt;ufunc 'log10'&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.models.linear.GlobalEpistasisModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#epistasis.models.linear.LinearEpistasisModel" title="epistasis.models.linear.LinearEpistasisModel"><code class="xref py py-class docutils literal"><span class="pre">epistasis.models.linear.LinearEpistasisModel</span></code></a></p>
+<p>Construct a genotype-phenotype map and fit with a linear epistasis model,
+defined as follows
+Phenotype = K_0 + sum(K_i) + sum(K_ij) + sum(K_ijk) + ...</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>wildtype</strong> (<em>str</em>) &#8211; Wildtype genotype. Wildtype phenotype will be used as reference state.</li>
+<li><strong>genotypes</strong> (<em>array-like, dtype=str</em>) &#8211; Genotypes in map. Can be binary strings, or not.</li>
+<li><strong>phenotypes</strong> (<em>array-like</em>) &#8211; Quantitative phenotype values</li>
+<li><strong>stdeviations</strong> (<em>array-like</em>) &#8211; List of phenotype errors.</li>
+<li><strong>log_transform</strong> (<em>bool</em>) &#8211; If True, log transform the phenotypes.</li>
+<li><strong>mutations</strong> (<em>dict</em>) &#8211; Mapping sites to mutational alphabet.</li>
+<li><strong>n_replicates</strong> (<em>int</em>) &#8211; number of replicates.</li>
+<li><strong>model_type</strong> (<em>str</em>) &#8211; type of model to use.</li>
+<li><strong>logbase</strong> (<em>callable</em>) &#8211; log spaces to transform phenotypes.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="class">
+<dt id="epistasis.models.linear.LinearEpistasisModel">
+<em class="property">class </em><code class="descclassname">epistasis.models.linear.</code><code class="descname">LinearEpistasisModel</code><span class="sig-paren">(</span><em>wildtype</em>, <em>genotypes</em>, <em>phenotypes</em>, <em>stdeviations=None</em>, <em>log_transform=False</em>, <em>mutations=None</em>, <em>n_replicates=1</em>, <em>model_type='local'</em>, <em>logbase=&lt;ufunc 'log10'&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.models.linear.LinearEpistasisModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#epistasis.models.base.BaseModel" title="epistasis.models.base.BaseModel"><code class="xref py py-class docutils literal"><span class="pre">epistasis.models.base.BaseModel</span></code></a></p>
+<p>Construct a genotype-phenotype map and fit with a linear epistasis model,
+defined as follows:
+i.e.
+Phenotype = K_0 + sum(K_i) + sum(K_ij) + sum(K_ijk) + ...</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>wildtype</strong> (<em>str</em>) &#8211; Wildtype genotype. Wildtype phenotype will be used as reference state.</li>
+<li><strong>genotypes</strong> (<em>array-like, dtype=str</em>) &#8211; Genotypes in map. Can be binary strings, or not.</li>
+<li><strong>phenotypes</strong> (<em>array-like</em>) &#8211; Quantitative phenotype values</li>
+<li><strong>stdeviations</strong> (<em>array-like</em>) &#8211; List of phenotype errors.</li>
+<li><strong>log_transform</strong> (<em>bool</em>) &#8211; If True, log transform the phenotypes.</li>
+<li><strong>mutations</strong> (<em>dict</em>) &#8211; Mapping sites to mutational alphabet.</li>
+<li><strong>n_replicates</strong> (<em>int</em>) &#8211; number of replicates.</li>
+<li><strong>model_type</strong> (<em>str</em>) &#8211; type of model to use.</li>
+<li><strong>logbase</strong> (<em>callable</em>) &#8211; log spaces to transform phenotypes.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt>
+<code class="descname">See seqspace package for more docs.</code></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="epistasis.models.linear.LinearEpistasisModel.Epistasis">
+<code class="descname">Epistasis</code><a class="headerlink" href="#epistasis.models.linear.LinearEpistasisModel.Epistasis" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>EpistasisMap</em> &#8211; object containing epistatic interactions values</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="epistasis.models.linear.LinearEpistasisModel.fit">
+<code class="descname">fit</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.models.linear.LinearEpistasisModel.fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Estimate the values of all epistatic interactions using the expanded
+mutant cycle method to order=number_of_mutations.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="epistasis.models.linear.LinearEpistasisModel.fit_error">
+<code class="descname">fit_error</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.models.linear.LinearEpistasisModel.fit_error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Estimate the error of each epistatic interaction by standard error
+propagation of the phenotypes through the model.</p>
+<p class="rubric">Example</p>
+<p>f_x = phenotype x
+sigma_f = standard deviation of phenotype x
+beta_i = epistatic coefficient i</p>
+<p>(sigma_beta_i)**2 = (beta_i ** 2) *  ( (sigma_f_x ** 2) / (f_x ** 2) + ... )</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="epistasis.models.linear.LinearEpistasisModel.metadata">
+<code class="descname">metadata</code><a class="headerlink" href="#epistasis.models.linear.LinearEpistasisModel.metadata" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the metadata for this model.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="epistasis.models.linear.LocalEpistasisModel">
+<em class="property">class </em><code class="descclassname">epistasis.models.linear.</code><code class="descname">LocalEpistasisModel</code><span class="sig-paren">(</span><em>wildtype</em>, <em>genotypes</em>, <em>phenotypes</em>, <em>stdeviations=None</em>, <em>log_transform=False</em>, <em>mutations=None</em>, <em>n_replicates=1</em>, <em>logbase=&lt;ufunc 'log10'&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.models.linear.LocalEpistasisModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#epistasis.models.linear.LinearEpistasisModel" title="epistasis.models.linear.LinearEpistasisModel"><code class="xref py py-class docutils literal"><span class="pre">epistasis.models.linear.LinearEpistasisModel</span></code></a></p>
+<p>Construct a genotype-phenotype map and fit with a linear epistasis model,
+defined as follows
+P = K_0 + sum(K_i) + sum(K_ij) + sum(K_ijk) + ...</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>wildtype</strong> (<em>str</em>) &#8211; Wildtype genotype. Wildtype phenotype will be used as reference state.</li>
+<li><strong>genotypes</strong> (<em>array-like, dtype=str</em>) &#8211; Genotypes in map. Can be binary strings, or not.</li>
+<li><strong>phenotypes</strong> (<em>array-like</em>) &#8211; Quantitative phenotype values</li>
+<li><strong>stdeviations</strong> (<em>array-like</em>) &#8211; List of phenotype errors.</li>
+<li><strong>log_transform</strong> (<em>bool</em>) &#8211; If True, log transform the phenotypes.</li>
+<li><strong>mutations</strong> (<em>dict</em>) &#8211; Mapping sites to mutational alphabet.</li>
+<li><strong>n_replicates</strong> (<em>int</em>) &#8211; number of replicates.</li>
+<li><strong>model_type</strong> (<em>str</em>) &#8211; type of model to use.</li>
+<li><strong>logbase</strong> (<em>callable</em>) &#8211; log spaces to transform phenotypes.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-epistasis.models.nonlinear">
+<span id="epistasis-models-nonlinear-module"></span><h2>epistasis.models.nonlinear module<a class="headerlink" href="#module-epistasis.models.nonlinear" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="epistasis.models.nonlinear.NonlinearEpistasisModel">
+<em class="property">class </em><code class="descclassname">epistasis.models.nonlinear.</code><code class="descname">NonlinearEpistasisModel</code><span class="sig-paren">(</span><em>wildtype</em>, <em>genotypes</em>, <em>phenotypes</em>, <em>function</em>, <em>order=None</em>, <em>stdeviations=None</em>, <em>log_transform=False</em>, <em>mutations=None</em>, <em>n_replicates=1</em>, <em>model_type='local'</em>, <em>logbase=&lt;ufunc 'log10'&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.models.nonlinear.NonlinearEpistasisModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#epistasis.models.regression.EpistasisRegression" title="epistasis.models.regression.EpistasisRegression"><code class="xref py py-class docutils literal"><span class="pre">epistasis.models.regression.EpistasisRegression</span></code></a></p>
+<p>Runs a nonlinear least squares fit to regress epistatic coefficients from
+a genotype-phenotype map which exhibits global nonlinearity in the phenotype.</p>
+<dl class="docutils">
+<dt>This fitting class works in two-steps:</dt>
+<dd>1. Fit the phenotypes with a nonlinear function (provided by you) that
+captures global structure/scale in the data.
+2. Fit the leftover variation with a linear epistasis model (via linear regression),
+calculating the deviation from additivity/multiplicity in the genotypes.</dd>
+</dl>
+<p>The construction of this object, then, has a self.linear object within, which
+holds the output/results of step 2.</p>
+<p>If the expected effects of mutations are multiplicative, a log transformation
+is applied to the data after step 1 to make fitting the epistatic coefficients
+a simple linear regression. Note: <cite>self.log_transform</cite> will return False still;
+however, self.linear.log_transform will return True.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>wildtype</strong> (<em>str</em>) &#8211; wildtype sequence to be used as the reference state.</li>
+<li><strong>genotypes</strong> (<em>array-like</em>) &#8211; list of genotypes</li>
+<li><strong>phenotypes</strong> (<em>array-like</em>) &#8211; list of the phenotypes in same order as their genotype</li>
+<li><strong>function</strong> (<em>callable</em>) &#8211; nonlinear function for scaling phenotypes</li>
+<li><strong>order</strong> (<em>int</em>) &#8211; order of epistasis model</li>
+<li><strong>stdeviations</strong> (<em>array-like</em>) &#8211; standard deviations</li>
+<li><strong>log_transform</strong> (<em>bool</em>) &#8211; if true, log transform the linear space. Note: this does not transform the
+nonlinear feature of this space.</li>
+<li><strong>mutations</strong> (<em>dict</em>) &#8211; mapping sites to their mutation alphabet</li>
+<li><strong>n_replicates</strong> (<em>int</em>) &#8211; number of replicate measurements for each phenotypes</li>
+<li><strong>model_type</strong> (<em>str</em>) &#8211; model type (global or local)</li>
+<li><strong>logbase</strong> (<em>callable</em>) &#8211; logarithm function for transforming phenotypes.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt>
+<code class="descname">see seqspace for attributes from GenotypePhenotype.</code></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="epistasis.models.nonlinear.NonlinearEpistasisModel.parameters">
+<code class="descname">parameters</code><a class="headerlink" href="#epistasis.models.nonlinear.NonlinearEpistasisModel.parameters" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Parameters object</em> &#8211; store output from the nonlinear function parameters</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="epistasis.models.nonlinear.NonlinearEpistasisModel.linear">
+<code class="descname">linear</code><a class="headerlink" href="#epistasis.models.nonlinear.NonlinearEpistasisModel.linear" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>EpistasisRegression</em> &#8211; linear epistasis regression for calculating specific interactions.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="epistasis.models.nonlinear.NonlinearEpistasisModel.fit">
+<code class="descname">fit</code><span class="sig-paren">(</span><em>guess_coeffs=None</em>, <em>fit_kwargs={}</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.models.nonlinear.NonlinearEpistasisModel.fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fit using nonlinear least squares regression.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>guess</strong> (<em>array-like</em>) &#8211; array of guesses</li>
+<li><strong>fit_kwargs</strong> (<em>dict</em>) &#8211; specific keyword arguments for scipy&#8217;s curve_fit function. This is
+not for parameters.</li>
+<li><strong>**kwargs</strong> &#8211; guess values for <cite>parameters</cite> in the nonlinear function passed in as
+keyword arguments</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="epistasis.models.nonlinear.NonlinearEpistasisModel.fit_widget">
+<code class="descname">fit_widget</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.models.nonlinear.NonlinearEpistasisModel.fit_widget" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="epistasis.models.nonlinear.NonlinearStats">
+<em class="property">class </em><code class="descclassname">epistasis.models.nonlinear.</code><code class="descname">NonlinearStats</code><span class="sig-paren">(</span><em>model</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.models.nonlinear.NonlinearStats" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Object that returns useful statistics and tranformations from a nonlinear
+Epistasis model.</p>
+<dl class="method">
+<dt id="epistasis.models.nonlinear.NonlinearStats.linear">
+<code class="descname">linear</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.models.nonlinear.NonlinearStats.linear" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return phenotypes composed of only the Interaction values determined by
+fit. Removes the nonlinear function from the data.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="epistasis.models.nonlinear.NonlinearStats.predict">
+<code class="descname">predict</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.models.nonlinear.NonlinearStats.predict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Infer the phenotypes from model.</p>
+<p>__Returns__:</p>
+<p><cite>genotypes</cite> [array] : array of genotypes &#8211; in same order as phenotypes</p>
+<p><cite>phenotypes</cite> [array] : array of quantitative phenotypes.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="epistasis.models.nonlinear.NonlinearStats.score">
+<code class="descname">score</code><a class="headerlink" href="#epistasis.models.nonlinear.NonlinearStats.score" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the epistasis model score after estimating interactions.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="epistasis.models.nonlinear.Parameters">
+<em class="property">class </em><code class="descclassname">epistasis.models.nonlinear.</code><code class="descname">Parameters</code><span class="sig-paren">(</span><em>params</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.models.nonlinear.Parameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="epistasis.models.nonlinear.Parameters.get_params">
+<code class="descname">get_params</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.models.nonlinear.Parameters.get_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get an ordered list of the parameters.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-epistasis.models.pca">
+<span id="epistasis-models-pca-module"></span><h2>epistasis.models.pca module<a class="headerlink" href="#module-epistasis.models.pca" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="epistasis.models.pca.EpistasisPCA">
+<em class="property">class </em><code class="descclassname">epistasis.models.pca.</code><code class="descname">EpistasisPCA</code><span class="sig-paren">(</span><em>wildtype</em>, <em>genotypes</em>, <em>phenotypes</em>, <em>order=1</em>, <em>n_components=None</em>, <em>stdeviations=None</em>, <em>log_transform=False</em>, <em>mutations=None</em>, <em>n_replicates=1</em>, <em>model_type='local'</em>, <em>coordinate_type='epistasis'</em>, <em>logbase=&lt;ufunc 'log10'&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.models.pca.EpistasisPCA" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#epistasis.models.regression.EpistasisRegression" title="epistasis.models.regression.EpistasisRegression"><code class="xref py py-class docutils literal"><span class="pre">epistasis.models.regression.EpistasisRegression</span></code></a></p>
+<dl class="method">
+<dt id="epistasis.models.pca.EpistasisPCA.fit">
+<code class="descname">fit</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.models.pca.EpistasisPCA.fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Estimate the principal components (i.e. maximum coordinates in phenotype variation.).</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="epistasis.models.pca.PCAStats">
+<em class="property">class </em><code class="descclassname">epistasis.models.pca.</code><code class="descname">PCAStats</code><span class="sig-paren">(</span><em>model</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.models.pca.PCAStats" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="epistasis.models.pca.PCAStats.cumulative_variance">
+<code class="descname">cumulative_variance</code><span class="sig-paren">(</span><em>n_components</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.models.pca.PCAStats.cumulative_variance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the cumulative explained variance for a given number of components.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="epistasis.models.pca.PCAStats.variance_cutoff">
+<code class="descname">variance_cutoff</code><span class="sig-paren">(</span><em>variance_ratio</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.models.pca.PCAStats.variance_cutoff" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the number of components whose cumulative sum explain the ratio of variance given.</p>
+<dl class="docutils">
+<dt>variance_fraction: float</dt>
+<dd>fraction of explained variance to find.</dd>
+</dl>
+<dl class="docutils">
+<dt>n_components: int</dt>
+<dd>number of components that explain the given explained variance ratio</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-epistasis.models.regression">
+<span id="epistasis-models-regression-module"></span><h2>epistasis.models.regression module<a class="headerlink" href="#module-epistasis.models.regression" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="epistasis.models.regression.EpistasisRegression">
+<em class="property">class </em><code class="descclassname">epistasis.models.regression.</code><code class="descname">EpistasisRegression</code><span class="sig-paren">(</span><em>wildtype</em>, <em>genotypes</em>, <em>phenotypes</em>, <em>order=None</em>, <em>stdeviations=None</em>, <em>log_transform=False</em>, <em>mutations=None</em>, <em>n_replicates=1</em>, <em>model_type='local'</em>, <em>logbase=&lt;ufunc 'log10'&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.models.regression.EpistasisRegression" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#epistasis.models.base.BaseModel" title="epistasis.models.base.BaseModel"><code class="xref py py-class docutils literal"><span class="pre">epistasis.models.base.BaseModel</span></code></a></p>
+<p>Create a map from local epistasis model projected into lower order
+order epistasis interactions. Requires regression to estimate values.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>wildtype</strong> (<em>str</em>) &#8211; Wildtype genotype. Wildtype phenotype will be used as reference state.</li>
+<li><strong>genotypes</strong> (<em>array-like, dtype=str</em>) &#8211; Genotypes in map. Can be binary strings, or not.</li>
+<li><strong>phenotypes</strong> (<em>array-like</em>) &#8211; Quantitative phenotype values</li>
+<li><strong>order</strong> (<em>int</em>) &#8211; Order of regression; if None, parameters must be passed in manually as parameters=&lt;list of lists&gt;</li>
+<li><strong>parameters</strong> (<em>dict</em>) &#8211; interaction keys with their values expressed as lists.</li>
+<li><strong>errors</strong> (<em>array-like</em>) &#8211; List of phenotype errors.</li>
+<li><strong>log_transform</strong> (<em>bool</em>) &#8211; If True, log transform the phenotypes.</li>
+<li><strong>mutations</strong> (<em>dict</em>) &#8211; site-by-site mutation scheme.</li>
+<li><strong>model</strong> (<em>str, default='local'</em>) &#8211; either &#8216;global&#8217; or &#8216;local&#8217;. If &#8216;local&#8217;, wildtype is reference state. If &#8216;global&#8217;,
+is cleverly chosen average state.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="epistasis.models.regression.EpistasisRegression.fit">
+<code class="descname">fit</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.models.regression.EpistasisRegression.fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use ordinary least squares regression (via scikit-learn) to estimate
+the epistatic coefficients.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="epistasis.models.regression.EpistasisRegression.fit_error">
+<code class="descname">fit_error</code><span class="sig-paren">(</span><em>sample_size=10</em>, <em>rtol=0.01</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.models.regression.EpistasisRegression.fit_error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Estimate the error in the epistatic coefficients by bootstrapping.
+Draws random samples of the phenotypes from the experimental standard
+error. The main assumption of this method is that the error is normally
+distributed and independent. Sampling is finished once the standard
+deviation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>sample_size</strong> (<em>int (default 10)</em>) &#8211; number a times to run regression before checking for convergence and
+restarting the another sample.</li>
+<li><strong>rtol</strong> (<em>float (default 1e-2)</em>) &#8211; tolerance threshold for convergence.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="epistasis.models.regression.RegressionStats">
+<em class="property">class </em><code class="descclassname">epistasis.models.regression.</code><code class="descname">RegressionStats</code><span class="sig-paren">(</span><em>model</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.models.regression.RegressionStats" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="epistasis.models.regression.RegressionStats.predict">
+<code class="descname">predict</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.models.regression.RegressionStats.predict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Infer the phenotypes from model.</p>
+<p>__Returns__:</p>
+<p><cite>genotypes</cite> [array] : array of genotypes &#8211; in same order as phenotypes</p>
+<p><cite>phenotypes</cite> [array] : array of quantitative phenotypes.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="epistasis.models.regression.RegressionStats.score">
+<code class="descname">score</code><a class="headerlink" href="#epistasis.models.regression.RegressionStats.score" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the epistasis model score after estimating interactions.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-epistasis.models.specifier">
+<span id="epistasis-models-specifier-module"></span><h2>epistasis.models.specifier module<a class="headerlink" href="#module-epistasis.models.specifier" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="epistasis.models.specifier.BaseSpecifier">
+<em class="property">class </em><code class="descclassname">epistasis.models.specifier.</code><code class="descname">BaseSpecifier</code><span class="sig-paren">(</span><em>wildtype</em>, <em>genotypes</em>, <em>phenotypes</em>, <em>test_cutoff=0.05</em>, <em>log_transform=False</em>, <em>mutations=None</em>, <em>n_replicates=1</em>, <em>model_type='local'</em>, <em>test_type='ftest'</em>, <em>logbase=&lt;ufunc 'log10'&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.models.specifier.BaseSpecifier" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="epistasis.models.specifier.BaseSpecifier.compare">
+<code class="descname">compare</code><span class="sig-paren">(</span><em>null_order</em>, <em>alt_order</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.models.specifier.BaseSpecifier.compare" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compare two models with different orders.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="epistasis.models.specifier.BaseSpecifier.fit">
+<code class="descname">fit</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.models.specifier.BaseSpecifier.fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fit a specifier to data.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="epistasis.models.specifier.BaseSpecifier.from_gpm">
+<em class="property">classmethod </em><code class="descname">from_gpm</code><span class="sig-paren">(</span><em>gpm</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.models.specifier.BaseSpecifier.from_gpm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize an epistasis model from a Genotype-phenotypeMap object</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="epistasis.models.specifier.BaseSpecifier.from_json">
+<em class="property">classmethod </em><code class="descname">from_json</code><span class="sig-paren">(</span><em>filename</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.models.specifier.BaseSpecifier.from_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load from json file.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="epistasis.models.specifier.BaseSpecifier.p_values">
+<code class="descname">p_values</code><a class="headerlink" href="#epistasis.models.specifier.BaseSpecifier.p_values" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return list of p-values from all tests in Specifier.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="epistasis.models.specifier.BaseSpecifier.scores">
+<code class="descname">scores</code><a class="headerlink" href="#epistasis.models.specifier.BaseSpecifier.scores" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="epistasis.models.specifier.LinearEpistasisSpecifier">
+<em class="property">class </em><code class="descclassname">epistasis.models.specifier.</code><code class="descname">LinearEpistasisSpecifier</code><span class="sig-paren">(</span><em>wildtype</em>, <em>genotypes</em>, <em>phenotypes</em>, <em>test_cutoff=0.05</em>, <em>log_transform=False</em>, <em>mutations=None</em>, <em>n_replicates=1</em>, <em>model_type='local'</em>, <em>test_type='ftest'</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.models.specifier.LinearEpistasisSpecifier" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#epistasis.models.specifier.BaseSpecifier" title="epistasis.models.specifier.BaseSpecifier"><code class="xref py py-class docutils literal"><span class="pre">epistasis.models.specifier.BaseSpecifier</span></code></a></p>
+<dl class="method">
+<dt id="epistasis.models.specifier.LinearEpistasisSpecifier.compare">
+<code class="descname">compare</code><span class="sig-paren">(</span><em>null_order</em>, <em>alt_order</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.models.specifier.LinearEpistasisSpecifier.compare" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test a higher model against a null model.</p>
+<p>This is just a useful utility function for the user... not actually used in this class.</p>
+<p>Returns a StatisticalTest object with the best model chosen.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="epistasis.models.specifier.LinearEpistasisSpecifier.fit">
+<code class="descname">fit</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.models.specifier.LinearEpistasisSpecifier.fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run the specifier method.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="epistasis.models.specifier.NonlinearEpistasisSpecifier">
+<em class="property">class </em><code class="descclassname">epistasis.models.specifier.</code><code class="descname">NonlinearEpistasisSpecifier</code><span class="sig-paren">(</span><em>wildtype</em>, <em>genotypes</em>, <em>phenotypes</em>, <em>function</em>, <em>test_cutoff=0.05</em>, <em>log_transform=False</em>, <em>mutations=None</em>, <em>n_replicates=1</em>, <em>model_type='local'</em>, <em>test_type='ftest'</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.models.specifier.NonlinearEpistasisSpecifier" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#epistasis.models.specifier.BaseSpecifier" title="epistasis.models.specifier.BaseSpecifier"><code class="xref py py-class docutils literal"><span class="pre">epistasis.models.specifier.BaseSpecifier</span></code></a></p>
+<dl class="method">
+<dt id="epistasis.models.specifier.NonlinearEpistasisSpecifier.compare">
+<code class="descname">compare</code><span class="sig-paren">(</span><em>null_order</em>, <em>alt_order</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.models.specifier.NonlinearEpistasisSpecifier.compare" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test a higher model against a null model.</p>
+<p>This is just a useful utility function for the user... not actually used in this class.</p>
+<p>Returns a StatisticalTest object with the best model chosen.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="epistasis.models.specifier.NonlinearEpistasisSpecifier.fit">
+<code class="descname">fit</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.models.specifier.NonlinearEpistasisSpecifier.fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run the specifier method.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-epistasis.models">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-epistasis.models" title="Permalink to this headline">¶</a></h2>
+<p>This module various models for calculating epistasis in genotype-phenotype maps.</p>
+<div class="section" id="linear-models">
+<h3>Linear models<a class="headerlink" href="#linear-models" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="localepistasismodel">
+<h4><cite>LocalEpistasisModel</cite><a class="headerlink" href="#localepistasismodel" title="Permalink to this headline">¶</a></h4>
+<p>Full linear decomposition of a genotype-phenotype map into linear epistatic
+coefficients. Requires explicit choice of reference state. Epistasis is calculated
+as deviation from expectation with respect to this reference state.</p>
+</div>
+<div class="section" id="globalepistasismodel">
+<h4><cite>GlobalEpistasisModel</cite><a class="headerlink" href="#globalepistasismodel" title="Permalink to this headline">¶</a></h4>
+<p>Full linear decomposition of a genotype-phenotype map into linear epistatic
+coefficients. Chooses <cite>average</cite> genotype as reference state to calculate epistasis.
+Coefficients represent deviation from expectation with respect to this average state.</p>
+</div>
+<div class="section" id="epistasisregression">
+<h4><cite>EpistasisRegression</cite><a class="headerlink" href="#epistasisregression" title="Permalink to this headline">¶</a></h4>
+<p>Ordinary-least-squares regression of linear epistasis model.</p>
+</div>
+</div>
+<div class="section" id="nonlinear-epistasis-model">
+<h3>Nonlinear Epistasis model<a class="headerlink" href="#nonlinear-epistasis-model" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Zach Sailer.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

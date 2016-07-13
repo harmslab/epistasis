@@ -1,0 +1,410 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>epistasis.plotting package &mdash; epistasis 0.1 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="epistasis 0.1 documentation" href="../../index.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> epistasis
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../models.html">Linear models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../models.html#nonlinear-epistasis-model">Nonlinear Epistasis model</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../../index.html">epistasis</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../index.html">Docs</a> &raquo;</li>
+      
+    <li>epistasis.plotting package</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../../_sources/docs/api/epistasis.plotting.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="epistasis-plotting-package">
+<h1>epistasis.plotting package<a class="headerlink" href="#epistasis-plotting-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-epistasis.plotting.epistasis">
+<span id="epistasis-plotting-epistasis-module"></span><h2>epistasis.plotting.epistasis module<a class="headerlink" href="#module-epistasis.plotting.epistasis" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="epistasis.plotting.epistasis.epistasis">
+<code class="descclassname">epistasis.plotting.epistasis.</code><code class="descname">epistasis</code><span class="sig-paren">(</span><em>betas</em>, <em>labels</em>, <em>errors=None</em>, <em>logbase=&lt;ufunc 'log10'&gt;</em>, <em>log_transform=False</em>, <em>order_colors=('red'</em>, <em>'orange'</em>, <em>'green'</em>, <em>'purple'</em>, <em>'DeepSkyBlue'</em>, <em>'yellow'</em>, <em>'pink')</em>, <em>significance='bon'</em>, <em>significance_cutoff=0.05</em>, <em>sigmas=1</em>, <em>log_space=False</em>, <em>y_scalar=1.5</em>, <em>y_axis_name='interaction'</em>, <em>figsize=(8</em>, <em>10)</em>, <em>height_ratio=12</em>, <em>star_cutoffs=(0.05</em>, <em>0.01</em>, <em>0.001)</em>, <em>star_spacer=0.0075</em>, <em>ybounds=None</em>, <em>bar_borders=True</em>, <em>capsize=2</em>, <em>xgrid=True</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.plotting.epistasis.epistasis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a barplot with the values from model, drawing the x-axis as a grid of
+boxes indicating the coordinate of the epistatic parameter. Should automatically
+generate an almost publication-quality figure.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>model</strong> &#8211; epistasis model</li>
+<li><strong>order_colors</strong> &#8211; list/tuple of colors for each order (rgb,html string-like)</li>
+<li><strong>significance</strong> &#8211; how to treat signifiance.  should be
+1. &#8220;bon&#8221; -&gt; Bonferroni corrected p-values (default)
+2. &#8220;p&#8221; -&gt; raw p-values
+3. None -&gt; ignore significance</li>
+<li><strong>significance_cutoff</strong> &#8211; value above which to consider a term significant</li>
+<li><strong>sigmas</strong> &#8211; number of sigmas to show for each error bar</li>
+<li><strong>y_scalar</strong> &#8211; how much to scale the y-axis above and beyond y-max</li>
+<li><strong>y_axis_name</strong> &#8211; what to put on the y-axis of the barplot</li>
+<li><strong>figsize</strong> &#8211; tuple of figure width,height</li>
+<li><strong>height_ratio</strong> &#8211; how much to scale barplot relative to xbox</li>
+<li><strong>star_cutoffs</strong> &#8211; <dl class="docutils">
+<dt>signifiance cutoffs for star stack.  should go from highest</dt>
+<dd>p to lowest p (least to most significant)</dd>
+</dl>
+</li>
+<li><strong>star_spacer</strong> &#8211; constant that scales how closely stacked stars are from one
+another</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
+<li><em>pretty-graph objects fig and ax_array (ax_array has two entries for top</em></li>
+<li><em>and bottom panels)</em></li>
+</ul>
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-epistasis.plotting.models">
+<span id="epistasis-plotting-models-module"></span><h2>epistasis.plotting.models module<a class="headerlink" href="#module-epistasis.plotting.models" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="epistasis.plotting.models.EpistasisPlotting">
+<em class="property">class </em><code class="descclassname">epistasis.plotting.models.</code><code class="descname">EpistasisPlotting</code><span class="sig-paren">(</span><em>model</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.plotting.models.EpistasisPlotting" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">seqspace.plotting.PlottingContainer</span></code></p>
+<dl class="method">
+<dt id="epistasis.plotting.models.EpistasisPlotting.epistasis">
+<code class="descname">epistasis</code><span class="sig-paren">(</span><em>figsize=(6</em>, <em>4)</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.plotting.models.EpistasisPlotting.epistasis" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="exception">
+<dt id="epistasis.plotting.models.LogScalingException">
+<em class="property">exception </em><code class="descclassname">epistasis.plotting.models.</code><code class="descname">LogScalingException</code><a class="headerlink" href="#epistasis.plotting.models.LogScalingException" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">Exception</span></code></p>
+<p>Exception for handling log scaling problems when plotting.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-epistasis.plotting.nonlinear">
+<span id="epistasis-plotting-nonlinear-module"></span><h2>epistasis.plotting.nonlinear module<a class="headerlink" href="#module-epistasis.plotting.nonlinear" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="epistasis.plotting.nonlinear.NonlinearPlotting">
+<em class="property">class </em><code class="descclassname">epistasis.plotting.nonlinear.</code><code class="descname">NonlinearPlotting</code><span class="sig-paren">(</span><em>model</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.plotting.nonlinear.NonlinearPlotting" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#epistasis.plotting.regression.RegressionPlotting" title="epistasis.plotting.regression.RegressionPlotting"><code class="xref py py-class docutils literal"><span class="pre">epistasis.plotting.regression.RegressionPlotting</span></code></a></p>
+<p>Plotting object to attach to nonlinear epistasis model.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>model</strong> (<a class="reference internal" href="epistasis.models.html#epistasis.models.nonlinear.NonlinearEpistasisModel" title="epistasis.models.nonlinear.NonlinearEpistasisModel"><em>NonlinearEpistasisModel</em></a>) &#8211; </td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="epistasis.plotting.nonlinear.NonlinearPlotting.best_fit">
+<code class="descname">best_fit</code><span class="sig-paren">(</span><em>ax=None</em>, <em>figsize=(6</em>, <em>4)</em>, <em>errorbars=False</em>, <em>axis=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.plotting.nonlinear.NonlinearPlotting.best_fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot model line through data.</p>
+<dl class="docutils">
+<dt>ax</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">matplotlib.Axis</span><dd>matplotlib object to add best fit data to.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="epistasis.plotting.nonlinear.NonlinearPlotting.linear_phenotypes">
+<code class="descname">linear_phenotypes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.plotting.nonlinear.NonlinearPlotting.linear_phenotypes" title="Permalink to this definition">¶</a></dt>
+<dd><p>P vs. p plot.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="epistasis.plotting.nonlinear.NonlinearPlotting.nonlinear_function">
+<code class="descname">nonlinear_function</code><span class="sig-paren">(</span><em>ax=None</em>, <em>xbounds=None</em>, <em>figsize=(6</em>, <em>4)</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.plotting.nonlinear.NonlinearPlotting.nonlinear_function" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot the input function for set of phenotypes.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="epistasis.plotting.nonlinear.NonlinearPlotting.residuals">
+<code class="descname">residuals</code><span class="sig-paren">(</span><em>ax=None</em>, <em>figsize=(6</em>, <em>4)</em>, <em>stem=False</em>, <em>axis=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.plotting.nonlinear.NonlinearPlotting.residuals" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get figure, return figure.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-epistasis.plotting.pca">
+<span id="epistasis-plotting-pca-module"></span><h2>epistasis.plotting.pca module<a class="headerlink" href="#module-epistasis.plotting.pca" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="epistasis.plotting.pca.principal_components">
+<code class="descclassname">epistasis.plotting.pca.</code><code class="descname">principal_components</code><span class="sig-paren">(</span><em>model, with_components=True, dimensions=3, figsize=[6, 6], ac='r'</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.plotting.pca.principal_components" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>model: EpistasisPCA object</dt>
+<dd>PCA model of epistasis to plot</dd>
+<dt>figsize: array like</dt>
+<dd>Figure size</dd>
+<dt>ac: str</dt>
+<dd>Color for arrows representing principal components</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-epistasis.plotting.regression">
+<span id="epistasis-plotting-regression-module"></span><h2>epistasis.plotting.regression module<a class="headerlink" href="#module-epistasis.plotting.regression" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="epistasis.plotting.regression.RegressionPlotting">
+<em class="property">class </em><code class="descclassname">epistasis.plotting.regression.</code><code class="descname">RegressionPlotting</code><span class="sig-paren">(</span><em>model</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.plotting.regression.RegressionPlotting" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#epistasis.plotting.models.EpistasisPlotting" title="epistasis.plotting.models.EpistasisPlotting"><code class="xref py py-class docutils literal"><span class="pre">epistasis.plotting.models.EpistasisPlotting</span></code></a></p>
+<dl class="method">
+<dt id="epistasis.plotting.regression.RegressionPlotting.best_fit">
+<code class="descname">best_fit</code><span class="sig-paren">(</span><em>ax=None</em>, <em>figsize=(6</em>, <em>4)</em>, <em>errorbars=False</em>, <em>axis=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.plotting.regression.RegressionPlotting.best_fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot model line through date.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="epistasis.plotting.regression.RegressionPlotting.correlation">
+<code class="descname">correlation</code><span class="sig-paren">(</span><em>ax=None</em>, <em>figsize=(6</em>, <em>4)</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.plotting.regression.RegressionPlotting.correlation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Draw a correlation plot of data.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="epistasis.plotting.regression.RegressionPlotting.predicted_phenotypes">
+<code class="descname">predicted_phenotypes</code><span class="sig-paren">(</span><em>ax=None</em>, <em>figsize=(6</em>, <em>4)</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.plotting.regression.RegressionPlotting.predicted_phenotypes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots the predicted phenotypes</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="epistasis.plotting.regression.RegressionPlotting.residuals">
+<code class="descname">residuals</code><span class="sig-paren">(</span><em>ax=None</em>, <em>stem=False</em>, <em>figsize=(6</em>, <em>4)</em>, <em>axis=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.plotting.regression.RegressionPlotting.residuals" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get figure, return figure.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="epistasis.plotting.regression.RegressionPlotting.summary">
+<code class="descname">summary</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.plotting.regression.RegressionPlotting.summary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot a summary of the model. Includes a plot of
+the model with residuals plotted underneath.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-epistasis.plotting.stats">
+<span id="epistasis-plotting-stats-module"></span><h2>epistasis.plotting.stats module<a class="headerlink" href="#module-epistasis.plotting.stats" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="epistasis.plotting.stats.FDistributionPlotting">
+<em class="property">class </em><code class="descclassname">epistasis.plotting.stats.</code><code class="descname">FDistributionPlotting</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.plotting.stats.FDistributionPlotting" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="epistasis.plotting.stats.FDistributionPlotting.cdf">
+<code class="descname">cdf</code><span class="sig-paren">(</span><em>percent_start=0.0001</em>, <em>percent_end=0.9999</em>, <em>figsize=(6</em>, <em>4)</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.plotting.stats.FDistributionPlotting.cdf" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="epistasis.plotting.stats.FDistributionPlotting.pdf">
+<code class="descname">pdf</code><span class="sig-paren">(</span><em>percent_start=0.0001</em>, <em>percent_end=0.9999</em>, <em>figsize=(6</em>, <em>4)</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.plotting.stats.FDistributionPlotting.pdf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot the distribution.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="epistasis.plotting.stats.correlation">
+<code class="descclassname">epistasis.plotting.stats.</code><code class="descname">correlation</code><span class="sig-paren">(</span><em>learned, known, title='Known vs. Learned', figsize=[6, 6]</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.plotting.stats.correlation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a plot showing the learned data vs. known data.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="epistasis.plotting.stats.magnitude_vs_order">
+<code class="descclassname">epistasis.plotting.stats.</code><code class="descname">magnitude_vs_order</code><span class="sig-paren">(</span><em>model</em>, <em>keep_sign=False</em>, <em>marker='o'</em>, <em>color='b'</em>, <em>linestyle='None'</em>, <em>xlabel='Order'</em>, <em>ylabel='Magnitude'</em>, <em>title=''</em>, <em>figsize=(6</em>, <em>4)</em>, <em>errorbars=True</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.plotting.stats.magnitude_vs_order" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a plot of magnitude versus order.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="epistasis.plotting.stats.residuals">
+<code class="descclassname">epistasis.plotting.stats.</code><code class="descname">residuals</code><span class="sig-paren">(</span><em>learned, known, title='Residual Plot', figsize=[6, 4]</em><span class="sig-paren">)</span><a class="headerlink" href="#epistasis.plotting.stats.residuals" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a residual plot.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-epistasis.plotting">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-epistasis.plotting" title="Permalink to this headline">¶</a></h2>
+<p>Plotting module for the epistasis package. The main module includes
+various plotting functions, which submodules include objects for visualizing data
+from epistasis model classes.</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Zach Sailer.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

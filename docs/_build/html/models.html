@@ -1,0 +1,229 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Linear models &mdash; epistasis 0.1 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="epistasis 0.1 documentation" href="index.html"/>
+        <link rel="next" title="&lt;no title&gt;" href="linear.html"/>
+        <link rel="prev" title="Epistasis Python API" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> epistasis
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Linear models</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#localepistasismodel"><cite>LocalEpistasisModel</cite></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#globalepistasismodel"><cite>GlobalEpistasisModel</cite></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#epistasisregression"><cite>EpistasisRegression</cite></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#nonlinear-epistasis-model">Nonlinear Epistasis model</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">epistasis</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>Linear models</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/models.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <span class="target" id="module-epistasis.models"></span><p>This module various models for calculating epistasis in genotype-phenotype maps.</p>
+<div class="section" id="linear-models">
+<h1>Linear models<a class="headerlink" href="#linear-models" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="localepistasismodel">
+<h2><cite>LocalEpistasisModel</cite><a class="headerlink" href="#localepistasismodel" title="Permalink to this headline">¶</a></h2>
+<p>Full linear decomposition of a genotype-phenotype map into linear epistatic
+coefficients. Requires explicit choice of reference state. Epistasis is calculated
+as deviation from expectation with respect to this reference state.</p>
+</div>
+<div class="section" id="globalepistasismodel">
+<h2><cite>GlobalEpistasisModel</cite><a class="headerlink" href="#globalepistasismodel" title="Permalink to this headline">¶</a></h2>
+<p>Full linear decomposition of a genotype-phenotype map into linear epistatic
+coefficients. Chooses <cite>average</cite> genotype as reference state to calculate epistasis.
+Coefficients represent deviation from expectation with respect to this average state.</p>
+</div>
+<div class="section" id="epistasisregression">
+<h2><cite>EpistasisRegression</cite><a class="headerlink" href="#epistasisregression" title="Permalink to this headline">¶</a></h2>
+<p>Ordinary-least-squares regression of linear epistasis model.</p>
+</div>
+</div>
+<div class="section" id="nonlinear-epistasis-model">
+<h1>Nonlinear Epistasis model<a class="headerlink" href="#nonlinear-epistasis-model" title="Permalink to this headline">¶</a></h1>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="linear.html" class="btn btn-neutral float-right" title="&lt;no title&gt;" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="index.html" class="btn btn-neutral" title="Epistasis Python API" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Zach Sailer.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
