@@ -15,35 +15,95 @@ from collections import OrderedDict
 # ----------------------------------------------------------
 
 from seqspace.base import BaseMap
-from epistasis.utils import params_index_map, build_model_params, label_to_key
+from seqspace.errors import StandardErrorMap, StandardDeviationMap
+from epistasis.utils import (params_index_map,
+    build_model_params,
+    label_to_key)
 
-class RawInteractionMap(object):
+class TransformEpistasisMap(object):
+    """Mapping object that log transforms an EpistasisMap.
+
+    Parameters
+    ----------
+    EpistasisMap : EpistasisMap object
+        Map to log transform
+    """
+    def __init__(self, EpistasisMap):
+        self._epistasis = EpistasisMap
+        self.transformed = True
+        self.std = StandardDeviationMap(self)
+        self.err = StandardErrorMap(self)
+
+    @property
+    def keys(self):
+        return self._epistasis.keys
+
+    @property
+    def labels(self):
+        return self._epistasis.labels
+
+    @property
+    def logbase(self):
+        """Get base of logarithm for tranformed epistasis"""
+        return self._epistasis.logbase
 
     @property
     def values(self):
         """ Get the values of the interaction in the system"""
-        return self._values
+        return self.logbase(self._epistasis.values)
+
+    @property
+    def stdeviations(self):
+        """Get the standard deviations of the epistasis coefficients."""
+        return self._stdeviations
+
+    @property
+    def n_replicates(self):
+        """Get number of replicates for each observable."""
+        return self._epistasis.n_replicates
 
     @values.setter
     def values(self, values):
-        self._values = values
+        """Set the non-log-epistasis."""
 
 
-class InteractionMap(BaseMap):
+class EpistasisMap(BaseMap):
 
-    def __init__(self, mutation_map, log_transform, logbase=np.log10):
+    def __init__(self, Model):
         """ Mapping object for indexing and tracking interactions in an
-            epistasis map object.
+        epistasis map object.
 
-            __Arguments__:
-
-            `mutation_map` [MutationMap instance] : An already populated MutationMap instance.
+        Parameters
+        ----------
+        Model :
+            Epistasis Model to attach
         """
-        self.Mutations = mutation_map
-        self._log_transform = log_transform
+        self._Model = Model
+        self.transformed = False
+        if self._Model.log_transform:
+            self.log = TransformEpistasisMap(self)
+        self.std = StandardDeviationMap(self)
+        self.err = StandardErrorMap(self)
 
-        if self.log_transform:
-            self.Raw = RawInteractionMap()
+    def build(self):
+        """Build a mapping object for epistatic interactions."""
+        # construct the mutations mapping
+        self._params = params_index_map(self._Model.mutations)
+        self._labels = build_model_params(
+            self.length,
+            self.order,
+            self.params
+        )
+
+    @property
+    def base(self):
+        """Return base of logarithm tranform."""
+        return self._Model.base
+
+    @property
+    def logbase(self):
+        """Return logarithmic function"""
+        return self._Model.logbase
 
     @property
     def n(self):
@@ -53,17 +113,17 @@ class InteractionMap(BaseMap):
     @property
     def log_transform(self):
         """ Boolean argument telling whether space is log transformed. """
-        return self._log_transform
+        return self._Model.log_transform
 
     @property
     def length(self):
         """ Length of sequences. """
-        return self._length
+        return self._Model.length
 
     @property
     def order(self):
         """ Get order of epistasis in system. """
-        return self._order
+        return self._Model.order
 
     @property
     def keys(self):
@@ -81,9 +141,24 @@ class InteractionMap(BaseMap):
         return self._indices
 
     @property
-    def mutations(self):
-        """ Get the interaction index in interaction matrix. """
-        return self._mutations
+    def params(self):
+        """ Get the site-number-to-matrix-index mapping. This property is set in
+        the build method.
+
+        Returns
+        -------
+        params : dict
+            { site_number : indices }`. If the site
+            alphabet is note included, the model will assume binary
+            between wildtype and derived.
+            Example::
+                mutations = {
+                    0: [indices],
+                    1: [indices],
+
+                }
+        """
+        return self._params
 
     @property
     def labels(self):
@@ -108,32 +183,19 @@ class InteractionMap(BaseMap):
             elements.append(self._label_to_genotype(label))
         return elements
 
+    @property
+    def stdeviations(self):
+        """Get standard deviations from model"""
+        return self._stdeviations
+
+    @property
+    def n_replicates(self):
+        """Get number of replicate measurements for observed phenotypes"""
+        return self._Model.n_replicates
+
     # ----------------------------------------------
     # Setter Functions
     # ----------------------------------------------
-    @order.setter
-    def order(self, order):
-        """ Set the order of epistasis in the system. As a consequence,
-            this mapping object creates the """
-        self._order = order
-
-    @mutations.setter
-    def mutations(self, mutations):
-        """ Set the indices of where mutations occur in the wildtype genotype.
-
-            `mutations = { site_number : indices }`. If the site
-            alphabet is note included, the model will assume binary
-            between wildtype and derived.
-
-                #!python
-                mutations = {
-                    0: [indices],
-                    1: [indices],
-
-                }
-
-        """
-        self._mutations = mutations
 
     @labels.setter
     def labels(self, labels):
@@ -148,19 +210,15 @@ class InteractionMap(BaseMap):
             raise Exception("Number of interactions give to map is different than was defined. ")
         self._values = values
 
-        # Set raw values
-        if self.log_transform:
-            self.Raw.values = 10**values
-
     @keys.setter
     def keys(self, keys):
         """ Manually set keys. NEED TO do some quality control here. """
         self._keys = keys
 
-    @log_transform.setter
-    def log_transform(self, boolean):
-        """ True/False to log transform the space. """
-        self._log_transform = boolean
+    @stdeviations.setter
+    def stdeviations(self, stdeviations):
+        """Set the standard deviations of the epistatic coefficients."""
+        self._stdeviations = stdeviations
 
     # ----------------------------------------------
     # Methods
@@ -190,7 +248,7 @@ class InteractionMap(BaseMap):
                             start_order=order)
 
         # Get a mapping of model labels to values
-        key2value = self.get_map("keys", "values")
+        key2value = self.map("keys", "values")
 
         # Built a dict of order interactions to values
         desired = {}
