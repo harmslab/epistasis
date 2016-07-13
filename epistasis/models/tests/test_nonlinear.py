@@ -41,6 +41,7 @@ class testNonlinearEpistasisModel(BaseTestClass):
 
     def test_parameters(self):
         """Fit errors."""
+        print(self.model.parameters.a)
         tools.assert_true(hasattr(self.model, "parameters"))
         tools.assert_true(hasattr(self.model.parameters, "a"))
         tools.assert_true(hasattr(self.model.parameters, "b"))
