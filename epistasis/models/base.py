@@ -1,6 +1,3 @@
-__doc__ = """
-Base class for epistasis models. This is meant to be called in a subclass.
-"""
 import numpy as np
 import itertools as it
 from collections import OrderedDict

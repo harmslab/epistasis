@@ -1,5 +1,3 @@
-__doc__ = """ Submodule of linear epistasis models. Includes full local and global epistasis models and regression model for low order models."""
-
 # ------------------------------------------------------------
 # Imports
 # ------------------------------------------------------------
@@ -136,8 +134,8 @@ class LinearEpistasisModel(BaseModel):
         """ Estimate the error of each epistatic interaction by standard error
         propagation of the phenotypes through the model.
 
-        For multiplicative:
-        ------------------
+        Example
+        -------
         f_x = phenotype x
         sigma_f = standard deviation of phenotype x
         beta_i = epistatic coefficient i
@@ -160,32 +158,37 @@ class LinearEpistasisModel(BaseModel):
 
 
 class LocalEpistasisModel(LinearEpistasisModel):
+    """Construct a genotype-phenotype map and fit with a linear epistasis model,
+    defined as follows
+    P = K_0 + sum(K_i) + sum(K_ij) + sum(K_ijk) + ...
 
+    Parameters
+    ----------
+    wildtype : str
+        Wildtype genotype. Wildtype phenotype will be used as reference state.
+    genotypes : array-like, dtype=str
+        Genotypes in map. Can be binary strings, or not.
+    phenotypes : array-like
+        Quantitative phenotype values
+    stdeviations : array-like
+        List of phenotype errors.
+    log_transform : bool
+        If True, log transform the phenotypes.
+    mutations : dict
+        Mapping sites to mutational alphabet.
+    n_replicates : int
+        number of replicates.
+    model_type : str
+        type of model to use.
+    logbase : callable
+        log spaces to transform phenotypes.
+    """
     def __init__(self, wildtype, genotypes, phenotypes,
                 stdeviations=None,
                 log_transform=False,
                 mutations=None,
                 n_replicates=1,
                 logbase=np.log10):
-
-        """ Create a map of the local epistatic effects using expanded mutant
-            cycle approach.
-
-            i.e.
-            Phenotype = K_0 + sum(K_i) + sum(K_ij) + sum(K_ijk) + ...
-
-            __Arguments__:
-
-            `wildtype` [str] : Wildtype genotype. Wildtype phenotype will be used as reference state.
-
-            `genotypes` [array-like, dtype=str] : Genotypes in map. Can be binary strings, or not.
-
-            `phenotypes` [array-like] : Quantitative phenotype values
-
-            `stdevs` [array-like] : List of phenotype errors.
-
-            `log_transform` [bool] : If True, log transform the phenotypes.
-        """
         # Populate Epistasis Map
         super(LocalEpistasisModel, self).__init__(wildtype, genotypes, phenotypes,
                 stdeviations=stdeviations,
@@ -198,31 +201,37 @@ class LocalEpistasisModel(LinearEpistasisModel):
 
 
 class GlobalEpistasisModel(LinearEpistasisModel):
+    """Construct a genotype-phenotype map and fit with a linear epistasis model,
+    defined as follows
+    Phenotype = K_0 + sum(K_i) + sum(K_ij) + sum(K_ijk) + ...
 
+    Parameters
+    ----------
+    wildtype : str
+        Wildtype genotype. Wildtype phenotype will be used as reference state.
+    genotypes : array-like, dtype=str
+        Genotypes in map. Can be binary strings, or not.
+    phenotypes : array-like
+        Quantitative phenotype values
+    stdeviations : array-like
+        List of phenotype errors.
+    log_transform : bool
+        If True, log transform the phenotypes.
+    mutations : dict
+        Mapping sites to mutational alphabet.
+    n_replicates : int
+        number of replicates.
+    model_type : str
+        type of model to use.
+    logbase : callable
+        log spaces to transform phenotypes.
+    """
     def __init__(self, wildtype, genotypes, phenotypes,
                 stdeviations=None,
                 log_transform=False,
                 mutations=None,
                 n_replicates=1,
                 logbase=np.log10):
-
-        """ Create a map of the global epistatic effects using Hadamard approach (defined by XX)
-
-            This is the related to LocalEpistasisMap by the discrete Fourier
-            transform of mutant cycle approach.
-
-            __Arguments__:
-
-            `wildtype` [str] : Wildtype genotype. Wildtype phenotype will be used as reference state.
-
-            `genotypes` [array-like, dtype=str] : Genotypes in map. Can be binary strings, or not.
-
-            `phenotypes` [array-like] : Quantitative phenotype values
-
-            `stdevs` [array-like] : List of phenotype errors.
-
-            `log_transform` [bool] : If True, log transform the phenotypes.
-        """
         # Populate Epistasis Map
         super(GlobalEpistasisModel, self).__init__(wildtype, genotypes, phenotypes,
                                                     stdeviations=stdeviations,

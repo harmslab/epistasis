@@ -1,7 +1,3 @@
-__doc__ = """Submodule with nonlinear epistasis models for estimating epistatic
-interactions in nonlinear genotype-phenotype maps.
-"""
-
 import inspect
 import numpy as np
 from scipy.optimize import curve_fit

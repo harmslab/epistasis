@@ -122,8 +122,8 @@ class NonlinearPlotting(RegressionPlotting):
             fig = ax.get_figure()
 
 
-        theory = self.model.Stats.predict()
-        linear = self.model.Stats.linear()
+        theory = self.model.statistics.predict()
+        linear = self.model.statistics.linear()
         observed = self.model.phenotypes
 
         # Calculate residuals

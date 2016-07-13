@@ -4,3 +4,4 @@ build/
 *.so
 *.ipynb_checkpoints/
 dist/
+.DS_Store
