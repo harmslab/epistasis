@@ -9,7 +9,7 @@ def epistasis(betas, labels, errors=None, logbase=np.log10, log_transform=False,
     order_colors=("red","orange","green","purple","DeepSkyBlue","yellow","pink"),
     significance="bon",
     significance_cutoff=0.05,
-    sigmas=1,
+    sigmas=0,
     log_space=False,
     y_scalar=1.5,
     y_axis_name="interaction",
@@ -62,14 +62,16 @@ def epistasis(betas, labels, errors=None, logbase=np.log10, log_transform=False,
         and bottom panels)
     """
     # Name all variables that matter for this function
-    if labels[0] == [0] :
+    if labels[0] == [0]:
         labels = labels[1:]
         betas = betas[1:]
-        upper = errors[1][1:]
-        lower = errors[0][1:]
+        if errors is not None:
+            upper = errors[1][1:]
+            lower = errors[0][1:]
     else:
-        upper = errors[1]
-        lower = errors[0]
+        if errors is not None:
+            upper = errors[1]
+            lower = errors[0]
 
     # Sanity check on the errors
     if sigmas == 0:

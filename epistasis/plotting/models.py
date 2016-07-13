@@ -25,9 +25,13 @@ class EpistasisPlotting(PlottingContainer):
         super(EpistasisPlotting, self).__init__(self.model)
 
     def epistasis(self, figsize=(6,4), **kwargs):
+        try:
+            errors = [self.model.epistasis.err.lower, self.model.epistasis.err.upper]
+        except AttributeError:
+            errors = None
         fig, ax = epistasis(self.model.epistasis.values,
             self.model.epistasis.labels,
-            errors=[self.model.epistasis.err.lower, self.model.epistasis.err.upper],
+            errors=errors,
             logbase=self.model.logbase,
             log_transform=self.model.log_transform,
             figsize=figsize, **kwargs)

@@ -23,7 +23,7 @@ class RegressionPlotting(EpistasisPlotting):
         min_p = min(self.model.phenotypes)
 
         known = self.model.phenotypes
-        predicted = self.model.Stats.predict()
+        predicted = self.model.statistics.predict()
 
         # Add scatter plot points on correlation grid
         ax.plot(known, predicted, 'b.')
@@ -46,7 +46,7 @@ class RegressionPlotting(EpistasisPlotting):
             fig = ax.get_figure()
 
         known = self.model.phenotypes
-        predicted = self.model.Stats.predict()
+        predicted = self.model.statistics.predict()
 
         # Add scatter plot points on correlation grid
         ax.plot(known, 'b-')
@@ -64,7 +64,7 @@ class RegressionPlotting(EpistasisPlotting):
         else:
             fig = ax.get_figure()
 
-        theory = self.model.Stats.predict()
+        theory = self.model.statistics.predict()
         observed = self.model.phenotypes
 
         # Calculate residuals
@@ -106,7 +106,7 @@ class RegressionPlotting(EpistasisPlotting):
             fig = ax.get_figure()
 
         # Plot line through data
-        theory = self.model.Stats.predict()
+        theory = self.model.statistics.predict()
         observed = self.model.phenotypes
 
         # Sort the theory for line plot
