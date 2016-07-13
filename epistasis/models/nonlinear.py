@@ -10,7 +10,7 @@ from epistasis.decomposition import generate_dv_matrix
 from epistasis.stats import pearson
 from epistasis.models.regression import EpistasisRegression
 from epistasis.models.base import BaseModel
-from epistasis.plotting import NonlinearPlotting
+from epistasis.plotting.nonlinear import NonlinearPlotting
 
 # decorators for catching errors
 from seqspace.utils import ipywidgets_missing
@@ -209,16 +209,14 @@ class NonlinearEpistasisModel(EpistasisRegression):
 
 
     def _nonlinear_function_wrapper(self, function):
-        """
-            Nonlinear function wrapper adding epistasis as an argument to user defined function
+        """Nonlinear function wrapper adding epistasis as an argument to user defined function
         """
 
         def inner(*args):
+            """Replace `x` in the user defined function with the decomposition
+            matrix `X`. The new `X` maps all possible high order epistasis interactions
+            to the phenotypes they model.
             """
-                Convert the user defined function to a new function which fits epistasis
-                coefficients as well
-            """
-
             ###### Deconstruct the arguments in user's function
             # X is the first argument
             x = args[0]
@@ -232,7 +230,7 @@ class NonlinearEpistasisModel(EpistasisRegression):
 
             # If the underlying genotype map is to be log_transformed
             if self.linear.log_transform:
-                new_x = 10**(np.dot(x,betas))
+                new_x = self.base**(np.dot(x,betas))
             else:
                 new_x = np.dot(x, betas)
             return function(new_x, *other_args)
@@ -241,16 +239,18 @@ class NonlinearEpistasisModel(EpistasisRegression):
 
 
     def fit(self, guess_coeffs=None, fit_kwargs={}, **kwargs):
-        """
-            Fit using nonlinear least squares regression.
+        """Fit using nonlinear least squares regression.
 
-            Arguments:
-            ---------
-            guess: array of guesses
-
-            fit_kwargs are passed to scipy's curvefit function
-
-            **kwargs are used as parameters.
+        Arguments
+        ---------
+        guess : array-like
+            array of guesses
+        fit_kwargs : dict
+            specific keyword arguments for scipy's curve_fit function. This is
+            not for parameters.
+        **kwargs :
+            guess values for `parameters` in the nonlinear function passed in as
+            keyword arguments
         """
         # Construct an array of guesses, using the scale specified by user.
         guess = np.ones(self.epistasis.n + self.parameters.n)
@@ -296,7 +296,6 @@ class NonlinearEpistasisModel(EpistasisRegression):
         kwargs should be ranges of guess values for each parameter. They are are turned into
         slider widgets for varying these guesses easily. The kwarg needs to match the name of
         the parameter in the nonlinear fit.
-
         """
         # Build fitting method to pass into widget box
         def fitting(**kwargs):
@@ -309,11 +308,11 @@ class NonlinearEpistasisModel(EpistasisRegression):
                 print("R-squared of fit: " + str(self.statistics.score))
 
                 # Print parameters
-                for kw in self.Parameters._mapping:
+                for kw in self.parameters._mapping:
                     print(kw + ": " + str(getattr(self.parameters, kw)))
 
             # Plot if available
-            if hasattr(self, "Plot"):
+            if hasattr(self, "plot"):
                 self.plot.predicted_phenotypes()
 
         # Construct and return the widget box

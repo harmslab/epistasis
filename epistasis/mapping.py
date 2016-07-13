@@ -21,12 +21,26 @@ from epistasis.utils import (params_index_map,
     label_to_key)
 
 class TransformEpistasisMap(object):
+    """Mapping object that log transforms an EpistasisMap.
 
+    Parameters
+    ----------
+    EpistasisMap : EpistasisMap object
+        Map to log transform
+    """
     def __init__(self, EpistasisMap):
         self._epistasis = EpistasisMap
         self.transformed = True
         self.std = StandardDeviationMap(self)
         self.err = StandardErrorMap(self)
+
+    @property
+    def keys(self):
+        return self._epistasis.keys
+
+    @property
+    def labels(self):
+        return self._epistasis.labels
 
     @property
     def logbase(self):
@@ -42,6 +56,11 @@ class TransformEpistasisMap(object):
     def stdeviations(self):
         """Get the standard deviations of the epistasis coefficients."""
         return self._stdeviations
+
+    @property
+    def n_replicates(self):
+        """Get number of replicates for each observable."""
+        return self._epistasis.n_replicates
 
     @values.setter
     def values(self, values):
@@ -164,6 +183,16 @@ class EpistasisMap(BaseMap):
             elements.append(self._label_to_genotype(label))
         return elements
 
+    @property
+    def stdeviations(self):
+        """Get standard deviations from model"""
+        return self._stdeviations
+
+    @property
+    def n_replicates(self):
+        """Get number of replicate measurements for observed phenotypes"""
+        return self._Model.n_replicates
+
     # ----------------------------------------------
     # Setter Functions
     # ----------------------------------------------
@@ -185,6 +214,11 @@ class EpistasisMap(BaseMap):
     def keys(self, keys):
         """ Manually set keys. NEED TO do some quality control here. """
         self._keys = keys
+
+    @stdeviations.setter
+    def stdeviations(self, stdeviations):
+        """Set the standard deviations of the epistatic coefficients."""
+        self._stdeviations = stdeviations
 
     # ----------------------------------------------
     # Methods

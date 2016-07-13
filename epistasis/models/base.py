@@ -12,7 +12,7 @@ from seqspace.gpm import GenotypePhenotypeMap
 # Local imports
 from epistasis.mapping import EpistasisMap
 from epistasis.utils import epistatic_order_indices, SubclassException
-from epistasis.plotting import EpistasisPlotting
+from epistasis.plotting.models import EpistasisPlotting
 
 class BaseModel(GenotypePhenotypeMap):
     """ Populate an Epistasis mapping object.
@@ -59,7 +59,7 @@ class BaseModel(GenotypePhenotypeMap):
         self.epistasis = EpistasisMap(self)
         # Add plotting object if matplotlib is installed
         try:
-            self.Plot = EpistasisPlotting(self)
+            self.plot = EpistasisPlotting(self)
         except Warning:
             pass
 

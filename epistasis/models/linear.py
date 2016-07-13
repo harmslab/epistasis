@@ -101,6 +101,7 @@ class LinearEpistasisModel(BaseModel):
         # Calculate the inverse of the matrix
         self.X_inv = model_types[model_type]["inverse"] * np.linalg.inv(self.X)
 
+
     @property
     def metadata(self):
         """Return the metadata for this model."""
@@ -155,7 +156,7 @@ class LinearEpistasisModel(BaseModel):
         else:
             stdeviations = np.sqrt(np.dot(np.square(self.X_inv), self.binary.std.upper**2))
         #Set stdeviation for epistasis.
-        self.epistasis.stdeviatons = stdeviations
+        self.epistasis.stdeviations = stdeviations
 
 
 class LocalEpistasisModel(LinearEpistasisModel):

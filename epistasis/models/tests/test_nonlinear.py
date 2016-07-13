@@ -25,7 +25,7 @@ class testNonlinearEpistasisModel(BaseTestClass):
             mutations=self.mutations
         )
 
-        self.model.fit()
+        self.model.fit(a=1,b=0)
 
     def test_init(self):
         """Test initialization of epistasis model."""
@@ -41,7 +41,6 @@ class testNonlinearEpistasisModel(BaseTestClass):
 
     def test_parameters(self):
         """Fit errors."""
-        print(self.model.parameters.a)
         tools.assert_true(hasattr(self.model, "parameters"))
         tools.assert_true(hasattr(self.model.parameters, "a"))
         tools.assert_true(hasattr(self.model.parameters, "b"))

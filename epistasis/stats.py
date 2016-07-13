@@ -6,7 +6,7 @@ __doc__ = """Submodule with useful statistics functions for epistasis model."""
 
 import numpy as np
 from scipy.stats import f, norm
-from epistasis.plotting import FDistributionPlotting
+from epistasis.plotting.stats import FDistributionPlotting
 
 # -----------------------------------------------------------------------
 # Correlation metrics

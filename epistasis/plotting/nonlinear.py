@@ -83,8 +83,8 @@ class NonlinearPlotting(RegressionPlotting):
             fig = ax.get_figure()
 
         # Plot line through data
-        linear = self.model.Stats.linear()
-        theory = self.model.Stats.predict()
+        linear = self.model.statistics.linear()
+        theory = self.model.statistics.predict()
         observed = self.model.phenotypes
 
         data = np.array((linear, theory))

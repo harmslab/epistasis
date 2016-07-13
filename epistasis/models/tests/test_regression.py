@@ -41,7 +41,21 @@ class testEpistasisRegression(BaseTestClass):
     def test_fit(self):
         """Test fitting."""
         self.model.fit()
+        tools.assert_true(hasattr(self.model, "statistics"))
 
-    def test_fit_error(self):
-        """Fit errors."""
-        self.model.fit()
+    def test_predict(self):
+        """Test the predictions of the regression model"""
+        model = EpistasisRegression(
+            self.wildtype,
+            self.genotypes,
+            self.phenotypes,
+            order=4,
+            stdeviations=self.stdeviations,
+            log_transform=self.log_transform,
+            n_replicates=self.n_replicates,
+        )
+        model.fit()
+        np.testing.assert_array_equal(self.genotypes, model.complete_genotypes)
+        np.testing.assert_array_equal(model.binary.genotypes, model.binary.complete_genotypes)
+        # Check the predicted values!
+        np.testing.assert_almost_equal(model.statistics.predict(), self.phenotypes)

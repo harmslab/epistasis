@@ -32,8 +32,6 @@ class BaseSpecifier(object):
         model_type="local",
         test_type="ftest",
         logbase=np.log10):
-
-
         self.gpm = GenotypePhenotypeMap(
             wildtype,
             genotypes,
@@ -45,7 +43,6 @@ class BaseSpecifier(object):
         )
 
         self.model_type = model_type
-
         # Defaults to binary mapping if not specific mutations are named
         if mutations is None:
             mutant = farthest_genotype(wildtype, genotypes)
@@ -82,9 +79,9 @@ class BaseSpecifier(object):
 
         # Grab un scaled phenotypes and errors
         if gpm.log_transform is True:
-            _phenotypes = gpm.Raw.phenotypes
-        else:
             _phenotypes = gpm.phenotypes
+        else:
+            _phenotypes = gpm.log.phenotypes
 
         # Grab each property from map
         model = cls(gpm.wildtype,

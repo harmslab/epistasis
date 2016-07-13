@@ -78,8 +78,8 @@ class EpistasisPCA(EpistasisRegression):
         phenotype.
 
 
-        Arguments:
-        ---------
+        Parameters
+        ----------
         wildtype: str
             Wildtype or ancestral genotype
         genotypes: array-like of str
@@ -104,6 +104,13 @@ class EpistasisPCA(EpistasisRegression):
             If 'epistasis', project epistasis parameters onto decomposition matrix. If 'phenotypes', project
             phenotypes onto decomposition matrix.
 
+        Attributes
+        ----------
+        components : array
+            the principal components in the phenotype map (set after `fit` is called).
+        explained_variance_ratio : array
+            the fraction of variance in phenotype that each principal component.
+            explains.
         """
         # Inherent parent class (Epistasis Regression)
         super(EpistasisPCA, self).__init__(wildtype, genotypes, phenotypes,
@@ -115,18 +122,15 @@ class EpistasisPCA(EpistasisRegression):
             model_type=model_type,
             logbase=logbase)
 
-        self.order = order
         self.n_components = n_components
         self.model = PCA(n_components=n_components)
-
-        # Construct the Interactions mapping -- Interactions Subclass is added to model
-        self._construct_interactions()
-
+        # Build EpistasisMap
+        self.epistasis.build()
         # Construct a dummy variable matrix based on user preferences
         if coordinate_type == "epistasis":
             # Must fit space with regression first, then use those coordinates
             super(EpistasisPCA, self).fit()
-            self.X = self.X * self.Interactions.values
+            self.X = self.X * self.epistasis.values
 
         elif coordinate_type == "phenotypes":
             self.X = self.X * self.binary.phenotypes

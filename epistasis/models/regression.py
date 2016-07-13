@@ -21,7 +21,7 @@ from seqspace.utils import (list_binary,
 
 from epistasis.decomposition import generate_dv_matrix
 from epistasis.models.base import BaseModel
-from epistasis.plotting import RegressionPlotting
+from epistasis.plotting.regression import RegressionPlotting
 from epistasis.stats import resample_to_convergence
 from epistasis.utils import (epistatic_order_indices,
                                 build_model_params)
@@ -51,11 +51,11 @@ class RegressionStats(object):
 
             `phenotypes` [array] : array of quantitative phenotypes.
         """
-        phenotypes = np.zeros(len(self._model.complete_genotypes), dtype=float)
         binaries = self._model.binary.complete_genotypes
         X = generate_dv_matrix(binaries, self._model.epistasis.labels, encoding=self._model.encoding)
         phenotypes = self._model.regression_model.predict(X)
-
+        if self._model.log_transform:
+            phenotypes = self._model.base**phenotypes
         return phenotypes
 
 
@@ -136,8 +136,8 @@ class EpistasisRegression(BaseModel):
             pass
 
     def fit(self):
-        """ Estimate the values of all epistatic interactions using the expanded
-            mutant cycle method to any order<=number of mutations.
+        """Use ordinary least squares regression (via scikit-learn) to estimate
+        the epistatic coefficients.
         """
         if self.log_transform:
             self.regression_model = LinearRegression(fit_intercept=False)
@@ -155,7 +155,15 @@ class EpistasisRegression(BaseModel):
         Draws random samples of the phenotypes from the experimental standard
         error. The main assumption of this method is that the error is normally
         distributed and independent. Sampling is finished once the standard
-        deviation
+        deviation.
+
+        Parameters
+        ----------
+        sample_size : int (default 10)
+            number a times to run regression before checking for convergence and
+            restarting the another sample.
+        rtol : float (default 1e-2)
+            tolerance threshold for convergence.
         """
         raise Exception("""Currently broken!""")
         interactions, mean, std, count = resample_to_convergence(self.fit,
