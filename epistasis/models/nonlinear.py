@@ -4,7 +4,7 @@ from scipy.optimize import curve_fit
 
 from epistasis.decomposition import generate_dv_matrix
 from epistasis.stats import pearson
-from epistasis.models.regression import EpistasisRegression
+from epistasis.models.regression import LinearEpistasisRegression
 from epistasis.models.base import BaseModel
 from epistasis.plotting.nonlinear import NonlinearPlotting
 
@@ -103,7 +103,7 @@ class NonlinearStats(object):
         phenotypes = self._model._wrapped_function(X, *popt)
         return phenotypes
 
-class NonlinearEpistasisModel(EpistasisRegression):
+class NonlinearEpistasisModel(LinearEpistasisRegression):
     """ Runs a nonlinear least squares fit to regress epistatic coefficients from
     a genotype-phenotype map which exhibits global nonlinearity in the phenotype.
 

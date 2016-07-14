@@ -32,9 +32,9 @@ from epistasis.utils import (epistatic_order_indices,
 # ------------------------------------------------------------
 
 class RegressionStats(object):
-
+    """Object for managing all statistics from epistasis regression
+    """
     def __init__(self, model):
-
         self._model = model
 
     @property
@@ -59,7 +59,7 @@ class RegressionStats(object):
         return phenotypes
 
 
-class EpistasisRegression(BaseModel):
+class LinearEpistasisRegression(BaseModel):
     """ Create a map from local epistasis model projected into lower order
     order epistasis interactions. Requires regression to estimate values.
 
