@@ -44,7 +44,7 @@ class BaseSimulation(GenotypePhenotypeMap):
         self.epistasis = EpistasisMap(self)
 
     @classmethod
-    def quick_start(cls, length, order):
+    def quick_start(cls, length, order, **kwargs):
         """Constructs genotype from binary sequences with given length and
         phenotypes from epistasis with a given order.
 
@@ -61,7 +61,7 @@ class BaseSimulation(GenotypePhenotypeMap):
         """
         wildtype = "0"*length
         mutations = binary_mutations_map(wildtype, "1"*length)
-        return cls(wildtype, mutations, order)
+        return cls(wildtype, mutations, order, **kwargs)
 
     def build(self, values=None, **kwargs):
         """ Method for construction phenotypes from model. """
