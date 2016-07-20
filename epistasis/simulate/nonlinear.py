@@ -4,7 +4,7 @@ from seqspace.gpm import GenotypePhenotypeMap
 from .base import BaseSimulation
 from epistasis.models.nonlinear import Parameters
 
-class NonlinearSimulation(GenotypePhenotypeMap, BaseSimulation):
+class NonlinearSimulation(GenotypePhenotypeMap):
     """ Nonlinear function simulation
     """
     def __init__(self, wildtype, mutations, order,
