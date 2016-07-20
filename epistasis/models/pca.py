@@ -5,7 +5,7 @@ import numpy as np
 
 from sklearn.decomposition import PCA
 from epistasis.decomposition import generate_dv_matrix
-from epistasis.models.regression import EpistasisRegression
+from epistasis.models.regression import LinearEpistasisRegression
 
 class PCAStats(object):
 
@@ -52,7 +52,7 @@ class PCAStats(object):
         return n_components
 
 
-class EpistasisPCA(EpistasisRegression):
+class EpistasisPCA(LinearEpistasisRegression):
 
     def __init__(self, wildtype, genotypes, phenotypes,
         order=1,
@@ -123,7 +123,7 @@ class EpistasisPCA(EpistasisRegression):
         self.n_components = n_components
         self.model = PCA(n_components=n_components)
         # Build EpistasisMap
-        self.epistasis.build()
+        self.epistasis.order = order
         # Construct a dummy variable matrix based on user preferences
         if coordinate_type == "epistasis":
             # Must fit space with regression first, then use those coordinates

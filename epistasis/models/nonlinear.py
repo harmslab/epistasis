@@ -4,7 +4,7 @@ from scipy.optimize import curve_fit
 
 from epistasis.decomposition import generate_dv_matrix
 from epistasis.stats import pearson
-from epistasis.models.regression import EpistasisRegression
+from epistasis.models.regression import LinearEpistasisRegression
 from epistasis.models.base import BaseModel
 from epistasis.plotting.nonlinear import NonlinearPlotting
 
@@ -37,6 +37,14 @@ class Parameters:
             setattr(self, self._param_list[i], 0)
             self._mapping_[i] = self._param_list[i]
             self._mapping[self._param_list[i]] = i
+
+    @property
+    def values(self):
+        """Get ordered list of params"""
+        vals = []
+        for p in self._param_list:
+            vals.append(getattr(self, p))
+        return vals
 
     def _set_param(self, param, value):
         """ Set Parameter value.
@@ -103,7 +111,7 @@ class NonlinearStats(object):
         phenotypes = self._model._wrapped_function(X, *popt)
         return phenotypes
 
-class NonlinearEpistasisModel(EpistasisRegression):
+class NonlinearEpistasisModel(LinearEpistasisRegression):
     """ Runs a nonlinear least squares fit to regress epistatic coefficients from
     a genotype-phenotype map which exhibits global nonlinearity in the phenotype.
 
@@ -177,7 +185,7 @@ class NonlinearEpistasisModel(EpistasisRegression):
             logbase=logbase)
 
         # Initialize the linear function
-        self.linear = EpistasisRegression.from_gpm(self,
+        self.linear = LinearEpistasisRegression.from_gpm(self,
             log_transform=log_transform,
             order=order,
         )

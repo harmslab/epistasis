@@ -87,7 +87,7 @@ class LinearEpistasisModel(BaseModel):
         # Set order of model.
         self.order = len(self.mutations)
         # Build EpistasisMap
-        self.epistasis.build()
+        self.epistasis.order = self.order
         # Set encoding from model_type given
         self.encoding = model_types[model_type]["encoding"]
         # Generate basis matrix for mutant cycle approach to epistasis.

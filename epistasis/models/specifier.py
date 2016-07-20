@@ -12,8 +12,8 @@ from seqspace.utils import (farthest_genotype,
 from epistasis.stats import log_likelihood_ratio, F_test, StatisticalTest
 from epistasis.utils import SubclassException
 
-# Linear Regression
-from epistasis.models.regression import EpistasisRegression
+# Linear Regressionlinear
+from epistasis.models.regression import LinearEpistasisRegression
 
 # Nonlinear Regression
 from epistasis.models.nonlinear import NonlinearEpistasisModel
@@ -175,7 +175,7 @@ class LinearEpistasisSpecifier(BaseSpecifier):
 
             Returns a StatisticalTest object with the best model chosen.
         """
-        null_model = EpistasisRegression.from_gpm(
+        null_model = LinearEpistasisRegression.from_gpm(
             self.gpm,
             order=null_order,
             model_type=self.model_type
@@ -183,7 +183,7 @@ class LinearEpistasisSpecifier(BaseSpecifier):
         null_model.fit()
 
 
-        alt_model = EpistasisRegression.from_gpm(
+        alt_model = LinearEpistasisRegression.from_gpm(
             self.gpm,
             order=alt_order,
             model_type=self.model_type
@@ -197,7 +197,7 @@ class LinearEpistasisSpecifier(BaseSpecifier):
         """ Run the specifier method. """
 
         # Begin by starting with a null model.
-        null_model = EpistasisRegression.from_gpm(self.gpm,
+        null_model = LinearEpistasisRegression.from_gpm(self.gpm,
             order=0,
             model_type=self.model_type
         )
@@ -213,7 +213,7 @@ class LinearEpistasisSpecifier(BaseSpecifier):
         for order in orders:
             # alternative model
 
-            alt_model = EpistasisRegression.from_gpm(self.gpm,
+            alt_model = LinearEpistasisRegression.from_gpm(self.gpm,
                 order=order,
                 model_type=self.model_type
             )

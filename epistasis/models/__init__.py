@@ -39,7 +39,7 @@ from epistasis.models.linear import (LinearEpistasisModel,
                                     GlobalEpistasisModel)
 
 # Import regression
-from epistasis.models.regression import EpistasisRegression
+from epistasis.models.regression import LinearEpistasisRegression
 
 # import nonlinear model
 from epistasis.models.nonlinear import NonlinearEpistasisModel

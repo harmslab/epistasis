@@ -1,39 +1,22 @@
-__doc__ = """
-"""
 # -------------------------------------------------
 # Global imports
 # -------------------------------------------------
 
 import numpy as np
 
-from seqspace.utils import enumerate_space, binary_mutations_map
+from seqspace.gpm import GenotypePhenotypeMap
+from seqspace.utils import (enumerate_space,
+    binary_mutations_map,
+    encode_mutations,
+    mutations_to_genotypes)
+
+from epistasis.mapping import EpistasisMap
 
 # -------------------------------------------------
 # Local imports
 # -------------------------------------------------
 
-from epistasis.mapping.epistasis import EpistasisMap
-
-def construct(self, length, order, log_transform=False, mutations=None):
-
-    if mutations is None:
-
-        wildtype = '0'*length
-        mutant = '1'*length
-        mutations = binary_mutations_map(wildtype, mutant)
-        genotypes, binaries = enumerate_space(wildtype, mutant)
-        phenotypes = np.zeros(len(genotypes), dtype=float)
-
-    else:
-        pass
-
-    # Initialize base map.
-    super(BaseSimulation, self).__init__(wildtype, genotypes, phenotypes, log_transform=log_transform, mutations=mutations)
-    self.order = order
-    self.log_transform = log_transform
-    self.stdevs = None
-
-class BaseSimulation(object):
+class BaseSimulation(GenotypePhenotypeMap):
     """ Base class for simulating genotype-phenotype maps built from epistatic
     interactions.
 
@@ -44,24 +27,61 @@ class BaseSimulation(object):
     order : int
         Order of epistasis in the genotype phenotype map
     """
+    def __init__(self, wildtype, mutations,
+        log_transform=False,
+        logbase=np.log10,
+        ):
+        genotypes = np.array(mutations_to_genotypes(mutations))
+        phenotypes = np.ones(len(genotypes))
+        # Initialize a genotype-phenotype map
+        super(BaseSimulation, self).__init__(
+            wildtype,
+            genotypes,
+            phenotypes,
+            log_transform=log_transform,
+            logbase=logbase,
+        )
+        self.epistasis = EpistasisMap(self)
+
+    @classmethod
+    def quick_start(cls, length, order):
+        """Constructs genotype from binary sequences with given length and
+        phenotypes from epistasis with a given order.
+
+        Parameters
+        ----------
+        length : int
+            length of the genotypes
+        order : int
+            order of epistasis in phenotypes.
+
+        Returns
+        -------
+        Simulation object
+        """
+        wildtype = "0"*length
+        mutations = binary_mutations_map(wildtype, "1"*length)
+        return cls(wildtype, mutations, order)
 
     def build(self, values=None, **kwargs):
         """ Method for construction phenotypes from model. """
         raise Exception( """ Must be implemented in subclass. """)
 
-    def noise(self, func=np.random.normal, loc=0.0, scale=1.0):
-        """ Simulate noise in the experimental measurement.
+    def set_stdeviations(self, sigma):
+        """Add standard deviations to the simulated phenotypes, which can then be
+        used for sampling error in the genotype-phenotype map.
 
         Parameters
         ----------
-        func : callable
-            Callable function that returns samples from an error distribution
-            shape. Default distribution is normal.
+        sigma : float or array-like
+            Adds standard deviations to the phenotypes. If float, all phenotypes
+            are given the same stdeviations. Else, array must be same length as
+            phenotypes and will be assigned to each phenotype.
         """
-        self._error_distribution = func
-        self._error_mean = loc
-        self._error_scale = scale
-
-    def sample(self, ):
-        """ """
-        pass
+        if type(sigma) == float:
+            stdeviations = np.ones(len(self.phenotypes)) * sigma
+        else:
+            if len(sigma) != self.n:
+                raise Exception("""Length of sigma array must be equal to length
+                of phenotypes.""")
+        self.stdeviations = stdeviations

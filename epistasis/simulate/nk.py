@@ -1,75 +1,73 @@
 import numpy as np
 import itertools as it
 
-from epistasis.simulate.base import BaseArtificialMap
+from seqspace.utils import binary_mutations_map
 
-def nktable(n, k):
-    """Build an NK model table."""
-    pass
+from .base import BaseSimulation
 
 
-class NKSimulation(BaseArtificialMap):
+class NkSimulation(BaseSimulation):
     """ Generate genotype-phenotype map from NK fitness models.
 
     """
-    def __init__(self, length, order, magnitude):
-        """ Construct a genotype phenotype map from NK epistatic landscape. """
-        super(NKEpistasisMap,self).__init__(length, order, log_transform=False)
+    def __init__(self, length, order,
+        coeff_range=(-1, 1),
+        distribution=None,
+        model_type='local',
+        neg_coeffs=True
+        ):
+        wildtype = "0"*length
+        mutations = binary_mutations_map(wildtype, "1"*length)
+        # Initialize a genotype-phenotype map
+        super(NkSimulation, self).__init__(
+            wildtype,
+            mutations,
+            log_transform=False,
+        )
+        # Construct the NK epistasis table.
+        self.epistasis._order = order
+        keys = np.array(["".join(r) for r in it.product('01', repeat=self.epistasis.order)])
+        vals = np.empty(len(keys), dtype=float)
+        for i,key in enumerate(keys):
+            m = key.count('1')
+            vals[i] = np.random.uniform(coeff_range[0], coeff_range[1])
+        self.epistasis.keys = keys
+        self.epistasis.values = vals
 
-        # Construct a NK table
-        self.nk_table = self.build_nk_table(magnitude)
+        # Build the genotype-phenotype map.
+        self.build()
 
-        # Use binary genotypes to set the phenotypes using NK table
-        self.Binary.phenotypes = self.build()
-
-        # Reorder the phenotypes properly
-        phenotypes = np.zeros(len(self.Binary.phenotypes), dtype=float)
-        for i in range(len(self.Binary.indices)):
-            phenotypes[self.Binary.indices[i]] = self.Binary.phenotypes[i]
-        self.phenotypes = phenotypes
-
-    def build_nk_table(self, magnitude):
-        """ Returns an nk fitness distribution """
-
-        # Build an NK fitness table
-        nk_table = dict()
-        interactions = ["".join(r) for r in it.product('01', repeat=self.order)]
-        for s in interactions:
-            m = s.count('1')
-            nk_table[s] = m*magnitude*np.random.rand()*(-1)**np.random.randint(10)
-        return nk_table
+    @classmethod
+    def quick_start(cls, length, order):
+        """Construct the genotype-phenotype map"""
+        return cls(length, order)
 
     def build(self):
         """Build phenotypes from NK table
-
         """
-        # Check that nk table exists
-        if hasattr(self, "nk_table") == False:
-            raise Exception("NK table must be constructed before building phenotypes.")
-
+        nk_table = self.epistasis.map("keys", "values")
         # Check for even interaction
-        neighbor = int(self.order/2)
-        if self.order%2 == 0:
+        neighbor = int(self.epistasis.order/2)
+        if self.epistasis.order%2 == 0:
             pre_neighbor = neighbor - 1
         else:
             pre_neighbor = neighbor
 
         # Use NK table to build phenotypes
         phenotypes = np.zeros(self.n, dtype=float)
-        for i in range(len(self.Binary.genotypes)):
+        for i in range(len(self.genotypes)):
             f_total = 0
             for j in range(self.length):
                 if j-pre_neighbor < 0:
-                    pre = self.Binary.genotypes[i][-pre_neighbor:]
-                    post = self.Binary.genotypes[i][j:neighbor+j+1]
+                    pre = self.genotypes[i][-pre_neighbor:]
+                    post = self.genotypes[i][j:neighbor+j+1]
                     f = "".join(pre) + "".join(post)
                 elif j+neighbor > self.length-1:
-                    pre = self.Binary.genotypes[i][j-pre_neighbor:j+1]
-                    post = self.Binary.genotypes[i][0:neighbor]
+                    pre = self.genotypes[i][j-pre_neighbor:j+1]
+                    post = self.genotypes[i][0:neighbor]
                     f = "".join(pre) + "".join(post)
                 else:
-                    f = "".join(self.Binary.genotypes[i][j-pre_neighbor:j+neighbor+1])
-                f_total += self.nk_table[f]
+                    f = "".join(self.genotypes[i][j-pre_neighbor:j+neighbor+1])
+                f_total += nk_table[f]
             phenotypes[i] = f_total
-
-        return phenotypes
+        self.phenotypes = phenotypes
