@@ -108,7 +108,7 @@ class LinearEpistasisRegression(BaseModel):
             raise Exception("""Need to specify the model's `order` argument or manually
                                 list model parameters as `parameters` argument.""")
         # Construct the epistasis map
-        self.epistasis.build()
+        self.epistasis.order = self.order
 
         # Define the encoding for different models
         model_types = {

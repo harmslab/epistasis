@@ -38,6 +38,14 @@ class Parameters:
             self._mapping_[i] = self._param_list[i]
             self._mapping[self._param_list[i]] = i
 
+    @property
+    def values(self):
+        """Get ordered list of params"""
+        vals = []
+        for p in self._param_list:
+            vals.append(getattr(self, p))
+        return vals
+
     def _set_param(self, param, value):
         """ Set Parameter value.
 
@@ -177,7 +185,7 @@ class NonlinearEpistasisModel(LinearEpistasisRegression):
             logbase=logbase)
 
         # Initialize the linear function
-        self.linear = EpistasisRegression.from_gpm(self,
+        self.linear = LinearEpistasisRegression.from_gpm(self,
             log_transform=log_transform,
             order=order,
         )

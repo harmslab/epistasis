@@ -123,7 +123,7 @@ class EpistasisPCA(LinearEpistasisRegression):
         self.n_components = n_components
         self.model = PCA(n_components=n_components)
         # Build EpistasisMap
-        self.epistasis.build()
+        self.epistasis.order = order
         # Construct a dummy variable matrix based on user preferences
         if coordinate_type == "epistasis":
             # Must fit space with regression first, then use those coordinates

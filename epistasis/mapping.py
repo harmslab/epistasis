@@ -69,18 +69,18 @@ class TransformEpistasisMap(object):
 
 class EpistasisMap(BaseMap):
 
-    def __init__(self, Model):
+    def __init__(self, GenotypePhenotypeMap):
         """ Mapping object for indexing and tracking interactions in an
         epistasis map object.
 
         Parameters
         ----------
-        Model :
+        GenotypePhenotypeMap : seqspace.gpm.GenotypePhenotypeMap
             Epistasis Model to attach
         """
-        self._Model = Model
+        self._gpm = GenotypePhenotypeMap
         self.transformed = False
-        if self._Model.log_transform:
+        if self._gpm.log_transform:
             self.log = TransformEpistasisMap(self)
         self.std = StandardDeviationMap(self)
         self.err = StandardErrorMap(self)
@@ -88,7 +88,7 @@ class EpistasisMap(BaseMap):
     def build(self):
         """Build a mapping object for epistatic interactions."""
         # construct the mutations mapping
-        self._params = params_index_map(self._Model.mutations)
+        self._params = params_index_map(self._gpm.mutations)
         self._labels = build_model_params(
             self.length,
             self.order,
@@ -98,12 +98,12 @@ class EpistasisMap(BaseMap):
     @property
     def base(self):
         """Return base of logarithm tranform."""
-        return self._Model.base
+        return self._gpm.base
 
     @property
     def logbase(self):
         """Return logarithmic function"""
-        return self._Model.logbase
+        return self._gpm.logbase
 
     @property
     def n(self):
@@ -113,17 +113,17 @@ class EpistasisMap(BaseMap):
     @property
     def log_transform(self):
         """ Boolean argument telling whether space is log transformed. """
-        return self._Model.log_transform
+        return self._gpm.log_transform
 
     @property
     def length(self):
         """ Length of sequences. """
-        return self._Model.length
+        return self._gpm.length
 
     @property
     def order(self):
         """ Get order of epistasis in system. """
-        return self._Model.order
+        return self._order
 
     @property
     def keys(self):
@@ -191,11 +191,17 @@ class EpistasisMap(BaseMap):
     @property
     def n_replicates(self):
         """Get number of replicate measurements for observed phenotypes"""
-        return self._Model.n_replicates
+        return self._gpm.n_replicates
 
     # ----------------------------------------------
     # Setter Functions
     # ----------------------------------------------
+
+    @order.setter
+    def order(self, order):
+        """"""
+        self._order = order
+        self.build()
 
     @labels.setter
     def labels(self, labels):
@@ -206,7 +212,7 @@ class EpistasisMap(BaseMap):
     @values.setter
     def values(self, values):
         """ Set the interactions of the system, set by an Epistasis model (see ..models.py)."""
-        if len(values) != len(self.labels):
+        if len(values) != len(self.keys):
             raise Exception("Number of interactions give to map is different than was defined. ")
         self._values = values
 
@@ -223,20 +229,6 @@ class EpistasisMap(BaseMap):
     # ----------------------------------------------
     # Methods
     # ----------------------------------------------
-
-    def _label_to_genotype(self, label):
-        """ Convert a label (list(3,4,5)) to its genotype representation ('A3V, A4V, A5V').
-
-            NEED TO REFACTOR
-        """
-        genotype = ""
-        for l in label:
-            # Labels are offset by 1, remove offset for wildtype/mutation array index
-            array_index = l - 1
-            mutation = self.Mutations.wildtype[array_index] + str(self.Mutations.indices[l-1]+1) + self.Mutations.mutations[array_index]
-            genotype += mutation + ','
-        # Return genotype without the last comma
-        return genotype[:-1]
 
     def get_order(self, order):
         """ Return a dictionary of interactions of a given order."""

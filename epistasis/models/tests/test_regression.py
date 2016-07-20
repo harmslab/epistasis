@@ -1,14 +1,14 @@
 from nose import tools
 import numpy as np
 from .base import BaseTestClass
-from ..regression import EpistasisRegression
+from ..regression import LinearEpistasisRegression
 from epistasis.mapping import EpistasisMap
 
-class testEpistasisRegression(BaseTestClass):
+class testLinearEpistasisRegression(BaseTestClass):
 
     def setUp(self):
-        super(testEpistasisRegression, self).setUp()
-        self.model = EpistasisRegression(
+        super(testLinearEpistasisRegression, self).setUp()
+        self.model = LinearEpistasisRegression(
             self.wildtype,
             self.genotypes,
             self.phenotypes,
@@ -21,7 +21,7 @@ class testEpistasisRegression(BaseTestClass):
 
     def test_init(self):
         """Test initialization of epistasis model."""
-        model = EpistasisRegression(
+        model = LinearEpistasisRegression(
             self.wildtype,
             self.genotypes,
             self.phenotypes,
@@ -30,7 +30,7 @@ class testEpistasisRegression(BaseTestClass):
             log_transform=self.log_transform,
             n_replicates=self.n_replicates,
         )
-        tools.assert_is_instance(model, EpistasisRegression)
+        tools.assert_is_instance(model, LinearEpistasisRegression)
         np.testing.assert_equal(model.genotypes, self.genotypes)
         np.testing.assert_equal(model.phenotypes, self.phenotypes)
         tools.assert_true(model.log.transformed)
@@ -45,7 +45,7 @@ class testEpistasisRegression(BaseTestClass):
 
     def test_predict(self):
         """Test the predictions of the regression model"""
-        model = EpistasisRegression(
+        model = LinearEpistasisRegression(
             self.wildtype,
             self.genotypes,
             self.phenotypes,
