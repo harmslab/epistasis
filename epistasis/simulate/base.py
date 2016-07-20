@@ -78,10 +78,5 @@ class BaseSimulation(GenotypePhenotypeMap):
             are given the same stdeviations. Else, array must be same length as
             phenotypes and will be assigned to each phenotype.
         """
-        if type(sigma) == float:
-            stdeviations = np.ones(len(self.phenotypes)) * sigma
-        else:
-            if len(sigma) != self.n:
-                raise Exception("""Length of sigma array must be equal to length
-                of phenotypes.""")
+        stdeviations = np.ones(len(self.phenotypes)) * sigma
         self.stdeviations = stdeviations
