@@ -86,28 +86,18 @@ class BaseModel(GenotypePhenotypeMap):
         # Override any properties with specified kwargs passed directly into method
         options.update(kwargs)
 
-        # Grab un scaled phenotypes and errors
-        if gpm.log_transform is True:
-            wildtype = gpm.wildtype
-            genotypes = gpm.genotypes
-            phenotypes = gpm.Raw.phenotypes
-            try:
-                stdeviations = gpm.Raw.stdeviations
-            except AttributeError:
-                stdeviations = None
-        else:
-            wildtype = gpm.wildtype
-            genotypes = gpm.genotypes
-            phenotypes = gpm.phenotypes
-            try:
-                stdeviations = gpm.stdeviations
-            except AttributeError:
-                stdeviations = None
+        wildtype = gpm.wildtype
+        genotypes = gpm.genotypes
+        phenotypes = gpm.phenotypes
+        stdeviations = gpm.stdeviations
 
         options["stdeviations"] = stdeviations
         # Create an instance
-        model = cls(wildtype, genotypes, phenotypes, **options)
-
+        model = cls(
+            wildtype,
+            genotypes,
+            phenotypes,
+            **options)
         return model
 
     # ---------------------------------------------------------------------------------

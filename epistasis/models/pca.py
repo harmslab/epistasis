@@ -5,7 +5,7 @@ import numpy as np
 
 from sklearn.decomposition import PCA
 from epistasis.decomposition import generate_dv_matrix
-from epistasis.models.regression import EpistasisRegression
+from epistasis.models.regression import LinearEpistasisRegression
 
 class PCAStats(object):
 
@@ -52,7 +52,7 @@ class PCAStats(object):
         return n_components
 
 
-class EpistasisPCA(EpistasisRegression):
+class EpistasisPCA(LinearEpistasisRegression):
 
     def __init__(self, wildtype, genotypes, phenotypes,
         order=1,

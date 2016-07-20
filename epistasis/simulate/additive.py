@@ -24,7 +24,7 @@ class AdditiveSimulation(EpistasisMap, BaseSimulation):
     -------
     Phenotype = b0 + b1 + b2 + b3 + b12 + b13 + b13 + b123
 
-    Arguments
+    Parameters
     ---------
     wildtype : str
         Wildtype genotype
@@ -40,10 +40,10 @@ class AdditiveSimulation(EpistasisMap, BaseSimulation):
         phenotypes
     """
     def __init__(self, wildtype, mutations, order,
-            magnitude=1.0,
-            distribution=None,
-            model_type='local',
-            neg_coeffs=True
+        magnitude=1.0,
+        distribution=None,
+        model_type='local',
+        neg_coeffs=True
         ):
         # Construct epistasis mapping objects (empty)
         super(AdditiveSimulation,self).__init__(wildtype, genotypes, phenotypes)
@@ -52,7 +52,7 @@ class AdditiveSimulation(EpistasisMap, BaseSimulation):
         self.order = order
 
         # Add values to epistatic interactions
-        self.Interactions.values = np.random.uniform(low, high, size=len(self.Interactions.keys))
+        self.epistasis.values = np.random.uniform(low, high, size=len(self.Interactions.keys))
         self.model_type = model_type
 
         # build the phenotypes from the epistatic interactions

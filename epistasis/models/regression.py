@@ -94,7 +94,7 @@ class LinearEpistasisRegression(BaseModel):
         model_type="local",
         logbase=np.log10):
         # Populate Epistasis Map
-        super(EpistasisRegression, self).__init__(wildtype, genotypes, phenotypes,
+        super(LinearEpistasisRegression, self).__init__(wildtype, genotypes, phenotypes,
                 stdeviations=stdeviations,
                 log_transform=log_transform,
                 mutations=mutations,
