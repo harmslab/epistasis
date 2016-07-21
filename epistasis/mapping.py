@@ -20,7 +20,7 @@ from epistasis.utils import (params_index_map,
     build_model_params,
     label_to_key)
 
-class TransformEpistasisMap(object):
+class TransformEpistasisMap(BaseMap):
     """Mapping object that log transforms an EpistasisMap.
 
     Parameters
@@ -33,6 +33,10 @@ class TransformEpistasisMap(object):
         self.transformed = True
         self.std = StandardDeviationMap(self)
         self.err = StandardErrorMap(self)
+
+    @property
+    def order(self):
+        return self._epistasis.order
 
     @property
     def keys(self):
@@ -62,9 +66,9 @@ class TransformEpistasisMap(object):
         """Get number of replicates for each observable."""
         return self._epistasis.n_replicates
 
-    @values.setter
-    def values(self, values):
-        """Set the non-log-epistasis."""
+    @property
+    def getorder(self):
+        return dict([(i, Order(self, i)) for i in range(1,self.order+1)])
 
 
 class EpistasisMap(BaseMap):
@@ -94,6 +98,7 @@ class EpistasisMap(BaseMap):
             self.order,
             self.params
         )
+        self._getorder = dict([(i, Order(self, i)) for i in range(1, self.order+1)])
 
     @property
     def base(self):
@@ -193,6 +198,12 @@ class EpistasisMap(BaseMap):
         """Get number of replicate measurements for observed phenotypes"""
         return self._gpm.n_replicates
 
+
+    @property
+    def getorder(self):
+        """Get epistasis of a given order."""
+        return self._getorder
+
     # ----------------------------------------------
     # Setter Functions
     # ----------------------------------------------
@@ -216,6 +227,7 @@ class EpistasisMap(BaseMap):
             raise Exception("Number of interactions give to map is different than was defined. ")
         self._values = values
 
+
     @keys.setter
     def keys(self, keys):
         """ Manually set keys. NEED TO do some quality control here. """
@@ -226,26 +238,32 @@ class EpistasisMap(BaseMap):
         """Set the standard deviations of the epistatic coefficients."""
         self._stdeviations = stdeviations
 
-    # ----------------------------------------------
-    # Methods
-    # ----------------------------------------------
 
-    def get_order(self, order):
-        """ Return a dictionary of interactions of a given order."""
+class Order(BaseMap):
+    """An object that provides API for easily calling epistasis of a given order
+    in an epistasis map.
+    """
+    def __init__(self, epistasismap, order):
+        self._epistasismap = epistasismap
+        self.order = order
 
-        # Construct the set of model parameters for given order
-        labels = build_model_params(self.length,
-                            order,
-                            self.mutations,
-                            start_order=order)
+    @property
+    def indices(self):
+        """Get indices of epistasis from this order."""
+        labels = self._epistasismap.labels
+        return np.array([i for i in range(len(labels)) if len(labels[i]) == self.order])
 
-        # Get a mapping of model labels to values
-        key2value = self.map("keys", "values")
+    @property
+    def values(self):
+        """Get values of epistasis for this order."""
+        return self._epistasismap.values[self.indices]
 
-        # Built a dict of order interactions to values
-        desired = {}
-        for label in labels:
-            key = label_to_key(label)
-            desired[key] = key2value[key]
+    @property
+    def keys(self):
+        """Get keys of epistasis for this order."""
+        return self._epistasismap.keys[self.indices]
 
-        return desired
+    @property
+    def stdeviations(self):
+        """Get stdeviations of epistasis for this order."""
+        return self._epistasismap.stdeviations[self.indices]
