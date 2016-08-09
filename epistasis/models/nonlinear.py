@@ -104,11 +104,9 @@ class NonlinearStats(object):
         """
         phenotypes = np.zeros(len(self._model.complete_genotypes), dtype=float)
         binaries = self._model.binary.complete_genotypes
-
         X = generate_dv_matrix(binaries, self._model.epistasis.labels, encoding=self._model.encoding)
-
-        popt = list(self._model.epistasis.values) + self._model.parameters.get_params()
-        phenotypes = self._model._wrapped_function(X, *popt)
+        popt = self._model.parameters.get_params()
+        phenotypes = self._model.function(self.linear(), *popt)
         return phenotypes
 
 class NonlinearEpistasisModel(LinearEpistasisRegression):
@@ -172,13 +170,14 @@ class NonlinearEpistasisModel(LinearEpistasisRegression):
         mutations=None,
         n_replicates=1,
         model_type="local",
-        logbase=np.log10):
+        logbase=np.log10,
+        fix_linear=False):
 
         # Inherit parent class __init__
         super(NonlinearEpistasisModel, self).__init__(wildtype, genotypes, phenotypes,
             order=order,
             stdeviations=stdeviations,
-            log_transform=False,    # Set this log transformation to False
+            log_transform=log_transform,    # Set this log transformation to False
             mutations=mutations,
             n_replicates=n_replicates,
             model_type=model_type,
@@ -192,25 +191,28 @@ class NonlinearEpistasisModel(LinearEpistasisRegression):
 
         # Set the nonlinear function
         self.function = function
-
         # Get the parameters from the nonlinear function argument list
         function_sign = inspect.signature(self.function)
         parameters = list(function_sign.parameters.keys())
-
-        # Check that the first argument is epistasis
         if parameters[0] != "x":
             raise Exception(""" First argument of the nonlinear function must be `x`. """)
-
         # Construct parameters object
         self.parameters = Parameters(parameters[1:])
         self.statistics = NonlinearStats(self)
-
+        # Wrap user function to add epistasis parameters
+        self.fix_linear = fix_linear
         # Add a plotting object if matplotlib exists
         try:
             self.plot = NonlinearPlotting(self)
         except Warning:
             pass
 
+    def fit(self, **kwargs):
+        """"""
+        if self.fix_linear:
+            self._fit_(**kwargs)
+        else:
+            self._fit_float_linear(**kwargs)
 
     def _nonlinear_function_wrapper(self, function):
         """Nonlinear function wrapper adding epistasis as an argument to user defined function
@@ -242,7 +244,36 @@ class NonlinearEpistasisModel(LinearEpistasisRegression):
         return inner
 
 
-    def fit(self, guess_coeffs=None, fit_kwargs={}, **kwargs):
+    def _fit_(self, fit_kwargs={}, **kwargs):
+        """Fit the genotype-phenotype map for epistasis.
+        """
+        # Fit with a linear epistasis model first, and use those values as initial guesses.
+        super(NonlinearEpistasisModel, self).fit()
+        # Expose the linear stuff to user and fill in important stuff.
+        self.linear.epistasis.values = self.epistasis.values
+        linear_phenotypes = np.dot(self.X, self.epistasis.values)
+        if self.linear.log_transform:
+            linear_phenotypes = 10**linear_phenotypes
+        self.linear.phenotypes = linear_phenotypes
+        # Construct an array of guesses, using the scale specified by user.
+        guess = np.ones(self.parameters.n)
+        # Add model's extra parameter guesses to input array
+        for kw in kwargs:
+            index = self.parameters._mapping[kw]
+            guess[index] = kwargs[kw]
+        # Curve fit the data using a nonlinear least squares fit
+        popt, pcov = curve_fit(self.function, self.statistics.linear(),
+            self.phenotypes,
+            p0=guess,
+            **fit_kwargs)
+        for i in range(0, self.parameters.n):
+            self.parameters._set_param(i, popt[i])
+        # Score the fit
+        y_pred = self.statistics.predict()
+        self._score = pearson(self.phenotypes, y_pred)**2
+
+
+    def _fit_float_linear(self, guess_coeffs=None, fit_kwargs={}, **kwargs):
         """Fit using nonlinear least squares regression.
 
         Arguments
@@ -271,10 +302,12 @@ class NonlinearEpistasisModel(LinearEpistasisRegression):
         else:
             # Add user guesses for interactions
             guess[:self.epistasis.n] = guess_coeffs
-        # Wrap user function to add epistasis parameters
+
         self._wrapped_function = self._nonlinear_function_wrapper(self.function)
         # Curve fit the data using a nonlinear least squares fit
-        popt, pcov = curve_fit(self._wrapped_function, self.X, self.phenotypes, p0=guess, **fit_kwargs)
+        popt, pcov = curve_fit(self._wrapped_function, self.X, self.phenotypes,
+            p0=guess,
+            **fit_kwargs)
         # Set the Interaction values
         self.epistasis.values = popt[0:len(self.epistasis.labels)]
         # Set the other parameters from nonlinear function to fit results

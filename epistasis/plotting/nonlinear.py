@@ -42,16 +42,13 @@ class NonlinearPlotting(RegressionPlotting):
         else:
             fig = ax.get_figure()
 
-        params = self.model.Parameters._param_list
+        params = self.model.parameters._param_list
 
         # Get the values
-        values = [getattr(self.model.Parameters, p) for p in params]
+        values = [getattr(self.model.parameters, p) for p in params]
 
         if xbounds is None:
-            predicted = np.dot(self.model.X,  self.model.Interactions.values)
-
-            if self.model.Linear.log_transform:
-                predicted = 10**predicted
+            predicted = np.dot(self.model.X,  self.model.epistasis.values)
 
             max_p = max(predicted)
             min_p = min(predicted)

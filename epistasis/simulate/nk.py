@@ -38,9 +38,9 @@ class NkSimulation(BaseSimulation):
         self.build()
 
     @classmethod
-    def quick_start(cls, length, order):
+    def quick_start(cls, length, order, **kwargs):
         """Construct the genotype-phenotype map"""
-        return cls(length, order)
+        return cls(length, order, **kwargs)
 
     def build(self):
         """Build phenotypes from NK table

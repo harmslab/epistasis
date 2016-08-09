@@ -40,6 +40,7 @@ class BaseSimulation(GenotypePhenotypeMap):
             phenotypes,
             log_transform=log_transform,
             logbase=logbase,
+            mutations=mutations
         )
         self.epistasis = EpistasisMap(self)
 
