@@ -10,7 +10,6 @@ from seqspace.utils import (enumerate_space,
     encode_mutations,
     mutations_to_genotypes)
 
-from epistasis.mapping import EpistasisMap
 
 # -------------------------------------------------
 # Local imports
@@ -42,7 +41,6 @@ class BaseSimulation(GenotypePhenotypeMap):
             logbase=logbase,
             mutations=mutations
         )
-        self.epistasis = EpistasisMap(self)
 
     @classmethod
     def quick_start(cls, length, order, **kwargs):

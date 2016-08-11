@@ -4,6 +4,7 @@ import itertools as it
 from seqspace.utils import binary_mutations_map
 
 from .base import BaseSimulation
+from epistasis.mapping import EpistasisMap
 
 
 class NkSimulation(BaseSimulation):
@@ -24,6 +25,7 @@ class NkSimulation(BaseSimulation):
             mutations,
             log_transform=False,
         )
+        self.epistasis = EpistasisMap(self)
         # Construct the NK epistasis table.
         self.epistasis._order = order
         keys = np.array(["".join(r) for r in it.product('01', repeat=self.epistasis.order)])

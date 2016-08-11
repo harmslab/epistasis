@@ -237,7 +237,7 @@ def epistasis(betas, labels, errors=None, logbase=np.log10, log_transform=False,
             edgecolor="none",
             linewidth=2)
     # Add horizontal lines for each order
-    bar_axis.hlines(0, 0, len(betas)-1, linewidth=1, linestyle="--")
+    bar_axis.hlines(0, 0, len(betas)-1, linewidth=1, linestyle="-", zorder=0)
     # Label barplot y-axis
     bar_axis.set_ylabel(y_axis_name, fontsize=14)
     # Set barplot y-scale
@@ -263,7 +263,8 @@ def epistasis(betas, labels, errors=None, logbase=np.log10, log_transform=False,
             bar_axis.add_artist(mpl.lines.Line2D((i,i),
                (ymin,ymax),
                color="black",
-               linestyle="--"))
+               linestyle=":",
+               linewidth=1))
             previous_order = len(labels[i])
 
     # ------------------------- #
@@ -281,7 +282,7 @@ def epistasis(betas, labels, errors=None, logbase=np.log10, log_transform=False,
                     break
 
             for j in range(star_counter):
-                bar_axis.text(x=(i+0.5),y=ymin+(j*min_offset),s="*")
+                bar_axis.text(x=(i+0),y=ymin+(j*min_offset),s="*", fontsize=16)
 
     # remove x tick labels
     plt.setp([a.get_xticklabels() for a in fig.axes[:-1]], visible=False)

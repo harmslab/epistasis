@@ -6,24 +6,31 @@ from .base import BaseSimulation
 from epistasis.models.nonlinear import Parameters
 
 class NonlinearSimulation(BaseSimulation):
-    """ Nonlinear function simulation
+    """ Nonlinear epistasis simulator. Creates a Genotype-Phen
     """
     def __init__(self, wildtype, mutations, order,
             function,
             p0,
             coeff_range=(-1,1),
             model_type='local',
+            linear_model=None,
             multiplicative=False,
         ):
-        if multiplicative:
-            # Linear epistasis map
-            self.linear = MultiplicativeSimulation(wildtype, mutations, order,
-                coeff_range=coeff_range,
-                model_type=model_type)
+        # Set the linear piece of epistasis map.
+        if linear_model is not None:
+            self.linear = linear_model
         else:
-            self.linear = AdditiveSimulation(wildtype, mutations, order,
-                coeff_range=coeff_range,
-                model_type=model_type)
+            if multiplicative:
+                # Linear epistasis map
+                self.linear = MultiplicativeSimulation(wildtype, mutations, order,
+                    coeff_range=coeff_range,
+                    model_type=model_type)
+            else:
+                self.linear = AdditiveSimulation(wildtype, mutations, order,
+                    coeff_range=coeff_range,
+                    model_type=model_type)
+
+        # Set the nonlinear function
         self.function = function
 
         # Construct GPM
@@ -47,8 +54,23 @@ class NonlinearSimulation(BaseSimulation):
         # Build phenotypes.
         self.build()
 
+    @property
+    def p_additive(self):
+        """Get the additive phenotype"""
+        return self.function(self.linear.p_additive, *self.parameters.get_params())
+
+    @classmethod
+    def from_linear(cls, model, function, p0):
+        """Layer nonlinear model on top of existing linear model."""
+        return cls(model.wildtype,
+            model.mutations,
+            model.epistasis.order,
+            function,
+            p0,
+            linear_model=model)
+
     def build(self, *args):
-        """ Build a set of nonlinear
+        """ Build nonlinear map from epistasis and function.
         """
         self.phenotypes = self.function(self.linear.phenotypes, *self.parameters.values)
 

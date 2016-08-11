@@ -98,7 +98,7 @@ class EpistasisMap(BaseMap):
             self.order,
             self.params
         )
-        self._getorder = dict([(i, Order(self, i)) for i in range(1, self.order+1)])
+        self._getorder = dict([(i, Order(self, i)) for i in range(0, self.order+1)])
 
     @property
     def base(self):
@@ -254,14 +254,19 @@ class Order(BaseMap):
         return np.array([i for i in range(len(labels)) if len(labels[i]) == self.order])
 
     @property
+    def labels(self):
+        """Get epistatic labels"""
+        return [self._epistasismap.labels[int(i)] for i in self.indices]
+
+    @property
     def values(self):
         """Get values of epistasis for this order."""
-        return self._epistasismap.values[self.indices]
+        return [self._epistasismap.values[int(i)] for i in self.indices]
 
     @property
     def keys(self):
         """Get keys of epistasis for this order."""
-        return self._epistasismap.keys[self.indices]
+        return [self._epistasismap.keys[int(i)] for i in self.indices]
 
     @property
     def stdeviations(self):

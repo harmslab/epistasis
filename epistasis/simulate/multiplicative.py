@@ -53,6 +53,7 @@ class MultiplicativeSimulation(BaseSimulation):
             log_transform=True,
         )
         self.model_type = model_type
+        self.epistasis = EpistasisMap(self)
         # Add values to epistatic interactions
         self.epistasis.order = order
         self.epistasis.values = self.base**np.random.uniform(coeff_range[0],
