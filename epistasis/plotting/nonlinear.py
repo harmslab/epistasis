@@ -26,7 +26,6 @@ class NonlinearPlotting(RegressionPlotting):
         known = self.model.phenotypes
         predicted = np.dot(self.model.X,  self.model.epistasis.values)
 
-
         # Add scatter plot points on correlation grid
         ax.plot(predicted, known, 'b.')
 

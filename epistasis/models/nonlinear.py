@@ -324,7 +324,7 @@ class NonlinearEpistasisModel(LinearEpistasisRegression):
         self._score = pearson(self.phenotypes, y_pred)**2
 
     @ipywidgets_missing
-    def fit_widget(self, print_stats=True, **kwargs):
+    def fit_widget(self, print_stats=True, fit_kwargs={}, **kwargs):
         """Simple IPython widget for trying initial guesses of the nonlinear parameters.
 
         This works by, first, fitting the coefficients using a linear epistasis model as initial
@@ -338,7 +338,7 @@ class NonlinearEpistasisModel(LinearEpistasisRegression):
         def fitting(**kwargs):
             """ Callable to be controlled by widgets. """
             # Fit the nonlinear least squares fit
-            self.fit(**kwargs)
+            self.fit(fit_kwargs={}, **kwargs)
 
             if print_stats:
                 # Print score

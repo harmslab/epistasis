@@ -251,7 +251,14 @@ class Order(BaseMap):
     def indices(self):
         """Get indices of epistasis from this order."""
         labels = self._epistasismap.labels
-        return np.array([i for i in range(len(labels)) if len(labels[i]) == self.order])
+        if self.order == 0:
+            return np.array([0])
+        x = [i for i in range(len(labels)) if len(labels[i]) == self.order]
+        # Remove the zeroth element
+        if self.order == 1:
+            return np.array(x[1:])
+        else:
+            return np.array(x)
 
     @property
     def labels(self):
