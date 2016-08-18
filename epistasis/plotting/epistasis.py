@@ -2,25 +2,10 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 import numpy as np
 from scipy.stats import norm as scipy_norm
-
 from seqspace.errors import upper_transform, lower_transform
+from epistasis.utils import Bunch
 
-def epistasis(betas, labels, errors=None, logbase=np.log10, log_transform=False,
-    order_colors=("red","orange","green","purple","DeepSkyBlue","yellow","pink"),
-    significance="bon",
-    significance_cutoff=0.05,
-    sigmas=0,
-    log_space=False,
-    y_scalar=1.5,
-    y_axis_name="interaction",
-    figsize=(8,10),
-    height_ratio=12,
-    star_cutoffs=(0.05,0.01,0.001),
-    star_spacer=0.0075,
-    ybounds=None,
-    bar_borders=True,
-    capsize=2,
-    xgrid=True):
+def epistasis(betas=[], labels=[], errors=None, **kwargs):
     """
     Create a barplot with the values from model, drawing the x-axis as a grid of
     boxes indicating the coordinate of the epistatic parameter. Should automatically
@@ -28,8 +13,19 @@ def epistasis(betas, labels, errors=None, logbase=np.log10, log_transform=False,
 
     Parameters
     ----------
-    model :
-        epistasis model
+    betas : array
+        an array of epistatic coefficients
+    labels : array
+        array of epistatic indices/labels.
+    errors : 2d array or list
+        upper and lower bounds for each beta.
+
+    Keyword arguments
+    -----------------
+    logbase : numpy.ufunc (default=np.log10)
+        function to transform into log space
+    log_transform : bool (default=False)
+        transform the betas if true.
     order_colors :
         list/tuple of colors for each order (rgb,html string-like)
     significance :
@@ -55,12 +51,66 @@ def epistasis(betas, labels, errors=None, logbase=np.log10, log_transform=False,
     star_spacer :
         constant that scales how closely stacked stars are from one
         another
+    ybounds : tuple (default=None)
+    bar_borders : bool (default=True)
+    xgrid : bool (default=True)
+    ecolor : color (default='black')
+    elinewidth : float (default=1)
+    capthick : float (default=1)
+    capsize : float (default=1)
 
     Returns
     -------
         pretty-graph objects fig and ax_array (ax_array has two entries for top
         and bottom panels)
     """
+    ## Set up plotting user options. Type check the options to make sure nothing
+    # will break. Also helps with widgets.
+
+    defaults = {
+        "order_colors" : ("red","orange","green","purple","DeepSkyBlue","yellow","pink"),
+        "logbase" : np.log10,
+        "log_transform" : False,
+        "significance" : "bon",
+        "significance_cutoff" : 0.05,
+        "sigmas" : 0,
+        "log_space" : False,
+        "y_scalar" : 1.5,
+        "y_axis_name" : "interaction",
+        "figwidth" : 5,
+        "figheight": 3,
+        "figsize" : (5,3),
+        "height_ratio" : 12,
+        "star_cutoffs" : (0.05,0.01,0.001),
+        "star_spacer" : 0.0075,
+        "ybounds"  : None,
+        "bar_borders" : True,
+        "xgrid" : True,
+        "ecolor" : "black",
+        "capthick" : 1,
+        "capsize" : 1,
+        "elinewidth" : 1,
+        "save" : False,
+        "fname" : "figure.svg",
+        "format" : "svg",
+    }
+    #types = dict([(key, type(val)) for key, val in defaults.items()])
+    #defaults.update(kwargs)
+    #options = objectify(defaults)
+    options = Bunch(**defaults)
+    options.update(**kwargs)
+    # Construct keyword arguments
+    error_kw = {
+        "ecolor" : options.ecolor,
+        "capsize" : options.capsize,
+        "elinewidth" : options.elinewidth,
+        "capthick" : options.capthick,
+    }
+    if "figsize" in kwargs:
+        options.figsize = kwargs["figsize"]
+    else:
+        options.figsize = (options.figwidth, options.figheight)
+
     # Name all variables that matter for this function
     if labels[0] == [0]:
         labels = labels[1:]
@@ -74,9 +124,9 @@ def epistasis(betas, labels, errors=None, logbase=np.log10, log_transform=False,
             lower = errors[0]
 
     # Sanity check on the errors
-    if sigmas == 0:
+    if options.sigmas == 0:
         significance = None
-    elif significance == None:
+    elif options.significance == None:
         sigmas = 0
 
     # Figure out the length of the x-axis and the highest epistasis observed
@@ -92,26 +142,26 @@ def epistasis(betas, labels, errors=None, logbase=np.log10, log_transform=False,
     num_sites = len(all_sites)
 
     # Figure out how to color each order
-    if order_colors == None:
-        order_colors = ["gray" for i in range(highest_order+1)]
+    if options.order_colors == None:
+        options.order_colors = ["gray" for i in range(highest_order+1)]
     else:
-        if len(order_colors) < highest_order:
+        if len(options.order_colors) < highest_order:
             err = "order_colors has too few entries (at least {:d} needed)\n".format(highest_order)
             raise ValueError(err)
 
         # Stick gray in the 0 position for insignificant values
-        order_colors = list(order_colors)
-        order_colors.insert(0,"gray")
+        options.order_colors = list(options.order_colors)
+        options.order_colors.insert(0,"gray")
 
     # ---------------------- #
     # Deal with significance #
     # ---------------------- #
     # NEED TO RETURN TO SIGNIFICANCE FUNCTIONS
-    if sigmas == 0:
-        significance = None
+    if options.sigmas == 0:
+        options.significance = None
     else:
         # If log transformed, need to get raw values for normal distribution
-        if log_transform:
+        if options.log_transform:
             z_score =  abs( (betas  - 1 )/upper )
         # else, just grab standard values
         else:
@@ -121,27 +171,27 @@ def epistasis(betas, labels, errors=None, logbase=np.log10, log_transform=False,
         z_score[z_score > 8.2] = 8.2
 
     # straight p-values
-    if significance == "p":
+    if options.significance == "p":
         p_values = 2*(1 - scipy_norm.cdf( z_score ) )
 
     # bonferroni corrected p-values
-    elif significance == "bon":
+    elif options.significance == "bon":
         p_values = 2*(1 - scipy_norm.cdf( z_score ) ) * len(betas)
 
     # ignore p-values and color everything
-    elif significance == None:
+    elif options.significance == None:
         p_values = [0 for i in range(len(labels))]
-        significance_cutoff = 1.0
+        options.significance_cutoff = 1.0
 
     # or die
     else:
-        err = "signifiance argument {:s} not recognized\n".format(significance)
+        err = "signifiance argument {:s} not recognized\n".format(options.significance)
         raise ValueError(err)
 
     # Create color array based on significance
     color_array = np.zeros((len(labels)),dtype=int)
     for i, l in enumerate(labels):
-        if p_values[i] < significance_cutoff:
+        if p_values[i] < options.significance_cutoff:
             color_array[i] = len(l) - 1
         else:
             color_array[i] = -1
@@ -151,16 +201,16 @@ def epistasis(betas, labels, errors=None, logbase=np.log10, log_transform=False,
     # ---------------- #
 
     # Make a color map
-    cmap = mpl.colors.ListedColormap(colors=order_colors)
+    cmap = mpl.colors.ListedColormap(colors=options.order_colors)
     cmap.set_bad(color='w', alpha=0) # set the 'bad' values (nan) to be white and transparent
-    bounds = range(-1,len(order_colors))
+    bounds = range(-1,len(options.order_colors))
     norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
 
-    if xgrid is True:
-        fig = plt.figure(figsize=figsize)
+    if options.xgrid is True:
+        fig = plt.figure(figsize=options.figsize)
 
         # Create a plot with an upper and lower panel, sharing the x-axis
-        gs = mpl.gridspec.GridSpec(2, 1, height_ratios=[height_ratio, 1])
+        gs = mpl.gridspec.GridSpec(2, 1, height_ratios=[options.height_ratio, 1])
         ax = [plt.subplot(gs[0])]
         ax.append(plt.subplot(gs[1],sharex=ax[0]))
         bar_axis = ax[0]
@@ -195,7 +245,7 @@ def epistasis(betas, labels, errors=None, logbase=np.log10, log_transform=False,
 
     else:
 
-        fig, ax = plt.subplots(figsize=figsize)
+        fig, ax = plt.subplots(figsize=options.figsize)
         bar_axis = ax
 
 
@@ -204,24 +254,24 @@ def epistasis(betas, labels, errors=None, logbase=np.log10, log_transform=False,
     # ------------------ #
 
     # set up bar colors
-    colors_for_bar = np.array([mpl.colors.colorConverter.to_rgba(order_colors[(i+1)]) for i in color_array])
+    colors_for_bar = np.array([mpl.colors.colorConverter.to_rgba(options.order_colors[(i+1)]) for i in color_array])
 
     # Plot without errors
-    if sigmas == 0:
+    if options.sigmas == 0:
         if log_space:
-            bar_y = logbase(betas)
+            bar_y = options.logbase(betas)
         else:
             bar_y = betas
         bar_axis.bar(range(len(bar_y)), bar_y, width=0.8, color=colors_for_bar, edgecolor="none")
     # plot with errors
     else:
         bar_y = betas
-        upper = sigmas*upper
-        lower = sigmas*lower       # Plot the graph on a log scale
-        if log_space:
-            new_bar_y = logbase(bar_y)
-            new_upper = upper_transform(bar_y, upper, logbase)
-            new_lower = lower_transform(bar_y, lower, logbase)
+        upper = options.sigmas*upper
+        lower = options.sigmas*lower       # Plot the graph on a log scale
+        if options.log_space:
+            new_bar_y = options.logbase(bar_y)
+            new_upper = upper_transform(bar_y, upper, options.logbase)
+            new_lower = lower_transform(bar_y, lower, options.logbase)
         # else if the space is log transformed, plot the non-log interaction values
         else:
             new_upper = upper
@@ -233,20 +283,20 @@ def epistasis(betas, labels, errors=None, logbase=np.log10, log_transform=False,
             width=0.8,
             yerr=yerr,
             color=colors_for_bar,
-            error_kw={"ecolor":"black", "capsize":capsize},
+            error_kw=error_kw,
             edgecolor="none",
             linewidth=2)
     # Add horizontal lines for each order
     bar_axis.hlines(0, 0, len(betas)-1, linewidth=1, linestyle="-", zorder=0)
     # Label barplot y-axis
-    bar_axis.set_ylabel(y_axis_name, fontsize=14)
+    bar_axis.set_ylabel(options.y_axis_name, fontsize=14)
     # Set barplot y-scale
-    if ybounds is None:
-        ymin = -y_scalar*max(abs(bar_y))
-        ymax =  y_scalar*max(abs(bar_y))
+    if options.ybounds is None:
+        ymin = -options.y_scalar*max(abs(bar_y))
+        ymax =  options.y_scalar*max(abs(bar_y))
     else:
-        ymin = ybounds[0]
-        ymax = ybounds[1]
+        ymin = options.ybounds[0]
+        ymax = options.ybounds[1]
 
     # Make axes pretty pretty
     bar_axis.axis([-1, len(bar_y) + 1, ymin, ymax])
@@ -270,13 +320,13 @@ def epistasis(betas, labels, errors=None, logbase=np.log10, log_transform=False,
     # ------------------------- #
     # Create significance stars #
     # ------------------------- #
-    if sigmas != 0:
-        min_offset = star_spacer*(ymax-ymin)
+    if options.sigmas != 0:
+        min_offset = options.star_spacer*(ymax-ymin)
         for i in range(len(p_values)):
 
             star_counter = 0
-            for j in range(len(star_cutoffs)):
-                if p_values[i] < star_cutoffs[j]:
+            for j in range(len(options.star_cutoffs)):
+                if p_values[i] < options.star_cutoffs[j]:
                     star_counter += 1
                 else:
                     break
@@ -285,9 +335,15 @@ def epistasis(betas, labels, errors=None, logbase=np.log10, log_transform=False,
                 bar_axis.text(x=(i+0),y=ymin+(j*min_offset),s="*", fontsize=16)
 
     # remove x tick labels
-    plt.setp([a.get_xticklabels() for a in fig.axes[:-1]], visible=False)
+    try:
+        plt.setp([a.get_xticklabels() for a in fig.axes[:-1]], visible=False)
+    except IndexError:
+        pass
 
     # Draw the final figure
     fig.tight_layout()
+
+    if options.save:
+        fig.savefig(options.fname, format=options.format)
 
     return fig, ax
