@@ -258,7 +258,7 @@ def epistasis(betas=[], labels=[], errors=None, **kwargs):
 
     # Plot without errors
     if options.sigmas == 0:
-        if log_space:
+        if options.log_space:
             bar_y = options.logbase(betas)
         else:
             bar_y = betas

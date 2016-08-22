@@ -81,7 +81,7 @@ class LinearEpistasisModel(BaseModel):
             },
             "global": {
                 "encoding": {"1": -1, "0": 1},
-                "inverse": 1.0/self.n
+                "inverse": 1.0
             }
         }
         # Set order of model.
@@ -97,7 +97,7 @@ class LinearEpistasisModel(BaseModel):
             encoding=self.encoding
         )
         # Calculate the inverse of the matrix
-        self.X_inv = model_types[model_type]["inverse"] * np.linalg.inv(self.X)
+        self.X_inv = np.linalg.inv(self.X) #* model_types[model_type]["inverse"]
 
 
     @property
