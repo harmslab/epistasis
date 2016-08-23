@@ -80,7 +80,7 @@ class LinearEpistasisModel(BaseModel):
                 "inverse": 1.0                      # Inverse functions coefficient
             },
             "global": {
-                "encoding": {"1": -1, "0": 1},
+                "encoding": {"1": 1, "0": -1},
                 "inverse": 1.0
             }
         }

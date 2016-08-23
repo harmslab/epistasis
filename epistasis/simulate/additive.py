@@ -64,7 +64,7 @@ class AdditiveSimulation(BaseSimulation):
         if self.model_type == "local":
             encoding = {"1": 1, "0": 0}
         else:
-            encoding = {"1": -1, "0": 1}
+            encoding = {"1": 1, "0": -1}
         orders = self.epistasis.getorder
         labels = list(orders[0].labels) + list(orders[1].labels)
         vals = list(orders[0].values) + list(orders[1].values)
@@ -82,7 +82,7 @@ class AdditiveSimulation(BaseSimulation):
             self.X = generate_dv_matrix(self.binary.genotypes, self.epistasis.labels, encoding=encoding)
             self.phenotypes = np.dot(self.X, self.epistasis.values)
         elif self.model_type == "global":
-            encoding = {"1": -1, "0": 1}
+            encoding = {"1": 1, "0": -1}
             # Build phenotypes from binary representation of space
             self.X = generate_dv_matrix(self.binary.genotypes, self.epistasis.labels, encoding=encoding)
             self.phenotypes = np.dot( self.X, self.epistasis.values)

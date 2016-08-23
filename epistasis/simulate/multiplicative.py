@@ -77,7 +77,7 @@ class MultiplicativeSimulation(BaseSimulation):
             self.X = generate_dv_matrix(self.binary.genotypes, self.epistasis.labels, encoding=encoding)
             log_phenotypes = np.dot(self.X, self.epistasis.log.values)
         elif self.model_type == "global":
-            encoding = {"1": -1, "0": 1}
+            encoding = {"1": 1, "0": -1}
             # Build phenotypes from binary representation of space
             self.X = generate_dv_matrix(self.binary.genotypes, self.epistasis.labels, encoding=encoding)
             log_phenotypes = np.dot(self.X, self.epistasis.log.values)

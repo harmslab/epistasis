@@ -106,6 +106,7 @@ def magnitude_vs_order(model, keep_sign=False,
 # from regression data.
 # -----------------------------
 
+
 def correlation(learned, known, title="Known vs. Learned", figsize=[6,6]):
     """ Create a plot showing the learned data vs. known data. """
 

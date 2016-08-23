@@ -116,7 +116,7 @@ class LinearEpistasisRegression(BaseModel):
                 "encoding": {"1": 1, "0": 0},       # Decomposition matrix encoding
             },
             "global": {
-                "encoding": {"1": -1, "0": 1},
+                "encoding": {"1": 1, "0": -1},
             }
         }
 
