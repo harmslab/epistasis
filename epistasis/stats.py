@@ -426,26 +426,29 @@ class FDistribution(object):
 def F_test(model1, model2):
     """ Compare two models. """
     # Check that model1 is nested in model2. Not an intelligent test of this, though.
-    if len(model1.Interactions.values) >= len(model2.Interactions.values):
+    if len(model1.epistasis.values) > len(model2.epistasis.values):
         raise Exception("model1 must be nested in model2.")
 
     # number of observations
     n_obs = len(model1.phenotypes)
 
     # If nonlinear model, get parameter count
-    n_extra=0
-    if hasattr(model1, "Parameters"):
-        n_extra = model1.Parameters.n
+    n_extra1=0
+    n_extra2=0
+
+    if hasattr(model1, "parameters"):
+        n_extra1 = model1.parameters.n
+    if hasattr(model2, "parameters"):
+        n_extra2 = model2.parameters.n
 
     # Number of parameters in each model
-    p1 = len(model1.Interactions.values) + n_extra
-    p2 = len(model2.Interactions.values) + n_extra
+    p1 = len(model1.epistasis.values) + n_extra1
+    p2 = len(model2.epistasis.values) + n_extra2
     df1 = p2 - p1
     df2 = n_obs - p2 - 1
-
     # Sum of square residuals for each model.
-    sse1 = ss_residuals(model1.phenotypes, model1.Stats.predict())
-    sse2 = ss_residuals(model2.phenotypes, model2.Stats.predict())
+    sse1 = ss_residuals(model1.phenotypes, model1.statistics.predict())
+    sse2 = ss_residuals(model2.phenotypes, model2.statistics.predict())
 
     # F-score
     F = ( (sse1 - sse2) / df1 ) / (sse2 / df2)
