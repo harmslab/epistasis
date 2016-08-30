@@ -1,9 +1,7 @@
-epistasis
-=========
+models
+======
 
 .. toctree::
    :maxdepth: 4
 
-   epistasis
-   examples
-   setup
+   models

@@ -24,10 +24,17 @@ from epistasis.models.base import BaseModel
 # ------------------------------------------------------------
 
 class LinearEpistasisModel(BaseModel):
-    """Construct a genotype-phenotype map and fit with a linear epistasis model,
-    defined as follows:
-    i.e.
-    Phenotype = K_0 + sum(K_i) + sum(K_ij) + sum(K_ijk) + ...
+    """ A linear epistasis model object. Use this object to decompose epistasis
+    in genotype-phenotype maps. Epistasis is defined as
+    ..math::
+
+        Phenotype = K_0 + \sum_{i=1}^{L} K_i + \sum_{i < j}^{L} K_ij + \sum_{i < j < k }^{L} K_ijk + ...
+
+    Example
+    -------
+    Create an instance of the model object by passing in the genotype and
+    phenotype arguments to the class.
+
 
     Parameters
     ----------
@@ -37,26 +44,26 @@ class LinearEpistasisModel(BaseModel):
         Genotypes in map. Can be binary strings, or not.
     phenotypes : array-like
         Quantitative phenotype values
-    stdeviations : array-like
+    stdeviations : array-like [optional]
         List of phenotype errors.
-    log_transform : bool
+    log_transform : bool [optional]
         If True, log transform the phenotypes.
-    mutations : dict
+    mutations : dict [optional]
         Mapping sites to mutational alphabet.
-    n_replicates : int
+    n_replicates : int [optional]
         number of replicates.
-    model_type : str
+    model_type : str [optional]
         type of model to use.
-    logbase : callable
+    logbase : callable [optional]
         log spaces to transform phenotypes.
 
 
     Attributes
     ----------
-    See seqspace package for more docs.
+    See seqspace for the full list of attributes in the GenotypePhenotypeMap objects.
 
-    Epistasis : EpistasisMap
-        object containing epistatic interactions values
+    plot : object
+        A subobject with methods to plot epistatic data. (see ``epistasis.plotting.linear``)
     """
     def __init__(self, wildtype, genotypes, phenotypes,
         stdeviations=None,
@@ -159,7 +166,8 @@ class LinearEpistasisModel(BaseModel):
 
 class LocalEpistasisModel(LinearEpistasisModel):
     """Construct a genotype-phenotype map and fit with a linear epistasis model,
-    defined as follows
+    defined as follows.
+    
     P = K_0 + sum(K_i) + sum(K_ij) + sum(K_ijk) + ...
 
     Parameters

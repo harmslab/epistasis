@@ -1,6 +1,13 @@
 epistasis.simulate package
 ==========================
 
+Subpackages
+-----------
+
+.. toctree::
+
+    epistasis.simulate.tests
+
 Submodules
 ----------
 
@@ -16,14 +23,6 @@ epistasis.simulate.base module
 ------------------------------
 
 .. automodule:: epistasis.simulate.base
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-epistasis.simulate.mask module
-------------------------------
-
-.. automodule:: epistasis.simulate.mask
     :members:
     :undoc-members:
     :show-inheritance:
@@ -48,22 +47,6 @@ epistasis.simulate.nonlinear module
 -----------------------------------
 
 .. automodule:: epistasis.simulate.nonlinear
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-epistasis.simulate.simulation module
-------------------------------------
-
-.. automodule:: epistasis.simulate.simulation
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-epistasis.simulate.utils module
--------------------------------
-
-.. automodule:: epistasis.simulate.utils
     :members:
     :undoc-members:
     :show-inheritance:

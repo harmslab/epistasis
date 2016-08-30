@@ -4,10 +4,26 @@ epistasis.plotting package
 Submodules
 ----------
 
+epistasis.plotting.compare module
+---------------------------------
+
+.. automodule:: epistasis.plotting.compare
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 epistasis.plotting.epistasis module
 -----------------------------------
 
 .. automodule:: epistasis.plotting.epistasis
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+epistasis.plotting.interactive module
+-------------------------------------
+
+.. automodule:: epistasis.plotting.interactive
     :members:
     :undoc-members:
     :show-inheritance:
@@ -48,6 +64,14 @@ epistasis.plotting.stats module
 -------------------------------
 
 .. automodule:: epistasis.plotting.stats
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+epistasis.plotting.utils module
+-------------------------------
+
+.. automodule:: epistasis.plotting.utils
     :members:
     :undoc-members:
     :show-inheritance:
