@@ -30,13 +30,11 @@ or, if you'd like to soft install for development:
 
 This package is still really hacked together. I plan to include examples and clean up some of the plotting/network managing very soon.
 
-Should work in Python 2.6+ and Python 3+
-
-**NOTE:** This repository is still private. It will be public as soon as it's ready for publication.
+Works in Python 2.7+ and Python 3+
 
 ## API reference
 
-API documentation can be viewed [here](harmslab.github.io/epistasis/docs).
+API documentation can be viewed [here](http://epistasis.readthedocs.io/).
 
 ## Dependencies
 
