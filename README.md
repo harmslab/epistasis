@@ -4,7 +4,7 @@ A python API for modeling statistical, high-order epistasis in large genotype-ph
 
 This package includes APIs for both linear and nonlinear epistasis models, described in this [paper](), separating epistasis that arises from global trends in phenotypes from epistasis that arises from specific interactions between mutations. Nonlinear regressions
 
-## Basic example
+## Basic examples
 
 A simple example
 ```python

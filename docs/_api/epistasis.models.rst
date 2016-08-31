@@ -6,6 +6,7 @@ Subpackages
 
 .. toctree::
 
+    epistasis.models.nonlinear
     epistasis.models.tests
 
 Submodules
@@ -23,14 +24,6 @@ epistasis.models.linear module
 ------------------------------
 
 .. automodule:: epistasis.models.linear
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-epistasis.models.nonlinear module
----------------------------------
-
-.. automodule:: epistasis.models.nonlinear
     :members:
     :undoc-members:
     :show-inheritance:

@@ -187,7 +187,10 @@ class NonlinearEpistasisModel(LinearEpistasisRegression):
         self.linear = LinearEpistasisRegression.from_gpm(self,
             log_transform=log_transform,
             order=order,
+            model_type=model_type
         )
+
+        self.model_type = model_type
 
         # Set the nonlinear function
         self.function = function

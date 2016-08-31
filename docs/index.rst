@@ -8,14 +8,18 @@ Epistasis Python API
 
 A Python API for modeling statistical, high-order epistasis in large genotype-phenotype maps.
 
+**NOTE** : Currently, this package exists entirely as an API. There is not a command-line
+interface for the package, and few ways to read/write the data. We plan to improve
+this moving forward. 
+
+
 Contents:
 
 .. toctree::
    :maxdepth: 5
 
-   models
-   linear
-   nonlinear
+   tutorials
+   input-formats
 
 
 Indices and tables

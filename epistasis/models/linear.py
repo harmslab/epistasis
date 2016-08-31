@@ -26,7 +26,7 @@ from epistasis.models.base import BaseModel
 class LinearEpistasisModel(BaseModel):
     """ A linear epistasis model object. Use this object to decompose epistasis
     in genotype-phenotype maps. Epistasis is defined as
-    ..math::
+    .. math::
 
         Phenotype = K_0 + \sum_{i=1}^{L} K_i + \sum_{i < j}^{L} K_ij + \sum_{i < j < k }^{L} K_ijk + ...
 
@@ -91,6 +91,7 @@ class LinearEpistasisModel(BaseModel):
                 "inverse": 1.0
             }
         }
+        self.model_type = model_type
         # Set order of model.
         self.order = len(self.mutations)
         # Build EpistasisMap
@@ -167,7 +168,7 @@ class LinearEpistasisModel(BaseModel):
 class LocalEpistasisModel(LinearEpistasisModel):
     """Construct a genotype-phenotype map and fit with a linear epistasis model,
     defined as follows.
-    
+
     P = K_0 + sum(K_i) + sum(K_ij) + sum(K_ijk) + ...
 
     Parameters

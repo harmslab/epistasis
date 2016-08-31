@@ -120,6 +120,7 @@ class EpistasisPCA(LinearEpistasisRegression):
             model_type=model_type,
             logbase=logbase)
 
+        self.model_type = model_type
         self.n_components = n_components
         self.model = PCA(n_components=n_components)
         # Build EpistasisMap

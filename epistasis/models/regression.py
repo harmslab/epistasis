@@ -119,6 +119,8 @@ class LinearEpistasisRegression(BaseModel):
                 "encoding": {"1": 1, "0": -1},
             }
         }
+        
+        self.model_type = model_type
 
         # Set encoding from model_type given
         self.encoding = model_types[model_type]["encoding"]

@@ -1,6 +1,6 @@
 import scipy
 
-def power_transform(x, lmbda, A):
+def power_transform(x, lmbda, A, B):
     """Power transformation function."""
     gmean = scipy.stats.mstats.gmean(x + A)
     if lmbda == 0:

@@ -62,6 +62,17 @@ class BaseSimulation(GenotypePhenotypeMap):
         mutations = binary_mutations_map(wildtype, "1"*length)
         return cls(wildtype, mutations, order, **kwargs)
 
+    @classmethod
+    def from_epistasis(cls, wildtype, mutations, order, betas, model_type="local"):
+        """Add genotypic epistasis to genotype-phenotype map.
+        """
+        space = cls(wildtype, mutations, order, model_type=model_type)
+        if len(betas) != space.epistasis.n:
+            raise Exception("""Number of betas does not match order/mutations given.""")
+        space.epistasis.values = betas
+        space.build()
+        return space
+
     def build(self, values=None, **kwargs):
         """ Method for construction phenotypes from model. """
         raise Exception( """ Must be implemented in subclass. """)
