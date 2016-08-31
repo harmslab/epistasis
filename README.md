@@ -6,7 +6,7 @@ This package includes APIs for both linear and nonlinear epistasis models, descr
 
 ## Basic examples
 
-A simple example
+A simple example of fitting a data set with a linear epistasis model.  
 ```python
 # Import epistasis model
 from epistasis.models import LinearEpistasisModel
@@ -16,6 +16,32 @@ model.fit()
 # Estimate the uncertainty in epistatic coefficients
 model.fit_error()
 ```
+
+If analyzing a nonlinear genotype-phenotype map, use `NonlinearEpistasisModel`
+(nonlinear least squares regression) to estimate nonlinearity in map.
+can be used to estimate the nonlinearity:
+```python
+# Import the nonlinear epistasis model
+from epistasis.models import NonlinearEpistasisModel
+# Define a nonlinear function to fit the genotype-phenotype map.
+def boxcox(x, lmbda, lmbda2):
+    """Fit with a box-cox function to estimate nonlinearity."""
+    return ((x-lmbda2)**lmbda - 1 )/lmbda
+# Read data from file and estimate nonlinearity in dataset.
+model = NonlinearEpistasisModel.from_json("dataset.json"
+    order=1,
+    function=boxcox,
+)
+# Give initial guesses for parameters to aid in convergence (not required).
+model.fit(lmbda=1, A=1, B=2)
+```
+
+The nonlinear fit also includes Jupyter Notebook widgets to make nonlinear fitting
+easier.
+```python
+model.fit_widget(lmbda=(-2,2,.1), A=(-2,2,.1), B=(-2,2,.1))
+```
+
 More demos are available as [binder notebooks]().
 
 ## Installation
@@ -51,4 +77,4 @@ API documentation can be viewed [here](http://epistasis.readthedocs.io/).
 * [ipywidgets](): interactive widgets in python.
 
 ## Citations
-If you use this API for research, please cite this [paper]().
+If you use this API for research, please cite this [paper](http://biorxiv.org/content/early/2016/08/30/072256).
