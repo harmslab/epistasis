@@ -302,3 +302,15 @@ napoleon_use_admonition_for_references = False
 napoleon_use_ivar = False
 napoleon_use_param = True
 napoleon_use_rtype = True
+
+#Necessary for building custom stuff.
+import sys
+from unittest.mock import MagicMock
+
+class Mock(MagicMock):
+    @classmethod
+    def __getattr__(cls, name):
+            return Mock()
+
+MOCK_MODULES = ['numpy', 'seqspace','scipy', 'sklearn', 'networkx', 'ipython', 'ipywidgets', 'jupyter', 'notebook']
+sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
