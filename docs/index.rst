@@ -22,11 +22,12 @@ inside `Jupyter notebooks`_ .
 Contents:
 
 .. toctree::
-   :maxdepth: 5
+   :maxdepth: 3
 
    install
    tutorials
    input-formats
+   _api/epistasis
 
 
 Indices and tables

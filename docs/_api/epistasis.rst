@@ -1,4 +1,4 @@
-epistasis package
+API Documentation
 =================
 
 Subpackages

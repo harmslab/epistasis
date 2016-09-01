@@ -11,6 +11,7 @@ USER main
 
 # Install requirements for Python 3
 RUN mkdir .github
+RUN pip install cython
 RUN git clone https://github.com/harmslab/seqspace .github/seqspace
 RUN pip install -e .github/seqspace
 #RUN /home/main/anaconda/envs/python3/bin/pip install -e .github/seqspace
