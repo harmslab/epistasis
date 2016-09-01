@@ -141,6 +141,11 @@ class BaseSpecifier(object):
 
 class LinearEpistasisSpecifier(BaseSpecifier):
 
+    """Model specifier. Chooses the order of model based on any statistical test.
+
+    On initialization, this class automatically finds the appropriate model
+    based on cutoffs and test type. Default statistical test is F-test.
+    """
     def __init__(self, wildtype, genotypes, phenotypes,
         test_cutoff=0.05,
         log_transform=False,
@@ -149,15 +154,6 @@ class LinearEpistasisSpecifier(BaseSpecifier):
         model_type="local",
         test_type="ftest"):
 
-        """
-            Model specifier. Chooses the order of model based on any statistical test.
-
-            On initialization, this class automatically finds the appropriate model
-            based on cutoffs and test type.
-
-            Default statistical test is F-test.
-
-        """
         # Inherit base class init
         super(LinearEpistasisSpecifier,self).__init__(wildtype, genotypes, phenotypes,
             test_cutoff=0.05,
@@ -168,12 +164,10 @@ class LinearEpistasisSpecifier(BaseSpecifier):
             test_type=test_type)
 
     def compare(self, null_order, alt_order):
-        """
-            Test a higher model against a null model.
+        """Test a higher model against a null model.
 
-            This is just a useful utility function for the user... not actually used in this class.
-
-            Returns a StatisticalTest object with the best model chosen.
+        This is just a useful utility function for the user... not actually used in this class.
+        Returns a StatisticalTest object with the best model chosen.
         """
         null_model = LinearEpistasisRegression.from_gpm(
             self.gpm,
@@ -237,7 +231,14 @@ class LinearEpistasisSpecifier(BaseSpecifier):
 
 
 class NonlinearEpistasisSpecifier(BaseSpecifier):
+    """Model specifier. Chooses the order of model based on any statistical test.
 
+    On initialization, this class automatically finds the appropriate model
+    based on cutoffs and test type.
+
+    Default statistical test is F-test.
+
+    """
     def __init__(self, wildtype, genotypes, phenotypes, function,
         test_cutoff=0.05,
         log_transform=False,
@@ -246,15 +247,7 @@ class NonlinearEpistasisSpecifier(BaseSpecifier):
         model_type="local",
         test_type="ftest"):
 
-        """
-            Model specifier. Chooses the order of model based on any statistical test.
 
-            On initialization, this class automatically finds the appropriate model
-            based on cutoffs and test type.
-
-            Default statistical test is F-test.
-
-        """
         # Inherit base class init
         super(NonlinearEpistasisSpecifier,self).__init__(wildtype, genotypes, phenotypes,
             test_cutoff=0.05,
@@ -268,12 +261,11 @@ class NonlinearEpistasisSpecifier(BaseSpecifier):
 
 
     def compare(self, null_order, alt_order):
-        """
-            Test a higher model against a null model.
+        """Test a higher model against a null model.
 
-            This is just a useful utility function for the user... not actually used in this class.
+        This is just a useful utility function for the user... not actually used in this class.
 
-            Returns a StatisticalTest object with the best model chosen.
+        Returns a StatisticalTest object with the best model chosen.
         """
         null_model = NonlinearEpistasisModel.from_gpm(
             self.gpm,

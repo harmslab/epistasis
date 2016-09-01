@@ -26,8 +26,7 @@ class MultiplicativeSimulation(BaseSimulation):
     -------
     Phenotype = b0 * b1 * b2 * b3 * b12 * b13 * b13 * b123
     or
-    log(phenotype) = log(b0) + log(b1) + log(b2) + log(b3) + log(b12)
-        + log(b13) + log(b13) + log(b123)
+    log(phenotype) = log(b0) + log(b1) + log(b2) + log(b3) + log(b12)+ log(b13) + log(b13) + log(b123)
 
     Arguments
     ---------
@@ -66,9 +65,9 @@ class MultiplicativeSimulation(BaseSimulation):
     def build(self):
         """ Build the phenotype map from epistatic interactions.
 
-            For a multiplicative model, this means log-transforming the phenotypes
-            first, using linear system of equations to construct the log-phenotypes,
-            then back-transforming the phenotypes to non-log space.
+        For a multiplicative model, this means log-transforming the phenotypes
+        first, using linear system of equations to construct the log-phenotypes,
+        then back-transforming the phenotypes to non-log space.
         """
         # Get model type:
         if self.model_type == "local":

@@ -8,15 +8,14 @@ from ipywidgets import interact
 
 def principal_components(model, with_components=True, dimensions=3, figsize=[6,6], ac="r"):
     """
-        Arguments:
-        ---------
-        model: EpistasisPCA object
-            PCA model of epistasis to plot
-        figsize: array like
-            Figure size
-        ac: str
-            Color for arrows representing principal components
-
+    Parameters
+    ----------
+    model : EpistasisPCA object
+        PCA model of epistasis to plot
+    figsize : array like
+        Figure size
+    ac : str
+        Color for arrows representing principal components
     """
     fig = plt.figure(figsize=figsize)
     ax = fig.add_subplot(111, projection="3d")

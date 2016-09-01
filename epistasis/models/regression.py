@@ -45,11 +45,12 @@ class RegressionStats(object):
     def predict(self):
         """ Infer the phenotypes from model.
 
-            __Returns__:
-
-            `genotypes` [array] : array of genotypes -- in same order as phenotypes
-
-            `phenotypes` [array] : array of quantitative phenotypes.
+        Returns
+        -------
+        genotypes : array
+            array of genotypes -- in same order as phenotypes
+        phenotypes : array
+            array of quantitative phenotypes.
         """
         binaries = self._model.binary.complete_genotypes
         X = generate_dv_matrix(binaries, self._model.epistasis.labels, encoding=self._model.encoding)
@@ -119,7 +120,7 @@ class LinearEpistasisRegression(BaseModel):
                 "encoding": {"1": 1, "0": -1},
             }
         }
-        
+
         self.model_type = model_type
 
         # Set encoding from model_type given

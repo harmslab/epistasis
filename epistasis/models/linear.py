@@ -26,6 +26,7 @@ from epistasis.models.base import BaseModel
 class LinearEpistasisModel(BaseModel):
     """ A linear epistasis model object. Use this object to decompose epistasis
     in genotype-phenotype maps. Epistasis is defined as
+
     .. math::
 
         Phenotype = K_0 + \sum_{i=1}^{L} K_i + \sum_{i < j}^{L} K_ij + \sum_{i < j < k }^{L} K_ijk + ...
@@ -147,7 +148,6 @@ class LinearEpistasisModel(BaseModel):
         f_x = phenotype x
         sigma_f = standard deviation of phenotype x
         beta_i = epistatic coefficient i
-
         (sigma_beta_i)**2 = (beta_i ** 2) *  ( (sigma_f_x ** 2) / (f_x ** 2) + ... )
         """
         # If the space is log transformed, then the errorbars are assymmetric

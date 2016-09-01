@@ -119,7 +119,7 @@ def pearson(y_obs, y_pred):
 
 def generalized_r2(y_obs, y_pred):
     """ Calculate the rquared between the observed and predicted y.
-        See wikipedia definition of `coefficient of determination`.
+    See wikipedia definition of `coefficient of determination`.
     """
     # Mean fo the y observed
     y_obs_mean = np.mean(y_obs)
@@ -131,7 +131,7 @@ def generalized_r2(y_obs, y_pred):
     return r_squared
 
 def explained_variance(y_obs, y_pred):
-    """ Returns the explained variance
+    """Returns the explained variance
     """
     # Mean fo the y observed
     y_obs_mean = np.mean(y_obs)
@@ -156,28 +156,30 @@ def chi_squared(y_obs, y_pred):
 
 def false_positive_rate(y_obs, y_pred, upper_ci, lower_ci, sigmas=2):
     """ Calculate the false positive rate of predicted values. Finds all values that
-        equal zero in the known array and calculates the number of false positives
-        found in the predicted given the number of samples and sigmas.
+    equal zero in the known array and calculates the number of false positives
+    found in the predicted given the number of samples and sigmas.
 
-        The defined bounds are:
-            (number of sigmas) * errors / sqrt(number of samples)
+    The defined bounds are:
+        (number of sigmas) * errors / sqrt(number of samples)
 
-        __Arguments__:
+    Parameters
+    ----------
+    known : array-like
+        Known values for comparing false positives
+    predicted : array-like
+        Predicted values
+    errors : array-like
+        Standard error from model
+    n_samples : int
+        number of replicate samples
+    sigma : int (default=2)
+        How many standard errors away (2 == 0.05 false positive rate)
 
-        `known` [array-like] : Known values for comparing false positives
-
-        `predicted` [array-like] : Predicted values
-
-        `errors` [array-like] : Standard error from model
-
-        `n_samples` [int]: number of replicate samples
-
-        `sigma` [int (default=2)] : How many standard errors away (2 == 0.05 false positive rate)
-
-        __Returns__:
-
-        `rate` [float] : False positive rate in data
-    """
+    Returns
+    -------
+    rate : float
+        False positive rate in data
+"""
 
     N = len(y_obs)
     # Check that known, predicted, and errors are the same size.
@@ -217,27 +219,29 @@ def false_positive_rate(y_obs, y_pred, upper_ci, lower_ci, sigmas=2):
 
 def false_negative_rate(y_obs, y_pred, upper_ci, lower_ci, sigmas=2):
     """ Calculate the false negative rate of predicted values. Finds all values that
-        equal zero in the known array and calculates the number of false negatives
-        found in the predicted given the number of samples and sigmas.
+    equal zero in the known array and calculates the number of false negatives
+    found in the predicted given the number of samples and sigmas.
 
-        The defined bounds are:
-            (number of sigmas) * errors / sqrt(number of samples)
+    The defined bounds are:
+        (number of sigmas) * errors / sqrt(number of samples)
 
-        __Arguments__:
+    Parameters
+    ----------
+    known : array-like
+        Known values for comparing false negatives
+    predicted : array-like
+        Predicted values
+    errors : array-like
+        Standard error from model
+    n_samples : int
+        number of replicate samples
+    sigma : int (default=2)
+        How many standard errors away (2 == 0.05 false negative rate)
 
-        `known` [array-like] : Known values for comparing false negatives
-
-        `predicted` [array-like] : Predicted values
-
-        `errors` [array-like] : Standard error from model
-
-        `n_samples` [int]: number of replicate samples
-
-        `sigma` [int (default=2)] : How many standard errors away (2 == 0.05 false negative rate)
-
-        __Returns__:
-
-        `rate` [float] : False negative rate in data
+    Returns
+    -------
+    rate : float
+        False negative rate in data
     """
 
     N = len(y_obs)
@@ -283,7 +287,7 @@ def false_negative_rate(y_obs, y_pred, upper_ci, lower_ci, sigmas=2):
 class StatisticalTest(object):
 
     def __init__(self, test_type="ftest", cutoff=0.05):
-        """ Container for specs on the statistical test used in specifier class below. s"""
+        """Container for specs on the statistical test used in specifier class below. s"""
 
         # Select the statistical test for specifying model
         test_types = {
@@ -302,19 +306,18 @@ class StatisticalTest(object):
 
     @property
     def order(self):
-        """ Return the order of the best model"""
+        """Return the order of the best model"""
         return self.best_model.order
 
     @property
     def p_value(self):
-        """ Get p_value"""
+        """Get p_value"""
         return self.distribution.p_value(self.statistic)
 
     def compare(self, null_model, alt_model):
-        """
-            Compare two models based on statistic test given
+        """Compare two models based on statistic test given
 
-            Return the test's statistic value and p-value.
+        Return the test's statistic value and p-value.
         """
         self.statistic, self.distribution = self.method(null_model, alt_model)
 
@@ -363,7 +366,7 @@ def AIC_comparison(null, alt):
 def log_likelihood_ratio(model1, model2):
     """ Calculate the likelihood ratio two regressed epistasis models.
 
-        Models must be instances of ProjectedEpistasisModel
+    Models must be instances of ProjectedEpistasisModel
     """
     ssr1 = ss_residuals(model1.phenotypes, model1.Stats.predict())
     ssr2 = ss_residuals(model2.phenotypes, model2.Stats.predict())
@@ -384,8 +387,7 @@ def log_likelihood_ratio(model1, model2):
 class FDistribution(object):
 
     def __init__(self, dfn, dfd, loc=0, scale=1):
-        """
-            Create a f-distribution.
+        """Create a f-distribution.
         """
         self.dfn = dfn
         self.dfd = dfd
@@ -458,13 +460,11 @@ def F_test(model1, model2):
 
 
 def p_value_to_sigma(p_value):
-    """
-        Convert a p-value to a sigma-cutoff.
+    """Convert a p-value to a sigma-cutoff.
 
-        Example:
-        -------
-        Distribution is centered on zero, and symmetric.
-
+    Example
+    -------
+    Distribution is centered on zero, and symmetric.
     """
     # Just look at the right side of the distribution, and get sigma at that cutff.
     right_side_p_value = 1 - float(p_value)/2

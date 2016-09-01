@@ -27,7 +27,7 @@ class Parameters:
     def __init__(self, params):
         """ Extra non epistasis parameters in nonlinear epistasis models.
 
-            Sets the params to 0 initially
+        Sets the params to 0 initially
         """
         self._param_list = params
         self.n = len(self._param_list)
@@ -47,11 +47,9 @@ class Parameters:
         return vals
 
     def _set_param(self, param, value):
-        """ Set Parameter value.
+        """ Set Parameter value. Method is not exposed to user.
 
-            Method is not exposed to user.
-
-            `param` can be either the name of the parameter or its index in this object.
+        param can be either the name of the parameter or its index in this object.
         """
 
         # If param is an index, get name from mappings
@@ -96,11 +94,12 @@ class NonlinearStats(object):
     def predict(self):
         """ Infer the phenotypes from model.
 
-            __Returns__:
-
-            `genotypes` [array] : array of genotypes -- in same order as phenotypes
-
-            `phenotypes` [array] : array of quantitative phenotypes.
+        Returns
+        -------
+        genotypes : array
+            array of genotypes -- in same order as phenotypes
+        phenotypes : array
+            array of quantitative phenotypes.
         """
         phenotypes = np.zeros(len(self._model.complete_genotypes), dtype=float)
         binaries = self._model.binary.complete_genotypes
@@ -211,7 +210,7 @@ class NonlinearEpistasisModel(LinearEpistasisRegression):
             pass
 
     def fit(self, **kwargs):
-        """"""
+        """Fit nonlinearity in genotype-phenotype map."""
         if self.fix_linear:
             self._fit_(**kwargs)
         else:
@@ -220,7 +219,6 @@ class NonlinearEpistasisModel(LinearEpistasisRegression):
     def _nonlinear_function_wrapper(self, function):
         """Nonlinear function wrapper adding epistasis as an argument to user defined function
         """
-
         def inner(*args):
             """Replace `x` in the user defined function with the decomposition
             matrix `X`. The new `X` maps all possible high order epistasis interactions
@@ -279,8 +277,8 @@ class NonlinearEpistasisModel(LinearEpistasisRegression):
     def _fit_float_linear(self, guess_coeffs=None, fit_kwargs={}, **kwargs):
         """Fit using nonlinear least squares regression.
 
-        Arguments
-        ---------
+        Parameters
+        ----------
         guess : array-like
             array of guesses
         fit_kwargs : dict

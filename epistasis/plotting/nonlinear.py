@@ -11,16 +11,14 @@ class NonlinearPlotting(RegressionPlotting):
     Parameters
     ----------
     model : NonlinearEpistasisModel
-
-    Attributes
-    ----------
+        epistasis model object
     """
     def __init__(self, model):
         self.model = model
         super(NonlinearPlotting, self).__init__(self.model)
 
     def linear_phenotypes(self):
-        """ P vs. p plot. """
+        """P vs. p plot. """
         fig, ax = plt.subplots()
 
         known = self.model.phenotypes
@@ -35,7 +33,7 @@ class NonlinearPlotting(RegressionPlotting):
         return fig, ax
 
     def nonlinear_function(self, ax=None, xbounds=None, figsize=(6,4), **kwargs):
-        """ Plot the input function for set of phenotypes. """
+        """Plot the input function for set of phenotypes. """
         if ax is None:
             fig, ax = plt.subplots(figsize=figsize)
         else:
@@ -66,11 +64,10 @@ class NonlinearPlotting(RegressionPlotting):
     def best_fit(self, ax=None, figsize=(6,4), errorbars=False, axis=None, **kwargs):
         """ Plot model line through data.
 
-        Parameters:
+        Parameters
         ----------
         ax : matplotlib.Axis
             matplotlib object to add best fit data to.
-
         """
         # Add to axis if given, else create new plot.
         if ax is None:

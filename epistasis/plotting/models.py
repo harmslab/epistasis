@@ -14,13 +14,15 @@ class LogScalingException(Exception):
 # ---------------------------------------------------
 
 class EpistasisPlotting(PlottingContainer):
+    """Plotting class for epistasis models.
 
+    Parameters
+    ----------
+    model : epistasis model object
+        epistasis model.
+    """
     def __init__(self, model):
-        """Plotting class for epistasis models.
-        Parameters
-        ----------
-        model : epistasis model object
-        """
+
         self.model = model
         super(EpistasisPlotting, self).__init__(self.model)
 

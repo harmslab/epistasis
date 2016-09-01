@@ -25,14 +25,14 @@ class PCAStats(object):
         """
         Return the number of components whose cumulative sum explain the ratio of variance given.
 
-        Arguments:
-        ---------
-        variance_fraction: float
+        Parameters
+        ----------
+        variance_fraction : float
             fraction of explained variance to find.
 
-        Returns:
+        Returns
         -------
-        n_components: int
+        n_components : int
             number of components that explain the given explained variance ratio
         """
         if variance_ratio > 1.0 or variance_ratio < 0.0:
@@ -53,7 +53,49 @@ class PCAStats(object):
 
 
 class EpistasisPCA(LinearEpistasisRegression):
+    """Principal component analysis of the genotype-phenotype map.
+    This module uses Scikit-learn's PCA class to perform the transformation.
 
+    This model performs a transformation on the mutational coordinates
+    dummy variable matrix, thereby finding the linear combination of mutations
+    and their epistatic coordinates that best describe the variation in
+    phenotype.
+
+
+    Parameters
+    ----------
+    wildtype: str
+        Wildtype or ancestral genotype
+    genotypes: array-like of str
+        Array of genotypes
+    phenotypes: array-like of floats
+        Array of phenotypes
+    order: int
+        Order of epistasis for decomposition matrix
+    stdeviations: array-like of floats [default=None]
+        Standard deviations of the phenotype
+    log_transform: bool [default = False]
+        If True, log transform the phenotype
+    mutations: dict [default=None]
+        A mapping dictionary of mutations at each site
+    n_replicates: int
+        Number of replicate measurements of each phenotype
+    n_components: int [default=None]
+        Number of PCA components to include for model
+    model_type: str [default='local']
+        If 'local', use LocalEpistasisModel decomposition. If 'global', use GlobalEpistasisModel decomposition.
+    coordinate_type: str [default='epistasis']
+        If 'epistasis', project epistasis parameters onto decomposition matrix. If 'phenotypes', project
+        phenotypes onto decomposition matrix.
+
+    Attributes
+    ----------
+    components : array
+        the principal components in the phenotype map (set after `fit` is called).
+    explained_variance_ratio : array
+        the fraction of variance in phenotype that each principal component.
+        explains.
+    """
     def __init__(self, wildtype, genotypes, phenotypes,
         order=1,
         n_components=None,
@@ -65,51 +107,6 @@ class EpistasisPCA(LinearEpistasisRegression):
         coordinate_type="epistasis",
         logbase=np.log10):
 
-        """
-
-        Principal component analysis of the genotype-phenotype map.
-        This module uses Scikit-learn's PCA class to perform the transformation.
-
-        This model performs a transformation on the mutational coordinates
-        dummy variable matrix, thereby finding the linear combination of mutations
-        and their epistatic coordinates that best describe the variation in
-        phenotype.
-
-
-        Parameters
-        ----------
-        wildtype: str
-            Wildtype or ancestral genotype
-        genotypes: array-like of str
-            Array of genotypes
-        phenotypes: array-like of floats
-            Array of phenotypes
-        order: int
-            Order of epistasis for decomposition matrix
-        stdeviations: array-like of floats [default=None]
-            Standard deviations of the phenotype
-        log_transform: bool [default = False]
-            If True, log transform the phenotype
-        mutations: dict [default=None]
-            A mapping dictionary of mutations at each site
-        n_replicates: int
-            Number of replicate measurements of each phenotype
-        n_components: int [default=None]
-            Number of PCA components to include for model
-        model_type: str [default='local']
-            If 'local', use LocalEpistasisModel decomposition. If 'global', use GlobalEpistasisModel decomposition.
-        coordinate_type: str [default='epistasis']
-            If 'epistasis', project epistasis parameters onto decomposition matrix. If 'phenotypes', project
-            phenotypes onto decomposition matrix.
-
-        Attributes
-        ----------
-        components : array
-            the principal components in the phenotype map (set after `fit` is called).
-        explained_variance_ratio : array
-            the fraction of variance in phenotype that each principal component.
-            explains.
-        """
         # Inherent parent class (Epistasis Regression)
         super(EpistasisPCA, self).__init__(wildtype, genotypes, phenotypes,
             order=order,

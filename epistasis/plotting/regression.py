@@ -37,8 +37,7 @@ class RegressionPlotting(EpistasisPlotting):
         return fig, ax
 
     def predicted_phenotypes(self, ax=None, figsize=(6,4), **kwargs):
-        """
-            Plots the predicted phenotypes
+        """Plots the predicted phenotypes
         """
         if ax is None:
             fig, ax = plt.subplots(figsize=figsize)

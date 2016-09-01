@@ -57,9 +57,7 @@ def magnitude_vs_order(model, keep_sign=False,
         figsize=(6,4),
         errorbars=True,
         **kwargs):
-    """
-        Generate a plot of magnitude versus order.
-
+    """Generate a plot of magnitude versus order.
     """
     orders = range(1, model.length+1)
     magnitudes = []

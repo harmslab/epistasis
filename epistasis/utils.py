@@ -57,11 +57,12 @@ def key_to_label(key):
 def epistatic_order_indices(length, order):
     """ Return  the indices of interactions with the given order.
 
-        __Arguments__:
-
-        `length` [int] : length of the sequences
-
-        `order` [int] : order of interactions to return
+    Parameters
+    ----------
+    length : int
+        length of the sequences
+    order : int
+        order of interactions to return
     """
     start = int(sum([comb(length, i) for i in range(order)]))
     stop = int(start + comb(length, order))
@@ -100,9 +101,8 @@ def params_index_map(mutations):
     ----------
     mutations : dict
         mapping each site to their accessible mutations alphabet.
-        mutations = {site_number : alphabet}
-
-    If site does not mutate, value should be None.
+        mutations = {site_number : alphabet} If site does not mutate,
+        value should be None.
 
     Returns
     -------
@@ -110,13 +110,15 @@ def params_index_map(mutations):
         `mutations = { site_number : indices }`. If the site alphabet is
         note included, the model will assume binary between wildtype and derived.
 
-        ```
+    Example
+    -------
+    .. code-block:: python
+
         mutations = {
             0: [indices],
             1: [indices],
             ...
         }
-        ```
     """
     param_map = dict()
     n_sites = 1
@@ -140,14 +142,16 @@ def build_model_params(length, order, mutations, start_order=0):
         alphabet is note included, the model will assume binary
         between wildtype and derived.
 
-        Example
-        ```
+    Example
+    -------
+    .. code-block:: python
+
         mutations = {
             0: [indices],
             1: [indices],
             ...
         }
-        ```
+
     Returns
     -------
     interactions : list

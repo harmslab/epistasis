@@ -72,16 +72,15 @@ class TransformEpistasisMap(BaseMap):
 
 
 class EpistasisMap(BaseMap):
+    """ Mapping object for indexing and tracking interactions in an
+    epistasis map object.
 
+    Parameters
+    ----------
+    GenotypePhenotypeMap : seqspace.gpm.GenotypePhenotypeMap
+        Epistasis Model to attach
+    """
     def __init__(self, GenotypePhenotypeMap):
-        """ Mapping object for indexing and tracking interactions in an
-        epistasis map object.
-
-        Parameters
-        ----------
-        GenotypePhenotypeMap : seqspace.gpm.GenotypePhenotypeMap
-            Epistasis Model to attach
-        """
         self._gpm = GenotypePhenotypeMap
         self.transformed = False
         if self._gpm.log_transform:
@@ -153,15 +152,16 @@ class EpistasisMap(BaseMap):
         Returns
         -------
         params : dict
-            { site_number : indices }`. If the site
-            alphabet is note included, the model will assume binary
-            between wildtype and derived.
-            Example::
-                mutations = {
-                    0: [indices],
-                    1: [indices],
+            { site_number : indices }`. If the site alphabet is note included,
+            the model will assume binary between wildtype and derived.
 
-                }
+        Example
+        -------
+        mutations = {
+            0: [indices],
+            1: [indices],
+
+        }
         """
         return self._params
 
