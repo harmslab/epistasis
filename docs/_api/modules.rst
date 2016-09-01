@@ -5,3 +5,5 @@ epistasis
    :maxdepth: 4
 
    epistasis
+   examples
+   setup
