@@ -307,7 +307,7 @@ napoleon_use_rtype = True
 import sys
 import mock
 
-MOCK_MODULES = ['numpy', 'seqspace','scipy', 'sklearn',
+MOCK_MODULES = ['numpy', 'seqspace','scipy', 'scikit-learn',
     'networkx', 'ipython', 'ipywidgets',
     'jupyter', 'notebook', 'matplotlib.pyplot']
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
