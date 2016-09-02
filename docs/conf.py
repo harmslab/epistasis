@@ -305,7 +305,12 @@ napoleon_use_rtype = True
 
 #Necessary for building custom stuff.
 import sys
-import mock
+from unittest.mock import MagicMock
+
+class Mock(MagicMock):
+    @classmethod
+    def __getattr__(cls, name):
+            return Mock()
 
 MOCK_MODULES = ['numpy', 'seqspace','scipy', 'scikit-learn',
     'networkx', 'ipython', 'ipywidgets',
