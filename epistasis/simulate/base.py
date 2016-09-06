@@ -30,7 +30,7 @@ class BaseSimulation(GenotypePhenotypeMap):
         log_transform=False,
         logbase=np.log10,
         ):
-        genotypes = np.array(mutations_to_genotypes(mutations))
+        genotypes = np.array(mutations_to_genotypes(wildtype, mutations))
         phenotypes = np.ones(len(genotypes))
         # Initialize a genotype-phenotype map
         super(BaseSimulation, self).__init__(
