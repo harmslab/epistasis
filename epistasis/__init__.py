@@ -12,5 +12,3 @@ To install:
 
 
 """
-
-from . import models

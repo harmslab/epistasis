@@ -1,6 +1,7 @@
 -e git+https://github.com/harmslab/seqspace.git#egg=seqspace
 numpy
 scikit-learn
+sklearn
 scipy
 matplotlib
 jupyter

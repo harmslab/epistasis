@@ -16,10 +16,28 @@
 import sys
 import os
 
+# importing modules with weird dependencies
+try:
+    from mock import Mock as MagicMock
+except ImportError:
+    from unittest.mock import MagicMock
+
+class Mock(MagicMock):
+    @classmethod
+    def __getattr__(cls, name):
+            return Mock()
+
+MOCK_MODULES = ['numpy', 'seqspace', 'scipy', 'scikit-learn', 'sklearn',
+    'sklearn.linear_model','scipy.optimize',
+    'scipy.misc','networkx', 'ipython', 'ipywidgets',
+    'jupyter', 'notebook', 'matplotlib.pyplot',
+]
+sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
+
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-sys.path.insert(0, os.path.abspath('.'))
+sys.path.insert(0, os.path.abspath('../'))
 sys.path.insert(0, os.path.abspath('./_api/'))
 
 # -- General configuration ------------------------------------------------
@@ -302,17 +320,3 @@ napoleon_use_admonition_for_references = False
 napoleon_use_ivar = False
 napoleon_use_param = True
 napoleon_use_rtype = True
-
-#Necessary for building custom stuff.
-import sys
-from unittest.mock import MagicMock
-
-class Mock(MagicMock):
-    @classmethod
-    def __getattr__(cls, name):
-            return Mock()
-
-MOCK_MODULES = ['numpy', 'seqspace','scipy', 'scikit-learn',
-    'networkx', 'ipython', 'ipywidgets',
-    'jupyter', 'notebook', 'matplotlib.pyplot']
-sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
