@@ -29,6 +29,8 @@ class Mock(MagicMock):
 
 MOCK_MODULES = ['numpy', 'seqspace', 'scipy',
     'scikit-learn',
+    'nose.tools',
+    'nose',
     'sklearn',
     'sklearn.linear_model',
     'scipy.optimize',
@@ -43,6 +45,8 @@ MOCK_MODULES = ['numpy', 'seqspace', 'scipy',
     'matplotlib.cbook',
     'sklearn.decomposition',
     'sklearn.decomposition.PCA',
+    'sklearn.metrics',
+    'sklearn.metrics.'
     'seqspace.utils',
     'seqspace.utils.binary_mutations_map',
     'seqspace.base',
