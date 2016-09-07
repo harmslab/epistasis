@@ -14,7 +14,7 @@ from collections import OrderedDict
 # Local imports
 # ----------------------------------------------------------
 
-import seqspace.
+import seqspace
 from seqspace.base import BaseMap
 from epistasis.utils import (params_index_map,
     build_model_params,
