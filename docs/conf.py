@@ -27,13 +27,29 @@ class Mock(MagicMock):
     def __getattr__(cls, name):
             return Mock()
 
-MOCK_MODULES = ['numpy', 'seqspace', 'scipy', 'scikit-learn', 'sklearn',
-    'sklearn.linear_model','scipy.optimize',
-    'scipy.misc','networkx', 'ipython', 'ipywidgets',
-    'jupyter', 'notebook', 'matplotlib.pyplot',
-    'sklearn.decomposition', 'sklearn.decomposition.PCA',
-    'seqspace.utils', 'seqspace.utils.binary_mutations_map',
-    'seqspace.base', 'seqspace.base.BaseMap', 'Cython.Build', 'scipy.stats',
+MOCK_MODULES = ['numpy', 'seqspace', 'scipy',
+    'scikit-learn',
+    'sklearn',
+    'sklearn.linear_model',
+    'scipy.optimize',
+    'scipy.misc',
+    'scipy.stats',
+    'networkx',
+    'ipython',
+    'ipywidgets',
+    'jupyter',
+    'notebook',
+    'matplotlib.pyplot',
+    'matplotlib.cbook',
+    'sklearn.decomposition',
+    'sklearn.decomposition.PCA',
+    'seqspace.utils',
+    'seqspace.utils.binary_mutations_map',
+    'seqspace.base',
+    'seqspace.base.BaseMap',
+    'seqspace.gpm',
+    'seqspace.errors',
+    'Cython.Build',
     'epistasis.decomposition'
 ]
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
