@@ -12,7 +12,7 @@ from epistasis.simulate.base import BaseSimulation
 from epistasis.mapping import EpistasisMap
 
 
-from seqspace.utils import encode_mutations, construct_genotypes
+from seqspace import utils
 # ------------------------------------------------------------
 # ArtificialMap object can be used to quickly generating a toy
 # space for testing the EpistasisModels

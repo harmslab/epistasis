@@ -14,8 +14,8 @@ from collections import OrderedDict
 # Local imports
 # ----------------------------------------------------------
 
+import seqspace.
 from seqspace.base import BaseMap
-from seqspace.errors import StandardErrorMap, StandardDeviationMap
 from epistasis.utils import (params_index_map,
     build_model_params,
     label_to_key)
@@ -31,8 +31,8 @@ class TransformEpistasisMap(BaseMap):
     def __init__(self, EpistasisMap):
         self._epistasis = EpistasisMap
         self.transformed = True
-        self.std = StandardDeviationMap(self)
-        self.err = StandardErrorMap(self)
+        self.std = seqspace.errors.StandardDeviationMap(self)
+        self.err = seqspace.errors.StandardErrorMap(self)
 
     @property
     def order(self):
@@ -85,8 +85,8 @@ class EpistasisMap(BaseMap):
         self.transformed = False
         if self._gpm.log_transform:
             self.log = TransformEpistasisMap(self)
-        self.std = StandardDeviationMap(self)
-        self.err = StandardErrorMap(self)
+        self.std = seqspace.errors.StandardDeviationMap(self)
+        self.err = seqspace.errors.StandardErrorMap(self)
 
     def build(self):
         """Build a mapping object for epistatic interactions."""

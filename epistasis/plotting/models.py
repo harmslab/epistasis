@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from seqspace.plotting import PlottingContainer, mpl_missing
+import seqspace
 from epistasis.plotting import epistasis
 # ---------------------------------------------------
 # Exceptions
@@ -10,10 +10,10 @@ class LogScalingException(Exception):
     """ Exception for handling log scaling problems when plotting. """
 
 # ---------------------------------------------------
-# Various plotting classes
+# Various ing classes
 # ---------------------------------------------------
 
-class EpistasisPlotting(PlottingContainer):
+class EpistasisPlotting(seqspace.plotting.PlottingContainer):
     """Plotting class for epistasis models.
 
     Parameters

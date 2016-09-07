@@ -3,7 +3,7 @@ import itertools as it
 from collections import OrderedDict
 
 # imports from seqspace dependency
-from seqspace.utils import farthest_genotype, binary_mutations_map
+from seqspace import utils
 from seqspace.gpm import GenotypePhenotypeMap
 
 # Local imports
@@ -42,8 +42,8 @@ class BaseModel(GenotypePhenotypeMap):
 
         # Defaults to binary mapping if not specific mutations are named
         if mutations is None:
-            mutant = farthest_genotype(wildtype, genotypes)
-            mutations = binary_mutations_map(wildtype, mutant)
+            mutant = utils.farthest_genotype(wildtype, genotypes)
+            mutations = utils.binary_mutations_map(wildtype, mutant)
 
         super(BaseModel, self).__init__(wildtype, genotypes, phenotypes,
             stdeviations=stdeviations,

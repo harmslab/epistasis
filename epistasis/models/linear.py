@@ -5,13 +5,6 @@
 import numpy as np
 
 # ------------------------------------------------------------
-# seqspace imports
-# ------------------------------------------------------------
-
-from seqspace.utils import list_binary, enumerate_space, encode_mutations, construct_genotypes
-from seqspace.errors import StandardErrorMap, StandardDeviationMap
-
-# ------------------------------------------------------------
 # Local imports
 # ------------------------------------------------------------
 

@@ -5,10 +5,7 @@
 import numpy as np
 
 from seqspace.gpm import GenotypePhenotypeMap
-from seqspace.utils import (enumerate_space,
-    binary_mutations_map,
-    encode_mutations,
-    mutations_to_genotypes)
+from seqspace import utils
 
 
 # -------------------------------------------------
@@ -30,7 +27,7 @@ class BaseSimulation(GenotypePhenotypeMap):
         log_transform=False,
         logbase=np.log10,
         ):
-        genotypes = np.array(mutations_to_genotypes(wildtype, mutations))
+        genotypes = np.array(utils.mutations_to_genotypes(wildtype, mutations))
         phenotypes = np.ones(len(genotypes))
         # Initialize a genotype-phenotype map
         super(BaseSimulation, self).__init__(
@@ -59,7 +56,7 @@ class BaseSimulation(GenotypePhenotypeMap):
         Simulation object
         """
         wildtype = "0"*length
-        mutations = binary_mutations_map(wildtype, "1"*length)
+        mutations = utils.binary_mutations_map(wildtype, "1"*length)
         return cls(wildtype, mutations, order, **kwargs)
 
     @classmethod

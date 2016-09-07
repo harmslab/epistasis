@@ -6,8 +6,7 @@ import numpy as np
 
 # imports from seqspace dependency
 from seqspace.gpm import GenotypePhenotypeMap
-from seqspace.utils import (farthest_genotype,
-                            binary_mutations_map)
+from seqspace import utils
 
 from epistasis.stats import log_likelihood_ratio, F_test, StatisticalTest
 from epistasis.utils import SubclassException
@@ -45,8 +44,8 @@ class BaseSpecifier(object):
         self.model_type = model_type
         # Defaults to binary mapping if not specific mutations are named
         if mutations is None:
-            mutant = farthest_genotype(wildtype, genotypes)
-            mutations = binary_mutations_map(wildtype, mutant)
+            mutant = utils.farthest_genotype(wildtype, genotypes)
+            mutations = utils.binary_mutations_map(wildtype, mutant)
 
         # Testing specs
         self.StatisticalTest = StatisticalTest(test_type, test_cutoff)

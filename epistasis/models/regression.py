@@ -6,16 +6,6 @@ import numpy as np
 from sklearn.linear_model import LinearRegression
 
 # ------------------------------------------------------------
-# seqspace imports
-# ------------------------------------------------------------
-
-from seqspace.utils import (list_binary,
-                            enumerate_space,
-                            encode_mutations,
-                            construct_genotypes)
-
-
-# ------------------------------------------------------------
 # Local imports
 # ------------------------------------------------------------
 
