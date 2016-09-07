@@ -27,7 +27,7 @@ class Mock(MagicMock):
     def __getattr__(cls, name):
             return Mock()
 
-MOCK_MODULES = ['numpy', 'seqspace', 'scipy',
+MOCK_MODULES = ['numpy','scipy',
     'scikit-learn',
     'nose.tools',
     'nose',
@@ -41,20 +41,12 @@ MOCK_MODULES = ['numpy', 'seqspace', 'scipy',
     'ipywidgets',
     'jupyter',
     'notebook',
-    #'matplotlib',
-    #'matplotlib.pyplot',
-    #'matplotlib.cbook',
+    'matplotlib.pyplot',
+    'matplotlib.cbook',
+    'matplotlib',
     'sklearn.decomposition',
     'sklearn.decomposition.PCA',
     'sklearn.metrics',
-    'seqspace',
-    'seqspace.utils',
-    'seqspace.utils.binary_mutations_map',
-    'seqspace.base',
-    'seqspace.base.BaseMap',
-    'seqspace.plotting',
-    'seqspace.gpm',
-    'seqspace.errors',
     'Cython.Build',
     'epistasis.decomposition'
 ]

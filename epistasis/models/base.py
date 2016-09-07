@@ -12,7 +12,7 @@ from epistasis.utils import epistatic_order_indices, SubclassException
 from epistasis.plotting.models import EpistasisPlotting
 
 class BaseModel(GenotypePhenotypeMap):
-    """ Populate an Epistasis mapping object.
+    """Populate an Epistasis mapping object.
 
     Parameters
     ----------

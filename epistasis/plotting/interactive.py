@@ -54,7 +54,7 @@ def epistasis(betas, labels, errors=[], **kwargs):
         betas=_fixed(betas),
         labels=_fixed(labels),
         errors=_fixed(errors),
-        **options,
+        **options
     )
 
     return w

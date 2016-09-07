@@ -8,16 +8,13 @@ from epistasis.decomposition import generate_dv_matrix
 from epistasis.models.regression import LinearEpistasisRegression
 
 class PCAStats(object):
-
+    """Object that holds different statistical readouts of PCA analysis
+    """
     def __init__(self, model):
-        """
-        Object that holds different statistical readouts of PCA analysis
-        """
         self._model = model
 
     def cumulative_variance(self, n_components):
-        """
-        Return the cumulative explained variance for a given number of components.
+        """Return the cumulative explained variance for a given number of components.
         """
         return sum(self._model.explained_variance_ratio[:n_components])
 
