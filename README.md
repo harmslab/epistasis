@@ -24,8 +24,7 @@ model.fit_error()
 ```
 
 If analyzing a nonlinear genotype-phenotype map, use `NonlinearEpistasisModel`
-(nonlinear least squares regression) to estimate nonlinearity in map.
-can be used to estimate the nonlinearity:
+(nonlinear least squares regression) to estimate nonlinearity in map:
 ```python
 # Import the nonlinear epistasis model
 from epistasis.models import NonlinearEpistasisModel
@@ -42,13 +41,13 @@ model = NonlinearEpistasisModel.from_json("dataset.json"
 )
 
 # Give initial guesses for parameters to aid in convergence (not required).
-model.fit(lmbda=1, A=1, B=2)
+model.fit(lmbda=1, lmbda2=1)
 ```
 
 The nonlinear fit also includes Jupyter Notebook widgets to make nonlinear fitting
 easier.
 ```python
-model.fit_widget(lmbda=(-2,2,.1), A=(-2,2,.1), B=(-2,2,.1))
+model.fit_widget(lmbda=(-2,2,.1), lmbda2=(-2,2,.1))
 ```
 
 More demos are available as [binder notebooks](http://mybinder.org/repo/harmslab/epistasis).
