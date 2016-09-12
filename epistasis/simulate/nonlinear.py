@@ -19,6 +19,17 @@ class NonlinearSimulation(BaseSimulation):
         # Set the linear piece of epistasis map.
         if linear_model is not None:
             self.linear = linear_model
+
+            # Construct GPM
+            super(NonlinearSimulation, self).__init__(
+                self.linear.wildtype,
+                self.linear.mutations,
+            )
+
+            # Construct genotypes
+            self.genotypes = self.linear.genotypes
+            self.binary._build()
+
         else:
             if multiplicative:
                 # Linear epistasis map
@@ -30,14 +41,15 @@ class NonlinearSimulation(BaseSimulation):
                     coeff_range=coeff_range,
                     model_type=model_type)
 
+            # Construct GPM
+            super(NonlinearSimulation, self).__init__(
+                self.linear.wildtype,
+                self.linear.mutations,
+            )
+
         # Set the nonlinear function
         self.function = function
 
-        # Construct GPM
-        super(NonlinearSimulation, self).__init__(
-            self.linear.wildtype,
-            self.linear.mutations,
-        )
         # Get the parameters from the nonlinear function argument list
         function_sign = inspect.signature(self.function)
         parameters = list(function_sign.parameters.keys())
@@ -60,14 +72,27 @@ class NonlinearSimulation(BaseSimulation):
         return self.function(self.linear.p_additive, *self.parameters.get_params())
 
     @classmethod
-    def from_linear(cls, model, function, p0):
+    def from_epistasis(cls, wildtype, mutations, order, betas, function, p0, model_type="local"):
+        """Add genotypic epistasis to genotype-phenotype map.
+        """
+        space = cls(wildtype, mutations, order, model_type=model_type)
+        if len(betas) != space.epistasis.n:
+            raise Exception("""Number of betas does not match order/mutations given.""")
+        space.epistasis.values = betas
+        space.build()
+        return space
+
+    @classmethod
+    def from_linear(cls, model, function, p0, **kwargs):
         """Layer nonlinear model on top of existing linear model."""
-        return cls(model.wildtype,
+        space =  cls(model.wildtype,
             model.mutations,
             model.epistasis.order,
             function,
             p0,
-            linear_model=model)
+            linear_model=model,
+            **kwargs)
+        return space
 
     def build(self, *args):
         """ Build nonlinear map from epistasis and function.

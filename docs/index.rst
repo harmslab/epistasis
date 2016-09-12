@@ -26,6 +26,7 @@ Contents:
 
    install
    tutorials
+   approach
    input-formats
    _api/epistasis
 

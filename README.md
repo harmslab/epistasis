@@ -6,7 +6,7 @@
 
 A python API for modeling statistical, high-order epistasis in large genotype-phenotype maps. All models follow a `scikit-learn` interface, making it easy to integrate `epistasis` models with other pipelines and software. It includes a plotting module built on matplotlib for visualizing high-order interactions and interactive widgets to simplify complex nonlinear fits.
 
-This package includes APIs for both linear and nonlinear epistasis models, described in this [paper](), separating epistasis that arises from global trends in phenotypes from epistasis that arises from specific interactions between mutations. Nonlinear regressions
+This package includes APIs for both linear and nonlinear epistasis models, described in this [paper](http://biorxiv.org/content/early/2016/08/30/072256), separating epistasis that arises from global trends in phenotypes from epistasis that arises from specific interactions between mutations. Nonlinear regressions
 
 ## Basic examples
 
@@ -14,9 +14,11 @@ A simple example of fitting a data set with a linear epistasis model.
 ```python
 # Import epistasis model
 from epistasis.models import LinearEpistasisModel
+
 # Read data from file and estimate epistasis
 model = LinearEpistasisModel.from_json("dataset.json")
 model.fit()
+
 # Estimate the uncertainty in epistatic coefficients
 model.fit_error()
 ```
@@ -27,15 +29,18 @@ can be used to estimate the nonlinearity:
 ```python
 # Import the nonlinear epistasis model
 from epistasis.models import NonlinearEpistasisModel
+
 # Define a nonlinear function to fit the genotype-phenotype map.
 def boxcox(x, lmbda, lmbda2):
     """Fit with a box-cox function to estimate nonlinearity."""
     return ((x-lmbda2)**lmbda - 1 )/lmbda
+
 # Read data from file and estimate nonlinearity in dataset.
 model = NonlinearEpistasisModel.from_json("dataset.json"
     order=1,
     function=boxcox,
 )
+
 # Give initial guesses for parameters to aid in convergence (not required).
 model.fit(lmbda=1, A=1, B=2)
 ```
@@ -46,17 +51,21 @@ easier.
 model.fit_widget(lmbda=(-2,2,.1), A=(-2,2,.1), B=(-2,2,.1))
 ```
 
-More demos are available as [binder notebooks]().
+More demos are available as [binder notebooks](http://mybinder.org/repo/harmslab/epistasis).
 
 ## Installation
 
 To install, clone these repo and run:
 
-```python setup.py install```
+```
+python setup.py install
+```
 
 or, if you'd like to soft install for development:
 
-```python setup.py develop```
+```
+python setup.py develop
+```
 
 This package is still really hacked together. I plan to include examples and clean up some of the plotting/network managing very soon.
 

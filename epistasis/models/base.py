@@ -72,7 +72,8 @@ class BaseModel(GenotypePhenotypeMap):
             "log_transform": False,
             "mutations": None,
             "n_replicates": 1,
-            "logbase": np.log10
+            "logbase": np.log10,
+            "model_type": "local"
         }
 
         # Get all options for map and order them

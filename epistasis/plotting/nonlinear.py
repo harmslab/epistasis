@@ -39,13 +39,8 @@ class NonlinearPlotting(RegressionPlotting):
         else:
             fig = ax.get_figure()
 
-        params = self.model.parameters._param_list
-
-        # Get the values
-        values = [getattr(self.model.parameters, p) for p in params]
-
         if xbounds is None:
-            predicted = np.dot(self.model.X,  self.model.epistasis.values)
+            predicted = self.model.statistics.linear()
 
             max_p = max(predicted)
             min_p = min(predicted)
@@ -55,7 +50,7 @@ class NonlinearPlotting(RegressionPlotting):
             min_p = xbounds[0]
 
         x = np.linspace(min_p, max_p, 1000)
-        y = self.model.function(x, *values)
+        y = self.model.function(x, *self.model.parameters.get_params())
         ax.plot(x,y, **kwargs)
 
         return fig, ax
