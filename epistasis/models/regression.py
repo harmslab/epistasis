@@ -96,8 +96,8 @@ class LinearEpistasisRegression(BaseModel):
         if order is not None:
             self.order = order
         else:
-            raise Exception("""Need to specify the model's `order` argument or manually
-                                list model parameters as `parameters` argument.""")
+            self.order = self.binary.length
+
         # Construct the epistasis map
         self.epistasis.order = self.order
 
@@ -115,7 +115,6 @@ class LinearEpistasisRegression(BaseModel):
 
         # Set encoding from model_type given
         self.encoding = model_types[model_type]["encoding"]
-
         # Construct decomposition matrix
         self.X = generate_dv_matrix(self.binary.genotypes, self.epistasis.labels, encoding=self.encoding)
 

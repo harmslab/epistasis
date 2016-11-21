@@ -38,7 +38,6 @@ class TransformEpistasisMap(BaseMap):
     def order(self):
         return self._epistasis.order
 
-    @property
     def keys(self):
         return self._epistasis.keys
 

@@ -48,6 +48,21 @@ class PCAStats(object):
         # Return the number of components
         return n_components
 
+    def predict(self):
+        """ Infer the phenotypes from model.
+
+        Returns
+        -------
+        phenotypes : array
+            array of quantitative phenotypes.
+        """
+        binaries = self._model.binary.complete_genotypes
+        X = generate_dv_matrix(binaries, self._model.epistasis.labels, encoding=self._model.encoding)
+        projection = self._model.transform(X)
+        phenotypes = self._model.regression_model.predict(X)
+        if self._model.log_transform:
+            phenotypes = self._model.base**phenotypes
+        return phenotypes
 
 class EpistasisPCA(LinearEpistasisRegression):
     """Principal component analysis of the genotype-phenotype map.
@@ -124,13 +139,10 @@ class EpistasisPCA(LinearEpistasisRegression):
             # Must fit space with regression first, then use those coordinates
             super(EpistasisPCA, self).fit()
             self.X = self.X * self.epistasis.values
-
         elif coordinate_type == "phenotypes":
             self.X = self.X * self.binary.phenotypes
-
         # Add statistics object
-        self.Stats = PCAStats(self)
-
+        self.statistics = PCAStats(self)
 
     def fit(self):
         """

@@ -351,7 +351,7 @@ class NonlinearEpistasisModel(LinearEpistasisRegression):
 
             # Plot if available
             if hasattr(self, "plot"):
-                self.plot.predicted_phenotypes()
+                self.plot.best_fit()
 
         # Construct and return the widget box
         widgetbox = ipywidgets.interactive(fitting, **kwargs)
