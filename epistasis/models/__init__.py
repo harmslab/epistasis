@@ -11,6 +11,7 @@ from epistasis.models.regression import LinearEpistasisRegression
 
 # import nonlinear model
 from epistasis.models.nonlinear import NonlinearEpistasisModel
+from epistasis.models.nonlinear.power import PowerTransformEpistasisModel
 
 # import epistasis specifier
 from epistasis.models.specifier import (LinearEpistasisSpecifier,

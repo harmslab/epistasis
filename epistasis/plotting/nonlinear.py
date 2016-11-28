@@ -40,7 +40,7 @@ class NonlinearPlotting(RegressionPlotting):
             fig = ax.get_figure()
 
         if xbounds is None:
-            predicted = self.model.statistics.linear()
+            predicted = self.model.statistics.linear
 
             max_p = max(predicted)
             min_p = min(predicted)
@@ -71,7 +71,7 @@ class NonlinearPlotting(RegressionPlotting):
             fig = ax.get_figure()
 
         # Plot line through data
-        linear = self.model.statistics.linear()
+        linear = self.model.statistics.linear
         theory = self.model.statistics.predict()
         observed = self.model.phenotypes
 
@@ -111,7 +111,7 @@ class NonlinearPlotting(RegressionPlotting):
 
 
         theory = self.model.statistics.predict()
-        linear = self.model.statistics.linear()
+        linear = self.model.statistics.linear
         observed = self.model.phenotypes
 
         # Calculate residuals

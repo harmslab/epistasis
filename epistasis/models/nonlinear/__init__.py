@@ -1,4 +1,3 @@
 # Entry point to NonlinearEpistasisModel here.
-from .model import NonlinearEpistasisModel
-from . import functions
-from . import reverse_functions
+from .base import NonlinearEpistasisModel
+from .power import PowerTransformEpistasisModel

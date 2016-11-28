@@ -39,6 +39,11 @@ class Parameters:
             self._mapping[self._param_list[i]] = i
 
     @property
+    def keys(self):
+        """Get ordered list of params"""
+        return self._param_list
+
+    @property
     def values(self):
         """Get ordered list of params"""
         vals = []
@@ -51,7 +56,6 @@ class Parameters:
 
         param can be either the name of the parameter or its index in this object.
         """
-
         # If param is an index, get name from mappings
         if type(param) == int or type(param) == float:
             param = self._mapping_[param]
@@ -72,7 +76,7 @@ class NonlinearStats(object):
 
     @property
     def score(self):
-        """ Get the epistasis model score after estimating interactions. """
+        """ Get the epistasis model score (squared pearson) after estimating interactions. """
         return self._model._score
 
     def _subtract_function(self):
@@ -82,6 +86,7 @@ class NonlinearStats(object):
         """
         pass
 
+    @property
     def linear(self):
         """Return phenotypes composed of only the Interaction values determined by
         fit. Removes the nonlinear function from the data.
@@ -105,8 +110,9 @@ class NonlinearStats(object):
         binaries = self._model.binary.complete_genotypes
         X = generate_dv_matrix(binaries, self._model.epistasis.labels, encoding=self._model.encoding)
         popt = self._model.parameters.get_params()
-        phenotypes = self._model.function(self.linear(), *popt)
+        phenotypes = self._model.function(self.linear, *popt)
         return phenotypes
+
 
 class NonlinearEpistasisModel(LinearEpistasisRegression):
     """ Runs a nonlinear least squares fit to regress epistatic coefficients from
@@ -198,6 +204,7 @@ class NonlinearEpistasisModel(LinearEpistasisRegression):
         parameters = list(function_sign.parameters.keys())
         if parameters[0] != "x":
             raise Exception(""" First argument of the nonlinear function must be `x`. """)
+
         # Construct parameters object
         self.parameters = Parameters(parameters[1:])
         self.statistics = NonlinearStats(self)
@@ -263,7 +270,7 @@ class NonlinearEpistasisModel(LinearEpistasisRegression):
             index = self.parameters._mapping[kw]
             guess[index] = kwargs[kw]
         # Curve fit the data using a nonlinear least squares fit
-        popt, pcov = curve_fit(self.function, self.statistics.linear(),
+        popt, pcov = curve_fit(self.function, self.statistics.linear,
             self.phenotypes,
             p0=guess,
             **fit_kwargs)
@@ -290,10 +297,12 @@ class NonlinearEpistasisModel(LinearEpistasisRegression):
         """
         # Construct an array of guesses, using the scale specified by user.
         guess = np.ones(self.epistasis.n + self.parameters.n)
+
         # Add model's extra parameter guesses to input array
         for kw in kwargs:
             index = self.parameters._mapping[kw]
             guess[self.epistasis.n + index] = kwargs[kw]
+
         # Create an initial guess array using fit values
         if guess_coeffs is None:
             # Fit with a linear epistasis model first, and use those values as initial guesses.
@@ -304,22 +313,28 @@ class NonlinearEpistasisModel(LinearEpistasisRegression):
             # Add user guesses for interactions
             guess[:self.epistasis.n] = guess_coeffs
 
+        # Transform user function to readable model function
         self._wrapped_function = self._nonlinear_function_wrapper(self.function)
+
         # Curve fit the data using a nonlinear least squares fit
         popt, pcov = curve_fit(self._wrapped_function, self.X, self.phenotypes,
             p0=guess,
             **fit_kwargs)
+
         # Set the Interaction values
         self.epistasis.values = popt[0:len(self.epistasis.labels)]
+
         # Set the other parameters from nonlinear function to fit results
         for i in range(0, self.parameters.n):
             self.parameters._set_param(i, popt[len(self.epistasis.labels)+i])
+
         # Expose the linear stuff to user and fill in important stuff.
         self.linear.epistasis.values = self.epistasis.values
         linear_phenotypes = np.dot(self.X, self.epistasis.values)
         if self.linear.log_transform:
             linear_phenotypes = 10**linear_phenotypes
         self.linear.phenotypes = linear_phenotypes
+
         # Score the fit
         y_pred = self._wrapped_function(self.X, *popt)
         self._score = pearson(self.phenotypes, y_pred)**2
