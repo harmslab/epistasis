@@ -7,7 +7,7 @@ def power_transform(x, lmbda, A, B):
     """Power transformation function."""
     gmean = scipy.stats.mstats.gmean(x + A)
     if lmbda == 0:
-        return gmean*numpy.log(x+A)
+        return gmean*np.log(x+A)
     else:
         first = (x+A)**lmbda
         out = (first - 1.0)/(lmbda * gmean**(lmbda-1)) + B
@@ -16,17 +16,8 @@ def power_transform(x, lmbda, A, B):
 class PowerTransformStats(NonlinearStats):
 
     @property
-    def parameters(self):
-        return self._model.parameters
-
-    @property
     def gmean(self):
         return scipy.stats.mstats.gmean(self.linear + self.parameters.A)
-
-    @property
-    def transformed(self):
-        predicted = self.predict()
-        return self.transform(predicted)
 
     def transform(self, x):
         """Power transformation function."""

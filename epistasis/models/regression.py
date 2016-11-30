@@ -22,7 +22,8 @@ from epistasis.utils import (epistatic_order_indices,
 # ------------------------------------------------------------
 
 class RegressionStats(object):
-    """Object for managing all statistics from epistasis regression
+    """ An object
+
     """
     def __init__(self, model):
         self._model = model
@@ -32,7 +33,7 @@ class RegressionStats(object):
         """ Get the epistasis model score after estimating interactions. """
         return self._model._score
 
-    def predict(self):
+    def predict(self, X=None):
         """ Infer the phenotypes from model.
 
         Returns
@@ -51,8 +52,10 @@ class RegressionStats(object):
 
 
 class LinearEpistasisRegression(BaseModel):
-    """ Create a map from local epistasis model projected into lower order
-    order epistasis interactions. Requires regression to estimate values.
+    """ Uses a simple linear, least-squares regression to estimate epistatic
+    coefficients in a genotype-phenotype map. This assumes the map is linear.
+
+
 
     Parameters
     ----------
@@ -142,7 +145,7 @@ class LinearEpistasisRegression(BaseModel):
             self._score = self.regression_model.score(self.X, self.binary.phenotypes)
             self.epistasis.values = self.regression_model.coef_
 
-    def fit_error(self, sample_size=10, rtol=1e-2):
+    def bootstrap(self, nsamples):
         """Estimate the error in the epistatic coefficients by bootstrapping.
         Draws random samples of the phenotypes from the experimental standard
         error. The main assumption of this method is that the error is normally

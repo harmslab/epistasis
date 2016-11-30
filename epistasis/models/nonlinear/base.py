@@ -22,8 +22,9 @@ except ImportError:
 # Classes for Nonlinear modelling
 # -------------------------------------------------------------------------------
 
-class Parameters:
-
+class Parameters(object):
+    """ A container object for parameters extracted from a nonlinear fit.
+    """
     def __init__(self, params):
         """ Extra non epistasis parameters in nonlinear epistasis models.
 
@@ -75,16 +76,22 @@ class NonlinearStats(object):
         self._model = model
 
     @property
+    def parameters(self):
+        return self._model.parameters
+
+    @property
     def score(self):
         """ Get the epistasis model score (squared pearson) after estimating interactions. """
         return self._model._score
 
-    def _subtract_function(self):
-        """Returns phenotypes without the nonlinear function.
+    @property
+    def transformed(self):
+        predicted = self.predict()
+        return self.transform(predicted)
 
-        Not developed yet.
-        """
-        pass
+    def transform(self, x):
+        """ Transform a set of linear phenotypes onto the nonlinear phenotypic scale from fit."""
+        return self._model.function(x, *self.parameters.get_params())
 
     @property
     def linear(self):
@@ -97,7 +104,7 @@ class NonlinearStats(object):
             return np.dot(self._model.X, self._model.epistasis.values)
 
     def predict(self):
-        """ Infer the phenotypes from model.
+        """Infer the linear phenotypes from model.
 
         Returns
         -------
@@ -110,7 +117,6 @@ class NonlinearStats(object):
         binaries = self._model.binary.complete_genotypes
         X = generate_dv_matrix(binaries, self._model.epistasis.labels, encoding=self._model.encoding)
         popt = self._model.parameters.get_params()
-        phenotypes = self._model.function(self.linear, *popt)
         return phenotypes
 
 
@@ -131,7 +137,6 @@ class NonlinearEpistasisModel(LinearEpistasisRegression):
     is applied to the data after step 1 to make fitting the epistatic coefficients
     a simple linear regression. Note: `self.log_transform` will return False still;
     however, self.linear.log_transform will return True.
-
 
     Parameters
     ----------

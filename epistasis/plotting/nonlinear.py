@@ -17,7 +17,7 @@ class NonlinearPlotting(RegressionPlotting):
         self.model = model
         super(NonlinearPlotting, self).__init__(self.model)
 
-    def linear_phenotypes(self):
+    def linear(self):
         """P vs. p plot. """
         fig, ax = plt.subplots()
 
@@ -32,7 +32,7 @@ class NonlinearPlotting(RegressionPlotting):
 
         return fig, ax
 
-    def nonlinear_function(self, ax=None, xbounds=None, figsize=(6,4), **kwargs):
+    def function(self, ax=None, xbounds=None, figsize=(6,4), **kwargs):
         """Plot the input function for set of phenotypes. """
         if ax is None:
             fig, ax = plt.subplots(figsize=figsize)
@@ -50,7 +50,7 @@ class NonlinearPlotting(RegressionPlotting):
             min_p = xbounds[0]
 
         x = np.linspace(min_p, max_p, 1000)
-        y = self.model.function(x, *self.model.parameters.get_params())
+        y = self.model.statistics.transform(x)
         ax.plot(x,y, **kwargs)
 
         return fig, ax
@@ -75,8 +75,10 @@ class NonlinearPlotting(RegressionPlotting):
         theory = self.model.statistics.predict()
         observed = self.model.phenotypes
 
-        data = np.array((linear, theory))
-        data = data[:, data[0, :].argsort()]
+        #data = np.array((linear, theory))
+        #print(data)
+        #print(data.shape)
+        #data = data[:, data[0, :].argsort()]
 
         # Plot the line through data
 
@@ -94,7 +96,7 @@ class NonlinearPlotting(RegressionPlotting):
             ax.plot(linear, observed, '.', **kwargs)
 
         #ax.plot(data[0], data[1], color="r", linewidth=2)
-        fig, ax = self.nonlinear_function(ax=ax, color="r", linewidth=2)
+        fig, ax = self.function(ax=ax, color="r", linewidth=2)
 
         if axis is not None:
             ax.axis(axis)

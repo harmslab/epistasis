@@ -13,6 +13,14 @@ from epistasis.plotting.stats import FDistributionPlotting
 # Correlation metrics
 # -----------------------------------------------------------------------
 
+def incremental_mean(sample, old_mean, N):
+    """ Calculate an incremental mean. Useful for bootstrapping. """
+    return
+
+def incremental_variance(sample, old_mean, new_mean, old_variance, N):
+    """ Calculate an incremental variance. Useful for bootstrapping. """
+    return (N - 2) * old_variance + (N - 1)(old_mean - new_mean)**2
+
 def resample_to_convergence(function, sample_size=50, rtol=10e-2, *args, **kwargs):
     """Repeat a calculation until the mean and standard deviations of the samples
     converge to a specified tolerance level (note that the tolerances are relative.)

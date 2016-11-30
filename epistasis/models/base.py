@@ -105,6 +105,10 @@ class BaseModel(GenotypePhenotypeMap):
     # Other methods
     # ---------------------------------------------------------------------------------
 
+    #def _fit_(self, phenotype_sample):
+
+
+
     def fit(self):
         """ Fitting methods for epistasis models. """
         raise SubclassException("""Must be implemented in a subclass.""")
@@ -112,3 +116,8 @@ class BaseModel(GenotypePhenotypeMap):
     def fit_error(self):
         """ Fitting method for errors in the epistatic parameters. """
         raise SubclassException("""Must be implemented in a subclass.""")
+
+    def bootstrap(self):
+        """
+        """
+        self.sample

@@ -17,8 +17,11 @@ from epistasis.models.base import BaseModel
 # ------------------------------------------------------------
 
 class LinearEpistasisModel(BaseModel):
-    """A linear epistasis model object. Use this object to decompose epistasis
-    in genotype-phenotype maps. Epistasis is defined as
+    """A high-order, linear epistasis model.
+
+    Use this object to decompose a genotype-phenotype map into additive and
+    epistatic (to N-th order) coefficients. This assumes the genotype-phenotype
+    map is linear. 
 
     .. math::
 

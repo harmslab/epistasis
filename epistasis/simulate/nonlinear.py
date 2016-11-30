@@ -3,7 +3,7 @@ import numpy as np
 from .additive import AdditiveSimulation
 from .multiplicative import MultiplicativeSimulation
 from .base import BaseSimulation
-from epistasis.models.nonlinear.model import Parameters
+from epistasis.models.nonlinear.base import Parameters
 
 class NonlinearSimulation(BaseSimulation):
     """ Nonlinear epistasis simulator. Creates a Genotype-Phen
