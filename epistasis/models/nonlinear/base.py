@@ -4,7 +4,7 @@ from scipy.optimize import curve_fit
 
 from epistasis.decomposition import generate_dv_matrix
 from epistasis.stats import pearson
-from epistasis.models.regression import LinearEpistasisRegression
+from epistasis.models.regression import LinearEpistasisRegression, RegressionStats
 from epistasis.models.base import BaseModel
 from epistasis.plotting.nonlinear import NonlinearPlotting
 
@@ -68,7 +68,7 @@ class Parameters(object):
         return [getattr(self, self._mapping_[i]) for i in range(len(self._mapping_))]
 
 
-class NonlinearStats(object):
+class NonlinearStats(RegressionStats):
     """Object that returns useful statistics and tranformations from a nonlinear
     Epistasis model.
     """
@@ -103,21 +103,6 @@ class NonlinearStats(object):
         else:
             return np.dot(self._model.X, self._model.epistasis.values)
 
-    def predict(self):
-        """Infer the linear phenotypes from model.
-
-        Returns
-        -------
-        genotypes : array
-            array of genotypes -- in same order as phenotypes
-        phenotypes : array
-            array of quantitative phenotypes.
-        """
-        phenotypes = np.zeros(len(self._model.complete_genotypes), dtype=float)
-        binaries = self._model.binary.complete_genotypes
-        X = generate_dv_matrix(binaries, self._model.epistasis.labels, encoding=self._model.encoding)
-        popt = self._model.parameters.get_params()
-        return phenotypes
 
 
 class NonlinearEpistasisModel(LinearEpistasisRegression):
