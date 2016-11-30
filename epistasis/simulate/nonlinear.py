@@ -58,10 +58,14 @@ class NonlinearSimulation(BaseSimulation):
         if parameters[0] != "x":
             raise Exception("""First argument of the nonlinear function must be `x`.""")
 
-        #Set parameters
-        self.parameters = Parameters(parameters[1:])
-        for i in range(1, len(parameters)):
-            self.parameters._set_param(parameters[i], p0[i-1])
+
+        if list(parameters) == 1:
+            self.parameters = None
+        else:
+            # Set parameters
+            self.parameters = Parameters(parameters[1:])
+            for i in range(1, len(parameters)):
+                self.parameters._set_param(parameters[i], p0[i-1])
 
         # Build phenotypes.
         self.build()
@@ -97,7 +101,10 @@ class NonlinearSimulation(BaseSimulation):
     def build(self, *args):
         """ Build nonlinear map from epistasis and function.
         """
-        self.phenotypes = self.function(self.linear.phenotypes, *self.parameters.values)
+        if self.parameters is None:
+            self.phenotypes = self.function(self.linear.phenotypes)
+        else:
+            self.phenotypes = self.function(self.linear.phenotypes, *self.parameters.values)
 
     def widget(self, **kwargs):
         """ A widget for playing with different values of nonlinearity. """
