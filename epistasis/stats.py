@@ -15,7 +15,7 @@ from epistasis.plotting.stats import FDistributionPlotting
 
 def incremental_mean(sample, old_mean, N):
     """ Calculate an incremental mean. Useful for bootstrapping. """
-    return
+    pass
 
 def incremental_variance(sample, old_mean, new_mean, old_variance, N):
     """ Calculate an incremental variance. Useful for bootstrapping. """

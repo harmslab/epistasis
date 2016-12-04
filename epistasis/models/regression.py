@@ -21,41 +21,18 @@ from epistasis.utils import (epistatic_order_indices,
 # Unique Epistasis Functions
 # ------------------------------------------------------------
 
-class RegressionStats(object):
-    """ An object
+class RegressionStatistics(object):
+    """
 
     """
     def __init__(self, model):
-        self._model = model
-
-    @property
-    def score(self):
-        """ Get the epistasis model score after estimating interactions. """
-        return self._model._score
-
-    def predict(self, X=None):
-        """ Infer the phenotypes from model.
-
-        Returns
-        -------
-        genotypes : array
-            array of genotypes -- in same order as phenotypes
-        phenotypes : array
-            array of quantitative phenotypes.
-        """
-        binaries = self._model.binary.complete_genotypes
-        X = generate_dv_matrix(binaries, self._model.epistasis.labels, encoding=self._model.encoding)
-        phenotypes = self._model.regression_model.predict(X)
-        if self._model.log_transform:
-            phenotypes = self._model.base**phenotypes
-        return phenotypes
-
+        self.model = model
+        self.score = None
+        self.significance = None
 
 class LinearEpistasisRegression(BaseModel):
     """ Uses a simple linear, least-squares regression to estimate epistatic
     coefficients in a genotype-phenotype map. This assumes the map is linear.
-
-
 
     Parameters
     ----------
@@ -119,7 +96,7 @@ class LinearEpistasisRegression(BaseModel):
         # Set encoding from model_type given
         self.encoding = model_types[model_type]["encoding"]
         # Construct decomposition matrix
-        self.X = generate_dv_matrix(self.binary.genotypes, self.epistasis.labels, encoding=self.encoding)
+        self.X = self.build_X(self.binary.genotypes, self.epistasis.labels, encoding=self.encoding)
 
         # Initialize useful objects to model object
         self.statistics = RegressionStats(self)
@@ -129,6 +106,56 @@ class LinearEpistasisRegression(BaseModel):
             self.plot = RegressionPlotting(self)
         except Warning:
             pass
+
+    def build_X(self, genotypes):
+        """ Construct a model matrix for linear regression.
+
+        Parameters
+        ----------
+        genotypes : list
+            list of genotypes, in binary representation. if not in binary format
+            already, this method will try to do the conversion itself.
+
+        Returns
+        -------
+        X : 2d array
+            model matrix from this model to be used for linear regression.
+        """
+        # Make sure `genotypes` is a list object
+        if len(genotypes) is 1:
+            genotypes = [genotypes]
+        else:
+            genotypes = list(genotypes)
+        # Construct the X matrix (convert to binary if necessary).
+        try:
+            return generate_dv_matrix(genotypes, self.epistasis.labels, encoding=self.encoding)
+        except:
+            mapping =self.map("genotypes", "binaries")
+            binaries = [mapping[g] for g in genotypes]
+            return generate_dv_matrix(binaries, self.epistasis.labels, encoding=self.encoding)
+
+    def predict(self, X=None):
+        """ Predict phenotypes from linear epistasis model.
+
+        Parameters
+        ----------
+        X : 2d array (optional)
+            X matrix passed to scikit-learn's `LinearRegression` class. If no
+            matrix is given, will create a matrix from the `complete_genotypes`
+            attribute
+
+        Returns
+        -------
+        phenotypes : array
+            phenotypes predicted from linear regression model.
+        """
+        if X is None:
+            X = self.build_X(self.binary.complete_genotypes)
+        phenotypes = self.regression_model.predict(X)
+        # If a log transform was used, reverse-transform the phenotypes.
+        if self.log_transform:
+            phenotypes = self.base**phenotypes
+        return phenotypes
 
     def fit(self):
         """Use ordinary least squares regression (via scikit-learn) to estimate
