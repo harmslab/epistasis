@@ -172,7 +172,7 @@ class LinearEpistasisRegression(BaseModel):
             self._score = self.regression_model.score(self.X, self.binary.phenotypes)
             self.epistasis.values = self.regression_model.coef_
 
-    def bootstrap(self, nsamples):
+    def bootstrap(self, sample_size=50, nsamples=1000, rtol=2):
         """Estimate the error in the epistatic coefficients by bootstrapping.
         Draws random samples of the phenotypes from the experimental standard
         error. The main assumption of this method is that the error is normally
