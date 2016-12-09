@@ -1,123 +1,73 @@
-import numpy as np
-import itertools as it
-from collections import OrderedDict
-
 # imports from seqspace dependency
-from seqspace import utils
 from seqspace.gpm import GenotypePhenotypeMap
 
 # Local imports
 from epistasis.mapping import EpistasisMap
-from epistasis.utils import epistatic_order_indices, SubclassException
 from epistasis.plotting.models import EpistasisPlotting
+from epistasis.decomposition import generate_dv_matrix
 
-class BaseModel(GenotypePhenotypeMap):
-    """Populate an Epistasis mapping object.
-
-    Parameters
-    ----------
-    wildtype : str
-        Wildtype genotype. Wildtype phenotype will be used as reference state.
-    genotypes : array-like
-        Genotypes in map. Can be binary strings, or not.
-    phenotypes : array-like
-        Quantitative phenotype values
-    stdevs : array-like
-        List of phenotype errors.
-    log_transform : bool
-        If True, log transform the phenotypes.
-    mutations : dict
-        Mapping dictionary for mutations at each site.
-
-    Attributes
-    ----------
-    See seqspace package for all attributes in GenotypePhenotypeMap
+class BaseModel(object):
+    """ This object should be used as the parent class to all epistasis models.
+    Manages attachment of GenotypePhenotypeMap and EpistasisMaps to the Epistasis
+    models.
     """
-    def __init__(self, wildtype, genotypes, phenotypes,
-        stdeviations=None,
-        log_transform=False,
-        mutations=None,
-        n_replicates=1,
-        logbase=np.log10):
+    @classmethod
+    def from_json(cls, filename, **kwargs):
+        """"""
+        self = cls(**kwargs)
+        self.gpm = GenotypePhenotypeMap.from_json(filename)
+        return self
 
-        # Defaults to binary mapping if not specific mutations are named
-        if mutations is None:
-            mutant = utils.farthest_genotype(wildtype, genotypes)
-            mutations = utils.binary_mutations_map(wildtype, mutant)
-
-        super(BaseModel, self).__init__(wildtype, genotypes, phenotypes,
-            stdeviations=stdeviations,
-            log_transform=log_transform,
-            mutations=mutations,
-            n_replicates=n_replicates,
-            logbase=logbase)
-
-        # Attach the epistasis model.
-        self.epistasis = EpistasisMap(self)
-        # Add plotting object if matplotlib is installed
-        try:
-            self.plot = EpistasisPlotting(self)
-        except Warning:
-            pass
-
-    # ---------------------------------------------------------------------------------
-    # Loading method
-    # ---------------------------------------------------------------------------------
+    @classmethod
+    def from_data(cls, wildtype, genotypes, phenotypes, order=1, **kwargs):
+        """ Uses a simple linear, least-squares regression to estimate epistatic
+        coefficients in a genotype-phenotype map. This assumes the map is linear."""
 
     @classmethod
     def from_gpm(cls, gpm, **kwargs):
         """ Initialize an epistasis model from a Genotype-phenotypeMap object """
         # Grab all properties from data-structure
-        options = {
-            "log_transform": False,
-            "mutations": None,
-            "n_replicates": 1,
-            "logbase": np.log10,
-            "model_type": "local"
-        }
+        self = cls(**kwargs)
+        self.gpm = gpm
+        return self
 
-        # Get all options for map and order them
-        for key in options:
-            # See if options are in json data
+    @classmethod
+    def from_epistasis(cls, epistasis, **kwargs):
+        """ """
+        self = cls(**kwargs)
+        self.epistasis = epistasis
+        return self
+
+    def X_helper(self,
+        genotypes=None,
+        coeff_labels=None,
+        order=1,
+        mutations=None,
+        model_type="global",
+        **kwargs):
+        """Helper method for constructing X matrix for regression."""
+        # First check genotypes are available
+        if genotypes is None:
             try:
-                options[key] = getattr(gpm, key)
-            except:
-                pass
-
-        # Override any properties with specified kwargs passed directly into method
-        options.update(kwargs)
-
-        wildtype = gpm.wildtype
-        genotypes = gpm.genotypes
-        phenotypes = gpm.phenotypes
-        stdeviations = gpm.stdeviations
-
-        options["stdeviations"] = stdeviations
-        # Create an instance
-        model = cls(
-            wildtype,
-            genotypes,
-            phenotypes,
-            **options)
-        return model
-
-    # ---------------------------------------------------------------------------------
-    # Other methods
-    # ---------------------------------------------------------------------------------
-
-    #def _fit_(self, phenotype_sample):
-
-
-
-    def fit(self):
-        """ Fitting methods for epistasis models. """
-        raise SubclassException("""Must be implemented in a subclass.""")
-
-    def fit_error(self):
-        """ Fitting method for errors in the epistatic parameters. """
-        raise SubclassException("""Must be implemented in a subclass.""")
-
-    def bootstrap(self):
-        """
-        """
-        self.sample
+                genotypes = self.gpm.binary.genotypes
+            except AttributeError:
+                raise AttributeError("genotypes must be given, because no GenotypePhenotypeMap is attached to this model.")
+        # Build epistasis map
+        if coeff_labels is None:
+            # Mutations dictionary given? if not, build one.
+            if mutations is None:
+                try:
+                    mutations = self.gpm.mutations
+                except AttributeError:
+                    mutations = extract_mutations_from_genotypes(genotypes)
+            # Construct epistasis mapping
+            self.epistasis = EpistasisMap.from_mutations(mutations, order)
+        else:
+            self.epistasis = EpistasisMap.from_labels(coeff_labels)
+        # Construct the X matrix (convert to binary if necessary).
+        try:
+            return generate_dv_matrix(genotypes, self.epistasis.labels, model_type=model_type)
+        except:
+            mapping =self.gpm.map("genotypes", "binary.genotypes")
+            binaries = [mapping[g] for g in genotypes]
+            return generate_dv_matrix(binaries, self.epistasis.labels, model_type=model_type)
