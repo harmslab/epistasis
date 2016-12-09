@@ -23,7 +23,7 @@ def X_predictor(method):
 def X_fitter(method):
     """Decorator to help automatically generate X for fit methods in epistasis models."""
     @wraps(method)
-    def inner(self, X=None, y=None):
+    def inner(self, X=None, y=None, **kwargs):
         # If no Y is given, try to get it from
         model_class = self.__class__.__name__
         if y is None:
@@ -44,6 +44,7 @@ def X_fitter(method):
             # If not, build one.
             except AttributeError:
                 X = self.X_constructor(genotypes=self.gpm.genotypes)
+                self.X = X
             output = method(self, X, y)
             # Reference the model coefficients in the epistasis map.
             self.epistasis.values = self.coef_

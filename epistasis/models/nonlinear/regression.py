@@ -2,8 +2,8 @@ import inspect
 import numpy as np
 from scipy.optimize import curve_fit
 
-from sklearn.base import RegressorMixin
-from ..base import BaseModel
+from sklearn.base import BaseEstimator, RegressorMixin
+from ..base import BaseModel, X_fitter, X_predictor
 
 from ..linear.regression import EpistasisLinearRegression
 from epistasis.stats import pearson
@@ -17,25 +17,44 @@ except ImportError:
     pass
 
 class Parameters(object):
-
-    def __init__(self, model, param_list):
-        self.list = param_list
-        self.model = model
-
-    @property
-    def n(self):
-        return len(self.list)
+    """ A container object for parameters extracted from a nonlinear fit.
+    """
+    def __init__(self, params):
+        self._param_list = params
+        self.n = len(self._param_list)
+        self._mapping, self._mapping_  = {}, {}
+        for i in range(self.n):
+            setattr(self, self._param_list[i], 0)
+            self._mapping_[i] = self._param_list[i]
+            self._mapping[self._param_list[i]] = i
 
     @property
     def keys(self):
-        return list
+        """Get ordered list of params"""
+        return self._param_list
 
     @property
     def values(self):
-        modelparams = self.model.get_params()
-        return [modelparams[p] for p in self.list]
+        """Get ordered list of params"""
+        vals = []
+        for p in self._param_list:
+            vals.append(getattr(self, p))
+        return vals
 
-class EpistasisNonlinearRegression(RegressorMixin, BaseModel):
+    def _set_param(self, param, value):
+        """ Set Parameter value. Method is not exposed to user.
+        param can be either the name of the parameter or its index in this object.
+        """
+        # If param is an index, get name from mappings
+        if type(param) == int or type(param) == float:
+            param = self._mapping_[param]
+        setattr(self, param, value)
+
+    def get_params(self):
+        """ Get an ordered list of the parameters."""
+        return [getattr(self, self._mapping_[i]) for i in range(len(self._mapping_))]
+
+class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
     """Fit a nonlinear epistasis model.
     """
     def __init__(self, function, reverse,
@@ -49,15 +68,13 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseModel):
         if parameters[0] != "x":
             raise Exception(""" First argument of the nonlinear function must be `x`. """)
         # Add parameters to kwargs
-        for p in parameters[1:]:
-            kwargs[p] = 0
-        self.parameters = Parameters(parameters)
+        self.parameters = Parameters(parameters[1:])
+        self.function = function
+        self.reverse = reverse
         # Construct parameters object
         self.set_params(order=order,
             model_type=model_type,
             fix_linear=fix_linear,
-            function=function,
-            reverse=reverse,
             **kwargs)
 
     @ipywidgets_missing
@@ -73,15 +90,6 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseModel):
         slider widgets for varying these guesses easily. The kwarg needs to match the name of
         the parameter in the nonlinear fit.
         """
-        # Prepare data, and fit matrix
-        if y is None:
-                y = self.gpm.phenotypes
-        if X is None:
-            # Build X AND EpistasisMap attachment.
-            X = self.X_helper(
-                genotypes=self.gpm.binary.genotypes,
-                **self.get_params())
-            self.X = X
         # Fitting data
         ## Use widgets to guesst the value?
         if use_widgets:
@@ -90,9 +98,9 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseModel):
                 """ Callable to be controlled by widgets. """
                 # Fit the nonlinear least squares fit
                 if self.fix_linear:
-                    self._fit_(**parameters)
+                    self._fit_(X, y, **parameters)
                 else:
-                    self._fit_float_linear(**parameters)
+                    self._fit_float_linear(X, y, **parameters)
                 if print_stats:
                     # Print score
                     print("R-squared of fit: " + str(self.statistics.score))
@@ -112,7 +120,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseModel):
             else:
                 self._fit_float_linear(**parameters)
 
-    def _kernel_generator(self, X, y, parameters):
+    def _function_generator(self, X, y, parameters):
         """Nonlinear function wrapper adding epistasis as an argument to user defined function
         """
         def inner(*args):
@@ -120,7 +128,6 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseModel):
             matrix `X`. The new `X` maps all possible high order epistasis interactions
             to the phenotypes they model.
             """
-
             x = X[:,:-self.parameters.n]
             n_samples, n_features = x.shape
             ###### Deconstruct the arguments in user's function
@@ -136,18 +143,23 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseModel):
             return function(new_x, *other_args)
         return inner
 
+    def _guess_model(self, X, y):
+        """Initializes and fits a Linear Regression to guess epistatic coefficients.
+        """
+        # Construct the linear portion of the fit.
+        linear = EpistasisLinearRegression(self.order, self.model_type)
+        linear.fit(X, y)
+        return linear
+
+    @X_fitter
     def _fit_(self, X=None, y=None, **kwargs):
         """Fit the genotype-phenotype map for epistasis.
         """
-        # Construct the linear portion of the fit.
-        try:
-            self.linear = EpistasisLinearRegression.from_gpm(self.gpm, **self.get_params())
-        except:
-            self.linear = EpistasisLinearRegression(**self.get_params)
-        # Fit the linear portion
-        self.linear.fit()
+        # Fit coeffs
+        guess = self._guess_model(X, y)
+        self.coef_ = guess.coef_
         # Get the scale of the map.
-        linear_phenotypes = self.linear.predict()
+        x = guess.predict(X)
         # Construct an array of guesses, using the scale specified by user.
         guess = np.ones(self.parameters.n)
         # Add model's extra parameter guesses to input array
@@ -155,77 +167,59 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseModel):
             index = self.parameters._mapping[kw]
             guess[index] = kwargs[kw]
         # Curve fit the data using a nonlinear least squares fit
-        popt, pcov = curve_fit(self.function, linear_phenotypes,
-            self.phenotypes,
-            p0=guess)
+        popt, pcov = curve_fit(self.function, x, y, p0=guess)
         for i in range(0, self.parameters.n):
             self.parameters._set_param(i, popt[i])
 
-    def _fit_float_linear(self, X=None, y=None, guess_coeffs=None, fit_kwargs={}, **kwargs):
+    @X_fitter
+    def _fit_float_linear(self, X=None, y=None, **kwargs):
         """Fit using nonlinear least squares regression.
 
         Parameters
         ----------
-        guess : array-like
-            array of guesses
-        fit_kwargs : dict
-            specific keyword arguments for scipy's curve_fit function. This is
-            not for parameters.
-        **kwargs :
-            guess values for `parameters` in the nonlinear function passed in as
-            keyword arguments
         """
+        # Guess coeffs
+        guess = self._guess_model(X, y)
+        n_coef = len(guess.coef)
         # Construct an array of guesses, using the scale specified by user.
-        guess = np.ones(self.epistasis.n + self.parameters.n)
-
+        guesses = np.ones(n_coef + self.parameters.n)
         # Add model's extra parameter guesses to input array
         for kw in kwargs:
             index = self.parameters._mapping[kw]
-            guess[self.epistasis.n + index] = kwargs[kw]
-
-        # Create an initial guess array using fit values
-        if guess_coeffs is None:
-            # Fit with a linear epistasis model first, and use those values as initial guesses.
-            super(NonlinearEpistasisModel, self).fit()
-            # Add linear guesses to guess array
-            guess[:self.epistasis.n] = self.epistasis.values
-        else:
-            # Add user guesses for interactions
-            guess[:self.epistasis.n] = guess_coeffs
-
+            guesses[n_coef + index] = kwargs[kw]
+        # Add linear guesses to guess array
+        guesses[:n_coef] = guess.coef_
         # Transform user function to readable model function
-        self._wrapped_function = self._nonlinear_function_wrapper(self.function)
-
+        self._wrapped_function = self._function_generator(self.function)
         # Curve fit the data using a nonlinear least squares fit
-        popt, pcov = curve_fit(self._wrapped_function, self.X, self.phenotypes,
-            p0=guess,
-            **fit_kwargs)
-
+        popt, pcov = curve_fit(self._wrapped_function, X, y, p0=guess)
         # Set the Interaction values
-        self.epistasis.values = popt[0:len(self.epistasis.labels)]
-
+        self.coef_ = popt[0:n_coef]
         # Set the other parameters from nonlinear function to fit results
         for i in range(0, self.parameters.n):
-            self.parameters._set_param(i, popt[len(self.epistasis.labels)+i])
+            self.parameters._set_param(i, popt[n_coef+i])
 
-        # Expose the linear stuff to user and fill in important stuff.
-        self.linear.epistasis.values = self.epistasis.values
-        linear_phenotypes = np.dot(self.X, self.epistasis.values)
-        self.linear.phenotypes = linear_phenotypes
+    def transform_target(self, y=None):
+        """ Only works if a reverse function is given.
+        """
+        if self.reverse is None:
+            raise AttributeError("Reverse method is not given.")
+        if y is None:
+            y = self.gpm.phenotypes
+        y_transformed = self.reverse(y, *self.parameters.values)
+        return y_transformed
 
-        # Score the fit
-        y_pred = self._wrapped_function(self.X, *popt)
-        self._score = pearson(self.phenotypes, y_pred)**2
-
+    @X_predictor
     def predict(self, X=None):
-        """
-        """
+        """"""
+        x = np.dot(X, self.coef_)
+        y = self.function(x, *self.parameters.values)
+        return y
 
+    @X_fitter
     def score(self, X=None, y=None):
         """ Calculates the squared-pearson coefficient between the model's
         predictions and data.
         """
-        if y is None:
-            y = self.gpm.phenotypes
         y_pred = self.predict(X)
         return pearson(y, y_pred)**2
