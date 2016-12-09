@@ -2,6 +2,8 @@ import numpy as _np
 from sklearn.linear_model import LinearRegression as _LinearRegression
 
 from epistasis.models.base import BaseModel as _BaseModel
+from epistasis.models.base import X_fitter as X_fitter
+from epistasis.models.base import X_predictor as X_predictor
 
 class EpistasisLinearRegression(_LinearRegression, _BaseModel):
     """ Ordinary least-squares regression of epistatic interactions.
@@ -14,34 +16,15 @@ class EpistasisLinearRegression(_LinearRegression, _BaseModel):
         self.n_jobs = n_jobs
         self.set_params(model_type=model_type, order=order, **kwargs)
 
+    @X_fitter
     def fit(self, X=None, y=None):
         # Build input linear regression.
-        if y is None:
-                y = self.gpm.phenotypes
-        if X is None:
-            # Build X AND EpistasisMap attachment.
-            X = self.X_helper(
-                genotypes=self.gpm.binary.genotypes,
-                **self.get_params())
-            self.X = X
-            # fit linear regression.
-            super(self.__class__, self).fit(X, y)
-            self.epistasis.values = self.coef_ # point epistasis map to coef
-        else:
-            super(self.__class__, self).fit(X, y)
+        super(self.__class__, self).fit(X,y)
 
+    @X_predictor
     def predict(self, X=None):
-        # Build input to
-        if X is None:
-            X = self.X_helper(
-                genotypes=self.gpm.binary.complete_genotypes,
-                **self.get_params())
-        # fit linear regression.
         return super(self.__class__, self).predict(X)
 
+    @X_fitter
     def score(self, X=None, y=None):
-        if X is None:
-            X = self.X
-        if y is None:
-            y = self.gpm.phenotypes
         return super(self.__class__, self).score(X, y)
