@@ -166,7 +166,6 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         for kw in kwargs:
             index = self.parameters._mapping[kw]
             guess[index] = kwargs[kw]
-        print(guess)
         # Curve fit the data using a nonlinear least squares fit
         popt, pcov = curve_fit(self.function, x, y, p0=guess)
         for i in range(0, self.parameters.n):

@@ -45,12 +45,12 @@ def X_fitter(method):
             except AttributeError:
                 X = self.X_constructor(genotypes=self.gpm.genotypes)
                 self.X = X
-            output = method(self, X, y)
+            output = method(self, X, y, **kwargs)
             # Reference the model coefficients in the epistasis map.
             self.epistasis.values = self.coef_
             return output
         else:
-            output = method(self, X, y)
+            output = method(self, X, y, **kwargs)
             return output
     return inner
 

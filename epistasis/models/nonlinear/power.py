@@ -7,7 +7,7 @@ def power_transform(x, lmbda, A, B):
     """Power transformation function."""
     gmean = scipy.stats.mstats.gmean(x+A)
     if lmbda == 0:
-        return gmean(x+A)*np.log(x+A)
+        return gmean*np.log(x+A)
     else:
         first = (x+A)**lmbda
         out = (first - 1.0)/(lmbda * gmean**(lmbda-1)) + B
@@ -17,7 +17,7 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
     """"""
     def __init__(self, order=1, model_type="global", fix_linear=False, **kwargs):
         super(EpistasisPowerTransform, self).__init__(
-            function=power_transform,
+            function=self.function,
             reverse=self.reverse,
             order=order,
             model_type=model_type,
@@ -36,7 +36,7 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
         except AttributeError:
             gmean = scipy.stats.mstats.gmean(x+A)
         if lmbda == 0:
-            return gmean(x+A)*np.log(x+A)
+            return gmean*np.log(x+A)
         else:
             first = (x+A)**lmbda
             out = (first - 1.0)/(lmbda * gmean**(lmbda-1)) + B
