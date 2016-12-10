@@ -22,18 +22,19 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
             order=order,
             model_type=model_type,
             fix_linear=fix_linear,
-            **kwargs
-        )
+            **kwargs)
 
     @property
     def gmean(self):
         linear = np.dot(self.X, self.coef_)
         return scipy.stats.mstats.gmean(linear + self.parameters.A)
 
-    @staticmethod
-    def function(x, lmbda, A, B):
+    def function(self, x, lmbda, A, B):
         """Power transformation function."""
-        gmean = scipy.stats.mstats.gmean(x+A)
+        try:
+            gmean = self.gmean
+        except AttributeError:
+            gmean = scipy.stats.mstats.gmean(x+A)
         if lmbda == 0:
             return gmean(x+A)*np.log(x+A)
         else:

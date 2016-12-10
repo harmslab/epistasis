@@ -101,12 +101,12 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
                     self._fit_(X, y, **parameters)
                 else:
                     self._fit_float_linear(X, y, **parameters)
-                if print_stats:
-                    # Print score
-                    print("R-squared of fit: " + str(self.statistics.score))
-                    # Print parameters
-                    for kw in self.parameters._mapping:
-                        print(kw + ": " + str(getattr(self.parameters, kw)))
+                #if print_stats:
+                # Print score
+                print("R-squared of fit: " + str(self.score()))
+                # Print parameters
+                for kw in self.parameters._mapping:
+                    print(kw + ": " + str(getattr(self.parameters, kw)))
                 # Plot if available
                 #if hasattr(self, "plot"):
                 #    self.plot.best_fit()
@@ -166,6 +166,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         for kw in kwargs:
             index = self.parameters._mapping[kw]
             guess[index] = kwargs[kw]
+        print(guess)
         # Curve fit the data using a nonlinear least squares fit
         popt, pcov = curve_fit(self.function, x, y, p0=guess)
         for i in range(0, self.parameters.n):
