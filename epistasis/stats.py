@@ -13,23 +13,72 @@ from epistasis.plotting.stats import FDistributionPlotting
 # Correlation metrics
 # -----------------------------------------------------------------------
 
-def incremental_mean(sample, old_mean, N):
-    """ Calculate an incremental mean. Useful for bootstrapping. """
-    pass
+def incremental_mean(old_mean, samples, M, N):
+    """Calculate an incremental running mean.
 
-def incremental_variance(sample, old_mean, new_mean, old_variance, N):
-    """ Calculate an incremental variance. Useful for bootstrapping. """
-    return (N - 2) * old_variance + (N - 1)(old_mean - new_mean)**2
+    Parameters
+    ----------
+    old_mean : float or array
+        current running mean(s) before adding samples
+    samples : ndarray
+        array containing the samples. Each column is a sample. Rows are independent
+        values. Mean is taken across row.
+    M : int
+        number of samples in new chunk
+    N : int
+        number of previous samples in old mean
+    """
+    return ((N - M) * old_mean + samples.sum(axis=0)) / N
 
-def resample_to_convergence(function, sample_size=50, rtol=10e-2, *args, **kwargs):
-    """Repeat a calculation until the mean and standard deviations of the samples
-    converge to a specified tolerance level (note that the tolerances are relative.)
+def incremental_var(old_mean, old_var, new_mean, samples, M, N):
+    """Calculate an incremental variance.
+
+    Parameters
+    ----------
+    old_mean : float or array
+        current running mean(s) before adding samples
+    old_var : float or array
+        current running variance(s) before adding samples
+    new_mean : float
+        updated mean
+    samples : ndarray
+        array containing the samples. Each column is a sample. Rows are independent
+        values. Mean is taken across row.
+    M : int
+        number of samples in new chunk
+    N : int
+        number of previous samples in old mean
+    """
+    return ((N-M)*old_var + np.array((samples - old_var)*(samples - new_mean)).sum(axis=0)) / N
+
+def incremental_std(old_mean, old_std, new_mean, samples, M, N):
+    """Calculate an incremental standard deviation.
+
+    Parameters
+    ----------
+    old_mean : float or array
+        current running mean(s) before adding samples
+    samples : ndarray
+        array containing the samples. Each column is a sample. Rows are independent
+        values. Mean is taken across row.
+    M : int
+        number of samples in new chunk
+    N : int
+        number of previous samples in old mean
+    """
+    old_var = old_std**2
+    return np.sqrt(incremental_var(old_mean, old_var, new_mean, samples, M, N))
+
+def bootstrap(function, n_samples=10000, chunk_size=50, rtol=1e-2, *args, **kwargs):
+    """Bootstrap a function until the mean and the std of the output has converged.
 
     Parameters
     ----------
     function : callable
         Function to repeat until convergence.
-    sample_size : int
+    n_samples : int
+        max number of iterations to calculate for convergence.
+    chunk_size : int
         number of samples to draw before recalculating the statistics for convergence.
     rtol : float
         relative tolerance for convergence over sampling
@@ -39,69 +88,50 @@ def resample_to_convergence(function, sample_size=50, rtol=10e-2, *args, **kwarg
 
     Returns
     -------
-    samples : numpy.array
-        array containing the samples. Each column is a sample. Rows are the different
-        values from the output of the callable
-    mean : numpy.array
+    running_mean : numpy.array
         means of the samples
-    std : numpy.array
+    running_std : numpy.array
         standard deviations of samples
     count : int
         number of samples needed to reach convergence test.
-
     """
     tests = (False,False)
-    count = 0
-
-    while False in tests:
-        ############### Create a sample ###############
-        init_sample = function(*args, **kwargs)
+    count = chunk_size
+    running_mean = function(*args, **kwargs)
+    try:
+        size = len(running_mean)
+        running_std = np.zeros(len(running_mean))
+    except TypeError:
+        size = 1
+        running_std = 0
+    while False in tests and count < n_samples:
         # If init_sample is array
-        try:
+        if size != 1:
             # Allocate a 2d array with proper size.
-            new_samples = np.empty((sample_size, len(init_sample)), dtype=float)
-
+            new_samples = np.empty((chunk_size, size), dtype=float)
             # Populate the array with various samples
-            new_samples[0, :] = init_sample
-            for i in range(1,sample_size):
+            for i in range(chunk_size):
                 new_samples[i, :] = function(*args, **kwargs)
-
         # If it is a value
-        except TypeError:
+        else:
             # Allocate memory in 1d array
-            new_samples = np.empty(sample_size, float)
-            new_samples[0] = init_sample
-
-            for i in range(1,sample_size):
+            new_samples = np.empty(chunk_size, float)
+            for i in range(chunk_size):
                 new_samples[i] = function(*args, **kwargs)
-
         ############ Check for convergence ##############
-        try:
-            samples = np.concatenate((samples, new_samples), axis=0)
-            # Calculate the statistics on the mean and sample.
-            mean = np.mean(samples, axis=0)
-            std = np.std(samples, ddof=1, axis=0)
-
-            # Check values for
-            check_mean = np.isclose(mean, old_mean, rtol=rtol)
-            check_std = np.isclose(std, old_std, rtol=rtol)
-            test1 = np.all(check_mean)
-            test2 = np.all(check_std)
-            tests = (test1, test2)
-
-        # If this is the first iteration, don't check for convergence.
-        except NameError:
-            samples = new_samples
-            mean = np.mean(samples, axis=0)
-            std = np.std(samples, ddof=1, axis=0)
-
-        old_mean = mean
-        old_std = std
-
-        count += sample_size
-
-    return samples, mean, std, count
-
+        last_mean = np.copy(running_mean)
+        last_std = np.copy(running_std)
+        running_mean = incremental_mean(last_mean, new_samples, chunk_size, count)
+        running_std = incremental_std(last_mean, last_std, running_mean, new_samples, chunk_size, count)
+        # Check to see if all values pass the tolerance threshold
+        check_mean = np.isclose(running_mean, last_mean, rtol=rtol)
+        check_std = np.isclose(running_std, last_std, rtol=rtol)
+        # Find any Falses
+        test1 = np.all(check_mean)
+        test2 = np.all(check_std)
+        tests = (test1, test2)
+        count += chunk_size
+    return running_mean, running_std, count
 
 def pearson(y_obs, y_pred):
     """ Calculate pearson coefficient between two variables.

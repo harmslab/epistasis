@@ -118,7 +118,9 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
             if self.fix_linear:
                 self._fit_(**parameters)
             else:
+                raise Exception("This is currently broken, fixing in next release.")
                 self._fit_float_linear(**parameters)
+
 
     def _function_generator(self, X, y, parameters):
         """Nonlinear function wrapper adding epistasis as an argument to user defined function
@@ -152,7 +154,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         return linear
 
     @X_fitter
-    def _fit_(self, X=None, y=None, **kwargs):
+    def _fit_(self, X=None, y=None, sample_weight=None, **kwargs):
         """Fit the genotype-phenotype map for epistasis.
         """
         # Fit coeffs
@@ -167,7 +169,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
             index = self.parameters._mapping[kw]
             guess[index] = kwargs[kw]
         # Curve fit the data using a nonlinear least squares fit
-        popt, pcov = curve_fit(self.function, x, y, p0=guess)
+        popt, pcov = curve_fit(self.function, x, y, p0=guess, sigma=None)
         for i in range(0, self.parameters.n):
             self.parameters._set_param(i, popt[i])
 
@@ -200,7 +202,8 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
             self.parameters._set_param(i, popt[n_coef+i])
 
     def transform_target(self, y=None):
-        """ Only works if a reverse function is given.
+        """Use the inverse of the function to transform y (the target) to it's
+        linear scale. Only works if a reverse function is given.
         """
         if self.reverse is None:
             raise AttributeError("Reverse method is not given.")
@@ -210,9 +213,16 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         return y_transformed
 
     @X_predictor
+    def predict_linear(self, X=None):
+        """Use the inverse of the function to transform y (the target) to it's
+        linear scale. Only works if a reverse function is given.
+        """
+        return np.dot(X, self.coef_)
+
+    @X_predictor
     def predict(self, X=None):
-        """"""
-        x = np.dot(X, self.coef_)
+        """Predict new targets from model."""
+        x = self.predict_linear(X)
         y = self.function(x, *self.parameters.values)
         return y
 
