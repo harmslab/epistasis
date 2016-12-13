@@ -8,11 +8,25 @@ from seqspace.gpm import GenotypePhenotypeMap
 from epistasis.mapping import EpistasisMap
 from epistasis.plotting.models import EpistasisPlotting
 from epistasis.decomposition import generate_dv_matrix
+from epistasis.stats import bootstrap
+from epistasis.utils import extract_mutations_from_genotypes
+
+def sklearn_to_epistasis():
+    """Decorate a subclass of sklearn model class to automagically convert it into a
+    epistasis sklearn model class.
+    """
+    def inner(cls):
+        base_model = cls.__bases__[-1]
+        for attr in base_model.__dict__:
+            method = getattr(base_model, attr)
+            setattr(cls, attr, getattr(base_model, attr))
+        return cls
+    return inner
 
 def X_predictor(method):
     """Decorator to help automatically generate X for predictor methods in epistasis models."""
     @wraps(method)
-    def inner(self, X=None, y=None):
+    def inner(self, X=None):
         """"""
         # Build input to
         if X is None:
@@ -29,12 +43,12 @@ def X_fitter(method):
         if y is None:
             try:
                 y = np.array(self.gpm.binary.phenotypes)
-                if model_class == "EpistasisLogisticRegression":
+                if model_class in ["EpistasisLogisticRegression", "EpistasisSVC"]:
                     y[ y < self.threshold ] = 0
                     y[ y >= self.threshold ] = 1
             except AttributeError:
-                raise AttributeError("y argument is missing, and no"
-                                    "GenotypePhenotypeMap is attached"
+                raise AttributeError("y argument is missing, and no "
+                                    "GenotypePhenotypeMap is attached "
                                     "to epistasis model.")
         # If X is not given, build one.
         if X is None:
@@ -63,7 +77,7 @@ class BaseModel(object):
     def from_json(cls, filename, **kwargs):
         """"""
         self = cls(**kwargs)
-        self.gpm = GenotypePhenotypeMap.from_json(filename)
+        self.attach_gpm( GenotypePhenotypeMap.from_json(filename) )
         return self
 
     @classmethod
@@ -76,7 +90,7 @@ class BaseModel(object):
         """ Initialize an epistasis model from a Genotype-phenotypeMap object """
         # Grab all properties from data-structure
         self = cls(**kwargs)
-        self.gpm = gpm
+        self.attach_gpm(gpm)
         return self
 
     @classmethod
@@ -86,12 +100,19 @@ class BaseModel(object):
         self.epistasis = epistasis
         return self
 
-    def attached_gpm(self, gpm):
+    def attach_gpm(self, gpm):
         """ Attach a GenotypePhenotypeMap object to the epistasis model.
+
+        Also exposes APIs that are only accessible with a GenotypePhenotypeMap
+        attached to the model.
         """
         if gpm.__class__.__name__ != "GenotypePhenotypeMap":
             raise TypeError("gpm must be a GenotypePhenotypeMap object")
         self.gpm = gpm
+        setattr(self, "bootstrap_fit",self._bootstrap_fit)
+        setattr(self, "bootstrap_predict",self._bootstrap_predict)
+        setattr(self, "sample_fit",self._sample_fit)
+        setattr(self, "sample_predict",self._sample_predict)
 
     def X_constructor(self,
         genotypes=None,
@@ -143,3 +164,29 @@ class BaseModel(object):
             mapping =self.gpm.map("complete_genotypes", "binary.complete_genotypes")
             binaries = [mapping[g] for g in genotypes]
             return generate_dv_matrix(binaries, self.epistasis.labels, model_type=self.model_type)
+
+    def fit(self, *args, **kwargs):
+        raise Exception("Must be defined in a subclass.")
+
+    def predict(self, *args, **kwargs):
+        raise Exception("Must be defined in a subclass.")
+
+    def _sample_fit(self, *args, **kwargs):
+        raise Exception("Must be defined in a subclass.")
+
+    def _sample_predict(self, *args, **kwargs):
+        raise Exception("Must be defined in a subclass.")
+
+    @X_fitter
+    def _bootstrap_fit(self, X=None, y=None, sample_weight=None, *args, **kwargs):
+        """
+        """
+        mean, std, count = bootstrap(self.sample_fit, X=X, y=y, sample_weight=sample_weight, *args, **kwargs)
+        return mean, std, count
+
+    @X_predictor
+    def _bootstrap_predict(self, X=None, *args, **kwargs):
+        """
+        """
+        mean, std, count = bootstrap(self._sample_predict, X=X, *args, **kwargs)
+        return mean, std, count
