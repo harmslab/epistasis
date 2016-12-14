@@ -1,5 +1,6 @@
 import inspect
 import numpy as np
+from functools import wraps
 from scipy.optimize import curve_fit
 
 from sklearn.base import BaseEstimator, RegressorMixin
@@ -63,13 +64,19 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         fix_linear=False,
         **kwargs):
         # Get the parameters from the nonlinear function argument list
-        function_sign = inspect.signature(self.function)
+        function_sign = inspect.signature(function)
         parameters = list(function_sign.parameters.keys())
         if parameters[0] != "x":
             raise Exception(""" First argument of the nonlinear function must be `x`. """)
         # Add parameters to kwargs
         self.parameters = Parameters(parameters[1:])
+
+        # Set up the function for fitting.
+        self._function = function
+        @wraps(self._function)
+        def function(*args, **kwargs): return self._function(*args, **kwargs)
         self.function = function
+
         self.reverse = reverse
         # Construct parameters object
         self.set_params(order=order,
@@ -78,7 +85,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
             **kwargs)
 
     @ipywidgets_missing
-    def fit(self, X=None, y=None, use_widgets=False, **parameters):
+    def fit(self, X=None, y=None, sample_weight=None, use_widgets=False, **parameters):
         """Fit nonlinearity in genotype-phenotype map.
 
         Also, can use IPython widget for trying initial guesses of the nonlinear parameters.
@@ -98,9 +105,9 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
                 """ Callable to be controlled by widgets. """
                 # Fit the nonlinear least squares fit
                 if self.fix_linear:
-                    self._fit_(X, y, **parameters)
+                    self._fit_(X=X, y=y, sample_weight=sample_weight, **parameters)
                 else:
-                    self._fit_float_linear(X, y, **parameters)
+                    self._fit_float_linear(X=X, y=y, sample_weight=sample_weight, **parameters)
                 #if print_stats:
                 # Print score
                 print("R-squared of fit: " + str(self.score()))
@@ -116,10 +123,10 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         # Don't use widgets to fit data
         else:
             if self.fix_linear:
-                self._fit_(**parameters)
+                self._fit_(X=X, y=y, sample_weight=sample_weight, **parameters)
             else:
                 raise Exception("This is currently broken, fixing in next release.")
-                self._fit_float_linear(**parameters)
+                self._fit_float_linear(X=X, y=y, sample_weight=sample_weight, **parameters)
 
 
     def _function_generator(self, X, y, parameters):
@@ -145,12 +152,12 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
             return function(new_x, *other_args)
         return inner
 
-    def _guess_model(self, X, y):
+    def _guess_model(self, X, y, sample_weight=None):
         """Initializes and fits a Linear Regression to guess epistatic coefficients.
         """
         # Construct the linear portion of the fit.
         linear = EpistasisLinearRegression(self.order, self.model_type)
-        linear.fit(X, y)
+        linear.fit(X, y, sample_weight=None)
         return linear
 
     @X_fitter
@@ -158,7 +165,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         """Fit the genotype-phenotype map for epistasis.
         """
         # Fit coeffs
-        guess = self._guess_model(X, y)
+        guess = self._guess_model(X, y, sample_weight=sample_weight)
         self.coef_ = guess.coef_
         # Get the scale of the map.
         x = guess.predict(X)
@@ -168,8 +175,13 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         for kw in kwargs:
             index = self.parameters._mapping[kw]
             guess[index] = kwargs[kw]
+        # create a sigma array for weighted fits with curve fit.
+        if sample_weight is None:
+            sigma = None
+        else:
+            sigma = 1 / np.sqrt(sample_weight)
         # Curve fit the data using a nonlinear least squares fit
-        popt, pcov = curve_fit(self.function, x, y, p0=guess, sigma=None)
+        popt, pcov = curve_fit(self._function, x, y, p0=guess, sigma=sigma)
         for i in range(0, self.parameters.n):
             self.parameters._set_param(i, popt[i])
 
@@ -192,7 +204,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         # Add linear guesses to guess array
         guesses[:n_coef] = guess.coef_
         # Transform user function to readable model function
-        self._wrapped_function = self._function_generator(self.function)
+        self._wrapped_function = self._function_generator(self._function)
         # Curve fit the data using a nonlinear least squares fit
         popt, pcov = curve_fit(self._wrapped_function, X, y, p0=guess)
         # Set the Interaction values

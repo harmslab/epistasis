@@ -64,6 +64,7 @@ def X_fitter(method):
             self.epistasis.values = self.coef_
             return output
         else:
+            self.X = X
             output = method(self, X, y, **kwargs)
             return output
     return inner
