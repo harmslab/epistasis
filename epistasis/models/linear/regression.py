@@ -20,6 +20,7 @@ class EpistasisLinearRegression(_LinearRegression, _BaseModel):
     def fit(self, X=None, y=None, sample_weight=None):
         # Build input linear regression.
         super(self.__class__, self).fit(X, y, sample_weight)
+        self._score = self.score(X,y)
 
     @X_predictor
     def predict(self, X=None):
@@ -34,7 +35,7 @@ class EpistasisLinearRegression(_LinearRegression, _BaseModel):
         """Sample the `fit` method from phenotype standard deviations."""
         # Fit a model
         y = self.gpm.stdeviations * _np.random.randn() + self.gpm.phenotypes
-        model = self.__class__
+        model = self.__class__()
         model.fit(X=X, y=y)
         return model.coef_
 
@@ -43,7 +44,7 @@ class EpistasisLinearRegression(_LinearRegression, _BaseModel):
         """Sample the `predict` method from phenotype standard deviations."""
         # Fit a model
         y = self.gpm.stdeviations * _np.random.randn() + self.gpm.phenotypes
-        model = self.__class__
+        model = self.__class__()
         model.fit(X=X, y=y)
         # predict from that model
         predictions = model.predict(X=None)

@@ -78,7 +78,7 @@ class BaseModel(object):
     def from_json(cls, filename, **kwargs):
         """"""
         self = cls(**kwargs)
-        self.attach_gpm( GenotypePhenotypeMap.from_json(filename) )
+        self.attach_gpm( GenotypePhenotypeMap.from_json(filename, **kwargs) )
         return self
 
     @classmethod

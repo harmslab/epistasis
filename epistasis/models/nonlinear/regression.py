@@ -127,6 +127,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
             else:
                 raise Exception("This is currently broken, fixing in next release.")
                 self._fit_float_linear(X=X, y=y, sample_weight=sample_weight, **parameters)
+        self._score = self.score(X=X, y=y)
 
 
     def _function_generator(self, X, y, parameters):
