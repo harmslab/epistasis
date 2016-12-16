@@ -96,7 +96,7 @@ class EpistasisTwoStepRegression(BaseModel):
         """"""
         raise Exception("""This method is not available for Two Part Regression.""")
 
-    def _sample_predict(self, n_samples=1, **kwargs):
+    def _sample_predict(self, n_samples=1, keep_scores=True, **kwargs):
         """"""
         model = self.__class__(
             self.threshold,
@@ -108,9 +108,14 @@ class EpistasisTwoStepRegression(BaseModel):
         model.attach_gpm(self.gpm)
         X_ = model.X_constructor(self.gpm.binary.complete_genotypes)
         predictions = np.empty((len(self.gpm.complete_genotypes), n_samples), dtype=float)
+        scores = np.empty(n_samples, dtype=float)
         for i in range(n_samples):
             y = self.gpm.err.upper * np.random.randn(self.gpm.n) + self.gpm.phenotypes
             model.fit(y=y, **kwargs)
+            scores[i] = model._score
             y_target = model.predict(X_)
             predictions[:,i] = y_target
-        return predictions
+        if keep_scores is True:
+            return predictions, scores
+        else:
+            return predictions
