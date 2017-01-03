@@ -4,9 +4,10 @@
 [![Binder](http://mybinder.org/badge.svg)](http://mybinder.org:/repo/harmslab/epistasis)
 [![Documentation Status](https://readthedocs.org/projects/epistasis/badge/?version=latest)](http://epistasis.readthedocs.io/?badge=latest)
 
-A python API for modeling statistical, high-order epistasis in large genotype-phenotype maps. All models follow a `scikit-learn` interface, making it easy to integrate `epistasis` models with other pipelines and software. It includes a plotting module built on matplotlib for visualizing high-order interactions and interactive widgets to simplify complex nonlinear fits.
+A python API for modeling statistical, high-order epistasis in genotype-phenotype maps. All models follow a `scikit-learn` interface, making it easy to integrate `epistasis` models with other pipelines and software. It includes a plotting module built on matplotlib for visualizing high-order interactions and interactive widgets to simplify complex nonlinear fits.
 
-This package includes APIs for both linear and nonlinear epistasis models, described in this [paper](http://biorxiv.org/content/early/2016/12/02/072256), separating epistasis that arises from global trends in phenotypes from epistasis that arises from specific interactions between mutations. Nonlinear regressions
+This package includes APIs for both linear and nonlinear epistasis models, described in this [paper](http://biorxiv.org/content/early/2016/12/02/072256), relaxing
+the assumption of additivity.  
 
 ## Basic examples
 

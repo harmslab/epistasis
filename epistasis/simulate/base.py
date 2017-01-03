@@ -1,16 +1,7 @@
-# -------------------------------------------------
-# Global imports
-# -------------------------------------------------
-
 import numpy as np
-
 from seqspace.gpm import GenotypePhenotypeMap
 from seqspace import utils
-
-
-# -------------------------------------------------
-# Local imports
-# -------------------------------------------------
+from epistasis.mapping import EpistasisMap
 
 class BaseSimulation(GenotypePhenotypeMap):
     """ Base class for simulating genotype-phenotype maps built from epistatic
@@ -18,10 +9,10 @@ class BaseSimulation(GenotypePhenotypeMap):
 
     Parameters
     ----------
-    length : int
-        Length of the genotypes in the map.
-    order : int
-        Order of epistasis in the genotype phenotype map
+    wildtype : str
+        wildtype sequence.
+    mutations : dict
+        dictionary mapping each site the possible mutations
     """
     def __init__(self, wildtype, mutations,
         log_transform=False,
@@ -38,9 +29,18 @@ class BaseSimulation(GenotypePhenotypeMap):
             logbase=logbase,
             mutations=mutations
         )
+        # Attach an epistasis model.
+        self.epistasis = EpistasisMap()
+
+    def _random(self):
+        """
+        """
+        # Add values to epistatic interactions
+        self.epistasis.order = order
+        self.epistasis.values = np.random.uniform(coeff_range[0], coeff_range[1], size=len(self.epistasis.keys))
 
     @classmethod
-    def quick_start(cls, length, order, **kwargs):
+    def simple(cls, length, order, **kwargs):
         """Constructs genotype from binary sequences with given length and
         phenotypes from epistasis with a given order.
 
@@ -53,15 +53,32 @@ class BaseSimulation(GenotypePhenotypeMap):
 
         Returns
         -------
-        Simulation object
+        GenotypePhenotypeMap
         """
         wildtype = "0"*length
         mutations = utils.binary_mutations_map(wildtype, "1"*length)
         return cls(wildtype, mutations, order, **kwargs)
 
     @classmethod
-    def from_epistasis(cls, wildtype, mutations, order, betas, model_type="local"):
-        """Add genotypic epistasis to genotype-phenotype map.
+    def from_coefs(cls, wildtype, mutations, labels, coefs, model_type="local"):
+        """Construct a genotype-phenotype map from epistatic coefficients.
+
+        Parameters
+        ----------
+        wildtype : str
+            wildtype sequence
+        mutations : dict
+            dictionary mapping each site to their possible mutations.
+        order : int
+            order of epistasis
+        coefs : list or array
+            epistatic coefficients
+        model_type : str
+            epistatic model to use in composition matrix. (`'global'` or `'local'`)
+
+        Returns
+        -------
+        GenotypePhenotypeMap
         """
         space = cls(wildtype, mutations, order, model_type=model_type)
         if len(betas) != space.epistasis.n:
@@ -72,7 +89,7 @@ class BaseSimulation(GenotypePhenotypeMap):
 
     def build(self, values=None, **kwargs):
         """ Method for construction phenotypes from model. """
-        raise Exception( """ Must be implemented in subclass. """)
+        raise Exception("""Must be implemented in subclass. """)
 
     def set_stdeviations(self, sigma):
         """Add standard deviations to the simulated phenotypes, which can then be

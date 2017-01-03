@@ -6,6 +6,7 @@
 # Outside imports
 # ----------------------------------------------------------
 
+from functools import wraps
 import itertools as it
 import numpy as np
 from collections import OrderedDict
@@ -16,6 +17,16 @@ from collections import OrderedDict
 
 import seqspace
 from seqspace.base import BaseMap
+
+def assert_epistasis(method):
+    """Assert that an epistasis map has been attached to the object.
+    """
+    @wraps(method)
+    def wrapper(self, *args, **kwargs):
+        if hasattr(self, "epistasis") is False:
+            raise AttributeError(self.__name__ + " does not an epistasis attribute set yet.")
+        return method(self, *args, **kwargs)
+    return wrapper
 
 def label_to_key(label, state=""):
     """ Convert interaction label to key. `state` is added to end of key."""
@@ -136,13 +147,7 @@ def build_model_coeffs(order, mutations, start_order=0):
     return interactions
 
 class EpistasisMap(BaseMap):
-    """ Mapping object for indexing and tracking interactions in an
-    epistasis map object.
-
-    Parameters
-    ----------
-    GenotypePhenotypeMap : seqspace.gpm.GenotypePhenotypeMap
-        Epistasis Model to attach
+    """Efficient mapping object for epistatic coefficients in an EpistasisModel.
     """
     @classmethod
     def from_labels(cls, labels):

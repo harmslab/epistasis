@@ -18,7 +18,6 @@ We plan to improve this moving forward. Instead, we encourage you use this packa
 inside `Jupyter notebooks`_ .
 
 
-
 Contents:
 
 .. toctree::

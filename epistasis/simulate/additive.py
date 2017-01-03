@@ -11,7 +11,6 @@ from seqspace.gpm import GenotypePhenotypeMap
 # local imports
 from epistasis.decomposition import generate_dv_matrix
 from epistasis.simulate.base import BaseSimulation
-from epistasis.mapping import EpistasisMap
 
 # ------------------------------------------------------------
 # ArtificialMap object can be used to quickly generating a toy
@@ -51,10 +50,6 @@ class AdditiveSimulation(BaseSimulation):
             mutations,
         )
         self.model_type = model_type
-        self.epistasis = EpistasisMap(self)
-        # Add values to epistatic interactions
-        self.epistasis.order = order
-        self.epistasis.values = np.random.uniform(coeff_range[0], coeff_range[1], size=len(self.epistasis.keys))
         # build the phenotypes from the epistatic interactions
         self.build()
 
@@ -63,7 +58,7 @@ class AdditiveSimulation(BaseSimulation):
         """Get the additive phenotypes"""
         if self.model_type == "local":
             encoding = {"1": 1, "0": 0}
-        else:
+        else:=
             encoding = {"1": 1, "0": -1}
         orders = self.epistasis.getorder
         labels = list(orders[0].labels) + list(orders[1].labels)
