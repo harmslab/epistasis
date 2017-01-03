@@ -149,27 +149,38 @@ def build_model_coeffs(order, mutations, start_order=0):
 class EpistasisMap(BaseMap):
     """Efficient mapping object for epistatic coefficients in an EpistasisModel.
     """
-    @classmethod
-    def from_labels(cls, labels):
-        """ Construct an epistasis map object from labels
+
+    def _from_labels(self, labels):
+        """Set coef labels of an epistasis map instance.
         """
-        self = cls()
         self.labels = labels
         self.order = max([len(l) for l in labels])
         self._getorder = dict([(i, Order(self, i)) for i in range(0, self.order+1)])
-        return self
 
     @classmethod
-    def from_mutations(cls, mutations, order):
-        """Build a mapping object for epistatic interactions."""
-        # construct the mutations mapping
+    def from_labels(cls, labels):
+        """Construct an EpistasisMap instance from labels.
+        """
         self = cls()
+        self._from_labels(labels)
+        return self
+
+    def _from_mutations(self, mutations, order):
+        """Set coef labels from mutations and order.
+        """
         self.order = order
         self._labels = build_model_coeffs(
             self.order,
             mutations_to_coeffs(mutations)
         )
         self._getorder = dict([(i, Order(self, i)) for i in range(0, self.order+1)])
+
+    @classmethod
+    def from_mutations(cls, mutations, order):
+        """Build a mapping object for epistatic interactions."""
+        # construct the mutations mapping
+        self = cls()
+        self._from_mutations(mutations, order)
         return self
 
     @property
@@ -253,6 +264,10 @@ class EpistasisMap(BaseMap):
     @values.setter
     def values(self, values):
         """ Set the interactions of the system, set by an Epistasis model (see ..models.py)."""
+        if hasattr(self, "_labels") is False:
+            raise AttributeError(self.__name__ + " does not have coef labels set.")
+        elif len(self._labels) != len(values):
+            raise Exception("Length of `values` must much length of `labels`.")
         self._values = values
 
     @keys.setter

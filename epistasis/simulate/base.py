@@ -1,7 +1,7 @@
 import numpy as np
 from seqspace.gpm import GenotypePhenotypeMap
 from seqspace import utils
-from epistasis.mapping import EpistasisMap
+from epistasis.mapping import EpistasisMap, assert_epistasis
 
 class BaseSimulation(GenotypePhenotypeMap):
     """ Base class for simulating genotype-phenotype maps built from epistatic
@@ -32,15 +32,55 @@ class BaseSimulation(GenotypePhenotypeMap):
         # Attach an epistasis model.
         self.epistasis = EpistasisMap()
 
-    def _random(self):
+    @assert_epistasis
+    def set_coefs(self, labels, values):
+        """Set the epistatic coefs
+
+        Parameters
+        ----------
+        labels : List
+            List of epistatic coefficient labels.
+        values : List
+            list of floats representing to epistatic coefficients.
         """
+        self.epistasis.labels = labels
+        self.epistasis.values = values
+        self.build()
+
+    @assert_epistasis
+    def set_coefs_order(self, order):
+        """Set coefs from an epistatic order."""
+        self.epistasis._from_mutations(self.mutations, order)
+
+    @assert_epistasis
+    def set_coefs_labels(self, labels):
+        """Set coefs from label coefs.
+        """
+        self.epistasis.labels = labels
+
+    @assert_epistasis
+    def set_coefs_values(self, values):
+        """
+        """
+        self.epistasis.values = values
+        self.build()
+
+    @assert_epistasis
+    def set_coefs_random(self, coef_range):
+        """Set coefs to values drawn from a random, uniform distribution between
+        coef_range.
+
+        Parameters
+        ----------
+        coef_range : 2-tuple
+            low and high bounds for coeff values.
         """
         # Add values to epistatic interactions
-        self.epistasis.order = order
-        self.epistasis.values = np.random.uniform(coeff_range[0], coeff_range[1], size=len(self.epistasis.keys))
+        self.epistasis.values = np.random.uniform(coef_range[0], coef_range[1], size=len(self.epistasis.keys))
+        self.build()
 
     @classmethod
-    def simple(cls, length, order, **kwargs):
+    def from_length(cls, length, **kwargs):
         """Constructs genotype from binary sequences with given length and
         phenotypes from epistasis with a given order.
 
@@ -57,7 +97,7 @@ class BaseSimulation(GenotypePhenotypeMap):
         """
         wildtype = "0"*length
         mutations = utils.binary_mutations_map(wildtype, "1"*length)
-        return cls(wildtype, mutations, order, **kwargs)
+        return cls(wildtype, mutations, **kwargs)
 
     @classmethod
     def from_coefs(cls, wildtype, mutations, labels, coefs, model_type="local"):
@@ -80,6 +120,7 @@ class BaseSimulation(GenotypePhenotypeMap):
         -------
         GenotypePhenotypeMap
         """
+        order = max([len(l) for l in labels])
         space = cls(wildtype, mutations, order, model_type=model_type)
         if len(betas) != space.epistasis.n:
             raise Exception("""Number of betas does not match order/mutations given.""")
