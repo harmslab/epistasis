@@ -1,6 +1,8 @@
-Accepted data format
-====================
+Read/Write
+==========
 
+Accepted formats
+----------------
 Currently, the ``epistasis`` package only takes JSON formated data as input to
 the epistasis model. We expect to get include more formats (i.e. csv/excel) moving
 forward, just haven't gotten around to it.
