@@ -10,7 +10,7 @@ class NonlinearSimulation(BaseSimulation):
     """
     def __init__(self, wildtype, mutations,
             function,
-            p0,
+            p0=[],
             model_type='local',
             **kwargs
         ):
@@ -18,9 +18,9 @@ class NonlinearSimulation(BaseSimulation):
             **kwargs
         )
         self.model_type = model_type
-        self.set_function(function, p0)
+        self.set_function(function, p0=p0)
 
-    def set_function(self, function, p0):
+    def set_function(self, function, p0=[]):
         """Set the nonlinear function.
         """
         # Set the nonlinear function
@@ -42,9 +42,9 @@ class NonlinearSimulation(BaseSimulation):
         return self.function(self.linear.p_additive, *self.parameters.get_params())
 
     @classmethod
-    def from_linear(cls, model, function, p0, **kwargs):
+    def from_linear(cls, model, function, p0=[], **kwargs):
         """Layer nonlinear model on top of existing linear model."""
-        self = cls(model.wildtype, model.mutations, function, p0, **kwargs)
+        self = cls(model.wildtype, model.mutations, function, p0=p0, **kwargs)
         self.epistasis = model.epistasis
         self.build()
         return selfs
