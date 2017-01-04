@@ -17,6 +17,7 @@ class BaseSimulation(GenotypePhenotypeMap):
     def __init__(self, wildtype, mutations,
         log_transform=False,
         logbase=np.log10,
+        **kwargs
         ):
         genotypes = np.array(utils.mutations_to_genotypes(wildtype, mutations))
         phenotypes = np.ones(len(genotypes))
@@ -27,10 +28,22 @@ class BaseSimulation(GenotypePhenotypeMap):
             phenotypes,
             log_transform=log_transform,
             logbase=logbase,
-            mutations=mutations
+            mutations=mutations,
+            **kwargs
         )
         # Attach an epistasis model.
         self.epistasis = EpistasisMap()
+
+    @assert_epistasis
+    def set_coefs_order(self, order):
+        """Set coefs from an epistatic order."""
+        self.epistasis._from_mutations(self.mutations, order)
+
+    @assert_epistasis
+    def set_coefs_labels(self, labels):
+        """Set coefs from list of coefs labels.
+        """
+        self.epistasis.labels = labels
 
     @assert_epistasis
     def set_coefs(self, labels, values):
@@ -48,19 +61,8 @@ class BaseSimulation(GenotypePhenotypeMap):
         self.build()
 
     @assert_epistasis
-    def set_coefs_order(self, order):
-        """Set coefs from an epistatic order."""
-        self.epistasis._from_mutations(self.mutations, order)
-
-    @assert_epistasis
-    def set_coefs_labels(self, labels):
-        """Set coefs from label coefs.
-        """
-        self.epistasis.labels = labels
-
-    @assert_epistasis
     def set_coefs_values(self, values):
-        """
+        """Set coefficient values.
         """
         self.epistasis.values = values
         self.build()
@@ -76,7 +78,7 @@ class BaseSimulation(GenotypePhenotypeMap):
             low and high bounds for coeff values.
         """
         # Add values to epistatic interactions
-        self.epistasis.values = np.random.uniform(coef_range[0], coef_range[1], size=len(self.epistasis.keys))
+        self.epistasis.values = np.random.uniform(coef_range[0], coef_range[1], size=len(self.epistasis.labels))
         self.build()
 
     @classmethod
@@ -100,7 +102,7 @@ class BaseSimulation(GenotypePhenotypeMap):
         return cls(wildtype, mutations, **kwargs)
 
     @classmethod
-    def from_coefs(cls, wildtype, mutations, labels, coefs, model_type="local"):
+    def from_coefs(cls, wildtype, mutations, labels, coefs, model_type="local", **kwargs):
         """Construct a genotype-phenotype map from epistatic coefficients.
 
         Parameters
@@ -121,12 +123,11 @@ class BaseSimulation(GenotypePhenotypeMap):
         GenotypePhenotypeMap
         """
         order = max([len(l) for l in labels])
-        space = cls(wildtype, mutations, order, model_type=model_type)
+        self = cls(wildtype, mutations, model_type=model_type, **kwargs)
         if len(betas) != space.epistasis.n:
             raise Exception("""Number of betas does not match order/mutations given.""")
-        space.epistasis.values = betas
-        space.build()
-        return space
+        self.set_coefs(labels, coefs)
+        return self
 
     def build(self, values=None, **kwargs):
         """ Method for construction phenotypes from model. """

@@ -25,8 +25,10 @@ mutations = {
 }
 # Initialize a simulation
 gpm = AdditiveSimulation(wildtype, mutations)
+
 # Set the order of epistasis
 gpm.set_coefs_order(4)
+
 # Generate random epistatic coefficients
 coef_range = (-1, 1) # coefs between -1 and 1
 gpm.set_coefs_random(coef_range)
@@ -38,10 +40,15 @@ fine with a simple, binary alphabet at each site.
 # define the length of genotypes and the order of epistasis
 length = 4
 gpm = AdditiveSimulation.from_length(length)
+
 # Generate random epistatic coefs
 gpm.set_coefs_order(4)
 gpm.set_coefs_random(coef_range)
 ```
+
+For all simulated genotype-phenotype maps, one can initialize a genotype-phenotype
+map from an existing dataset. Scroll through class methods that start with `from_` to
+see all options for initializing simulated genotype-phenotype maps.
 
 Simulating a multiplicative epistatic genotype-phenotype map
 ------------------------------------------------------------

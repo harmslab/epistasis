@@ -21,4 +21,4 @@ __all__ = [
 from .nk import NkSimulation
 from .additive import AdditiveSimulation
 from .multiplicative import MultiplicativeSimulation
-#from .nonlinear import NonlinearSimulation
+from .nonlinear import NonlinearSimulation

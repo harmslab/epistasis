@@ -40,7 +40,6 @@ class AdditiveSimulation(BaseSimulation):
         phenotypes
     """
     def __init__(self, wildtype, mutations,
-        coeff_range=(-1, 1),
         model_type='local',
         ):
         # Construct epistasis mapping objects (empty)
