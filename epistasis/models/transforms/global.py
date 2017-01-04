@@ -1,7 +1,7 @@
 from .base import EpistasisLinearTransformation
 
 
-class GlobalEpistasisModel(LinearEpistasisModel):
+class GlobalEpistasisModel(EpistasisLinearTransformation):
     """Construct a genotype-phenotype map and fit with a linear epistasis model,
     defined as follows
 
