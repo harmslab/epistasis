@@ -4,26 +4,18 @@ epistasis.models.nonlinear package
 Submodules
 ----------
 
-epistasis.models.nonlinear.functions module
--------------------------------------------
-
-.. automodule:: epistasis.models.nonlinear.functions
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-epistasis.models.nonlinear.model module
+epistasis.models.nonlinear.power module
 ---------------------------------------
 
-.. automodule:: epistasis.models.nonlinear.model
+.. automodule:: epistasis.models.nonlinear.power
     :members:
     :undoc-members:
     :show-inheritance:
 
-epistasis.models.nonlinear.reverse_functions module
----------------------------------------------------
+epistasis.models.nonlinear.regression module
+--------------------------------------------
 
-.. automodule:: epistasis.models.nonlinear.reverse_functions
+.. automodule:: epistasis.models.nonlinear.regression
     :members:
     :undoc-members:
     :show-inheritance:

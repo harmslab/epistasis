@@ -1,6 +1,5 @@
 import inspect
 import numpy as np
-#from .additive import AdditiveSimulation
 from .base import BaseSimulation
 from epistasis.models.nonlinear.regression import Parameters
 from epistasis.decomposition import generate_dv_matrix

@@ -52,6 +52,22 @@ epistasis.plotting.pca module
     :undoc-members:
     :show-inheritance:
 
+epistasis.plotting.power module
+-------------------------------
+
+.. automodule:: epistasis.plotting.power
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+epistasis.plotting.prettify module
+----------------------------------
+
+.. automodule:: epistasis.plotting.prettify
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 epistasis.plotting.regression module
 ------------------------------------
 

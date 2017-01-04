@@ -6,8 +6,10 @@ Subpackages
 
 .. toctree::
 
+    epistasis.models.linear
     epistasis.models.nonlinear
     epistasis.models.tests
+    epistasis.models.transforms
 
 Submodules
 ----------
@@ -20,34 +22,10 @@ epistasis.models.base module
     :undoc-members:
     :show-inheritance:
 
-epistasis.models.linear module
-------------------------------
+epistasis.models.twostep module
+-------------------------------
 
-.. automodule:: epistasis.models.linear
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-epistasis.models.pca module
----------------------------
-
-.. automodule:: epistasis.models.pca
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-epistasis.models.regression module
-----------------------------------
-
-.. automodule:: epistasis.models.regression
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-epistasis.models.specifier module
----------------------------------
-
-.. automodule:: epistasis.models.specifier
+.. automodule:: epistasis.models.twostep
     :members:
     :undoc-members:
     :show-inheritance:

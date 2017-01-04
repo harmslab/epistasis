@@ -5,7 +5,7 @@ import numpy as np
 
 from sklearn.decomposition import PCA
 from epistasis.decomposition import generate_dv_matrix
-from epistasis.models.regression import LinearEpistasisRegression
+from epistasis.models.linear import EpistasisLinearRegression
 
 class PCAStats(object):
     """Object that holds different statistical readouts of PCA analysis
@@ -64,7 +64,7 @@ class PCAStats(object):
             phenotypes = self._model.base**phenotypes
         return phenotypes
 
-class EpistasisPCA(LinearEpistasisRegression):
+class EpistasisPCA(EpistasiLinearRegression):
     """Principal component analysis of the genotype-phenotype map.
     This module uses Scikit-learn's PCA class to perform the transformation.
 

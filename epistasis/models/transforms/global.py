@@ -1,3 +1,4 @@
+from .base import EpistasisLinearTransformation
 
 
 class GlobalEpistasisModel(LinearEpistasisModel):

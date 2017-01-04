@@ -19,8 +19,8 @@ argument if you don't explicitly pass an ``X`` argument into the ``fit`` method.
 a ``GenotypePhenotypeMap`` (see ``seqspace`` package) and ``EpistasisMap`` objects to the model, making
 analyzing the data easier and more intuitive.
 
-Examples
-~~~~~~~~
+Example
+~~~~~~~
 
 .. code-block:: python
 
@@ -60,8 +60,8 @@ least squares regression (using scipy's ``curve_fit`` function), effectivley min
 epistasis that might arise from the nonlinear relationship. It can, then, compute
 the linearized phenotypes.
 
-Examples
-~~~~~~~~
+Example
+~~~~~~~
 
 .. code-block:: python
 
@@ -108,8 +108,11 @@ logarithms.
     p & = & e^{ln(\beta_1 \beta_2 \beta_{1,2})} \\
     p & = & e^{(ln \beta_1 + ln \beta_2 + ln \beta_{1,2})}\\
     p & = & e^{(\alpha_1 + \alpha_2 + \alpha_{1,2})}\\
-    \end{eqnarray} 
+    \end{eqnarray}
     \text{where } e^{\alpha} = \beta
+
+Example
+~~~~~~~
 
 .. code-block:: python
 
@@ -138,6 +141,11 @@ logarithms.
     betas = np.exp(alphas)
 
 
-Estimating Uncertainty in Parameters via Bootstrap
+Estimating uncertainty in parameters via bootstrap
 --------------------------------------------------
-All models have a ``bootstrap_fit`` method that allow
+All models have a ``bootstrap_fit`` method to estimate the uncertainty in the
+epistatic parameters. This is necessary for interpreting the statistical significance
+of the epistatic coefficients and useful for predicting unseen phenotypes.
+
+Fitting a high-order, nonlinear epistasis model
+-----------------------------------------------

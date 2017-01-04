@@ -27,14 +27,6 @@ epistasis.simulate.base module
     :undoc-members:
     :show-inheritance:
 
-epistasis.simulate.multiplicative module
-----------------------------------------
-
-.. automodule:: epistasis.simulate.multiplicative
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 epistasis.simulate.nk module
 ----------------------------
 

@@ -3,8 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Epistasis Documentation
-=======================
+Introduction
+============
 
 A Python API for modeling statistical, high-order epistasis in large
 genotype-phenotype maps. Decompose genotype-phenotype maps into high-order epistatic
@@ -27,7 +27,7 @@ Table of Contents
     self
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 2
 
    _pages/install
    _pages/io
