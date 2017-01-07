@@ -47,9 +47,10 @@ def X_fitter(method):
                     y[ y < self.threshold ] = 0
                     y[ y >= self.threshold ] = 1
             except AttributeError:
-                raise AttributeError("y argument is missing, and no "
-                                    "GenotypePhenotypeMap is attached "
-                                    "to epistasis model.")
+                raise AttributeError(
+                    "y argument is missing, and no "
+                    "GenotypePhenotypeMap is attached "
+                    "to epistasis model.")
         # If X is not given, build one.
         if X is None:
             # See if an X already exists in the model
@@ -107,7 +108,9 @@ class BaseModel(object):
         Also exposes APIs that are only accessible with a GenotypePhenotypeMap
         attached to the model.
         """
-        if gpm.__class__.__name__ != "GenotypePhenotypeMap":
+        # Hacky way to
+        instance_tree = (gpm.__class__,) + gpm.__class__.__bases__
+        if GenotypePhenotypeMap in instance_tree is False:
             raise TypeError("gpm must be a GenotypePhenotypeMap object")
         self.gpm = gpm
         setattr(self, "bootstrap_fit",self._bootstrap_fit)
