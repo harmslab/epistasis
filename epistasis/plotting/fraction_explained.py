@@ -10,16 +10,16 @@ def fraction_explained(fraction_explained, color_vector=None,num_bins=1000,lw=0.
     ----------
     """
     # Normalize fx_vector so it adds up to 1.0
-    internal_fx_vector = np.array(np.copy(fx_vector))
+    internal_fx_vector = np.array(np.copy(fraction_explained))
     if np.sum(internal_fx_vector) != 1.0:
         warnings.warn("fx_vector does not add up to 1")
         internal_fx_vector = internal_fx_vector/np.sum(internal_fx_vector)
 
     # Create a color vector or grab the one off the command line
     if color_vector is None:
-        N = len(fx_vector)*1.0 - 1
+        N = len(fraction_explained)*1.0 - 1
         color_vector = []
-        for i in range(len(fx_vector)):
+        for i in range(len(fraction_explained)):
             color_vector.append((1,1 - i/N,1-i/N))
     else:
         if len(fx_vector) > len(color_vector):
