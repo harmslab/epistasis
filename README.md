@@ -76,9 +76,9 @@ This package is still really hacked together. I plan to include examples and cle
 
 Works in Python 2.7+ and Python 3+
 
-## API reference
+## Documentation
 
-API documentation can be viewed [here](http://epistasis.readthedocs.io/).
+Documentation and API reference can be viewed [here](http://epistasis.readthedocs.io/).
 
 ## Dependencies
 

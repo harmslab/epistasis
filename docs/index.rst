@@ -33,6 +33,7 @@ Table of Contents
    _pages/io
    _pages/fitting
    _pages/simulate
+   _pages/plot
 
 
 Indices and tables

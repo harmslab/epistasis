@@ -1,4 +1,6 @@
 import matplotlib.pyplot as plt
+from matplotlib.path import Path
+import matplotlib.patches as patches
 import matplotlib as mpl
 import numpy as np
 import seqspace
@@ -63,12 +65,13 @@ def coefs(betas=[], labels=[], errors=None, **kwargs):
 
     Returns
     -------
-        pretty-graph objects fig and ax_array (ax_array has two entries for top
-        and bottom panels)
+    fig : matplotlib.pyplot.Figure
+        Figure object
+    ax : matplotlib.pyplot.Axes
+        Axes object
     """
     ## Set up plotting user options. Type check the options to make sure nothing
     # will break. Also helps with widgets.
-
     defaults = {
         "order_colors" : ("red","orange","green","purple","DeepSkyBlue","yellow","pink"),
         "logbase" : np.log10,
