@@ -6,7 +6,6 @@ from seqspace.gpm import GenotypePhenotypeMap
 
 # Local imports
 from epistasis.mapping import EpistasisMap
-from epistasis.plotting.models import EpistasisPlotting
 from epistasis.decomposition import generate_dv_matrix
 from epistasis.stats import bootstrap
 from epistasis.utils import extract_mutations_from_genotypes
