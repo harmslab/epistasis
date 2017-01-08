@@ -4,40 +4,46 @@
 [![Binder](http://mybinder.org/badge.svg)](http://mybinder.org:/repo/harmslab/epistasis)
 [![Documentation Status](https://readthedocs.org/projects/epistasis/badge/?version=latest)](http://epistasis.readthedocs.io/?badge=latest)
 
-A python API for modeling statistical, high-order epistasis in large genotype-phenotype maps. All models follow a `scikit-learn` interface, making it easy to integrate `epistasis` models with other pipelines and software. It includes a plotting module built on matplotlib for visualizing high-order interactions and interactive widgets to simplify complex nonlinear fits.
+A python API for modeling statistical, high-order epistasis in genotype-phenotype maps. All models follow a *Scikit-learn* interface, making it easy to integrate `epistasis` models with other pipelines and software. It includes a plotting module built on matplotlib for visualizing high-order interactions and interactive widgets to simplify complex nonlinear fits.
 
-This package includes APIs for both linear and nonlinear epistasis models, described in this [paper](http://biorxiv.org/content/early/2016/08/30/072256), separating epistasis that arises from global trends in phenotypes from epistasis that arises from specific interactions between mutations. Nonlinear regressions
+This package includes APIs for both linear and nonlinear epistasis models, described in this [paper](http://biorxiv.org/content/early/2016/12/02/072256), relaxing
+the assumption of linearity.  
 
 ## Basic examples
 
 A simple example of fitting a data set with a linear epistasis model.  
 ```python
 # Import epistasis model
-from epistasis.models import LinearEpistasisModel
+from epistasis.models import EpistasisLinearRegression
 
 # Read data from file and estimate epistasis
-model = LinearEpistasisModel.from_json("dataset.json")
+model = EpistasisLinearRegression.from_json("dataset.json", order=3)
 model.fit()
 
 # Estimate the uncertainty in epistatic coefficients
-model.fit_error()
+model.bootstrap_fit()
 ```
 
 If analyzing a nonlinear genotype-phenotype map, use `NonlinearEpistasisModel`
 (nonlinear least squares regression) to estimate nonlinearity in map:
 ```python
 # Import the nonlinear epistasis model
-from epistasis.models import NonlinearEpistasisModel
+from epistasis.models import NonlinearEpistasisRegression
 
 # Define a nonlinear function to fit the genotype-phenotype map.
 def boxcox(x, lmbda, lmbda2):
     """Fit with a box-cox function to estimate nonlinearity."""
     return ((x-lmbda2)**lmbda - 1 )/lmbda
 
+def reverse_boxcox(y, lmbda, lmbda2):
+    "inverse of the boxcox function."
+    return (lmbda*y + 1) ** (1/lmbda) + lmbda2
+
 # Read data from file and estimate nonlinearity in dataset.
-model = NonlinearEpistasisModel.from_json("dataset.json"
+model = EpistasisNonlinearRegression.from_json("dataset.json",
+    function=boxbox,
+    reverse=reverse_boxcox,
     order=1,
-    function=boxcox,
 )
 
 # Give initial guesses for parameters to aid in convergence (not required).
@@ -70,9 +76,9 @@ This package is still really hacked together. I plan to include examples and cle
 
 Works in Python 2.7+ and Python 3+
 
-## API reference
+## Documentation
 
-API documentation can be viewed [here](http://epistasis.readthedocs.io/).
+Documentation and API reference can be viewed [here](http://epistasis.readthedocs.io/).
 
 ## Dependencies
 
@@ -89,4 +95,4 @@ API documentation can be viewed [here](http://epistasis.readthedocs.io/).
 * [ipywidgets](): interactive widgets in python.
 
 ## Citations
-If you use this API for research, please cite this [paper](http://biorxiv.org/content/early/2016/08/30/072256).
+If you use this API for research, please cite this [paper](http://biorxiv.org/content/early/2016/12/02/072256).

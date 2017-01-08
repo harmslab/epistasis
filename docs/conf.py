@@ -33,6 +33,7 @@ MOCK_MODULES = ['numpy','scipy',
     'nose',
     'sklearn',
     'sklearn.linear_model',
+    'sklearn.base',
     'scipy.optimize',
     'scipy.misc',
     'scipy.stats',
@@ -42,6 +43,10 @@ MOCK_MODULES = ['numpy','scipy',
     'jupyter',
     'notebook',
     'matplotlib.pyplot',
+    'matplotlib.cbook',
+    'matplotlib.path',
+    'matplotlib.path.Path',
+    'matplotlib.patches',
     'matplotlib.cbook',
     'matplotlib',
     'sklearn.decomposition',
@@ -56,7 +61,7 @@ sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 sys.path.insert(0, os.path.abspath('../'))
-sys.path.insert(0, os.path.abspath('./_api/'))
+#sys.path.insert(0, os.path.abspath('./_api/'))
 
 # -- General configuration ------------------------------------------------
 

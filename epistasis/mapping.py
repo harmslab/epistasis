@@ -6,6 +6,7 @@
 # Outside imports
 # ----------------------------------------------------------
 
+from functools import wraps
 import itertools as it
 import numpy as np
 from collections import OrderedDict
@@ -16,112 +17,181 @@ from collections import OrderedDict
 
 import seqspace
 from seqspace.base import BaseMap
-from epistasis.utils import (params_index_map,
-    build_model_params,
-    label_to_key)
 
-class TransformEpistasisMap(BaseMap):
-    """Mapping object that log transforms an EpistasisMap.
+def assert_epistasis(method):
+    """Assert that an epistasis map has been attached to the object.
+    """
+    @wraps(method)
+    def wrapper(self, *args, **kwargs):
+        if hasattr(self, "epistasis") is False:
+            raise AttributeError(self.__name__ + " does not an epistasis attribute set yet.")
+        return method(self, *args, **kwargs)
+    return wrapper
+
+def label_to_key(label, state=""):
+    """ Convert interaction label to key. `state` is added to end of key."""
+    if type(state) != str:
+        raise Exception("`state` must be a string.")
+    return ",".join([str(l) for l in label]) + state
+
+def key_to_label(key):
+    """ Convert an interaction key to label."""
+    return [int(k) for k in key.split(",")]
+
+def genotype_coeffs(genotype, order=None):
+    """List the possible epistatic coefficients (as label form) for a binary genotype
+    up to a given order.
+    """
+    if order is None:
+        order = len(genotype)
+    length = len(genotype)
+    mutations = [i + 1 for i in range(length) if genotype[i] == "1"]
+    params = [[0]]
+    for o in range(1, order+1):
+        params += [list(z) for z in it.combinations(mutations, o)]
+    return params
+
+def mutations_to_coeffs(mutations):
+    """Write a dictionary that maps mutations dictionary to indices in dummy
+    variable matrix.
 
     Parameters
     ----------
-    EpistasisMap : EpistasisMap object
-        Map to log transform
+    mutations : dict
+        mapping each site to their accessible mutations alphabet.
+        mutations = {site_number : alphabet} If site does not mutate,
+        value should be None.
+
+    Returns
+    -------
+    mutations : dict
+        `mutations = { site_number : indices }`. If the site alphabet is
+        note included, the model will assume binary between wildtype and derived.
+
+    Example
+    -------
+    .. code-block:: python
+
+        mutations = {
+            0: [indices],
+            1: [indices],
+            ...
+        }
     """
-    def __init__(self, EpistasisMap):
-        self._epistasis = EpistasisMap
-        self.transformed = True
-        self.std = seqspace.errors.StandardDeviationMap(self)
-        self.err = seqspace.errors.StandardErrorMap(self)
+    param_map = dict()
+    n_sites = 1
+    for m in mutations:
+        if mutations[m] is None:
+            param_map[m] = None
+        else:
+            param_map[m] = list(range(n_sites, n_sites + len(mutations[m]) - 1))
+            n_sites += len(mutations[m])-1
+    return param_map
 
-    @property
-    def order(self):
-        return self._epistasis.order
+def build_model_coeffs(order, mutations, start_order=0):
+    """ Build interaction labels up to nth order given a mutation alphabet.
 
-    def keys(self):
-        return self._epistasis.keys
+    Parameters
+    ----------
+    order : int
+        order of interactions
+    mutations  : dict
+        `mutations = { site_number : indices }`. If the site
+        alphabet is note included, the model will assume binary
+        between wildtype and derived.
 
-    @property
-    def labels(self):
-        return self._epistasis.labels
+    Example
+    -------
+    .. code-block:: python
 
-    @property
-    def logbase(self):
-        """Get base of logarithm for tranformed epistasis"""
-        return self._epistasis.logbase
+        mutations = {
+            0: [indices],
+            1: [indices],
+            ...
+        }
 
-    @property
-    def values(self):
-        """ Get the values of the interaction in the system"""
-        return self.logbase(self._epistasis.values)
+    Returns
+    -------
+    interactions : list
+        list of all interaction labels for system with
+        sequences of a given length and epistasis with given order.
+    """
+    # Include the intercept interaction?
+    if start_order == 0:
+        interactions = [[0]]
+        orders = range(1,order+1)
+    else:
+        interactions = list()
+        orders = range(start_order,order+1)
 
-    @property
-    def stdeviations(self):
-        """Get the standard deviations of the epistasis coefficients."""
-        return self._stdeviations
+    length = len(mutations)
+    # Recursive algorithm that's difficult to follow.
 
-    @property
-    def n_replicates(self):
-        """Get number of replicates for each observable."""
-        return self._epistasis.n_replicates
-
-    @property
-    def getorder(self):
-        return dict([(i, Order(self, i)) for i in range(1,self.order+1)])
-
+    # Iterate through each order
+    for o in orders:
+        # Iterate through all combinations of orders with given length
+        for term in it.combinations(range(length), o):
+            # If any sites in `term` == None, skip this term.
+            bad_term = False
+            lists = []
+            for i in range(len(term)):
+                if mutations[term[i]] == None:
+                    bad_term = True
+                    break
+                else:
+                    lists.append(mutations[term[i]])
+            # Else, add interactions combinations to list
+            if bad_term is False:
+                for r in it.product(*lists):
+                    interactions.append(list(r))
+    return interactions
 
 class EpistasisMap(BaseMap):
-    """ Mapping object for indexing and tracking interactions in an
-    epistasis map object.
-
-    Parameters
-    ----------
-    GenotypePhenotypeMap : seqspace.gpm.GenotypePhenotypeMap
-        Epistasis Model to attach
+    """Efficient mapping object for epistatic coefficients in an EpistasisModel.
     """
-    def __init__(self, GenotypePhenotypeMap):
-        self._gpm = GenotypePhenotypeMap
-        self.transformed = False
-        if self._gpm.log_transform:
-            self.log = TransformEpistasisMap(self)
-        self.std = seqspace.errors.StandardDeviationMap(self)
-        self.err = seqspace.errors.StandardErrorMap(self)
 
-    def build(self):
-        """Build a mapping object for epistatic interactions."""
-        # construct the mutations mapping
-        self._params = params_index_map(self._gpm.mutations)
-        self._labels = build_model_params(
-            self.length,
+    def _from_labels(self, labels):
+        """Set coef labels of an epistasis map instance.
+        """
+        self.labels = labels
+        self.order = max([len(l) for l in labels])
+        self._getorder = dict([(i, Order(self, i)) for i in range(0, self.order+1)])
+
+    @classmethod
+    def from_labels(cls, labels):
+        """Construct an EpistasisMap instance from labels.
+        """
+        self = cls()
+        self._from_labels(labels)
+        return self
+
+    def _from_mutations(self, mutations, order):
+        """Set coef labels from mutations and order.
+        """
+        self.order = order
+        self._labels = build_model_coeffs(
             self.order,
-            self.params
+            mutations_to_coeffs(mutations)
         )
         self._getorder = dict([(i, Order(self, i)) for i in range(0, self.order+1)])
 
-    @property
-    def base(self):
-        """Return base of logarithm tranform."""
-        return self._gpm.base
+    @classmethod
+    def from_mutations(cls, mutations, order):
+        """Build a mapping object for epistatic interactions."""
+        # construct the mutations mapping
+        self = cls()
+        self._from_mutations(mutations, order)
+        return self
 
     @property
-    def logbase(self):
-        """Return logarithmic function"""
-        return self._gpm.logbase
+    def length(self):
+        """"""
+        return len(self.mutations)
 
     @property
     def n(self):
         """ Return the number of Interactions. """
         return len(self.labels)
-
-    @property
-    def log_transform(self):
-        """ Boolean argument telling whether space is log transformed. """
-        return self._gpm.log_transform
-
-    @property
-    def length(self):
-        """ Length of sequences. """
-        return self._gpm.length
 
     @property
     def order(self):
@@ -142,27 +212,6 @@ class EpistasisMap(BaseMap):
     def indices(self):
         """ Get the interaction index in interaction matrix. """
         return self._indices
-
-    @property
-    def params(self):
-        """ Get the site-number-to-matrix-index mapping. This property is set in
-        the build method.
-
-        Returns
-        -------
-        params : dict
-            { site_number : indices }`. If the site alphabet is note included,
-            the model will assume binary between wildtype and derived.
-
-        Example
-        -------
-        mutations = {
-            0: [indices],
-            1: [indices],
-
-        }
-        """
-        return self._params
 
     @property
     def labels(self):
@@ -193,12 +242,6 @@ class EpistasisMap(BaseMap):
         return self._stdeviations
 
     @property
-    def n_replicates(self):
-        """Get number of replicate measurements for observed phenotypes"""
-        return self._gpm.n_replicates
-
-
-    @property
     def getorder(self):
         """Get epistasis of a given order."""
         return self._getorder
@@ -211,7 +254,6 @@ class EpistasisMap(BaseMap):
     def order(self, order):
         """"""
         self._order = order
-        self.build()
 
     @labels.setter
     def labels(self, labels):
@@ -222,10 +264,11 @@ class EpistasisMap(BaseMap):
     @values.setter
     def values(self, values):
         """ Set the interactions of the system, set by an Epistasis model (see ..models.py)."""
-        if len(values) != len(self.keys):
-            raise Exception("Number of interactions give to map is different than was defined. ")
+        if hasattr(self, "_labels") is False:
+            raise AttributeError(self.__name__ + " does not have coef labels set.")
+        elif len(self._labels) != len(values):
+            raise Exception("Length of `values` must much length of `labels`.")
         self._values = values
-
 
     @keys.setter
     def keys(self, keys):
@@ -236,6 +279,8 @@ class EpistasisMap(BaseMap):
     def stdeviations(self, stdeviations):
         """Set the standard deviations of the epistatic coefficients."""
         self._stdeviations = stdeviations
+        self.std = seqspace.errors.StandardDeviationMap(self)
+        self.err = seqspace.errors.StandardErrorMap(self)
 
 
 class Order(BaseMap):

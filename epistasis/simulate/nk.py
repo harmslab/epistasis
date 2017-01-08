@@ -35,7 +35,6 @@ class NkSimulation(BaseSimulation):
             vals[i] = np.random.uniform(coeff_range[0], coeff_range[1])
         self.epistasis.keys = keys
         self.epistasis.values = vals
-
         # Build the genotype-phenotype map.
         self.build()
 

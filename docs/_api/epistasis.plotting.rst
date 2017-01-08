@@ -4,58 +4,26 @@ epistasis.plotting package
 Submodules
 ----------
 
-epistasis.plotting.compare module
----------------------------------
+epistasis.plotting.coefs module
+-------------------------------
 
-.. automodule:: epistasis.plotting.compare
+.. automodule:: epistasis.plotting.coefs
     :members:
     :undoc-members:
     :show-inheritance:
 
-epistasis.plotting.epistasis module
------------------------------------
-
-.. automodule:: epistasis.plotting.epistasis
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-epistasis.plotting.interactive module
+epistasis.plotting.correlation module
 -------------------------------------
 
-.. automodule:: epistasis.plotting.interactive
+.. automodule:: epistasis.plotting.correlation
     :members:
     :undoc-members:
     :show-inheritance:
 
-epistasis.plotting.models module
---------------------------------
+epistasis.plotting.fraction_explained module
+--------------------------------------------
 
-.. automodule:: epistasis.plotting.models
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-epistasis.plotting.nonlinear module
------------------------------------
-
-.. automodule:: epistasis.plotting.nonlinear
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-epistasis.plotting.pca module
------------------------------
-
-.. automodule:: epistasis.plotting.pca
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-epistasis.plotting.regression module
-------------------------------------
-
-.. automodule:: epistasis.plotting.regression
+.. automodule:: epistasis.plotting.fraction_explained
     :members:
     :undoc-members:
     :show-inheritance:

@@ -1,11 +1,13 @@
 import matplotlib.pyplot as plt
+from matplotlib.path import Path
+import matplotlib.patches as patches
 import matplotlib as mpl
 import numpy as np
 import seqspace
 from scipy.stats import norm as scipy_norm
 from epistasis.utils import Bunch
 
-def epistasis(betas=[], labels=[], errors=None, **kwargs):
+def coefs(betas=[], labels=[], errors=None, **kwargs):
     """
     Create a barplot with the values from model, drawing the x-axis as a grid of
     boxes indicating the coordinate of the epistatic parameter. Should automatically
@@ -58,15 +60,18 @@ def epistasis(betas=[], labels=[], errors=None, **kwargs):
     elinewidth : float (default=1)
     capthick : float (default=1)
     capsize : float (default=1)
+    gridlines : float (default=1)
+        x grid linewidth
 
     Returns
     -------
-        pretty-graph objects fig and ax_array (ax_array has two entries for top
-        and bottom panels)
+    fig : matplotlib.pyplot.Figure
+        Figure object
+    ax : matplotlib.pyplot.Axes
+        Axes object
     """
     ## Set up plotting user options. Type check the options to make sure nothing
     # will break. Also helps with widgets.
-
     defaults = {
         "order_colors" : ("red","orange","green","purple","DeepSkyBlue","yellow","pink"),
         "logbase" : np.log10,
@@ -93,6 +98,7 @@ def epistasis(betas=[], labels=[], errors=None, **kwargs):
         "save" : False,
         "fname" : "figure.svg",
         "format" : "svg",
+        "gridlines":1,
     }
     #types = dict([(key, type(val)) for key, val in defaults.items()])
     #defaults.update(kwargs)
@@ -209,39 +215,48 @@ def epistasis(betas=[], labels=[], errors=None, **kwargs):
     if options.xgrid is True:
         fig = plt.figure(figsize=options.figsize)
 
+        n_coefs = len(labels)
+        n_sites = max([len(l) for l in labels])
+
+        # Calculate the height_ratio of the grid and the bar graph
+        box_size = options.figsize[0]/float(n_coefs)
+        grid_height = box_size * n_sites
+        bar_height = options.figsize[1] - grid_height
+        height_ratio = bar_height / grid_height
+
         # Create a plot with an upper and lower panel, sharing the x-axis
-        gs = mpl.gridspec.GridSpec(2, 1, height_ratios=[options.height_ratio, 1])
+        gs = mpl.gridspec.GridSpec(2, 1, height_ratios=[height_ratio, 1], hspace=0.00)
         ax = [plt.subplot(gs[0])]
         ax.append(plt.subplot(gs[1],sharex=ax[0]))
         bar_axis = ax[0]
         grid_axis = ax[1]
         ###### Create the box-array x-axis
+        # path codes for drawing the boxes
+        box_codes = [Path.MOVETO,Path.LINETO,Path.LINETO,Path.LINETO,Path.CLOSEPOLY]
+        n_coefs = len(labels)
+        n_sites = max([len(l) for l in labels])
 
-        # make an empty data set
-        data = np.ones((num_sites,num_terms),dtype=int)*np.nan
+        color_vector = options.order_colors
+        for i in range(n_coefs):
+            for j in range(n_sites):
+                color = "w"
+                if j+1 in labels[i]:
+                    color = color_vector[len(labels[i])]
+                # vertices for a given square
+                verts = [
+                    (i,n_coefs-j),
+                    (i, n_coefs-j-1),
+                    (i+1,n_coefs-j-1),
+                    (i+1, n_coefs-j),
+                    (i, n_coefs-j),
+                ]
+                # Create a patch for a square
+                path = Path(verts, box_codes)
+                patch = patches.PathPatch(path, facecolor=color, lw=options.gridlines)
+                grid_axis.add_patch(patch)
 
-        # Make entries corresponding to each coordinate 1
-        for i, l in enumerate(labels):
-            for j in l:
-                data[(j-1),i] = color_array[i]
-        # draw the grid
-        for i in range(num_terms + 1):
-            grid_axis.add_artist(mpl.lines.Line2D((i,i),
-               (0,num_sites),
-               color="black"))
-        for i in range(num_sites + 1):
-            grid_axis.add_artist(mpl.lines.Line2D((0,num_terms),
-               (i,i),
-               color="black"))
-        # draw the boxes
-        grid_axis.imshow(data, interpolation='nearest',cmap=cmap,norm=norm,
-                           extent=[0, num_terms, 0, num_sites], zorder=0)
-
-        # turn off the axis labels
-        grid_axis.set_frame_on(False)
-        grid_axis.axis("off")
-        grid_axis.set_xticklabels([])
-        grid_axis.set_yticklabels([])
+        grid_axis.axis('equal')
+        grid_axis.axis('off')
 
     else:
 
@@ -262,7 +277,7 @@ def epistasis(betas=[], labels=[], errors=None, **kwargs):
             bar_y = options.logbase(betas)
         else:
             bar_y = betas
-        bar_axis.bar(range(len(bar_y)), bar_y, width=0.8, color=colors_for_bar, edgecolor="none")
+        bar_axis.bar(np.arange(len(bar_y)) + 0.05, bar_y, width=0.9, color=colors_for_bar, edgecolor="none")
     # plot with errors
     else:
         bar_y = betas
@@ -341,7 +356,7 @@ def epistasis(betas=[], labels=[], errors=None, **kwargs):
         pass
 
     # Draw the final figure
-    fig.tight_layout()
+    #fig.tight_layout()
 
     if options.save:
         fig.savefig(options.fname, format=options.format)

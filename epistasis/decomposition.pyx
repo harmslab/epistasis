@@ -4,10 +4,14 @@
 
 import numpy as np
 
-def generate_dv_matrix(sequences, interactions, encoding={"1": 1, "0": 0}):
+def generate_dv_matrix(sequences, interactions, model_type="local"):
     """ Build the X matrix of dummy variable for linear regression
         in epistasis model.
     """
+    # Determine matrix type
+    model_options = {"local":{"0": 0, "1": 1}, "global":{"0": -1, "1": 1}}
+    encoding = model_options[model_type]
+
     # Type all iterators to generate matrix in C
     cdef int i, j, k, m, n, l
 

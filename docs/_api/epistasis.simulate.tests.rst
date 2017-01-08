@@ -12,22 +12,6 @@ epistasis.simulate.tests.base module
     :undoc-members:
     :show-inheritance:
 
-epistasis.simulate.tests.test_additive module
----------------------------------------------
-
-.. automodule:: epistasis.simulate.tests.test_additive
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-epistasis.simulate.tests.test_base module
------------------------------------------
-
-.. automodule:: epistasis.simulate.tests.test_base
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 
 Module contents
 ---------------

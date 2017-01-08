@@ -1,4 +1,4 @@
-API Documentation
+epistasis package
 =================
 
 Subpackages
@@ -25,6 +25,14 @@ epistasis.mapping module
 ------------------------
 
 .. automodule:: epistasis.mapping
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+epistasis.plots module
+----------------------
+
+.. automodule:: epistasis.plots
     :members:
     :undoc-members:
     :show-inheritance:
