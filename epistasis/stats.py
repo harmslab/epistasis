@@ -7,7 +7,6 @@ __doc__ = """Submodule with useful statistics functions for epistasis model."""
 import numpy as np
 from scipy.stats import f
 from scipy.stats import norm
-from epistasis.plotting.stats import FDistributionPlotting
 
 # -----------------------------------------------------------------------
 # Correlation metrics
@@ -432,8 +431,6 @@ class FDistribution(object):
         self.dfd = dfd
         self.loc = loc
         self.scale = scale
-
-        self.Plot = FDistributionPlotting(self)
 
     def pdf(self, F):
         return f.pdf(F, self.dfn, self.dfd, loc=self.loc, scale=self.scale)
