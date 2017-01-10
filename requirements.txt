@@ -1,4 +1,4 @@
--e git+https://github.com/harmslab/seqspace.git#egg=seqspace
+-e git+https://github.com/harmslab/gpmap.git#egg=gpmap
 numpy
 scikit-learn
 sklearn
