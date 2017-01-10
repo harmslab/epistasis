@@ -9,7 +9,7 @@ from ..base import BaseModel, X_fitter, X_predictor
 from ..linear.regression import EpistasisLinearRegression
 from epistasis.stats import pearson
 # decorators for catching errors
-from seqspace.utils import ipywidgets_missing
+from gpmap.utils import ipywidgets_missing
 
 # Try to import ipython specific tools
 try:

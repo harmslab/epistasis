@@ -3,7 +3,7 @@ from matplotlib.path import Path
 import matplotlib.patches as patches
 import matplotlib as mpl
 import numpy as np
-import seqspace
+import gpmap
 from scipy.stats import norm as scipy_norm
 from epistasis.utils import Bunch
 

@@ -1,7 +1,7 @@
 import numpy as np
 import itertools as it
 
-from seqspace.utils import binary_mutations_map
+from gpmap.utils import binary_mutations_map
 
 from .base import BaseSimulation
 from epistasis.mapping import EpistasisMap

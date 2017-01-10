@@ -16,7 +16,7 @@ their Docs for more information about the regression aspect of these models.
 The ``EpistasisLinearRegression`` class extends scikit-learn's models to fit
 epistatic coefficients in genotype-phenotype maps specifically. This means, it creates its own **X** matrix
 argument if you don't explicitly pass an ``X`` argument into the ``fit`` method. Further, it appends
-a ``GenotypePhenotypeMap`` (see ``seqspace`` package) and ``EpistasisMap`` objects to the model, making
+a ``GenotypePhenotypeMap`` (see ``gpmap`` package) and ``EpistasisMap`` objects to the model, making
 analyzing the data easier and more intuitive.
 
 Example

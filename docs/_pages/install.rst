@@ -19,10 +19,10 @@ Dependencies
 ------------
 
 The following dependencies are required for the epistasis package. **Note**:
-The `seqspace` package is not yet on Pypi either. It will need to be downloaded
+The `gpmap` package is not yet on Pypi either. It will need to be downloaded
 and installed following the same procedure as above.
 
-* Seqspace_: Module for constructing powerful genotype-phenotype map python data-structures.
+* gpmap_: Module for constructing powerful genotype-phenotype map python data-structures.
 * Scikit-learn_: Simple to use machine-learning algorithms
 * Numpy_: Python's array manipulation packaged
 * Scipy_: Efficient scientific array manipulations and fitting.
@@ -35,7 +35,7 @@ the package.
 * `jupyter notebook`_: interactive notebook application for running python kernels interactively.
 * ipywidgets_: interactive widgets in python.
 
-.. _Seqspace: https: //github.com/harmslab/seqspace
+.. _gpmap: https: //github.com/harmslab/gpmap
 .. _Scikit-learn: http://scikit-learn.org/stable/
 .. _Numpy: http://www.numpy.org/
 .. _Scipy: http://www.scipy.org/

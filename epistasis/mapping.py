@@ -15,8 +15,8 @@ from collections import OrderedDict
 # Local imports
 # ----------------------------------------------------------
 
-import seqspace
-from seqspace.base import BaseMap
+import gpmap
+from gpmap.base import BaseMap
 
 def assert_epistasis(method):
     """Assert that an epistasis map has been attached to the object.

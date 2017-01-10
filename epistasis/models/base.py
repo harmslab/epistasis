@@ -2,7 +2,7 @@ import numpy as np
 from functools import wraps
 
 # imports from seqspace dependency
-from seqspace.gpm import GenotypePhenotypeMap
+from gpmap.gpm import GenotypePhenotypeMap
 
 # Local imports
 from epistasis.mapping import EpistasisMap

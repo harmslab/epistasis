@@ -1,6 +1,6 @@
 import numpy as np
-from seqspace.gpm import GenotypePhenotypeMap
-from seqspace import utils
+from gpmap.gpm import GenotypePhenotypeMap
+from gpmap import utils
 from epistasis.mapping import EpistasisMap, assert_epistasis
 
 class BaseSimulation(GenotypePhenotypeMap):

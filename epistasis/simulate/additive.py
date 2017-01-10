@@ -5,7 +5,7 @@ __doc__ = """Submodule with various classes for generating/simulating genotype-p
 # ------------------------------------------------------------
 
 import numpy as np
-from seqspace.gpm import GenotypePhenotypeMap
+from gpmap.gpm import GenotypePhenotypeMap
 
 # local imports
 from epistasis.decomposition import generate_dv_matrix
