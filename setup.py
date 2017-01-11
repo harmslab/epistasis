@@ -7,15 +7,26 @@ except:
 from distutils.extension import Extension
 
 
+# Define extensions
 extension1 = Extension('epistasis.decomposition', ["epistasis/decomposition.c"])
 
+# define all packages for distribution
+packages = [
+    'epistasis',
+    'epistasis.models',
+    'epistasis.models.linear',
+    'epistasis.models.nonlinear',
+    'epistasis.plotting',
+    'epistasis.simulate',
+]
+
 setup(name='epistasis',
-      version='0.1',
+      version='0.1.1',
       description='High Order Epistasis Models/Regressions for Genotype-Phenotype Maps',
       author='Zach Sailer',
       author_email='zachsailer@gmail.com',
       url='https://github.com/harmslab/epistasis',
-      packages=['epistasis'],
+      packages=packages,
       classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Science/Research',
