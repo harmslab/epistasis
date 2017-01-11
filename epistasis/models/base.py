@@ -1,7 +1,7 @@
 import numpy as np
 from functools import wraps
 
-# imports from seqspace dependency
+# imports from gpmap dependency
 from gpmap.gpm import GenotypePhenotypeMap
 
 # Local imports

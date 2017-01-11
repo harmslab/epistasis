@@ -285,8 +285,8 @@ def coefs(betas=[], labels=[], errors=None, **kwargs):
         lower = options.sigmas*lower       # Plot the graph on a log scale
         if options.log_space:
             new_bar_y = options.logbase(bar_y)
-            new_upper = seqspace.errors.upper_transform(bar_y, upper, options.logbase)
-            new_lower = seqspace.errors.lower_transform(bar_y, lower, options.logbase)
+            new_upper = gpmap.errors.upper_transform(bar_y, upper, options.logbase)
+            new_lower = gpmap.errors.lower_transform(bar_y, lower, options.logbase)
         # else if the space is log transformed, plot the non-log interaction values
         else:
             new_upper = upper

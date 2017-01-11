@@ -279,8 +279,8 @@ class EpistasisMap(BaseMap):
     def stdeviations(self, stdeviations):
         """Set the standard deviations of the epistatic coefficients."""
         self._stdeviations = stdeviations
-        self.std = seqspace.errors.StandardDeviationMap(self)
-        self.err = seqspace.errors.StandardErrorMap(self)
+        self.std = gpmap.errors.StandardDeviationMap(self)
+        self.err = gpmap.errors.StandardErrorMap(self)
 
 
 class Order(BaseMap):
