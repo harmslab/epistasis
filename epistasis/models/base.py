@@ -85,13 +85,17 @@ class BaseModel(object):
     def from_data(cls, wildtype, genotypes, phenotypes, **kwargs):
         """ Uses a simple linear, least-squares regression to estimate epistatic
         coefficients in a genotype-phenotype map. This assumes the map is linear."""
+        self = cls(**kwargs)
+        gpm = GenotypePhenotypeMap(wildtype, genotypes, phenotypes, **kwargs)
+        self.attach_gpm(gpm)
+        return self
 
     @classmethod
     def from_gpm(cls, gpm, **kwargs):
         """ Initialize an epistasis model from a Genotype-phenotypeMap object """
         # Grab all properties from data-structure
         self = cls(**kwargs)
-        self.attach_gpm(gpm)
+        self.attach_gpm(gpm, **kwargs)
         return self
 
     @classmethod

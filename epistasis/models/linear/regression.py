@@ -14,7 +14,7 @@ class EpistasisLinearRegression(_LinearRegression, _BaseModel):
         self.normalize = False
         self.copy_X = False
         self.n_jobs = n_jobs
-        self.set_params(model_type=model_type, order=order, **kwargs)
+        self.set_params(model_type=model_type, order=order)
 
     @X_fitter
     def fit(self, X=None, y=None, sample_weight=None):

@@ -82,7 +82,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         self.set_params(order=order,
             model_type=model_type,
             fix_linear=fix_linear,
-            **kwargs)
+        )
 
     @ipywidgets_missing
     def fit(self, X=None, y=None, sample_weight=None, use_widgets=False, **parameters):
