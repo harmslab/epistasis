@@ -150,6 +150,20 @@ class EpistasisMap(BaseMap):
     """Efficient mapping object for epistatic coefficients in an EpistasisModel.
     """
 
+    def to_json(self, filename):
+        """"""
+        raise Exception("Not yet working!")
+        with open(filename, "w") as f:
+            data = {
+                "labels" : self.labels,
+                "values" : self.values,
+                "order" : self.order
+            }
+            try:
+                data.update(stdeviations)
+            except AttributeError:
+                pass
+
     def _from_labels(self, labels):
         """Set coef labels of an epistasis map instance.
         """
