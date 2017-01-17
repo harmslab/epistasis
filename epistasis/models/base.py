@@ -95,7 +95,7 @@ class BaseModel(object):
         """ Initialize an epistasis model from a Genotype-phenotypeMap object """
         # Grab all properties from data-structure
         self = cls(**kwargs)
-        self.attach_gpm(gpm, **kwargs)
+        self.attach_gpm(gpm)
         return self
 
     @classmethod
