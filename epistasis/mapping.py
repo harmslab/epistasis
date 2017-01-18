@@ -171,10 +171,10 @@ class EpistasisMap(BaseMap):
         """
         with open(filename, "r") as f:
             data = json.load(f)
-        for key, val in data:
+        for key, val in data.items():
             if type(val) == list:
                 val = np.array(val)
-            setattr(self, key, value)
+            setattr(self, key, val)
 
     def _from_labels(self, labels, model_type="global"):
         """Set coef labels of an epistasis map instance.

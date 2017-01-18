@@ -3,6 +3,7 @@
 # ------------------------------------------------------------
 
 import numpy as np
+import scipy as sp
 from functools import wraps
 
 # ------------------------------------------------------------
@@ -46,7 +47,6 @@ class EpistasisLinearTransformation(_BaseModel):
     """
     def __init__(self, model_type="global", **kwargs):
         self.model_type = model_type
-        #self.coef_ = None
 
     @wraps(_BaseModel.attach_gpm)
     def attach_gpm(self, gpm):
@@ -58,16 +58,15 @@ class EpistasisLinearTransformation(_BaseModel):
         """Estimate the values of all epistatic interactions using the expanded
         mutant cycle method to order=number_of_mutations.
         """
-        X_inv = np.linalg.inv(X)
-        self.coef_ = np.dot(X_inv, y)
+        self.coef_ = sp.linalg.solve(X,y)
 
     @X_predictor
     def predict(self, X=None):
+        """Predict y.
         """
-        """
-        return np.dot(X, self.coef_)
+        return X.dot(self.coef_)
 
     @X_fitter
     def score(self, X=None, y=None):
-        y_pred = np.dot(X, self.coef_)
+        y_pred = X.dot(self.coef_)
         return pearson(y, y_pred)**2
