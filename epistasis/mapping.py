@@ -9,6 +9,7 @@
 from functools import wraps
 import itertools as it
 import numpy as np
+import json
 from collections import OrderedDict
 
 # ----------------------------------------------------------
@@ -149,20 +150,30 @@ def build_model_coeffs(order, mutations, start_order=0):
 class EpistasisMap(BaseMap):
     """Efficient mapping object for epistatic coefficients in an EpistasisModel.
     """
-
     def to_json(self, filename):
-        """"""
-        raise Exception("Not yet working!")
+        """Write epistasis map to json file."""
         with open(filename, "w") as f:
             data = {
-                "labels" : self.labels,
-                "values" : self.values,
-                "order" : self.order
+                "labels" : list(self.labels),
+                "values" : list(self.values),
+                "order" : self.order,
+                "keys" : list(self.keys)
             }
             try:
-                data.update(stdeviations)
+                data.update(stdeviations=self.stdeviations)
             except AttributeError:
                 pass
+            json.dump(data, f)
+
+    def from_json(self, filename):
+        """Read epistatic coefs from json file.
+        """
+        with open(filename, "r") as f:
+            data = json.load(f)
+        for key, val in data:
+            if type(val) == list:
+                val = np.array(val)
+            setattr(self, key, value)
 
     def _from_labels(self, labels):
         """Set coef labels of an epistasis map instance.
@@ -196,11 +207,6 @@ class EpistasisMap(BaseMap):
         self = cls()
         self._from_mutations(mutations, order)
         return self
-
-    @property
-    def length(self):
-        """"""
-        return len(self.mutations)
 
     @property
     def n(self):

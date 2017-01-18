@@ -23,7 +23,7 @@ def sklearn_to_epistasis():
     return inner
 
 def X_predictor(method):
-    """Decorator to help automatically generate X for predictor methods in epistasis models."""
+    """Decorator to automatically generate X for predictor methods in epistasis models."""
     @wraps(method)
     def inner(self, X=None):
         """"""
@@ -34,7 +34,7 @@ def X_predictor(method):
     return inner
 
 def X_fitter(method):
-    """Decorator to help automatically generate X for fit methods in epistasis models."""
+    """Decorator to automatically generate X for fit methods in epistasis models."""
     @wraps(method)
     def inner(self, X=None, y=None, **kwargs):
         # If no Y is given, try to get it from
