@@ -157,7 +157,8 @@ class EpistasisMap(BaseMap):
                 "labels" : list(self.labels),
                 "values" : list(self.values),
                 "order" : self.order,
-                "keys" : list(self.keys)
+                "keys" : list(self.keys),
+                "model_type" : self.model_type
             }
             try:
                 data.update(stdeviations=self.stdeviations)
@@ -175,22 +176,23 @@ class EpistasisMap(BaseMap):
                 val = np.array(val)
             setattr(self, key, value)
 
-    def _from_labels(self, labels):
+    def _from_labels(self, labels, model_type="global"):
         """Set coef labels of an epistasis map instance.
         """
         self.labels = labels
         self.order = max([len(l) for l in labels])
         self._getorder = dict([(i, Order(self, i)) for i in range(0, self.order+1)])
+        self.model_type = model_type
 
     @classmethod
-    def from_labels(cls, labels):
+    def from_labels(cls, labels, model_type="global"):
         """Construct an EpistasisMap instance from labels.
         """
         self = cls()
-        self._from_labels(labels)
+        self._from_labels(labels, model_type=model_type)
         return self
 
-    def _from_mutations(self, mutations, order):
+    def _from_mutations(self, mutations, order, model_type="global"):
         """Set coef labels from mutations and order.
         """
         self.order = order
@@ -199,14 +201,20 @@ class EpistasisMap(BaseMap):
             mutations_to_coeffs(mutations)
         )
         self._getorder = dict([(i, Order(self, i)) for i in range(0, self.order+1)])
+        self.model_type = model_type
 
     @classmethod
-    def from_mutations(cls, mutations, order):
+    def from_mutations(cls, mutations, order, model_type="global"):
         """Build a mapping object for epistatic interactions."""
         # construct the mutations mapping
         self = cls()
-        self._from_mutations(mutations, order)
+        self._from_mutations(mutations, order, model_type=model_type)
         return self
+
+    @property
+    def model_type(self):
+        """Type of epistasis model used to get coefficients."""
+        return self._model_type
 
     @property
     def n(self):
@@ -302,6 +310,12 @@ class EpistasisMap(BaseMap):
         self.std = gpmap.errors.StandardDeviationMap(self)
         self.err = gpmap.errors.StandardErrorMap(self)
 
+    @model_type.setter
+    def model_type(self, model_type):
+        types = ["global", "local"]
+        if model_type not in types:
+            raise Exception("Model type must be global or local")
+        self._model_type = model_type
 
 class Order(BaseMap):
     """An object that provides API for easily calling epistasis of a given order

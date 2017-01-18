@@ -161,9 +161,9 @@ class BaseModel(object):
                     except AttributeError:
                         mutations = extract_mutations_from_genotypes(genotypes)
                 # Construct epistasis mapping
-                self.epistasis = EpistasisMap.from_mutations(mutations, self.order)
+                self.epistasis = EpistasisMap.from_mutations(mutations, self.order, model_type=self.model_type)
         else:
-            self.epistasis = EpistasisMap.from_labels(coeff_labels)
+            self.epistasis = EpistasisMap.from_labels(coeff_labels, model_type=self.model_type)
         # Construct the X matrix (convert to binary if necessary).
         try:
             return generate_dv_matrix(genotypes, self.epistasis.labels, model_type=self.model_type)
