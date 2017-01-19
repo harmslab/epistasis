@@ -46,7 +46,7 @@ class NonlinearSimulation(BaseSimulation):
         self = cls(model.wildtype, model.mutations, function, p0=p0, **kwargs)
         self.epistasis = model.epistasis
         self.build()
-        return selfs
+        return self
 
     def build(self, *args):
         """ Build nonlinear map from epistasis and function.

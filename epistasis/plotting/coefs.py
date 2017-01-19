@@ -72,8 +72,16 @@ def coefs(betas=[], labels=[], errors=None, **kwargs):
     """
     ## Set up plotting user options. Type check the options to make sure nothing
     # will break. Also helps with widgets.
+
+    # Prepare an cycle of colors
+    order = len(labels[-1])
+    prop_cycle = plt.rcParams['axes.prop_cycle']
+    color_cycle = prop_cycle.by_key()['color']
+    color_scalar = int(order / len(color_cycle))  + 1
+    color_cycle *= color_scalar
+
     defaults = {
-        "order_colors" : ("red","orange","green","purple","DeepSkyBlue","yellow","pink"),
+        "order_colors" : color_cycle,
         "logbase" : np.log10,
         "log_transform" : False,
         "significance" : "bon",
@@ -216,7 +224,7 @@ def coefs(betas=[], labels=[], errors=None, **kwargs):
         fig = plt.figure(figsize=options.figsize)
 
         n_coefs = len(labels)
-        n_sites = max([len(l) for l in labels])
+        n_sites = max([max(l) for l in labels])
 
         # Calculate the height_ratio of the grid and the bar graph
         box_size = options.figsize[0]/float(n_coefs)
@@ -233,8 +241,6 @@ def coefs(betas=[], labels=[], errors=None, **kwargs):
         ###### Create the box-array x-axis
         # path codes for drawing the boxes
         box_codes = [Path.MOVETO,Path.LINETO,Path.LINETO,Path.LINETO,Path.CLOSEPOLY]
-        n_coefs = len(labels)
-        n_sites = max([len(l) for l in labels])
 
         color_vector = options.order_colors
         for i in range(n_coefs):
@@ -269,6 +275,8 @@ def coefs(betas=[], labels=[], errors=None, **kwargs):
     # ------------------ #
 
     # set up bar colors
+    #prop_cycle = plt.rcParams['axes.prop_cycle']
+    #colors_for_bar = prop_cycle.by_key()['color']
     colors_for_bar = np.array([mpl.colors.colorConverter.to_rgba(options.order_colors[(i+1)]) for i in color_array])
 
     # Plot without errors
@@ -277,7 +285,7 @@ def coefs(betas=[], labels=[], errors=None, **kwargs):
             bar_y = options.logbase(betas)
         else:
             bar_y = betas
-        bar_axis.bar(np.arange(len(bar_y)) + 0.05, bar_y, width=0.9, color=colors_for_bar, edgecolor="none")
+        bar_axis.bar(np.arange(len(bar_y))+.55, bar_y, width=.9, color=colors_for_bar, edgecolor="none")
     # plot with errors
     else:
         bar_y = betas
@@ -294,15 +302,15 @@ def coefs(betas=[], labels=[], errors=None, **kwargs):
             new_bar_y = bar_y
         yerr = [new_lower, new_upper]
         # Plot
-        bar_axis.bar(range(len(new_bar_y)), new_bar_y,
-            width=0.8,
+        bar_axis.bar(np.arange(len(bar_y)) + 0.05, new_bar_y,
+            width=0.9,
             yerr=yerr,
             color=colors_for_bar,
             error_kw=error_kw,
             edgecolor="none",
             linewidth=2)
     # Add horizontal lines for each order
-    bar_axis.hlines(0, 0, len(betas)-1, linewidth=1, linestyle="-", zorder=0)
+    bar_axis.hlines(0, 0, len(betas), linewidth=1, linestyle="-", zorder=0)
     # Label barplot y-axis
     bar_axis.set_ylabel(options.y_axis_name, fontsize=14)
     # Set barplot y-scale
