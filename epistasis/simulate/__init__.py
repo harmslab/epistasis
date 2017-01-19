@@ -11,7 +11,7 @@ an `EpistasisMap` object.
 """
 # Hide the base class
 __all__ = [
-    "additive",
+    "linear",
     "multiplicative",
     "nk",
     "nonlinear"

@@ -29,6 +29,10 @@ class Parameters(object):
             self._mapping_[i] = self._param_list[i]
             self._mapping[self._param_list[i]] = i
 
+    def __call__(self):
+        """Return parameters if the instance is called."""
+        return dict(zip(self.keys, self.values))
+
     @property
     def keys(self):
         """Get ordered list of params"""
