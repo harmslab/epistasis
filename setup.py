@@ -16,7 +16,8 @@ packages = [
     'epistasis.models',
     'epistasis.models.linear',
     'epistasis.models.nonlinear',
-    'epistasis.plotting',
+    'epistasis.models.transformations',
+    'epistasis.plot',
     'epistasis.simulate',
 ]
 
