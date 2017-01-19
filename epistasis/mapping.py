@@ -171,10 +171,15 @@ class EpistasisMap(BaseMap):
         """
         with open(filename, "r") as f:
             data = json.load(f)
+        # Values must be set last
+        vals = data.pop("values")
         for key, val in data.items():
             if type(val) == list:
                 val = np.array(val)
             setattr(self, key, val)
+        # Now set values.
+        setattr(self, "values", vals)
+        self._getorder = dict([(i, Order(self, i)) for i in range(0, self.order+1)])
 
     def _from_labels(self, labels, model_type="global"):
         """Set coef labels of an epistasis map instance.
