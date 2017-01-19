@@ -19,5 +19,5 @@ __all__ = [
 
 # Load all Simulation classes on init.
 from .nk import NkSimulation
-from .additive import AdditiveSimulation
+from .linear import LinearSimulation
 from .nonlinear import NonlinearSimulation
