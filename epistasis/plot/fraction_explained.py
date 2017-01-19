@@ -1,7 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.path import Path
+from matplotlib import patches
 
-def fraction_explained(fraction_explained, color_vector=None,num_bins=1000,lw=0.25):
+def fraction_explained(fraction_explained, color_vector=None, num_bins=1000,lw=0.25):
     """
     Plot a square "pie" chart where each box is colored according to how often it
     occurs in the data set.
@@ -17,14 +19,18 @@ def fraction_explained(fraction_explained, color_vector=None,num_bins=1000,lw=0.
 
     # Create a color vector or grab the one off the command line
     if color_vector is None:
-        N = len(fraction_explained)*1.0 - 1
-        color_vector = []
-        for i in range(len(fraction_explained)):
-            color_vector.append((1,1 - i/N,1-i/N))
+        # Prepare an cycle of colors
+        order = len(fraction_explained)
+        prop_cycle = plt.rcParams['axes.prop_cycle']
+        color_vector = prop_cycle.by_key()['color']
+        color_scalar = int(order / len(color_vector))  + 1
+        color_vector *= color_scalar
     else:
         if len(fx_vector) > len(color_vector):
             err = "len(color_vector) must be >= len(fx_vector)\n"
             raise ValueError(err)
+
+
 
     # Discretize the input vector with appropriately scaled
     side_length = np.int(np.round(np.sqrt(num_bins),0))
@@ -47,7 +53,7 @@ def fraction_explained(fraction_explained, color_vector=None,num_bins=1000,lw=0.
                 current_index += 1
             # kind of a hack.  last entry sometimes has round error and doesn't get given a color.
             # use last entry to fill in.
-            if current_index >= len(fx_vector):
+            if current_index >= len(fraction_explained):
                 current_index -= 1
             # Draw box
             verts = [(j,i),(j+1,i),(j+1,i+1),(j,i+1),(j, i),]
