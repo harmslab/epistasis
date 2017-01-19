@@ -12,8 +12,3 @@ USER main
 # Install requirements for Python 3
 RUN mkdir .github
 RUN pip install cython
-RUN git clone https://github.com/harmslab/gpmap .github/gpmap
-RUN pip install -e .github/gpmap
-#RUN /home/main/anaconda/envs/python3/bin/pip install -e .github/gpmap
-RUN pip install -e .
-#RUN /home/main/anaconda/envs/python3/bin/pip install -e .

@@ -1,4 +1,4 @@
--e git+https://github.com/harmslab/gpmap.git#egg=gpmap
+gpmap
 numpy
 scikit-learn
 sklearn
@@ -8,3 +8,4 @@ jupyter
 notebook
 ipython
 ipywidgets
+cython
