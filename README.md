@@ -7,8 +7,9 @@
 
 A python API for modeling statistical, high-order epistasis in genotype-phenotype maps. All models follow a *Scikit-learn* interface, making it easy to integrate `epistasis` models with other pipelines and software. It includes a plotting module built on matplotlib for visualizing high-order interactions and interactive widgets to simplify complex nonlinear fits.
 
-This package includes APIs for both linear and nonlinear epistasis models, described in this [paper](http://biorxiv.org/content/early/2016/12/02/072256), relaxing
-the assumption of linearity.  
+This package includes APIs for both linear and nonlinear epistasis models, described in this [paper](https://doi.org/10.1534/genetics.116.195214).
+
+If you'd like to see how we used the epistasis package in our recent Genetics paper (2017), run our Jupyter notebooks [here](http://mybinder.org:/repo/harmslab/notebooks-nonlinear-high-order-epistasis)!
 
 ## Basic examples
 
@@ -54,7 +55,7 @@ model.fit(lmbda=1, lmbda2=1)
 The nonlinear fit also includes Jupyter Notebook widgets to make nonlinear fitting
 easier.
 ```python
-model.fit_widget(lmbda=(-2,2,.1), lmbda2=(-2,2,.1))
+model.fit(lmbda=(-2,2,.1), lmbda2=(-2,2,.1), use_widgets=True)
 ```
 
 More demos are available as [binder notebooks](http://mybinder.org/repo/harmslab/epistasis).

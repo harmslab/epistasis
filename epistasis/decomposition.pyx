@@ -43,4 +43,13 @@ def generate_dv_matrix(sequences, interactions, model_type="local"):
             x[n][i] = element
 
     # Returns the dummy matrix
-    return np.asarray(x)
+    x = np.asarray(x)
+
+    if model_type == "global":
+        order = len(sequences[0])
+        vii = np.array([-1**len(l) / 2**(order - len(l)) for l in interactions])
+        W = np.eye(len(vii))
+        W[range(len(vii)), range(len(vii))] = vii
+        x = np.dot(W,x)
+
+    return x
