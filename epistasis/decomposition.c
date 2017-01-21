@@ -910,6 +910,7 @@ static PyObject *__pyx_builtin_range;
 static const char __pyx_k_0[] = "0";
 static const char __pyx_k_1[] = "1";
 static const char __pyx_k_W[] = "W";
+static const char __pyx_k_X[] = "X";
 static const char __pyx_k_i[] = "i";
 static const char __pyx_k_j[] = "j";
 static const char __pyx_k_k[] = "k";
@@ -928,6 +929,7 @@ static const char __pyx_k_ones[] = "ones";
 static const char __pyx_k_test[] = "__test__";
 static const char __pyx_k_array[] = "array";
 static const char __pyx_k_dtype[] = "dtype";
+static const char __pyx_k_label[] = "label";
 static const char __pyx_k_local[] = "local";
 static const char __pyx_k_numpy[] = "numpy";
 static const char __pyx_k_order[] = "order";
@@ -948,6 +950,7 @@ static PyObject *__pyx_kp_s_0;
 static PyObject *__pyx_kp_s_1;
 static PyObject *__pyx_kp_s_Users_Zsailer_Documents_Researc;
 static PyObject *__pyx_n_s_W;
+static PyObject *__pyx_n_s_X;
 static PyObject *__pyx_n_s_array;
 static PyObject *__pyx_n_s_asarray;
 static PyObject *__pyx_n_s_dim1;
@@ -966,6 +969,7 @@ static PyObject *__pyx_n_s_interactions;
 static PyObject *__pyx_n_s_j;
 static PyObject *__pyx_n_s_k;
 static PyObject *__pyx_n_s_l;
+static PyObject *__pyx_n_s_label;
 static PyObject *__pyx_n_s_local;
 static PyObject *__pyx_n_s_m;
 static PyObject *__pyx_n_s_main;
@@ -1076,14 +1080,15 @@ static PyObject *__pyx_pf_9epistasis_13decomposition_generate_dv_matrix(CYTHON_U
   int __pyx_v_j;
   int __pyx_v_m;
   int __pyx_v_n;
-  int __pyx_v_l;
   Py_ssize_t __pyx_v_dim1;
   Py_ssize_t __pyx_v_dim2;
   PyObject *__pyx_v_x = NULL;
   PyObject *__pyx_v_element = NULL;
+  PyObject *__pyx_v_X = NULL;
   PyObject *__pyx_v_order = NULL;
   PyObject *__pyx_v_vii = NULL;
   PyObject *__pyx_v_W = NULL;
+  PyObject *__pyx_v_label = NULL;
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -1304,7 +1309,7 @@ static PyObject *__pyx_pf_9epistasis_13decomposition_generate_dv_matrix(CYTHON_U
   /* "epistasis/decomposition.pyx":46
  * 
  *     # Returns the dummy matrix
- *     x = np.asarray(x)             # <<<<<<<<<<<<<<
+ *     X = np.asarray(x)             # <<<<<<<<<<<<<<
  * 
  *     if model_type == "global":
  */
@@ -1356,15 +1361,15 @@ static PyObject *__pyx_pf_9epistasis_13decomposition_generate_dv_matrix(CYTHON_U
     }
   }
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  __Pyx_DECREF_SET(__pyx_v_x, __pyx_t_5);
+  __pyx_v_X = __pyx_t_5;
   __pyx_t_5 = 0;
 
   /* "epistasis/decomposition.pyx":48
- *     x = np.asarray(x)
+ *     X = np.asarray(x)
  * 
  *     if model_type == "global":             # <<<<<<<<<<<<<<
  *         order = len(sequences[0])
- *         vii = np.array([-1**len(l) / 2**(order - len(l)) for l in interactions])
+ *         vii = np.array([-1**len(label) / 2**(order - len(label)) for label in interactions])
  */
   __pyx_t_12 = (__Pyx_PyString_Equals(__pyx_v_model_type, __pyx_n_s_global, Py_EQ)); if (unlikely(__pyx_t_12 < 0)) __PYX_ERR(0, 48, __pyx_L1_error)
   if (__pyx_t_12) {
@@ -1373,7 +1378,7 @@ static PyObject *__pyx_pf_9epistasis_13decomposition_generate_dv_matrix(CYTHON_U
  * 
  *     if model_type == "global":
  *         order = len(sequences[0])             # <<<<<<<<<<<<<<
- *         vii = np.array([-1**len(l) / 2**(order - len(l)) for l in interactions])
+ *         vii = np.array([-1**len(label) / 2**(order - len(label)) for label in interactions])
  *         W = np.eye(len(vii))
  */
     __pyx_t_5 = __Pyx_GetItemInt(__pyx_v_sequences, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 49, __pyx_L1_error)
@@ -1388,7 +1393,7 @@ static PyObject *__pyx_pf_9epistasis_13decomposition_generate_dv_matrix(CYTHON_U
     /* "epistasis/decomposition.pyx":50
  *     if model_type == "global":
  *         order = len(sequences[0])
- *         vii = np.array([-1**len(l) / 2**(order - len(l)) for l in interactions])             # <<<<<<<<<<<<<<
+ *         vii = np.array([-1**len(label) / 2**(order - len(label)) for label in interactions])             # <<<<<<<<<<<<<<
  *         W = np.eye(len(vii))
  *         W[range(len(vii)), range(len(vii))] = vii
  */
@@ -1438,19 +1443,12 @@ static PyObject *__pyx_pf_9epistasis_13decomposition_generate_dv_matrix(CYTHON_U
         }
         __Pyx_GOTREF(__pyx_t_14);
       }
-      __pyx_t_6 = __Pyx_PyInt_As_int(__pyx_t_14); if (unlikely((__pyx_t_6 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 50, __pyx_L1_error)
-      __Pyx_DECREF(__pyx_t_14); __pyx_t_14 = 0;
-      __pyx_v_l = __pyx_t_6;
-      __pyx_t_14 = __Pyx_PyInt_From_int(__pyx_v_l); if (unlikely(!__pyx_t_14)) __PYX_ERR(0, 50, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_14);
-      __pyx_t_7 = PyObject_Length(__pyx_t_14); if (unlikely(__pyx_t_7 == -1)) __PYX_ERR(0, 50, __pyx_L1_error)
-      __Pyx_DECREF(__pyx_t_14); __pyx_t_14 = 0;
+      __Pyx_XDECREF_SET(__pyx_v_label, __pyx_t_14);
+      __pyx_t_14 = 0;
+      __pyx_t_7 = PyObject_Length(__pyx_v_label); if (unlikely(__pyx_t_7 == -1)) __PYX_ERR(0, 50, __pyx_L1_error)
       __pyx_t_14 = PyInt_FromSsize_t((-__Pyx_pow_Py_ssize_t(1, __pyx_t_7))); if (unlikely(!__pyx_t_14)) __PYX_ERR(0, 50, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_14);
-      __pyx_t_15 = __Pyx_PyInt_From_int(__pyx_v_l); if (unlikely(!__pyx_t_15)) __PYX_ERR(0, 50, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_15);
-      __pyx_t_7 = PyObject_Length(__pyx_t_15); if (unlikely(__pyx_t_7 == -1)) __PYX_ERR(0, 50, __pyx_L1_error)
-      __Pyx_DECREF(__pyx_t_15); __pyx_t_15 = 0;
+      __pyx_t_7 = PyObject_Length(__pyx_v_label); if (unlikely(__pyx_t_7 == -1)) __PYX_ERR(0, 50, __pyx_L1_error)
       __pyx_t_15 = PyInt_FromSsize_t(__pyx_t_7); if (unlikely(!__pyx_t_15)) __PYX_ERR(0, 50, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_15);
       __pyx_t_16 = PyNumber_Subtract(__pyx_v_order, __pyx_t_15); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 50, __pyx_L1_error)
@@ -1518,10 +1516,10 @@ static PyObject *__pyx_pf_9epistasis_13decomposition_generate_dv_matrix(CYTHON_U
 
     /* "epistasis/decomposition.pyx":51
  *         order = len(sequences[0])
- *         vii = np.array([-1**len(l) / 2**(order - len(l)) for l in interactions])
+ *         vii = np.array([-1**len(label) / 2**(order - len(label)) for label in interactions])
  *         W = np.eye(len(vii))             # <<<<<<<<<<<<<<
  *         W[range(len(vii)), range(len(vii))] = vii
- *         x = np.dot(W,x)
+ *         X = np.dot(W, X)
  */
     __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 51, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
@@ -1581,10 +1579,10 @@ static PyObject *__pyx_pf_9epistasis_13decomposition_generate_dv_matrix(CYTHON_U
     __pyx_t_5 = 0;
 
     /* "epistasis/decomposition.pyx":52
- *         vii = np.array([-1**len(l) / 2**(order - len(l)) for l in interactions])
+ *         vii = np.array([-1**len(label) / 2**(order - len(label)) for label in interactions])
  *         W = np.eye(len(vii))
  *         W[range(len(vii)), range(len(vii))] = vii             # <<<<<<<<<<<<<<
- *         x = np.dot(W,x)
+ *         X = np.dot(W, X)
  * 
  */
     __pyx_t_3 = PyObject_Length(__pyx_v_vii); if (unlikely(__pyx_t_3 == -1)) __PYX_ERR(0, 52, __pyx_L1_error)
@@ -1623,9 +1621,9 @@ static PyObject *__pyx_pf_9epistasis_13decomposition_generate_dv_matrix(CYTHON_U
     /* "epistasis/decomposition.pyx":53
  *         W = np.eye(len(vii))
  *         W[range(len(vii)), range(len(vii))] = vii
- *         x = np.dot(W,x)             # <<<<<<<<<<<<<<
+ *         X = np.dot(W, X)             # <<<<<<<<<<<<<<
  * 
- *     return x
+ *     return X
  */
     __pyx_t_16 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 53, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_16);
@@ -1646,7 +1644,7 @@ static PyObject *__pyx_pf_9epistasis_13decomposition_generate_dv_matrix(CYTHON_U
     }
     #if CYTHON_FAST_PYCALL
     if (PyFunction_Check(__pyx_t_5)) {
-      PyObject *__pyx_temp[3] = {__pyx_t_16, __pyx_v_W, __pyx_v_x};
+      PyObject *__pyx_temp[3] = {__pyx_t_16, __pyx_v_W, __pyx_v_X};
       __pyx_t_1 = __Pyx_PyFunction_FastCall(__pyx_t_5, __pyx_temp+1-__pyx_t_6, 2+__pyx_t_6); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 53, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_16); __pyx_t_16 = 0;
       __Pyx_GOTREF(__pyx_t_1);
@@ -1654,7 +1652,7 @@ static PyObject *__pyx_pf_9epistasis_13decomposition_generate_dv_matrix(CYTHON_U
     #endif
     #if CYTHON_FAST_PYCCALL
     if (__Pyx_PyFastCFunction_Check(__pyx_t_5)) {
-      PyObject *__pyx_temp[3] = {__pyx_t_16, __pyx_v_W, __pyx_v_x};
+      PyObject *__pyx_temp[3] = {__pyx_t_16, __pyx_v_W, __pyx_v_X};
       __pyx_t_1 = __Pyx_PyCFunction_FastCall(__pyx_t_5, __pyx_temp+1-__pyx_t_6, 2+__pyx_t_6); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 53, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_16); __pyx_t_16 = 0;
       __Pyx_GOTREF(__pyx_t_1);
@@ -1669,34 +1667,34 @@ static PyObject *__pyx_pf_9epistasis_13decomposition_generate_dv_matrix(CYTHON_U
       __Pyx_INCREF(__pyx_v_W);
       __Pyx_GIVEREF(__pyx_v_W);
       PyTuple_SET_ITEM(__pyx_t_2, 0+__pyx_t_6, __pyx_v_W);
-      __Pyx_INCREF(__pyx_v_x);
-      __Pyx_GIVEREF(__pyx_v_x);
-      PyTuple_SET_ITEM(__pyx_t_2, 1+__pyx_t_6, __pyx_v_x);
+      __Pyx_INCREF(__pyx_v_X);
+      __Pyx_GIVEREF(__pyx_v_X);
+      PyTuple_SET_ITEM(__pyx_t_2, 1+__pyx_t_6, __pyx_v_X);
       __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_5, __pyx_t_2, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 53, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
       __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
     }
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-    __Pyx_DECREF_SET(__pyx_v_x, __pyx_t_1);
+    __Pyx_DECREF_SET(__pyx_v_X, __pyx_t_1);
     __pyx_t_1 = 0;
 
     /* "epistasis/decomposition.pyx":48
- *     x = np.asarray(x)
+ *     X = np.asarray(x)
  * 
  *     if model_type == "global":             # <<<<<<<<<<<<<<
  *         order = len(sequences[0])
- *         vii = np.array([-1**len(l) / 2**(order - len(l)) for l in interactions])
+ *         vii = np.array([-1**len(label) / 2**(order - len(label)) for label in interactions])
  */
   }
 
   /* "epistasis/decomposition.pyx":55
- *         x = np.dot(W,x)
+ *         X = np.dot(W, X)
  * 
- *     return x             # <<<<<<<<<<<<<<
+ *     return X             # <<<<<<<<<<<<<<
  */
   __Pyx_XDECREF(__pyx_r);
-  __Pyx_INCREF(__pyx_v_x);
-  __pyx_r = __pyx_v_x;
+  __Pyx_INCREF(__pyx_v_X);
+  __pyx_r = __pyx_v_X;
   goto __pyx_L0;
 
   /* "epistasis/decomposition.pyx":7
@@ -1723,9 +1721,11 @@ static PyObject *__pyx_pf_9epistasis_13decomposition_generate_dv_matrix(CYTHON_U
   __Pyx_XDECREF(__pyx_v_encoding);
   __Pyx_XDECREF(__pyx_v_x);
   __Pyx_XDECREF(__pyx_v_element);
+  __Pyx_XDECREF(__pyx_v_X);
   __Pyx_XDECREF(__pyx_v_order);
   __Pyx_XDECREF(__pyx_v_vii);
   __Pyx_XDECREF(__pyx_v_W);
+  __Pyx_XDECREF(__pyx_v_label);
   __Pyx_XGIVEREF(__pyx_r);
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
@@ -1758,6 +1758,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_kp_s_1, __pyx_k_1, sizeof(__pyx_k_1), 0, 0, 1, 0},
   {&__pyx_kp_s_Users_Zsailer_Documents_Researc, __pyx_k_Users_Zsailer_Documents_Researc, sizeof(__pyx_k_Users_Zsailer_Documents_Researc), 0, 0, 1, 0},
   {&__pyx_n_s_W, __pyx_k_W, sizeof(__pyx_k_W), 0, 0, 1, 1},
+  {&__pyx_n_s_X, __pyx_k_X, sizeof(__pyx_k_X), 0, 0, 1, 1},
   {&__pyx_n_s_array, __pyx_k_array, sizeof(__pyx_k_array), 0, 0, 1, 1},
   {&__pyx_n_s_asarray, __pyx_k_asarray, sizeof(__pyx_k_asarray), 0, 0, 1, 1},
   {&__pyx_n_s_dim1, __pyx_k_dim1, sizeof(__pyx_k_dim1), 0, 0, 1, 1},
@@ -1776,6 +1777,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_j, __pyx_k_j, sizeof(__pyx_k_j), 0, 0, 1, 1},
   {&__pyx_n_s_k, __pyx_k_k, sizeof(__pyx_k_k), 0, 0, 1, 1},
   {&__pyx_n_s_l, __pyx_k_l, sizeof(__pyx_k_l), 0, 0, 1, 1},
+  {&__pyx_n_s_label, __pyx_k_label, sizeof(__pyx_k_label), 0, 0, 1, 1},
   {&__pyx_n_s_local, __pyx_k_local, sizeof(__pyx_k_local), 0, 0, 1, 1},
   {&__pyx_n_s_m, __pyx_k_m, sizeof(__pyx_k_m), 0, 0, 1, 1},
   {&__pyx_n_s_main, __pyx_k_main, sizeof(__pyx_k_main), 0, 0, 1, 1},
@@ -1811,10 +1813,10 @@ static int __Pyx_InitCachedConstants(void) {
  *     """ Build the X matrix of dummy variable for linear regression
  *         in epistasis model.
  */
-  __pyx_tuple_ = PyTuple_Pack(18, __pyx_n_s_sequences, __pyx_n_s_interactions, __pyx_n_s_model_type, __pyx_n_s_model_options, __pyx_n_s_encoding, __pyx_n_s_i, __pyx_n_s_j, __pyx_n_s_k, __pyx_n_s_m, __pyx_n_s_n, __pyx_n_s_l, __pyx_n_s_dim1, __pyx_n_s_dim2, __pyx_n_s_x, __pyx_n_s_element, __pyx_n_s_order, __pyx_n_s_vii, __pyx_n_s_W); if (unlikely(!__pyx_tuple_)) __PYX_ERR(0, 7, __pyx_L1_error)
+  __pyx_tuple_ = PyTuple_Pack(20, __pyx_n_s_sequences, __pyx_n_s_interactions, __pyx_n_s_model_type, __pyx_n_s_model_options, __pyx_n_s_encoding, __pyx_n_s_i, __pyx_n_s_j, __pyx_n_s_k, __pyx_n_s_m, __pyx_n_s_n, __pyx_n_s_l, __pyx_n_s_dim1, __pyx_n_s_dim2, __pyx_n_s_x, __pyx_n_s_element, __pyx_n_s_X, __pyx_n_s_order, __pyx_n_s_vii, __pyx_n_s_W, __pyx_n_s_label); if (unlikely(!__pyx_tuple_)) __PYX_ERR(0, 7, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple_);
   __Pyx_GIVEREF(__pyx_tuple_);
-  __pyx_codeobj__2 = (PyObject*)__Pyx_PyCode_New(3, 0, 18, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple_, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_Users_Zsailer_Documents_Researc, __pyx_n_s_generate_dv_matrix, 7, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__2)) __PYX_ERR(0, 7, __pyx_L1_error)
+  __pyx_codeobj__2 = (PyObject*)__Pyx_PyCode_New(3, 0, 20, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple_, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_Users_Zsailer_Documents_Researc, __pyx_n_s_generate_dv_matrix, 7, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__2)) __PYX_ERR(0, 7, __pyx_L1_error)
   __Pyx_RefNannyFinishContext();
   return 0;
   __pyx_L1_error:;
