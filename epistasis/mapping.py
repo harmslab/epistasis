@@ -186,7 +186,6 @@ class EpistasisMap(BaseMap):
         """
         self.labels = labels
         self.order = max([len(l) for l in labels])
-        self._getorder = dict([(i, Order(self, i)) for i in range(0, self.order+1)])
         self.model_type = model_type
 
     @classmethod
@@ -205,7 +204,6 @@ class EpistasisMap(BaseMap):
             self.order,
             mutations_to_coeffs(mutations)
         )
-        self._getorder = dict([(i, Order(self, i)) for i in range(0, self.order+1)])
         self.model_type = model_type
 
     @classmethod
@@ -274,10 +272,9 @@ class EpistasisMap(BaseMap):
         """Get standard deviations from model"""
         return self._stdeviations
 
-    @property
-    def getorder(self):
+    def get_order(self, order):
         """Get epistasis of a given order."""
-        return self._getorder
+        return Order(self, order)
 
     # ----------------------------------------------
     # Setter Functions
@@ -329,6 +326,10 @@ class Order(BaseMap):
     def __init__(self, epistasismap, order):
         self._epistasismap = epistasismap
         self.order = order
+
+    def __call__(self):
+        """return a dictioanry"""
+        return dict(zip(self.keys, self.values))
 
     @property
     def indices(self):

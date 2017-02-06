@@ -18,6 +18,5 @@ __all__ = [
 ]
 
 # Load all Simulation classes on init.
-from .nk import NkSimulation
 from .linear import LinearSimulation
 from .nonlinear import NonlinearSimulation

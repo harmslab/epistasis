@@ -12,6 +12,29 @@ from scipy.stats import norm
 # Correlation metrics
 # -----------------------------------------------------------------------
 
+def magnitude_vs_order(EpistasisMap, orders=None):
+    """Calculate the average magnitude of epistasis for each order of epistasis.
+    in a high-order epistasis model.
+    """
+    # If orders are not explicitly given
+    if orders is None:
+        orders = list(range(1, EpistasisMap.order+1))
+    else:
+        if orders[-1] > EpistasisMap.order:
+            raise Exception("""Epistatic orders given are larger than order of \
+            epistasis in the EpistasisMap.""")
+    magnitudes, std = [], []
+    for order in orders:
+        mapping = EpistasisMap.get_order(order)
+        vals = abs(np.array(mapping.values))
+        magnitudes.append(np.mean(vals))
+        std.append(np.std(vals))
+    return orders, magnitudes, std
+
+# -----------------------------------------------------------------------
+# Correlation metrics
+# -----------------------------------------------------------------------
+
 def incremental_mean(old_mean, samples, M, N):
     """Calculate an incremental running mean.
 

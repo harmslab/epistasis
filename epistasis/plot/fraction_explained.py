@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.path import Path
 from matplotlib import patches
+import warnings
 
 def fraction_explained(fraction_explained, color_vector=None, num_bins=1000,lw=0.25):
     """

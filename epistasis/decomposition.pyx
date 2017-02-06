@@ -45,11 +45,11 @@ def generate_dv_matrix(sequences, interactions, model_type="local"):
     # Returns the dummy matrix
     X = np.asarray(x)
 
-    if model_type == "global":
-        order = len(sequences[0])
-        vii = np.array([-1**len(label) / 2**(order - len(label)) for label in interactions])
-        W = np.eye(len(vii))
-        W[range(len(vii)), range(len(vii))] = vii
-        X = np.dot(W, X)
+    #if model_type == "global":
+    #    order = len(sequences[0])
+    #    vii = np.array([-1**len(label) / 2**(order - len(label)) for label in interactions])
+    #    W = np.eye(len(vii))
+    #    W[range(len(vii)), range(len(vii))] = vii
+    #    X = np.dot(W, X)
 
     return X
