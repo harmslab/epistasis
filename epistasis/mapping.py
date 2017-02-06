@@ -272,9 +272,9 @@ class EpistasisMap(BaseMap):
         """Get standard deviations from model"""
         return self._stdeviations
 
-    def get_order(self, order):
+    def get_orders(self, *orders):
         """Get epistasis of a given order."""
-        return Order(self, order)
+        return Orders(self, orders)
 
     # ----------------------------------------------
     # Setter Functions
@@ -319,13 +319,13 @@ class EpistasisMap(BaseMap):
             raise Exception("Model type must be global or local")
         self._model_type = model_type
 
-class Order(BaseMap):
+class Orders(BaseMap):
     """An object that provides API for easily calling epistasis of a given order
     in an epistasis map.
     """
-    def __init__(self, epistasismap, order):
+    def __init__(self, epistasismap, orders):
         self._epistasismap = epistasismap
-        self.order = order
+        self.orders = orders
 
     def __call__(self):
         """return a dictioanry"""
@@ -334,15 +334,17 @@ class Order(BaseMap):
     @property
     def indices(self):
         """Get indices of epistasis from this order."""
+        # Check is multiple orders were given
+        try:
+            orders = list(iter(self.orders))
+        except TypeError:
+            orders = [self.orders]
         labels = self._epistasismap.labels
-        if self.order == 0:
-            return np.array([0])
-        x = [i for i in range(len(labels)) if len(labels[i]) == self.order]
-        # Remove the zeroth element
-        if self.order == 1:
-            return np.array(x[1:])
-        else:
-            return np.array(x)
+        x = [i for i in range(1,len(labels)) if len(labels[i]) in orders]
+        # Add the zeroth element if included
+        if 0 in orders:
+            x = [0]+x
+        return np.array(x)
 
     @property
     def labels(self):

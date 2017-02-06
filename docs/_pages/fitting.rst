@@ -30,8 +30,9 @@ and call scikit-learn's ``fit`` method.
     # Fit the epistasis model.
     model.fit()
 
+The GenotypePhenotypeMap becomes an attribute of the model.
 
-When ``fit`` is called on a model, an ``epistasis`` attribute is exposed. This attribute is
+When ``fit`` is called on a model, the ``epistasis`` attribute is also exposed. This attribute is
 an ``EpistasisMap`` object, which handles internal mapping for the epistatic coefficients and
 includes a set of methods that make analyzing the epistatic coefficients easy.
 
@@ -39,7 +40,7 @@ To get a quick look at the epistatic coefficients:
 
     .. code-block:: python
 
-        >>> print(model.epistasis.map("keys", "values"))
+        >>> model.epistasis.map("keys", "values")
 
             {
                 "0": 0,
@@ -48,8 +49,9 @@ To get a quick look at the epistatic coefficients:
                 "1,2": 2
             }
 
-
-
+This object includes properties such as: ``keys``, ``values``, and ``labels``.
+It also has a ``get_orders`` method, which returns submap of epistatic coefficients
+with only the orders passed to it.
 
 Fit a linear, high-order epistasis model
 ----------------------------------------
