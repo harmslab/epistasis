@@ -57,7 +57,7 @@ def X_fitter(method):
                 X = self.X
             # If not, build one.
             except AttributeError:
-                X = self.X_constructor(genotypes=self.gpm.genotypes)
+                X = self.X_constructor(genotypes=self.gpm.binary.genotypes)
                 self.X = X
             output = method(self, X, y, **kwargs)
             # Reference the model coefficients in the epistasis map.
@@ -168,7 +168,7 @@ class BaseModel(object):
         try:
             return generate_dv_matrix(genotypes, self.epistasis.labels, model_type=self.model_type)
         except:
-            mapping =self.gpm.map("complete_genotypes", "binary.complete_genotypes")
+            mapping = self.gpm.map("complete_genotypes", "binary.complete_genotypes")
             binaries = [mapping[g] for g in genotypes]
             return generate_dv_matrix(binaries, self.epistasis.labels, model_type=self.model_type)
 
