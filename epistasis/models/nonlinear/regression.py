@@ -1,5 +1,6 @@
 import inspect
 import numpy as np
+import json
 from functools import wraps
 from scipy.optimize import curve_fit
 
@@ -28,6 +29,12 @@ class Parameters(object):
             setattr(self, self._param_list[i], 0)
             self._mapping_[i] = self._param_list[i]
             self._mapping[self._param_list[i]] = i
+
+    def to_json(self, filename):
+        """Write parameters to json
+        """
+        with open(filename, "w") as f:
+            json.dump(f, self())
 
     def __call__(self):
         """Return parameters if the instance is called."""

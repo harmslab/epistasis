@@ -1,6 +1,7 @@
 import scipy
 import numpy as np
 import inspect
+import json
 from .regression import EpistasisNonlinearRegression
 
 def power_transform(x, lmbda, A, B):
@@ -43,3 +44,12 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
         """reverse transform"""
         gmean = self.gmean
         return (gmean**(lmbda-1)*lmbda*(y - B) + 1)**(1/lmbda) - A
+
+    def _params_to_json(self, filename):
+        """Temporary method. will be deprecated soon!!!!!
+        """
+        params = self.parameters()
+
+        params.update(gmean=self.gmean)
+        with open(filename, "w") as f:
+            json.dump(params, f)

@@ -179,7 +179,7 @@ class EpistasisMap(BaseMap):
             setattr(self, key, val)
         # Now set values.
         setattr(self, "values", vals)
-        self._getorder = dict([(i, Order(self, i)) for i in range(0, self.order+1)])
+        #self._getorder = dict([(i, Order(self, i)) for i in range(0, self.order+1)])
 
     def _from_labels(self, labels, model_type="global"):
         """Set coef labels of an epistasis map instance.
