@@ -102,7 +102,7 @@ class BaseSimulation(GenotypePhenotypeMap):
         return cls(wildtype, mutations, **kwargs)
 
     @classmethod
-    def from_coefs(cls, wildtype, mutations, labels, coefs, model_type="local", **kwargs):
+    def from_coefs(cls, wildtype, mutations, labels, coefs, model_type="local", *args, **kwargs):
         """Construct a genotype-phenotype map from epistatic coefficients.
 
         Parameters
@@ -123,8 +123,8 @@ class BaseSimulation(GenotypePhenotypeMap):
         GenotypePhenotypeMap
         """
         order = max([len(l) for l in labels])
-        self = cls(wildtype, mutations, model_type=model_type, **kwargs)
-        if len(betas) != space.epistasis.n:
+        self = cls(wildtype, mutations, model_type=model_type, *args, **kwargs)
+        if len(coefs) != len(labels):
             raise Exception("""Number of betas does not match order/mutations given.""")
         self.set_coefs(labels, coefs)
         return self
