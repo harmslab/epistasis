@@ -41,11 +41,13 @@ class LinearSimulation(BaseSimulation):
     """
     def __init__(self, wildtype, mutations,
         model_type='local',
+        **kwargs
         ):
         # Construct epistasis mapping objects (empty)
         super(LinearSimulation,self).__init__(
             wildtype,
             mutations,
+            **kwargs
         )
         self.model_type = model_type
 
