@@ -3,16 +3,18 @@ import numpy as np
 import inspect
 import json
 from .regression import EpistasisNonlinearRegression
+from epistasis.stats import gmean
 
 def power_transform(x, lmbda, A, B):
-    """Power transformation function."""
-    gmean = scipy.stats.mstats.gmean(x+A)
+    """Power transformation function. Ignore zeros in gmean calculation"""
+    # Check for zeros
+    gm = gmean(x+A)
     if lmbda == 0:
-        return gmean*np.log(x+A)
+        return gm*np.log(x + A)
     else:
         first = (x+A)**lmbda
-        out = (first - 1.0)/(lmbda * gmean**(lmbda-1)) + B
-        return out
+        out = (first - 1.0)/(lmbda * gm**(lmbda-1)) + B
+    return out
 
 class EpistasisPowerTransform(EpistasisNonlinearRegression):
     """"""
@@ -24,21 +26,24 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
             model_type=model_type,
             fix_linear=fix_linear,
             **kwargs)
+
         def function(x, lmbda, A, B):
-            """Power transformation function."""
-            gmean = self.gmean
+            """Power transformation function. Ignore zeros in gmean calculation"""
+            # Check for zeros
+            gm = gmean(x+A)
             if lmbda == 0:
-                return gmean*np.log(x+A)
+                return gm*np.log(x + A)
             else:
                 first = (x+A)**lmbda
-                out = (first - 1.0)/(lmbda * gmean**(lmbda-1)) + B
-                return out
+                out = (first - 1.0)/(lmbda * gm**(lmbda-1)) + B
+            return out
+
         self.function = function
 
     @property
     def gmean(self):
         linear = np.dot(self.X, self.coef_)
-        return scipy.stats.mstats.gmean(linear + self.parameters.A)
+        return gmean(linear + self.parameters.A)
 
     def reverse(self, y, lmbda, A, B):
         """reverse transform"""

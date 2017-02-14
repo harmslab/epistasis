@@ -7,6 +7,7 @@ __doc__ = """Submodule with useful statistics functions for epistasis model."""
 import numpy as np
 from scipy.stats import f
 from scipy.stats import norm
+import scipy
 
 # -----------------------------------------------------------------------
 # Correlation metrics
@@ -34,6 +35,36 @@ def magnitude_vs_order(EpistasisMap, orders=None):
 # -----------------------------------------------------------------------
 # Correlation metrics
 # -----------------------------------------------------------------------
+
+def gmean(x):
+    """Calculate a geometric mean with zero and negative values.
+
+    Following the gmean calculation from this paper:
+    Habib, Elsayed AE. "Geometric mean for negative and zero values."
+        International Journal of Research and Reviews in Applied Sciences 11
+        (2012): 419-432.
+    """
+    x_neg = x[x<0]
+    x_pos = x[x>0]
+    x_zero = x[x==0]
+
+    n_neg = len(x_neg)
+    n_pos = len(x_pos)
+    n_zero = len(x_zero)
+    N = len(x)
+
+    gm_neg, gm_pos, gm_zero = 0,0,0
+    if n_neg > 0:
+        gm_neg = scipy.stats.mstats.gmean(abs(x_neg))
+    if n_pos > 0:
+        gm_pos = scipy.stats.mstats.gmean(x_pos)
+
+    g1 = -1 * gm_neg * n_neg / N
+    g2 = gm_pos * n_pos / N
+    g3 = gm_zero * n_zero / N
+
+    GM = g1 + g2 + g3
+    return GM
 
 def incremental_mean(old_mean, samples, M, N):
     """Calculate an incremental running mean.
