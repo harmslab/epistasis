@@ -31,6 +31,7 @@ def resid(y_pred, y_obs, fig=None, ax=None, figsize=None):
     ax.hlines(0,min(y_pred), max(y_pred), linestyle="--", color="gray")
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
+    return fig, ax
 
 def rhist(y_pred, y_obs, fig=None, ax=None, figsize=None):
     """Make a horizontal histogram for residuals between y_obs and y_pred.
