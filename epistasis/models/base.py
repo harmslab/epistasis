@@ -61,7 +61,7 @@ def X_fitter(method):
                 self.X = X
             output = method(self, X, y, **kwargs)
             # Reference the model coefficients in the epistasis map.
-            self.epistasis.values = self.coef_
+            self.epistasis.values = np.reshape(self.coef_, (len(self.epistasis.labels),))
             return output
         else:
             self.X = X

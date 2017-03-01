@@ -40,7 +40,7 @@ class LinearSimulation(BaseSimulation):
         phenotypes
     """
     def __init__(self, wildtype, mutations,
-        model_type='local',
+        model_type='global',
         **kwargs
         ):
         # Construct epistasis mapping objects (empty)

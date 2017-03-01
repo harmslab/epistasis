@@ -10,7 +10,7 @@ class NonlinearSimulation(BaseSimulation):
     def __init__(self, wildtype, mutations,
             function,
             p0=[],
-            model_type='local',
+            model_type='global',
             **kwargs
         ):
         super(NonlinearSimulation, self).__init__(wildtype, mutations,

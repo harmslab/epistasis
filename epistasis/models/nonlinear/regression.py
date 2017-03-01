@@ -69,27 +69,28 @@ class Parameters(object):
 class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
     """Fit a nonlinear epistasis model.
     """
-    def __init__(self, function, reverse,
+    def __init__(self,
+        function=lambda x: x,
+        reverse=lambda x: x,
         order=1,
         model_type="global",
-        fix_linear=False,
+        fix_linear=True,
         **kwargs):
         # Get the parameters from the nonlinear function argument list
         function_sign = inspect.signature(function)
         parameters = list(function_sign.parameters.keys())
         if parameters[0] != "x":
             raise Exception(""" First argument of the nonlinear function must be `x`. """)
-        # Add parameters to kwargs
-        self.parameters = Parameters(parameters[1:])
 
         # Set up the function for fitting.
         self._function = function
-        @wraps(self._function)
-        def function(*args, **kwargs): return self._function(*args, **kwargs)
+        #@wraps(self._function)
+        #def function(*args, **kwargs): return self._function(*args, **kwargs)
         self.function = function
 
         self.reverse = reverse
         # Construct parameters object
+        self.parameters = Parameters(parameters[1:])
         self.set_params(order=order,
             model_type=model_type,
             fix_linear=fix_linear,
