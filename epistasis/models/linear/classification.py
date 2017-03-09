@@ -3,6 +3,7 @@ import numpy as np
 
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
+from sklearn.naive_bayes import BernoulliNB
 
 from ..base import BaseModel, X_fitter, X_predictor, sklearn_to_epistasis
 
@@ -74,6 +75,11 @@ class EpistasisBaseClassifier(BaseModel):
 @sklearn_to_epistasis()
 class EpistasisLogisticRegression(LogisticRegression, EpistasisBaseClassifier):
     """Logistic Regression used to categorize phenotypes as either alive or dead.
+    """
+
+@sklearn_to_epistasis()
+class EpistasisBernoulliNB(BernoulliNB, EpistasisBaseClassifier):
+    """
     """
 
 @sklearn_to_epistasis()

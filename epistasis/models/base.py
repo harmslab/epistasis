@@ -1,5 +1,6 @@
 import numpy as np
 from functools import wraps
+from sklearn.preprocessing import binarize
 
 # imports from gpmap dependency
 from gpmap.gpm import GenotypePhenotypeMap
@@ -38,13 +39,12 @@ def X_fitter(method):
     @wraps(method)
     def inner(self, X=None, y=None, **kwargs):
         # If no Y is given, try to get it from
-        model_class = self.__class__.__name__
+        module = self.__module__.split(".")[-1]
         if y is None:
             try:
                 y = np.array(self.gpm.binary.phenotypes)
-                if model_class in ["EpistasisLogisticRegression", "EpistasisSVC"]:
-                    y[ y < self.threshold ] = 0
-                    y[ y >= self.threshold ] = 1
+                if module == "classification":
+                    y = binarize(y.reshape((1,-1)), threshold=self.threshold)[0]
             except AttributeError:
                 raise AttributeError(
                     "y argument is missing, and no "
