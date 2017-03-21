@@ -62,21 +62,17 @@ More demos are available as [binder notebooks](http://mybinder.org/repo/harmslab
 
 ## Installation
 
+You must have Python 2.7+ or 3+ installed.
+
+To install the most recent release of this package, run:
+```
+pip install epistasis
+```
+
 To install, clone these repo and run:
-
 ```
-python setup.py install
+pip install -e .
 ```
-
-or, if you'd like to soft install for development:
-
-```
-python setup.py develop
-```
-
-This package is still really hacked together. I plan to include examples and clean up some of the plotting/network managing very soon.
-
-Works in Python 2.7+ and Python 3+
 
 ## Documentation
 
