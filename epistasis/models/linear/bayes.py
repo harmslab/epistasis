@@ -16,7 +16,6 @@ class EpistasisGaussianNB(_GaussianNB, _BaseModel):
     def fit(self, X=None, y=None, sample_weight=None):
         # Build input linear regression.
         super(self.__class__, self).fit(X, y, sample_weight)
-        #self._score = self.score(X,y)
 
     @X_predictor
     def predict(self, X=None):

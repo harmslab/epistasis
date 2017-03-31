@@ -49,5 +49,3 @@ class EpistasisLinearRegression(_LinearRegression, _BaseModel):
         # predict from that model
         predictions = model.predict(X=None)
         return predictions
-
-    
