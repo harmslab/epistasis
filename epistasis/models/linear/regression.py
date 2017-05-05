@@ -18,7 +18,7 @@ class EpistasisLinearRegression(_LinearRegression, _BaseModel):
 
     @X_predictor
     def function(self, X=None, coefs=None):
-        return np.dot(X, coefs)
+        return _np.dot(X, coefs)
 
     @X_fitter
     def fit(self, X=None, y=None, sample_weight=None):

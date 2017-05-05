@@ -52,7 +52,7 @@ class Sampler(object):
         """Get model. Protects the model from being changed once passed to sampler."""
         return self._model
 
-    def write_samples(self, key, data):
+    def write_dataset(self, key, data):
         """Write data to database file.
         """
         # Get the dataset
@@ -60,8 +60,26 @@ class Sampler(object):
 
         # Resize the dataset for the new samples
         old_dims = ds.shape
-        new_dims = (old_dims[0] + data.shape[0], data.shape[1])
-        ds.resize(new_dims)
+        new_dims = list(data.shape)
+        new_dims[0] = old_dims[0] + data.shape[0]
+        ds.resize(tuple(new_dims))
 
         # Add the new samples
-        ds[old_dims[0]:new_dims[0], :] = data
+        if len(new_dims) == 1:
+            ds[old_dims[0]:new_dims[0]] = data
+        elif len(new_dims) == 2:
+            ds[old_dims[0]:new_dims[0], :] = data
+
+    @property
+    def coefs(self):
+        """Samples of epistatic coefficients. Rows are samples, Columns are coefs."""
+        return self.File["coefs"]
+
+    @property
+    def labels(self):
+        return self.model.epistasis.labels
+
+    @property
+    def scores(self):
+        """Samples of epistatic coefficients. Rows are samples, Columns are coefs."""
+        return self.File["scores"]

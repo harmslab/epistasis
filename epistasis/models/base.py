@@ -27,18 +27,18 @@ def sklearn_to_epistasis():
 def X_predictor(method):
     """Decorator to automatically generate X for predictor methods in epistasis models."""
     @wraps(method)
-    def inner(self, X=None):
+    def inner(self, X=None, *args, **kwargs):
         """"""
         # Build input to
         if X is None:
             X = self.X_constructor(genotypes=self.gpm.binary.complete_genotypes)
-        return method(self, X)
+        return method(self, X, *args, **kwargs)
     return inner
 
 def X_fitter(method):
     """Decorator to automatically generate X for fit methods in epistasis models."""
     @wraps(method)
-    def inner(self, X=None, y=None, **kwargs):
+    def inner(self, X=None, y=None, *args, **kwargs):
         # If no Y is given, try to get it from
         module = self.__module__.split(".")[-1]
         if y is None:
@@ -60,13 +60,13 @@ def X_fitter(method):
             except AttributeError:
                 X = self.X_constructor(genotypes=self.gpm.binary.genotypes)
                 self.X = X
-            output = method(self, X=X, y=y, **kwargs)
+            output = method(self, X=X, y=y, *args, **kwargs)
             # Reference the model coefficients in the epistasis map.
             self.epistasis.values = np.reshape(self.coef_, (len(self.epistasis.labels),))
             return output
         else:
             self.X = X
-            output = method(self, X=X, y=y, **kwargs)
+            output = method(self, X=X, y=y, *args, **kwargs)
             return output
     return inner
 
