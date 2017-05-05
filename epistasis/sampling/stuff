@@ -1,19 +1,14 @@
-"""
-A Bayesian, high-order, linear epistasis model.
 
-"""
-import numpy as _np
-import emcee as _emcee
 
-from ..base import BaseModel as _BaseModel
-from ..linear.regression import EpistasisLinearRegression as _EpistasisLinearRegression
-from ..base import X_fitter, X_predictor
 
-class EpistasisLinearBayesianEstimator(_EpistasisLinearRegression, _BaseModel):
+class EpistasisLinearBayesianEstimator(_EpistasisLinearRegression, _BayesBaseModel):
+    """A Bayesian approach to estimating epistatic coefficients in a genotype-phenotype
+    map. This module uses `emcee`'s Affine-Invariant Ensemble Sampler to sample
+    the epistatic parameter space and calculate likeihoods.
     """
-    """
-    def __init__(self, order=1, model_type="global", **kwargs):
+    def __init__(self, fname, order=1, model_type="global", **kwargs):
         self.order = order
+        self.fname = fname
 
     @X_fitter
     def log_likelihood(self, betas=None, X=None, y=None, yerr=None):
@@ -26,7 +21,7 @@ class EpistasisLinearBayesianEstimator(_EpistasisLinearRegression, _BaseModel):
         inv_sigma2 = 1.0/(yerr**2 + model**2*_np.exp(2*lnf))
         return -0.5*(_np.sum((y-ymodel)**2*inv_sigma2 - _np.log(inv_sigma2)))
 
-    def log_prior(self, wildtype, betas):
+    def log_prior(self):
         """Compute the log prior value for the given set of coefficients.
         """
         return 1
@@ -50,14 +45,29 @@ class EpistasisLinearBayesianEstimator(_EpistasisLinearRegression, _BaseModel):
         # Use the maximum likelihood estimator to start with a set of guesses.
         super(EpistasisLinearBayes, self).fit(X=X,y=None)
         ml_guess = self.epistasis.values
-        starting_position = [self.epistasis.values + _np.random.randn(n_coefs) for i in range(n_walkers)]
+        p0 = [self.epistasis.values + _np.random.randn(n_coefs) for i in range(n_walkers)]
 
         # Initialize an emcee Monte Carlo Markov Chain object
         args = (X, y, yerr)
         self.sampler = _emcee.EnsembleSampler(n_walkers, n_coefs, self.log_prob, args=args)
-        self.sampler.run_mcmc(starting_position, n_samples, **kwargs)
 
+        # Run MCMC
+        chain = np.empty((i, n_walkers, n_coefs), dtype=float)
+        log_probs = np.empty((i, n_walkers, n_coefs), dtype=float)
+        lnprob, rstate, blobs = None, None, None
+        for i in range(n_samples):
+            # Iterate a single sample
+            p0, lnprob, rstate = self.sampler.sample(p0,
+                lnprob0=lnprob,
+                rstate0=rstate,
+                storechain=False,
+                **kwargs)
+            chain[i] = p0
+            log_probs[i] = lnprob
 
+        # Set the chain
+        self.epistasis.samples = chain
+        self.epistasis.probabilities = log_probs
 
     @X_predictor
     def predict(self, X=None):

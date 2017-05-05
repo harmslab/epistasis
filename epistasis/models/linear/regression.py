@@ -6,7 +6,7 @@ from epistasis.models.base import X_fitter as X_fitter
 from epistasis.models.base import X_predictor as X_predictor
 
 class EpistasisLinearRegression(_LinearRegression, _BaseModel):
-    """ Ordinary least-squares regression of epistatic interactions.
+    """Ordinary least-squares regression of epistatic interactions.
     """
     def __init__(self, order=1, model_type="global", n_jobs=1, **kwargs):
         # Set Linear Regression settings.
@@ -15,6 +15,10 @@ class EpistasisLinearRegression(_LinearRegression, _BaseModel):
         self.copy_X = False
         self.n_jobs = n_jobs
         self.set_params(model_type=model_type, order=order)
+
+    @X_predictor
+    def function(self, X=None, coefs=None):
+        return np.dot(X, coefs)
 
     @X_fitter
     def fit(self, X=None, y=None, sample_weight=None):

@@ -1,3 +1,6 @@
+"""
+A mapping object for Bayesian epistasis models.
+"""
 from . mapping import EpistasisMap
 import h5py
 
@@ -11,17 +14,26 @@ class EpistasisBayesianMapping(EpistasisMap):
         self.filename = fname+".hdf5"
         self.File = self.h5py.File(self.filename, "a")
 
+    def find_most_probable_model(self):
+        """Return the indices of the most probability model. Iterates over all
+        walkers and samples.
+        """
+        # Calculate the total probability of each model.
+        total_p = probabilities.sum(axis=2)
+        # final the most probable model
+        ml_index = np.unravel_index(total_p.argmax(), total_p.shape)
+        return ml_index
+
     @property
     def log_prob(self):
+        """Return the log probabilities of the most probable model
         """
-        """
-        
-
+        return self._probabilities[ml_index[0], ml_index[1], :]
 
     @property
     def values(self):
         """Get the values of the interaction in the system"""
-
+        return self._samples[ml_index[0], ml_index[1], :]
 
     @property
     def stdeviations(self):

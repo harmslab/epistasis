@@ -12,9 +12,10 @@ from epistasis.stats import bootstrap
 from epistasis.utils import extract_mutations_from_genotypes
 
 def sklearn_to_epistasis():
-    """Decorate a subclass of sklearn model class to automagically convert it into a
+    """Decorate a scikit learn class with this function and automagically convert it into a
     epistasis sklearn model class.
     """
+    @wraps(method)
     def inner(cls):
         base_model = cls.__bases__[-1]
         for attr in base_model.__dict__:
@@ -116,10 +117,6 @@ class BaseModel(object):
         if GenotypePhenotypeMap in instance_tree is False:
             raise TypeError("gpm must be a GenotypePhenotypeMap object")
         self.gpm = gpm
-        setattr(self, "bootstrap_fit",self._bootstrap_fit)
-        setattr(self, "bootstrap_predict",self._bootstrap_predict)
-        setattr(self, "sample_fit",self._sample_fit)
-        setattr(self, "sample_predict",self._sample_predict)
 
     def X_constructor(self,
         genotypes=None,
@@ -183,17 +180,3 @@ class BaseModel(object):
 
     def _sample_predict(self, *args, **kwargs):
         raise Exception("Must be defined in a subclass.")
-
-    @X_fitter
-    def _bootstrap_fit(self, X=None, y=None, sample_weight=None, *args, **kwargs):
-        """
-        """
-        mean, std, count = bootstrap(self.sample_fit, X=X, y=y, sample_weight=sample_weight, *args, **kwargs)
-        return mean, std, count
-
-    @X_predictor
-    def _bootstrap_predict(self, X=None, *args, **kwargs):
-        """
-        """
-        mean, std, count = bootstrap(self._sample_predict, X=X, *args, **kwargs)
-        return mean, std, count
