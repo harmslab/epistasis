@@ -1,4 +1,3 @@
-
 """
 A Bayesian, high-order, linear epistasis model.
 
@@ -8,7 +7,8 @@ import emcee as emcee
 from .base import Sampler
 
 class BayesianSampler(Sampler):
-
+    """
+    """
     def __init__(self, model, db_dir=None):
         super(BayesianSampler, self).__init__(model, db_dir=None)
         self.File.create_dataset("coefs", (0,0), maxshape=(None,None), compression="gzip")
@@ -37,9 +37,8 @@ class BayesianSampler(Sampler):
         x = lp + BayesianSampler.lnlike(coefs, model)
         return lp + BayesianSampler.lnlike(coefs, model)
 
-    def add_samples(self, n, nwalkers=None):
-        """Add samples to database
-        """
+    def add_samples(self, n_mcsteps, nwalkers=None, starting_widths=1e-4):
+        """Add samples to database"""
         # Calculate the maximum likelihood estimate for the epistasis model.
         self.model.fit()
         ml_coefs = self.model.epistasis.values
@@ -50,17 +49,26 @@ class BayesianSampler(Sampler):
             nwalkers = 2 * len(ml_coefs)
 
         # Construct a bunch of walkers gaussians around each ml_coef
-        multigauss_err = np.random.randn(nwalkers, ndims)
+        multigauss_err = starting_widths*np.random.randn(nwalkers, ndims)
         pos = np.array([ml_coefs for i in range(nwalkers)]) + multigauss_err
 
         # Construct MCMC Sampler using emcee
         sampler = emcee.EnsembleSampler(nwalkers, ndims, self.lnprob, args=(self.model,))
 
         # Run for the number of samples
-        sampler.run_mcmc(pos, n)
-        samples = sampler.flatchain
-        scores = sampler.flatlnprobability
+        sampler.run_mcmc(pos, n_mcsteps)
 
         # Write samples to database
+        samples = sampler.flatchain
+        scores = sampler.flatlnprobability
         self.write_dataset("coefs", samples)
         self.write_dataset("scores", scores)
+
+    @property
+    def ml_coefs(self):
+        """Most probable model."""
+        index = np.argmax(self.scores.value)
+        return self.coefs[index,:]
+
+    def percentiles(self, percentiles):
+        return np.percentile(self.coefs.value, percentiles, axis=0)
