@@ -2,6 +2,7 @@ import os
 import h5py
 from datetime import datetime
 import pickle
+import numpy as np
 
 class SamplerError(Exception):
     """Raise an exception from the Sampler class"""
@@ -14,12 +15,10 @@ def add_datetime_to_filename(filepath):
     return "{:}-{:}{:}".format(*[name, t, ext])
 
 class Sampler(object):
-    """Base Sampler class.
-
-    Creates a directory that contains information for the model.
+    """A base class to be inherited by sampling classes. Constructs a database for
+    storing the samples.
     """
     def __init__(self, model, db_dir=None):
-
         # Check the model
         self._model = model
         if hasattr(self.model, "gpm") is False:
@@ -29,23 +28,27 @@ class Sampler(object):
         # Set up the sampling database
         # -----------------------------------
         if db_dir is None:
-            self.db_dir = add_datetime_to_filename("sampler")
+            self._db_dir = add_datetime_to_filename("sampler")
         else:
-            self.db_dir = db_dir
+            self._db_dir = db_dir
 
         # Create a folder for the database.
-        if not os.path.exists(self.db_dir):
-            os.makedirs(self.db_dir)
+        if not os.path.exists(self._db_dir):
+            os.makedirs(self._db_dir)
 
-        self.db_path = os.path.join(self.db_dir, "sample-db.hdf5")
-        self.model_path = os.path.join(self.db_dir, "model.pickle")
+        self._db_path = os.path.join(self._db_dir, "sample-db.hdf5")
+        self._model_path = os.path.join(self._db_dir, "model.pickle")
 
         # Create the hdf5 file for saving samples.
-        self.File = h5py.File("sample-db.hdf5", "w")
+        self.File = h5py.File(self._db_path, "w")
 
         # Write model to db_dir
-        with open(self.model_path, "wb") as f:
+        with open(self._model_path, "wb") as f:
             pickle.dump(self.model, f)
+
+        # Add database
+        self.File.create_dataset("coefs", (0,0), maxshape=(None,None), compression="gzip")
+        self.File.create_dataset("scores", (0,), maxshape=(None,), compression="gzip")
 
     @property
     def model(self):
@@ -83,3 +86,12 @@ class Sampler(object):
     def scores(self):
         """Samples of epistatic coefficients. Rows are samples, Columns are coefs."""
         return self.File["scores"]
+
+    @property
+    def best_coefs(self):
+        """Most probable model."""
+        index = np.argmax(self.scores.value)
+        return self.coefs[index,:]
+
+    def percentiles(self, percentiles):
+        return np.percentile(self.coefs.value, percentiles, axis=0)

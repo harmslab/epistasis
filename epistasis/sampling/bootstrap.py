@@ -2,15 +2,27 @@ import numpy as np
 from .base import Sampler
 
 class BootstrapSampler(Sampler):
-    """Bootstrap the uncertainties in a model's coefficients. Sample from
-    the experimental uncertainty in the phenotypes to determine confidence
-    intervals of the coefficients of an epistasis model.
-    """
-    def __init__(self, model, db_dir=None):
-        super(BootstrapSampler, self).__init__(model, db_dir=None)
-        self.File.create_dataset("coefs", (0,0), maxshape=(None,None), compression="gzip")
-        self.File.create_dataset("scores", (0,), maxshape=(None,), compression="gzip")
+    """A sampling class to estimate the uncertainties in an epistasis model's
+    coefficients using a bootstrapping method. This object samples from
+    the experimental uncertainty in the phenotypes to estimate confidence
+    intervals for the coefficients in an epistasis model.
 
+    Parameters
+    ----------
+    model :
+        Epistasis model to run a bootstrap calculation.
+    db_dir : str (default=None)
+        Name a the database directory for storing samples.
+
+    Attributes
+    ----------
+    coefs : array
+        samples for the coefs in the epistasis model.
+    scores : array
+        R-squared of each model
+    best_coefs : array
+        Best fit model.
+    """
     def sample(self):
         """"""
         pseudo_p = np.random.normal(loc=self.model.gpm.phenotypes, scale=self.model.gpm.err.upper)

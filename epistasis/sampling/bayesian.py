@@ -7,13 +7,27 @@ import emcee as emcee
 from .base import Sampler
 
 class BayesianSampler(Sampler):
-    """
-    """
-    def __init__(self, model, db_dir=None):
-        super(BayesianSampler, self).__init__(model, db_dir=None)
-        self.File.create_dataset("coefs", (0,0), maxshape=(None,None), compression="gzip")
-        self.File.create_dataset("scores", (0,), maxshape=(None,), compression="gzip")
+    """A sampling class to estimate the uncertainties in an epistasis model's
+    coefficients using a Bayesian approach. This object samples from
+    the experimental uncertainty in the phenotypes to estimate confidence
+    intervals for the coefficients in an epistasis model.
 
+    Parameters
+    ----------
+    model :
+        Epistasis model to run a bootstrap calculation.
+    db_dir : str (default=None)
+        Name a the database directory for storing samples.
+
+    Attributes
+    ----------
+    coefs : array
+        samples for the coefs in the epistasis model.
+    scores : array
+        Log probabilities for each sample.
+    best_coefs : array
+        most probable model.
+    """
     @staticmethod
     def lnlike(coefs, model):
         """Calculate the log likelihood of a model, given the data."""
@@ -63,12 +77,3 @@ class BayesianSampler(Sampler):
         scores = sampler.flatlnprobability
         self.write_dataset("coefs", samples)
         self.write_dataset("scores", scores)
-
-    @property
-    def ml_coefs(self):
-        """Most probable model."""
-        index = np.argmax(self.scores.value)
-        return self.coefs[index,:]
-
-    def percentiles(self, percentiles):
-        return np.percentile(self.coefs.value, percentiles, axis=0)
