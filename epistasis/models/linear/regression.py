@@ -16,8 +16,7 @@ class EpistasisLinearRegression(_LinearRegression, _BaseModel):
         self.n_jobs = n_jobs
         self.set_params(model_type=model_type, order=order)
 
-    @X_predictor
-    def function(self, X=None, coefs=None):
+    def function(self, X, coefs):
         return _np.dot(X, coefs)
 
     @X_fitter

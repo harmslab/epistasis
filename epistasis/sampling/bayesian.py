@@ -33,7 +33,8 @@ class BayesianSampler(Sampler):
         """Calculate the log likelihood of a model, given the data."""
         ydata = model.gpm.phenotypes
         yerr = model.gpm.std.upper
-        ymodel = model.function(coefs=coefs)
+        X = model.X
+        ymodel = model.function(X, coefs)
         inv_sigma2 = 1.0/(yerr**2)
         return -0.5*(np.sum((ydata-ymodel)**2*inv_sigma2 - np.log(inv_sigma2)))
 

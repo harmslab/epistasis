@@ -80,6 +80,7 @@ class Sampler(object):
 
     @property
     def labels(self):
+        """Labels of the coefs."""
         return self.model.epistasis.labels
 
     @property
@@ -94,4 +95,31 @@ class Sampler(object):
         return self.coefs[index,:]
 
     def percentiles(self, percentiles):
+        """Return credibility regions (Bayes) or confidence intervals (Bootstrap)."""
         return np.percentile(self.coefs.value, percentiles, axis=0)
+
+    def predict(self, samples):
+        """"""
+        predictions = np.empty(samples.shape)
+        Xpred = self.model.X_constructor(genotypes=self.model.gpm.binary.complete_genotypes)
+        for i in range(len(samples)):
+            predictions[i,:] = self.model.function(Xpred, self.coefs[i,:])
+        return predictions
+
+    def predict_from_random_samples(self, n):
+        """Randomly draw from sampled models and predict phenotypes."""
+        sample_size, coef_size = self.coefs.shape
+        model_indices = np.random.choice(np.arange(sample_size), n, replace=False)
+        samples = np.empty((n, coef_size))
+        for i, index in enumerate(model_indices):
+            samples[i,:] = self.coefs[index, :]
+        return self.predict(samples=samples)
+
+    def predict_from_top_samples(self, n):
+        """Draw from top sampled models and predict phenotypes."""
+        sample_size, coef_size = self.coefs.shape
+        model_indices = np.argsort(self.scores)[::-1]
+        samples = np.empty((n, coef_size))
+        for i, index in enumerate(model_indices[:n]):
+            samples[i,:] = self.coefs[index, :]
+        return self.predict(samples=samples)
