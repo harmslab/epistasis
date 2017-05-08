@@ -16,8 +16,11 @@ class EpistasisLinearRegression(_LinearRegression, _BaseModel):
         self.n_jobs = n_jobs
         self.set_params(model_type=model_type, order=order)
 
-    def function(self, X, coefs):
-        return _np.dot(X, coefs)
+    def function(self, X, coef):
+        return _np.dot(X, coef)
+
+    def _function(self, X, coef):
+        return self.function(X, coef)
 
     @X_fitter
     def fit(self, X=None, y=None, sample_weight=None):

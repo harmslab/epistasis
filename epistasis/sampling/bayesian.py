@@ -56,7 +56,7 @@ class BayesianSampler(Sampler):
         """Add samples to database"""
         # Calculate the maximum likelihood estimate for the epistasis model.
         self.model.fit()
-        ml_coefs = self.model.epistasis.values
+        ml_coefs = self.model.coef_
 
         # Prepare walker number for bayesian sampler
         ndims = len(ml_coefs)

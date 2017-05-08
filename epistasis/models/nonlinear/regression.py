@@ -83,18 +83,19 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
             raise Exception(""" First argument of the nonlinear function must be `x`. """)
 
         # Set up the function for fitting.
-        self._function = function
-        #@wraps(self._function)
-        #def function(*args, **kwargs): return self._function(*args, **kwargs)
         self.function = function
-
+        self._function = self._function_generator(self.function)
         self.reverse = reverse
+
         # Construct parameters object
         self.parameters = Parameters(parameters[1:])
         self.set_params(order=order,
             model_type=model_type,
-            fix_linear=fix_linear,
-        )
+            fix_linear=fix_linear)
+
+    @property
+    def coef_(self):
+        return
 
     @ipywidgets_missing
     def fit(self, X=None, y=None, sample_weight=None, use_widgets=False, **parameters):
@@ -194,7 +195,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         else:
             sigma = 1 / np.sqrt(sample_weight)
         # Curve fit the data using a nonlinear least squares fit
-        popt, pcov = curve_fit(self._function, x, y, p0=guess, sigma=sigma)
+        popt, pcov = curve_fit(self.function, x, y, p0=guess, sigma=sigma)
         for i in range(0, self.parameters.n):
             self.parameters._set_param(i, popt[i])
 
@@ -216,10 +217,8 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
             guesses[n_coef + index] = kwargs[kw]
         # Add linear guesses to guess array
         guesses[:n_coef] = guess.coef_
-        # Transform user function to readable model function
-        self._wrapped_function = self._function_generator(self._function)
         # Curve fit the data using a nonlinear least squares fit
-        popt, pcov = curve_fit(self._wrapped_function, X, y, p0=guess)
+        popt, pcov = curve_fit(self.function, X, y, p0=guess)
         # Set the Interaction values
         self.coef_ = popt[0:n_coef]
         # Set the other parameters from nonlinear function to fit results

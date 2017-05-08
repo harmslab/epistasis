@@ -103,7 +103,7 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
         else:
             sigma = 1 / np.sqrt(sample_weight)
         # Curve fit the data using a nonlinear least squares fit
-        popt, pcov = curve_fit(self._function, x, y, p0=guess, sigma=sigma,
+        popt, pcov = curve_fit(self.function, x, y, p0=guess, sigma=sigma,
             bounds=([-np.inf, -np.inf, -np.inf],[np.inf, np.inf, min(self.gpm.phenotypes)]))
         for i in range(0, self.parameters.n):
             self.parameters._set_param(i, popt[i])
