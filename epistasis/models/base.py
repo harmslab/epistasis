@@ -62,7 +62,7 @@ def X_fitter(method):
                 self.X = X
             output = method(self, X=X, y=y, *args, **kwargs)
             # Reference the model coefficients in the epistasis map.
-            self.epistasis.values = np.reshape(self.coef_, (len(self.epistasis.labels),))
+            self.epistasis.values = np.reshape(self.coef_, (len(self.epistasis.sites),))
             return output
         else:
             self.X = X
@@ -120,14 +120,14 @@ class BaseModel(object):
 
     def X_constructor(self,
         genotypes=None,
-        coeff_labels=None,
+        coeff_sites=None,
         mutations=None,
         **kwargs):
         """A helper method that constructs an X matrix for this model. Attaches
         an `EpistasisMap` object to the `epistasis` attribute of the model.
 
         The simplest way to construct X is to give a set of binary genotypes and
-        epistatic labels. If not given, will try to infer these features from an
+        epistatic sites. If not given, will try to infer these features from an
         attached genotype-phenotype map. If no genotype-phenotype map is attached,
         raises an exception.
 
@@ -135,7 +135,7 @@ class BaseModel(object):
         ----------
         genotypes : list
             list of genotypes.
-        coeff_labels: list
+        coeff_sites: list
             list of lists. Each sublist contains site-indices that represent
             participants in that epistatic interaction.
         mutations : dict
@@ -148,7 +148,7 @@ class BaseModel(object):
             except AttributeError:
                 raise AttributeError("genotypes must be given, because no GenotypePhenotypeMap is attached to this model.")
         # Build epistasis map
-        if coeff_labels is None:
+        if coeff_sites is None:
             # See if an epistasis map was already created
             if hasattr(self, "epistasis") is False:
                 # Mutations dictionary given? if not, try to infer one.
@@ -160,14 +160,14 @@ class BaseModel(object):
                 # Construct epistasis mapping
                 self.epistasis = EpistasisMap.from_mutations(mutations, self.order, model_type=self.model_type)
         else:
-            self.epistasis = EpistasisMap.from_labels(coeff_labels, model_type=self.model_type)
+            self.epistasis = EpistasisMap.from_sites(coeff_sites, model_type=self.model_type)
         # Construct the X matrix (convert to binary if necessary).
         try:
-            return generate_dv_matrix(genotypes, self.epistasis.labels, model_type=self.model_type)
+            return generate_dv_matrix(genotypes, self.epistasis.sites, model_type=self.model_type)
         except:
             mapping = self.gpm.map("complete_genotypes", "binary.complete_genotypes")
             binaries = [mapping[g] for g in genotypes]
-            return generate_dv_matrix(binaries, self.epistasis.labels, model_type=self.model_type)
+            return generate_dv_matrix(binaries, self.epistasis.sites, model_type=self.model_type)
 
     def fit(self, *args, **kwargs):
         raise Exception("Must be defined in a subclass.")

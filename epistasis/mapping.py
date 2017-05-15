@@ -1,4 +1,4 @@
-# Mapping Object for epistatic interactions int the epistasis map
+sites# Mapping Object for epistatic interactions int the epistasis map
 #
 # Author: Zach Sailer
 #
@@ -29,13 +29,13 @@ def assert_epistasis(method):
         return method(self, *args, **kwargs)
     return wrapper
 
-def label_to_key(label, state=""):
+def site_to_key(label, state=""):
     """ Convert interaction label to key. `state` is added to end of key."""
     if type(state) != str:
         raise Exception("`state` must be a string.")
     return ",".join([str(l) for l in label]) + state
 
-def key_to_label(key):
+def key_to_site(key):
     """ Convert an interaction key to label."""
     return [int(k) for k in key.split(",")]
 
@@ -90,7 +90,7 @@ def mutations_to_coeffs(mutations):
     return param_map
 
 def build_model_coeffs(order, mutations, start_order=0):
-    """ Build interaction labels up to nth order given a mutation alphabet.
+    """ Build interaction sites up to nth order given a mutation alphabet.
 
     Parameters
     ----------
@@ -114,7 +114,7 @@ def build_model_coeffs(order, mutations, start_order=0):
     Returns
     -------
     interactions : list
-        list of all interaction labels for system with
+        list of all interaction sites for system with
         sequences of a given length and epistasis with given order.
     """
     # Include the intercept interaction?
@@ -154,7 +154,7 @@ class EpistasisMap(BaseMap):
         """Write epistasis map to json file."""
         with open(filename, "w") as f:
             data = {
-                "labels" : list(self.labels),
+                "sites" : list(self.sites),
                 "values" : list(self.values),
                 "order" : self.order,
                 "keys" : list(self.keys),
@@ -180,26 +180,26 @@ class EpistasisMap(BaseMap):
         # Now set values.
         setattr(self, "values", vals)
 
-    def _from_labels(self, labels, model_type="global"):
-        """Set coef labels of an epistasis map instance.
+    def _from_sites(self, sites, model_type="global"):
+        """Set coef sites of an epistasis map instance.
         """
-        self.labels = labels
-        self.order = max([len(l) for l in labels])
+        self.sites = sites
+        self.order = max([len(l) for l in sites])
         self.model_type = model_type
 
     @classmethod
-    def from_labels(cls, labels, model_type="global"):
-        """Construct an EpistasisMap instance from labels.
+    def from_sites(cls, sites, model_type="global"):
+        """Construct an EpistasisMap instance from sites.
         """
         self = cls()
-        self._from_labels(labels, model_type=model_type)
+        self._from_sites(sites, model_type=model_type)
         return self
 
     def _from_mutations(self, mutations, order, model_type="global"):
-        """Set coef labels from mutations and order.
+        """Set coef sites from mutations and order.
         """
         self.order = order
-        self._labels = build_model_coeffs(
+        self._sites = build_model_coeffs(
             self.order,
             mutations_to_coeffs(mutations)
         )
@@ -221,7 +221,7 @@ class EpistasisMap(BaseMap):
     @property
     def n(self):
         """ Return the number of Interactions. """
-        return len(self.labels)
+        return len(self.sites)
 
     @property
     def order(self):
@@ -230,7 +230,7 @@ class EpistasisMap(BaseMap):
 
     @property
     def keys(self):
-        """ Get the interaction keys. (type==list of str, see self._build_interaction_labels)"""
+        """ Get the interaction keys. (type==list of str, see self._build_interaction_sites)"""
         return self._keys
 
     @property
@@ -244,11 +244,11 @@ class EpistasisMap(BaseMap):
         return self._indices
 
     @property
-    def labels(self):
-        """ Get the interaction labels, which describe the position of interacting mutations in
-            the genotypes. (type==list of lists, see self._build_interaction_labels)
+    def sites(self):
+        """ Get the interaction sites, which describe the position of interacting mutations in
+            the genotypes. (type==list of lists, see self._build_interaction_sites)
         """
-        return self._labels
+        return self._sites
 
     @property
     def keys(self):
@@ -256,13 +256,13 @@ class EpistasisMap(BaseMap):
         if hasattr(self, '_keys'):
             return self._keys
         else:
-            return np.array([label_to_key(lab) for lab in self.labels])
+            return np.array([label_to_key(lab) for lab in self.sites])
 
     @property
     def genotypes(self):
         """ Get the interaction genotype. """
         elements = ['w.t.']
-        for label in self._labels[1:]:
+        for label in self._sites[1:]:
             elements.append(self._label_to_genotype(label))
         return elements
 
@@ -284,19 +284,19 @@ class EpistasisMap(BaseMap):
         """"""
         self._order = order
 
-    @labels.setter
-    def labels(self, labels):
+    @sites.setter
+    def sites(self, sites):
         """ Manually set the interactions considered in the map. Useful for building epistasis models manually. """
-        self._labels = labels
-        self._indices = np.arange(0, len(self.labels))
+        self._sites = sites
+        self._indices = np.arange(0, len(self.sites))
 
     @values.setter
     def values(self, values):
         """ Set the interactions of the system, set by an Epistasis model (see ..models.py)."""
-        if hasattr(self, "_labels") is False:
-            raise AttributeError(self.__name__ + " does not have coef labels set.")
-        elif len(self._labels) != len(values):
-            raise Exception("Length of `values` must much length of `labels`.")
+        if hasattr(self, "_sites") is False:
+            raise AttributeError(self.__name__ + " does not have coef sites set.")
+        elif len(self._sites) != len(values):
+            raise Exception("Length of `values` must much length of `sites`.")
         self._values = values
 
     @keys.setter
@@ -338,17 +338,17 @@ class Orders(BaseMap):
             orders = list(iter(self.orders))
         except TypeError:
             orders = [self.orders]
-        labels = self._epistasismap.labels
-        x = [i for i in range(1,len(labels)) if len(labels[i]) in orders]
+        sites = self._epistasismap.sites
+        x = [i for i in range(1,len(sites)) if len(sites[i]) in orders]
         # Add the zeroth element if included
         if 0 in orders:
             x = [0]+x
         return np.array(x)
 
     @property
-    def labels(self):
-        """Get epistatic labels"""
-        return [self._epistasismap.labels[int(i)] for i in self.indices]
+    def sites(self):
+        """Get epistatic sites"""
+        return [self._epistasismap.sites[int(i)] for i in self.indices]
 
     @property
     def values(self):

@@ -7,7 +7,7 @@ import gpmap
 from scipy.stats import norm as scipy_norm
 from epistasis.utils import Bunch
 
-def coefs(betas=[], labels=[], errors=None, **kwargs):
+def coefs(betas=[], sites=[], errors=None, **kwargs):
     """
     Create a barplot with the values from model, drawing the x-axis as a grid of
     boxes indicating the coordinate of the epistatic parameter. Should automatically
@@ -17,8 +17,8 @@ def coefs(betas=[], labels=[], errors=None, **kwargs):
     ----------
     betas : array
         an array of epistatic coefficients
-    labels : array
-        array of epistatic indices/labels.
+    sites : array
+        array of epistatic indices/sites.
     errors : 2d array or list
         upper and lower bounds for each beta.
 
@@ -74,7 +74,7 @@ def coefs(betas=[], labels=[], errors=None, **kwargs):
     # will break. Also helps with widgets.
 
     # Prepare an cycle of colors
-    order = len(labels[-1])
+    order = len(sites[-1])
     prop_cycle = plt.rcParams['axes.prop_cycle']
     color_cycle = prop_cycle.by_key()['color']
     color_scalar = int(order / len(color_cycle))  + 1
@@ -126,8 +126,8 @@ def coefs(betas=[], labels=[], errors=None, **kwargs):
         options.figsize = (options.figwidth, options.figheight)
 
     # Name all variables that matter for this function
-    if labels[0] == [0]:
-        labels = labels[1:]
+    if sites[0] == [0]:
+        sites = sites[1:]
         betas = betas[1:]
         if errors is not None:
             upper = errors[1][1:]
@@ -144,12 +144,12 @@ def coefs(betas=[], labels=[], errors=None, **kwargs):
         sigmas = 0
 
     # Figure out the length of the x-axis and the highest epistasis observed
-    num_terms = len(labels)
-    highest_order = max([len(l) for l in labels])
+    num_terms = len(sites)
+    highest_order = max([len(l) for l in sites])
 
     # Figure out how many sites are in the dataset (in case of non-binary system)
     all_sites = []
-    for l in labels:
+    for l in sites:
         all_sites.extend(l)
     all_sites = list(dict([(s,[]) for s in all_sites]).keys())
     all_sites.sort()
@@ -194,7 +194,7 @@ def coefs(betas=[], labels=[], errors=None, **kwargs):
 
     # ignore p-values and color everything
     elif options.significance == None:
-        p_values = [0 for i in range(len(labels))]
+        p_values = [0 for i in range(len(sites))]
         options.significance_cutoff = 1.0
 
     # or die
@@ -203,8 +203,8 @@ def coefs(betas=[], labels=[], errors=None, **kwargs):
         raise ValueError(err)
 
     # Create color array based on significance
-    color_array = np.zeros((len(labels)),dtype=int)
-    for i, l in enumerate(labels):
+    color_array = np.zeros((len(sites)),dtype=int)
+    for i, l in enumerate(sites):
         if p_values[i] < options.significance_cutoff:
             color_array[i] = len(l) - 1
         else:
@@ -223,8 +223,8 @@ def coefs(betas=[], labels=[], errors=None, **kwargs):
     if options.xgrid is True:
         fig = plt.figure(figsize=options.figsize)
 
-        n_coefs = len(labels)
-        n_sites = max([max(l) for l in labels])
+        n_coefs = len(sites)
+        n_sites = max([max(l) for l in sites])
 
         # Calculate the height_ratio of the grid and the bar graph
         box_size = options.figsize[0]/float(n_coefs)
@@ -246,8 +246,8 @@ def coefs(betas=[], labels=[], errors=None, **kwargs):
         for i in range(n_coefs):
             for j in range(n_sites):
                 color = "w"
-                if j+1 in labels[i]:
-                    color = color_vector[len(labels[i])]
+                if j+1 in sites[i]:
+                    color = color_vector[len(sites[i])]
                 # vertices for a given square
                 verts = [
                     (i,n_coefs-j),
@@ -331,14 +331,14 @@ def coefs(betas=[], labels=[], errors=None, **kwargs):
 
     # add vertical lines between order breaks
     previous_order = 1
-    for i in range(len(labels)):
-        if len(labels[i]) != previous_order:
+    for i in range(len(sites)):
+        if len(sites[i]) != previous_order:
             bar_axis.add_artist(mpl.lines.Line2D((i,i),
                (ymin,ymax),
                color="black",
                linestyle=":",
                linewidth=1))
-            previous_order = len(labels[i])
+            previous_order = len(sites[i])
 
     # ------------------------- #
     # Create significance stars #
@@ -357,9 +357,9 @@ def coefs(betas=[], labels=[], errors=None, **kwargs):
             for j in range(star_counter):
                 bar_axis.text(x=(i+0),y=ymin+(j*min_offset),s="*", fontsize=16)
 
-    # remove x tick labels
+    # remove x tick sites
     try:
-        plt.setp([a.get_xticklabels() for a in fig.axes[:-1]], visible=False)
+        plt.setp([a.get_xticksites() for a in fig.axes[:-1]], visible=False)
     except IndexError:
         pass
 
