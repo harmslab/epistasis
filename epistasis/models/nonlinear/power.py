@@ -4,6 +4,7 @@ import inspect
 import json
 from scipy.optimize import curve_fit
 from .regression import EpistasisNonlinearRegression, Parameters
+from ..linear.regression import EpistasisLinearRegression
 from epistasis.stats import gmean
 from ..base import X_fitter
 
@@ -71,39 +72,43 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
         gmean = self.gmean
         return (gmean**(lmbda-1)*lmbda*(y - B) + 1)**(1/lmbda) - A
 
-    def _params_to_json(self, filename):
-        """Temporary method. will be deprecated soon!!!!!
-        """
-        params = self.parameters()
-        params.update(gmean=self.gmean)
-        with open(filename, "w") as f:
-            json.dump(params, f)
-
-    @X_fitter
     def _fit_(self, X=None, y=None, sample_weight=None, **kwargs):
-        """Fit the genotype-phenotype map for epistasis.
-        """
-        # Fit coeffs
-        guess = self._guess_model(X, y, sample_weight=sample_weight)
-        self.coef_ = guess.coef_
-        # Get the scale of the map.
-        x = guess.predict(X)
-        # Construct an array of guesses, using the scale specified by user.
-        lmbda = 1
-        A = 0
-        B = min(self.gpm.phenotypes)
-        guess = [lmbda, A, B]
-        # Add model's extra parameter guesses to input array
+        """Estimate the scale of multiple mutations in a genotype-phenotype map."""
+        # ----------------------------------------------------------------------
+        # Part 1: Estimate average, independent mutational effects and fit
+        #         nonlinear scale.
+        # ----------------------------------------------------------------------
+        self.Additive.fit()
+        x = self.Additive.predict()
+
+        # Set up guesses
+        guesses = np.ones(self.parameters.n)
         for kw in kwargs:
             index = self.parameters._mapping[kw]
-            guess[index] = kwargs[kw]
-        # create a sigma array for weighted fits with curve fit.
+            guesses[index] = kwargs[kw]
+
+        # Convert weights to variances on fit parameters.
         if sample_weight is None:
             sigma = None
         else:
             sigma = 1 / np.sqrt(sample_weight)
-        # Curve fit the data using a nonlinear least squares fit
-        popt, pcov = curve_fit(self.function, x, y, p0=guess, sigma=sigma,
+
+        # Fit with curve_fit, using
+        popt, pcov = curve_fit(self._function, x, y, p0=guesses, sigma=sigma,
             bounds=([-np.inf, -np.inf, -np.inf],[np.inf, np.inf, min(self.gpm.phenotypes)]))
+
         for i in range(0, self.parameters.n):
             self.parameters._set_param(i, popt[i])
+
+        # ----------------------------------------------------------------------
+        # Part 3: Fit high-order, linear model.
+        # ----------------------------------------------------------------------
+
+        # Construct a linear epistasis model.
+        if self.order > 1:
+            linearized_y = self.reverse(y, *self.parameters.values)
+            # Now fit with a linear epistasis model.
+            self.Linear.fit(X=self.Linear.X, y=linearized_y)
+        else:
+            self.Linear = self.Additive
+        self.coef_ = self.Linear.coef_
