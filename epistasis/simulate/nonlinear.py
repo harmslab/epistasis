@@ -5,14 +5,12 @@ from epistasis.models.nonlinear.regression import Parameters
 from epistasis.decomposition import generate_dv_matrix
 
 class NonlinearSimulation(BaseSimulation):
-    """ Nonlinear epistasis simulator. Creates a Genotype-Phen
-    """
-    def __init__(self, wildtype, mutations,
-            function,
-            p0=[],
-            model_type='global',
-            **kwargs
-        ):
+    """ Nonlinear epistasis simulator. Creates a Genotype-Phen"""
+    def __init__(self, wildtype, mutations, function,
+        p0=[],
+        model_type='global',
+        **kwargs):
+        # Initialize base class.
         super(NonlinearSimulation, self).__init__(wildtype, mutations,
             **kwargs
         )
@@ -37,8 +35,11 @@ class NonlinearSimulation(BaseSimulation):
 
     @property
     def p_additive(self):
-        """Get the additive phenotype"""
-        return self.function(self.linear.p_additive, *self.parameters.get_params())
+        """Get the additive phenotypes"""
+        orders = self.epistasis.get_orders(0,1)
+        x = generate_dv_matrix(self.binary.genotypes, orders.sites, model_type=self.model_type)
+        linear = np.dot(x, orders.values)
+        return self.function(linear, *self.parameters.get_params())
 
     @classmethod
     def from_linear(cls, model, function, p0=[], **kwargs):

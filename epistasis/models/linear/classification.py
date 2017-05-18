@@ -39,38 +39,6 @@ class EpistasisBaseClassifier(BaseModel):
     def score(self, X=None, y=None):
         return super(self.__class__, self).score(X, y)
 
-    @X_fitter
-    def _sample_fit(self, X=None, y=None):
-        """Sample the `fit` method from phenotype standard deviations."""
-        # Fit a model
-        y = self.gpm.stdeviations * np.random.randn() + self.gpm.phenotypes
-        y[ y < self.threshold ] = 0
-        y[ y >= self.threshold ] = 1
-        model = self.__class__(
-            threshold=self.threshold,
-            order=self.order,
-            model_type=self.model_type)
-        model.fit(X=X, y=y)
-        return model.coef_
-
-    @X_fitter
-    def _sample_predict(self, X=None, y=None):
-        """Sample the `predict_proba` method from phenotype standard deviations.
-        """
-        # Fit a model
-        y = self.gpm.stdeviations * np.random.randn() + self.gpm.phenotypes
-        y[ y < self.threshold ] = 0
-        y[ y >= self.threshold ] = 1
-        model = self.__class__(
-            threshold=self.threshold,
-            order=self.order,
-            model_type=self.model_type)
-        model.fit(X=X, y=y)
-        X_ = model.X_constructor(self.gpm.binary.complete_genotypes, mutations=self.gpm.mutations)
-        # predict from that model
-        predictions = model.predict_proba(X=X_)
-        return predictions[:,0]
-
 
 @sklearn_to_epistasis()
 class EpistasisLogisticRegression(LogisticRegression, EpistasisBaseClassifier):

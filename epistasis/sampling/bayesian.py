@@ -54,8 +54,10 @@ class BayesianSampler(Sampler):
     def add_samples(self, n_mcsteps, nwalkers=None, starting_widths=1e-4):
         """Add samples to database"""
         # Calculate the maximum likelihood estimate for the epistasis model.
-        self.model.fit()
-        ml_coefs = self.model.coef_
+        try:
+            ml_coefs = self.model.thetas
+        except AttributeError:
+            raise Exception("Need to call the `fit` method to acquire a ML fit first.")
 
         # Prepare walker number for bayesian sampler
         ndims = len(ml_coefs)
