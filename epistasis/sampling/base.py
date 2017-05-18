@@ -133,10 +133,10 @@ class Sampler(object):
 
     def predict(self, samples):
         """"""
-        predictions = np.empty(samples.shape)
-        Xpred = self.model.X_constructor(genotypes=self.model.gpm.binary.complete_genotypes)
+        X = self.model.X_constructor(genotypes=self.model.gpm.complete_genotypes)
+        predictions = np.empty((samples.shape[0], len(self.model.gpm.complete_genotypes)), dtype=float)
         for i in range(len(samples)):
-            predictions[i,:] = self.model.function(Xpred, self.coefs[i,:])
+            predictions[i,:] = self.model.hypothesis(X=X, thetas=self.coefs[i,:])
         return predictions
 
     def predict_from_random_samples(self, n):

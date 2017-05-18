@@ -79,7 +79,7 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
         #         nonlinear scale.
         # ----------------------------------------------------------------------
         self.Additive.fit()
-        x = self.Additive.predict()
+        x = self.Additive.predict(X=self.Additive.X)
 
         # Set up guesses
         guesses = np.ones(self.parameters.n)

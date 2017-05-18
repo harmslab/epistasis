@@ -213,7 +213,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
     def score(self, X=None, y=None):
         """Calculates the squared-pearson coefficient for the nonlinear fit.
         """
-        y_pred = self.function(self.Additive.predict(), *self.parameters.get_params())
+        y_pred = self.function(self.Additive.predict(X=self.Additive.X), *self.parameters.get_params())
         y_rev = self.reverse(y, *self.parameters.get_params())
         return pearson(y, y_pred)**2, self.Linear.score(X=self.Linear.X, y=y_rev)
 
@@ -224,7 +224,8 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         """
         return np.concatenate((self.parameters.values, self.Linear.coef_))
 
-    def hypothesis(self, thetas):
+    @X_predictor
+    def hypothesis(self, X=None, thetas=None):
         """Given a set of parameters, compute a set of phenotypes. This is method
         can be used to test a set of parameters (Useful for bayesian sampling).
         """
@@ -240,9 +241,8 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         i, j = self.parameters.n, self.epistasis.n
         parameters = thetas[:i]
         epistasis = thetas[i:i+j]
-
         # Part 1: Linear portion
-        y1 = np.dot(self.X, epistasis)
+        y1 = np.dot(X, epistasis)
         # Part 2: Nonlinear portion
         y2 = self.function(y1, *parameters)
         return y2

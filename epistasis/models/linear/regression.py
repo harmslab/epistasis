@@ -34,7 +34,8 @@ class EpistasisLinearRegression(_LinearRegression, _BaseModel):
     def score(self, X=None, y=None):
         return super(self.__class__, self).score(X, y)
 
-    def hypothesis(self, thetas):
+    @X_predictor
+    def hypothesis(self, X=None, thetas=None):
         """Given a set of parameters, compute a set of phenotypes. This is method
         can be used to test a set of parameters (Useful for bayesian sampling).
         """
