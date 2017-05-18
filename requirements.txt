@@ -3,10 +3,11 @@ numpy
 scikit-learn
 sklearn
 scipy
-matplotlib
+matplotlib>=2.0
 jupyter
 notebook
 ipython
 ipywidgets
 cython
 emcee
+h5py

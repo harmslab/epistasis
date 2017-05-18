@@ -43,3 +43,7 @@ class EpistasisLinearRegression(_LinearRegression, _BaseModel):
             raise Exception("A model matrix X needs to be attached to the model. "
                 "Try calling `X_constructor()`.")
         return _np.dot(self.X, thetas)
+
+    @property
+    def thetas(self):
+        return self.epistasis.values

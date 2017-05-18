@@ -30,10 +30,12 @@ Table of Contents
    :maxdepth: 2
 
    _pages/install
-   _pages/io
+   _pages/basic-usage
    _pages/fitting
+   _pages/estimating-uncertainty
    _pages/simulate
    _pages/plot
+   _pages/io
 
 
 Indices and tables
