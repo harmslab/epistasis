@@ -12,7 +12,9 @@ The module include two types of samplers:
 2. BootstrapSampler_
 
 Both samplers have the same methods and attributes. They differ in their philosophy
-of sampling a model. See the conversation between Frequentism and Bayesianism in this blog.
+of sampling a model. See the conversation between Frequentism and Bayesianism in this blog_.
+
+.. _blog: http://jakevdp.github.io/blog/2014/03/11/frequentism-and-bayesianism-a-practical-intro/
 
 Example
 ~~~~~~~
