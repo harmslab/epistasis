@@ -188,13 +188,3 @@ Example
     # print multiplicative coefficients
     alphas = model.epistasis.values
     betas = np.exp(alphas)
-
-
-Estimating uncertainty in parameters via bootstrap
---------------------------------------------------
-All models have a ``bootstrap_fit`` method to estimate the uncertainty in the
-epistatic parameters. This is necessary for interpreting the statistical significance
-of the epistatic coefficients and useful for predicting unseen phenotypes.
-
-Fitting a high-order, nonlinear epistasis model
------------------------------------------------

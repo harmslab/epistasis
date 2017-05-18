@@ -12,9 +12,10 @@ from epistasis.stats import bootstrap
 from epistasis.utils import extract_mutations_from_genotypes
 
 def sklearn_to_epistasis():
-    """Decorate a subclass of sklearn model class to automagically convert it into a
+    """Decorate a scikit learn class with this function and automagically convert it into a
     epistasis sklearn model class.
     """
+    @wraps(method)
     def inner(cls):
         base_model = cls.__bases__[-1]
         for attr in base_model.__dict__:
@@ -26,18 +27,18 @@ def sklearn_to_epistasis():
 def X_predictor(method):
     """Decorator to automatically generate X for predictor methods in epistasis models."""
     @wraps(method)
-    def inner(self, X=None):
+    def inner(self, X=None, *args, **kwargs):
         """"""
         # Build input to
         if X is None:
             X = self.X_constructor(genotypes=self.gpm.binary.complete_genotypes)
-        return method(self, X)
+        return method(self, X, *args, **kwargs)
     return inner
 
 def X_fitter(method):
     """Decorator to automatically generate X for fit methods in epistasis models."""
     @wraps(method)
-    def inner(self, X=None, y=None, **kwargs):
+    def inner(self, X=None, y=None, *args, **kwargs):
         # If no Y is given, try to get it from
         module = self.__module__.split(".")[-1]
         if y is None:
@@ -59,13 +60,13 @@ def X_fitter(method):
             except AttributeError:
                 X = self.X_constructor(genotypes=self.gpm.binary.genotypes)
                 self.X = X
-            output = method(self, X, y, **kwargs)
+            output = method(self, X=X, y=y, *args, **kwargs)
             # Reference the model coefficients in the epistasis map.
-            self.epistasis.values = np.reshape(self.coef_, (len(self.epistasis.labels),))
+            self.epistasis.values = np.reshape(self.coef_, (len(self.epistasis.sites),))
             return output
         else:
             self.X = X
-            output = method(self, X, y, **kwargs)
+            output = method(self, X=X, y=y, *args, **kwargs)
             return output
     return inner
 
@@ -116,21 +117,18 @@ class BaseModel(object):
         if GenotypePhenotypeMap in instance_tree is False:
             raise TypeError("gpm must be a GenotypePhenotypeMap object")
         self.gpm = gpm
-        setattr(self, "bootstrap_fit",self._bootstrap_fit)
-        setattr(self, "bootstrap_predict",self._bootstrap_predict)
-        setattr(self, "sample_fit",self._sample_fit)
-        setattr(self, "sample_predict",self._sample_predict)
 
     def X_constructor(self,
         genotypes=None,
-        coeff_labels=None,
+        coeff_sites=None,
         mutations=None,
         **kwargs):
-        """A helper method that constructs an X matrix for this model. Attaches
-        an `EpistasisMap` object to the `epistasis` attribute of the model.
+        """A helper method that constructs linear decomposition matrix, X, for
+        an epistasis model. Attaches an `EpistasisMap` object to the `epistasis`
+        attribute of the model to allow simple access to X coefficients.
 
         The simplest way to construct X is to give a set of binary genotypes and
-        epistatic labels. If not given, will try to infer these features from an
+        epistatic sites. If not given, will try to infer these features from an
         attached genotype-phenotype map. If no genotype-phenotype map is attached,
         raises an exception.
 
@@ -138,7 +136,7 @@ class BaseModel(object):
         ----------
         genotypes : list
             list of genotypes.
-        coeff_labels: list
+        coeff_sites: list
             list of lists. Each sublist contains site-indices that represent
             participants in that epistatic interaction.
         mutations : dict
@@ -151,7 +149,7 @@ class BaseModel(object):
             except AttributeError:
                 raise AttributeError("genotypes must be given, because no GenotypePhenotypeMap is attached to this model.")
         # Build epistasis map
-        if coeff_labels is None:
+        if coeff_sites is None:
             # See if an epistasis map was already created
             if hasattr(self, "epistasis") is False:
                 # Mutations dictionary given? if not, try to infer one.
@@ -163,14 +161,14 @@ class BaseModel(object):
                 # Construct epistasis mapping
                 self.epistasis = EpistasisMap.from_mutations(mutations, self.order, model_type=self.model_type)
         else:
-            self.epistasis = EpistasisMap.from_labels(coeff_labels, model_type=self.model_type)
+            self.epistasis = EpistasisMap.from_sites(coeff_sites, model_type=self.model_type)
         # Construct the X matrix (convert to binary if necessary).
         try:
-            return generate_dv_matrix(genotypes, self.epistasis.labels, model_type=self.model_type)
+            return generate_dv_matrix(genotypes, self.epistasis.sites, model_type=self.model_type)
         except:
             mapping = self.gpm.map("complete_genotypes", "binary.complete_genotypes")
             binaries = [mapping[g] for g in genotypes]
-            return generate_dv_matrix(binaries, self.epistasis.labels, model_type=self.model_type)
+            return generate_dv_matrix(binaries, self.epistasis.sites, model_type=self.model_type)
 
     def fit(self, *args, **kwargs):
         raise Exception("Must be defined in a subclass.")
@@ -183,17 +181,3 @@ class BaseModel(object):
 
     def _sample_predict(self, *args, **kwargs):
         raise Exception("Must be defined in a subclass.")
-
-    @X_fitter
-    def _bootstrap_fit(self, X=None, y=None, sample_weight=None, *args, **kwargs):
-        """
-        """
-        mean, std, count = bootstrap(self.sample_fit, X=X, y=y, sample_weight=sample_weight, *args, **kwargs)
-        return mean, std, count
-
-    @X_predictor
-    def _bootstrap_predict(self, X=None, *args, **kwargs):
-        """
-        """
-        mean, std, count = bootstrap(self._sample_predict, X=X, *args, **kwargs)
-        return mean, std, count

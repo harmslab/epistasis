@@ -13,8 +13,12 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import sys
 import os
+import sys
+
+sys.path.insert(0, os.path.abspath('.'))
+
+x = """
 
 # importing modules with weird dependencies
 try:
@@ -26,7 +30,6 @@ class Mock(MagicMock):
     @classmethod
     def __getattr__(cls, name):
             return Mock()
-
 MOCK_MODULES = ['numpy','scipy',
     'scikit-learn',
     'nose.tools',
@@ -55,14 +58,9 @@ MOCK_MODULES = ['numpy','scipy',
     'Cython.Build',
     'epistasis.decomposition'
 ]
+
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
-
-# If extensions (or modules to document with autodoc) are in another directory,
-# add these directories to sys.path here. If the directory is relative to the
-# documentation root, use os.path.abspath to make it absolute, like shown here.
-sys.path.insert(0, os.path.abspath('../'))
-#sys.path.insert(0, os.path.abspath('./_api/'))
-
+"""
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.

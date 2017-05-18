@@ -69,7 +69,7 @@ To install the most recent release of this package, run:
 pip install epistasis
 ```
 
-To install, clone these repo and run:
+To install from source, clone this repo and run:
 ```
 pip install -e .
 ```

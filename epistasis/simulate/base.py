@@ -40,23 +40,23 @@ class BaseSimulation(GenotypePhenotypeMap):
         self.epistasis._from_mutations(self.mutations, order)
 
     @assert_epistasis
-    def set_coefs_labels(self, labels):
-        """Set coefs from list of coefs labels.
+    def set_coefs_sites(self, sites):
+        """Set coefs from list of coefs sites.
         """
-        self.epistasis.labels = labels
+        self.epistasis.sites = sites
 
     @assert_epistasis
-    def set_coefs(self, labels, values):
+    def set_coefs(self, sites, values):
         """Set the epistatic coefs
 
         Parameters
         ----------
-        labels : List
-            List of epistatic coefficient labels.
+        sites : List
+            List of epistatic coefficient sites.
         values : List
             list of floats representing to epistatic coefficients.
         """
-        self.epistasis.labels = labels
+        self.epistasis.sites = sites
         self.epistasis.values = values
         self.build()
 
@@ -78,7 +78,7 @@ class BaseSimulation(GenotypePhenotypeMap):
             low and high bounds for coeff values.
         """
         # Add values to epistatic interactions
-        self.epistasis.values = np.random.uniform(coef_range[0], coef_range[1], size=len(self.epistasis.labels))
+        self.epistasis.values = np.random.uniform(coef_range[0], coef_range[1], size=len(self.epistasis.sites))
         self.build()
 
     @classmethod
@@ -102,7 +102,7 @@ class BaseSimulation(GenotypePhenotypeMap):
         return cls(wildtype, mutations, **kwargs)
 
     @classmethod
-    def from_coefs(cls, wildtype, mutations, labels, coefs, model_type="local", *args, **kwargs):
+    def from_coefs(cls, wildtype, mutations, sites, coefs, model_type="global", *args, **kwargs):
         """Construct a genotype-phenotype map from epistatic coefficients.
 
         Parameters
@@ -122,11 +122,11 @@ class BaseSimulation(GenotypePhenotypeMap):
         -------
         GenotypePhenotypeMap
         """
-        order = max([len(l) for l in labels])
+        order = max([len(l) for l in sites])
         self = cls(wildtype, mutations, model_type=model_type, *args, **kwargs)
-        if len(coefs) != len(labels):
+        if len(coefs) != len(sites):
             raise Exception("""Number of betas does not match order/mutations given.""")
-        self.set_coefs(labels, coefs)
+        self.set_coefs(sites, coefs)
         return self
 
     def build(self, values=None, **kwargs):

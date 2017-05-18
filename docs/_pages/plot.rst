@@ -24,12 +24,12 @@ a box plot (see example below), and signficicance as stars using a t-test.
     values = model.interactions.values
     fig, ax = coefs(labels, values)
 
-Example
-~~~~~~~
+Figure
+~~~~~~
 
 .. image:: ../_img/coefs.png
 
-Interface
-~~~~~~~~~
+API
+~~~
 
-.. autofunction:: epistasis.plotting.coefs.coefs
+.. autofunction:: epistasis.plot.coefs.coefs

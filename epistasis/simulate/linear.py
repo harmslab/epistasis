@@ -1,4 +1,4 @@
-__doc__ = """Submodule with various classes for generating/simulating genotype-phenotype maps."""
+sites__doc__ = """Submodule with various classes for generating/simulating genotype-phenotype maps."""
 
 # ------------------------------------------------------------
 # Imports
@@ -55,9 +55,9 @@ class LinearSimulation(BaseSimulation):
     def p_additive(self):
         """Get the additive phenotypes"""
         orders = self.epistasis.getorder
-        labels = list(orders[0].labels) + list(orders[1].labels)
+        sites = list(orders[0].sites) + list(orders[1].sites)
         vals = list(orders[0].values) + list(orders[1].values)
-        x = generate_dv_matrix(self.binary.genotypes, labels, model_type=self.model_type)
+        x = generate_dv_matrix(self.binary.genotypes, sites, model_type=self.model_type)
         return np.dot(x, vals)
 
     def build(self):
@@ -65,5 +65,5 @@ class LinearSimulation(BaseSimulation):
         # Allocate phenotype numpy array
         _phenotypes = np.zeros(self.n, dtype=float)
         # Get model type:
-        self.X = generate_dv_matrix(self.binary.genotypes, self.epistasis.labels, model_type=self.model_type)
+        self.X = generate_dv_matrix(self.binary.genotypes, self.epistasis.sites, model_type=self.model_type)
         self.phenotypes = np.dot( self.X, self.epistasis.values)
