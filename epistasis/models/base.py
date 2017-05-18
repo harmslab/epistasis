@@ -123,8 +123,9 @@ class BaseModel(object):
         coeff_sites=None,
         mutations=None,
         **kwargs):
-        """A helper method that constructs an X matrix for this model. Attaches
-        an `EpistasisMap` object to the `epistasis` attribute of the model.
+        """A helper method that constructs linear decomposition matrix, X, for
+        an epistasis model. Attaches an `EpistasisMap` object to the `epistasis`
+        attribute of the model to allow simple access to X coefficients.
 
         The simplest way to construct X is to give a set of binary genotypes and
         epistatic sites. If not given, will try to infer these features from an

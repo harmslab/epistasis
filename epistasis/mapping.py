@@ -1,4 +1,4 @@
-sites# Mapping Object for epistatic interactions int the epistasis map
+# Mapping Object for epistatic interactions int the epistasis map
 #
 # Author: Zach Sailer
 #
