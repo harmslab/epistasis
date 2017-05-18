@@ -1,12 +1,20 @@
 Models
 ======
 
+Things to know about the models in this library.
+
+1. All parameters fit by a model are stored in the `parameters` attribute. This includes
+nonlinear parameters and epistatic coefficients -- the effects of specific statistical
+interactions between sites in the genotypes.
+2. Epistasis coefficient are more easily accessible through the `epistasis` subobject.
+3. Nonlinear parameters are more easily accessible through the `parameters` subobject.
+
+
 The following models are available in the `epistasis` API. All models include a
 ``predict``
 
 Linear
 ------
-
 
 EpistasisLinearRegression
 ~~~~~~~~~~~~~~~~~~~~~~~~~

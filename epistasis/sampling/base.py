@@ -1,4 +1,5 @@
 import os
+import shutil
 import h5py
 from datetime import datetime
 import pickle
@@ -40,15 +41,47 @@ class Sampler(object):
         self._model_path = os.path.join(self._db_dir, "model.pickle")
 
         # Create the hdf5 file for saving samples.
-        self.File = h5py.File(self._db_path, "w")
+        self.File = h5py.File(self._db_path, "a")
 
         # Write model to db_dir
         with open(self._model_path, "wb") as f:
             pickle.dump(self.model, f)
 
         # Add database
-        self.File.create_dataset("coefs", (0,0), maxshape=(None,None), compression="gzip")
-        self.File.create_dataset("scores", (0,), maxshape=(None,), compression="gzip")
+        if "coefs" not in self.File:
+            self.File.create_dataset("coefs", (0,0), maxshape=(None,None), compression="gzip")
+        if "scores" not in self.File:
+            self.File.create_dataset("scores", (0,), maxshape=(None,), compression="gzip")
+
+    @classmethod
+    def from_db(cls, db_dir, overwrite=True):
+        """Start from a previously greated Sampler database. This method assumes strict
+        structure of the database. First, the sampler file must be an hdf5 file named
+        'sample-db.hdf5' and a pickle file with an epistasis model names `model.pickle`.
+
+        Note: currently, won't check to see if the sampling database if bayesian vs. bootstrap.
+        """
+        with open(os.path.join(db_dir,"model.pickle"), "rb") as f:
+            model = pickle.load(f)
+
+        if overwrite:
+            self = cls(model, db_dir=db_dir)
+        else:
+            # New database directory
+            new_db_dir = add_datetime_to_filename("sampler")
+
+            # Create a folder for the database.
+            if not os.path.exists(new_db_dir):
+                os.makedirs(new_db_dir)
+
+            # Old database path
+            old_db_path = os.path.join(db_dir, "sample-db.hdf5")
+
+            # Copy the old database to new database
+            shutil.copyfile(db_dir, new_db_dir)
+
+            self = cls(model, db_dir=new_db_dir)
+        return self
 
     @property
     def model(self):

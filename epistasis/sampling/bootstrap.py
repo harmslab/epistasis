@@ -32,8 +32,7 @@ class BootstrapSampler(Sampler):
         return coefs, ssr
 
     def add_samples(self, n):
-        """Add samples to database
-        """
+        """Add samples to database."""
         # Create a first sample.
         coef, ssr = self.sample()
         samples = np.empty((n, len(coef)),dtype=float)

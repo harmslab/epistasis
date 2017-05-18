@@ -33,8 +33,7 @@ class BayesianSampler(Sampler):
         """Calculate the log likelihood of a model, given the data."""
         ydata = model.gpm.phenotypes
         yerr = model.gpm.std.upper
-        X = model.X
-        ymodel = model.function(X, coefs)
+        ymodel = model.hypothesis(coefs)
         inv_sigma2 = 1.0/(yerr**2)
         return -0.5*(np.sum((ydata-ymodel)**2*inv_sigma2 - np.log(inv_sigma2)))
 
@@ -49,7 +48,7 @@ class BayesianSampler(Sampler):
         lp = BayesianSampler.lnprior(coefs)
         if not np.isfinite(lp):
             return -np.inf
-        x = lp + BayesianSampler.lnlike(coefs, model)
+        #x = lp + BayesianSampler.lnlike(coefs, model)
         return lp + BayesianSampler.lnlike(coefs, model)
 
     def add_samples(self, n_mcsteps, nwalkers=None, starting_widths=1e-4):
