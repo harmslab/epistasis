@@ -52,6 +52,6 @@ class NonlinearSimulation(BaseSimulation):
         """ Build nonlinear map from epistasis and function.
         """
         # Get model type:
-        self.X = generate_dv_matrix(self.binary.genotypes, self.epistasis.labels, model_type=self.model_type)
+        self.X = generate_dv_matrix(self.binary.genotypes, self.epistasis.sites, model_type=self.model_type)
         _phenotypes = np.dot(self.X, self.epistasis.values)
         self.phenotypes = self.function(_phenotypes, *self.parameters.values)
