@@ -1,7 +1,3 @@
-"""
-A Bayesian, high-order, linear epistasis model.
-
-"""
 import numpy as np
 import emcee as emcee
 from .base import Sampler
@@ -10,7 +6,14 @@ class BayesianSampler(Sampler):
     """A sampling class to estimate the uncertainties in an epistasis model's
     coefficients using a Bayesian approach. This object samples from
     the experimental uncertainty in the phenotypes to estimate confidence
-    intervals for the coefficients in an epistasis model.
+    intervals for the coefficients in an epistasis model according to Bayes Theorem:
+
+    .. math::
+        P(H|E) = \\frac{ P(E|H) \cdot P(H) }{ P(E) }
+
+    This reads: "the probability of epistasis model :math:`H` given the data
+    :math:`E` is equal to the probability of the data given the model times the
+    probability of the model."
 
     Parameters
     ----------
@@ -30,7 +33,15 @@ class BayesianSampler(Sampler):
     """
     @staticmethod
     def lnlike(coefs, model):
-        """Calculate the log likelihood of a model, given the data."""
+        """Calculate the log likelihood of a model, given the data.
+
+        Parameters
+        ----------
+        coefs : array
+            All coefficients for an epistasis model. Must be sorted appropriately.
+        model :
+            Any epistasis model in ``epistasis.models``.
+        """
         ydata = model.gpm.phenotypes
         yerr = model.gpm.std.upper
         ymodel = model.hypothesis(X=model.X, thetas=coefs)
@@ -39,12 +50,28 @@ class BayesianSampler(Sampler):
 
     @staticmethod
     def lnprior(coefs):
-        """Flat prior"""
+        """Calculate the probabilities for a set model parameters. This method
+        returns a flat prior (log-prior of 0). Redefine this method otherwise.
+
+        Parameters
+        ----------
+        coefs : array
+            All coefficients for an epistasis model. Must be sorted appropriately.
+        """
         return 0
 
     @staticmethod
     def lnprob(coefs, model):
-        """"""
+        """Calculate the right hand side of Bayes theorem for an epistasis model. (i.e.
+        the "log-likelihood of a model" + "log-prior of a model")
+
+        Parameters
+        ----------
+        coefs : array
+            All coefficients for an epistasis model. Must be sorted appropriately.
+        model :
+            Any epistasis model in ``epistasis.models``.
+        """
         lp = BayesianSampler.lnprior(coefs)
         if not np.isfinite(lp):
             return -np.inf

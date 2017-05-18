@@ -132,7 +132,18 @@ class Sampler(object):
         return np.percentile(self.coefs.value, percentiles, axis=0)
 
     def predict(self, samples):
-        """"""
+        """Use a set of models to predict pseudodata.
+
+        Parameters
+        ----------
+        samples : 2d array
+            Sets of parameters from different models to predict.
+
+        Returns
+        -------
+        predictions : 2d array
+            Sets of data predicted from the sampled models.
+        """
         X = self.model.X_constructor(genotypes=self.model.gpm.complete_genotypes)
         predictions = np.empty((samples.shape[0], len(self.model.gpm.complete_genotypes)), dtype=float)
         for i in range(len(samples)):
@@ -140,7 +151,18 @@ class Sampler(object):
         return predictions
 
     def predict_from_random_samples(self, n):
-        """Randomly draw from sampled models and predict phenotypes."""
+        """Randomly draw from sampled models and predict phenotypes.
+
+        Parameters
+        ----------
+        n : int
+            Number of models to randomly draw to create a set of predictions.
+
+        Returns
+        -------
+        predictions : 2d array
+            Sets of data predicted from the sampled models.
+        """
         sample_size, coef_size = self.coefs.shape
         model_indices = np.random.choice(np.arange(sample_size), n, replace=False)
         samples = np.empty((n, coef_size))
@@ -149,7 +171,19 @@ class Sampler(object):
         return self.predict(samples=samples)
 
     def predict_from_top_samples(self, n):
-        """Draw from top sampled models and predict phenotypes."""
+        """Draw from top sampled models and predict phenotypes.
+
+
+        Parameters
+        ----------
+        n : int
+            Number of top models to draw to create a set of predictions.
+
+        Returns
+        -------
+        predictions : 2d array
+            Sets of data predicted from the sampled models.
+        """
         sample_size, coef_size = self.coefs.shape
         model_indices = np.argsort(self.scores)[::-1]
         samples = np.empty((n, coef_size))
