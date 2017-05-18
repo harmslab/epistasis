@@ -1,12 +1,23 @@
 Estimating uncertainty
 ======================
 
-The epistasis package includes a `sampling` module for estimating uncertainty in
-all parameters in a (Non)linear epistasis models. All `Sampling` objects create
+The epistasis package includes a ``sampling`` module for estimating uncertainty in
+all parameters in a (Non)linear epistasis models. All ``Sampler`` objects create
 a database folder with the epistasis model stored inside a pickle file
 and an HDF5 file containing samples used to estimate uncertainty.
 
-.. code-block::
+The module include two types of samplers:
+
+1. BayesianSampler_
+2. BootstrapSampler_
+
+Both samplers have the same methods and attributes. They differ in their philosophy
+of sampling a model. See the conversation between Frequentism and Bayesianism in this blog.
+
+Example
+~~~~~~~
+
+.. code-block:: python
 
     # Imports
     import matplotlib.pyplot as plt
@@ -34,4 +45,27 @@ and an HDF5 file containing samples used to estimate uncertainty.
     # Plot the Posterior
     fig = corner.corner(bayes.coefs.value, truths=sim.epistasis.values)
 
+
+
 .. image:: ../_img/bayes-estimate-uncertainty.png
+
+API
+~~~
+
+.. _BayesianSampler:
+
+BayesianSampler
+---------------
+
+.. autoclass:: epistasis.sampling.bayesian.BayesianSampler
+    :members:
+    :inherited-members:
+
+.. _BootstrapSampler:
+
+BootstrapSampler
+----------------
+
+.. autoclass:: epistasis.sampling.bootstrap.BootstrapSampler
+    :members:
+    :inherited-members:

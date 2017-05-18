@@ -18,6 +18,8 @@ import sys
 
 sys.path.insert(0, os.path.abspath('.'))
 
+x = """
+
 # importing modules with weird dependencies
 try:
     from mock import Mock as MagicMock
@@ -28,7 +30,6 @@ class Mock(MagicMock):
     @classmethod
     def __getattr__(cls, name):
             return Mock()
-
 MOCK_MODULES = ['numpy','scipy',
     'scikit-learn',
     'nose.tools',
@@ -57,8 +58,9 @@ MOCK_MODULES = ['numpy','scipy',
     'Cython.Build',
     'epistasis.decomposition'
 ]
-sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
+sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
+"""
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
