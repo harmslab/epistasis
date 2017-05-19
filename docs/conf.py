@@ -15,7 +15,6 @@
 
 import os
 import sys
-
 sys.path.insert(0, os.path.abspath('.'))
 
 # importing modules with weird dependencies
@@ -28,10 +27,8 @@ class Mock(MagicMock):
     @classmethod
     def __getattr__(cls, name):
             return Mock()
+
 MOCK_MODULES = ['numpy','scipy',
-    'scikit-learn',
-    'nose.tools',
-    'nose',
     'sklearn',
     'sklearn.linear_model',
     'sklearn.base',
@@ -49,15 +46,19 @@ MOCK_MODULES = ['numpy','scipy',
     'matplotlib.path.Path',
     'matplotlib.patches',
     'matplotlib.cbook',
+    'matplotlib.gridspec'
     'matplotlib',
     'sklearn.decomposition',
     'sklearn.decomposition.PCA',
     'sklearn.metrics',
     'Cython.Build',
-    'epistasis.decomposition'
+    'emcee',
 ]
 
-sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
+try:
+    sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
+except RecursionError:
+    pass
 
 # -- General configuration ------------------------------------------------
 
@@ -70,6 +71,7 @@ sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.mathjax',
+    'sphinx.ext.githubpages',
     'sphinx.ext.napoleon'
 ]
 
