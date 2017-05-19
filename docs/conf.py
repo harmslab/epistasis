@@ -46,7 +46,7 @@ MOCK_MODULES = ['numpy','scipy',
     'matplotlib.path.Path',
     'matplotlib.patches',
     'matplotlib.cbook',
-    'matplotlib.gridspec'
+    'matplotlib.gridspec',
     'matplotlib',
     'sklearn.decomposition',
     'sklearn.decomposition.PCA',
