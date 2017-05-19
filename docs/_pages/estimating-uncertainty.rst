@@ -16,8 +16,8 @@ of sampling a model. See the conversation between Frequentism and Bayesianism in
 
 .. _blog: http://jakevdp.github.io/blog/2014/03/11/frequentism-and-bayesianism-a-practical-intro/
 
-Example
-~~~~~~~
+Basic Example
+~~~~~~~~~~~~~
 
 .. code-block:: python
 
@@ -48,8 +48,27 @@ Example
     fig = corner.corner(bayes.coefs.value, truths=sim.epistasis.values)
 
 
-
 .. image:: ../_img/bayes-estimate-uncertainty.png
+
+
+Defining a prior
+~~~~~~~~~~~~~~~~
+
+The default prior for a BayesianSampler is a flat prior (``BayesianSampler.lnprior()``
+returns a log-prior equal to 0). To set your own prior, define your own function
+that called ``lnprior`` that returns a log prior for a set of `coefs` and reset
+the BayesianSampler static method:
+
+.. code-block:: python
+
+    def lnprior(coefs):
+        # Set bound on the first coefficient.
+        if coefs[0] < 0:
+            return -np.inf
+        return 0
+
+    # Apply to fitter from above
+    fitter.lnprior = lnprior
 
 API
 ~~~
