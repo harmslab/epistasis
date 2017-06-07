@@ -70,6 +70,7 @@ the BayesianSampler static method:
     # Apply to fitter from above
     fitter.lnprior = lnprior
 
+
 API
 ~~~
 

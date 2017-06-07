@@ -173,7 +173,6 @@ class Sampler(object):
     def predict_from_top_samples(self, n):
         """Draw from top sampled models and predict phenotypes.
 
-
         Parameters
         ----------
         n : int

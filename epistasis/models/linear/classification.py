@@ -22,6 +22,7 @@ class EpistasisBaseClassifier(BaseModel):
     def fit(self, X=None, y=None, sample_weight=None):
         # Build input linear regression.
         super(self.__class__, self).fit(X, y, sample_weight=None)
+        return self
 
     @X_predictor
     def predict(self, X=None):

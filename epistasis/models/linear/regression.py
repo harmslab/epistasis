@@ -25,6 +25,7 @@ class EpistasisLinearRegression(_LinearRegression, _BaseModel):
         # Build input linear regression.
         super(self.__class__, self).fit(X, y, sample_weight)
         self._score = self.score(X,y)
+        return self
 
     @X_predictor
     def predict(self, X=None):

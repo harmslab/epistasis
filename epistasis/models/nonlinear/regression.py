@@ -162,6 +162,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         # Don't use widgets to fit data
         else:
             self._fit_(X, y, sample_weight=sample_weight, **parameters)
+        return self
 
     def _fit_(self, X=None, y=None, sample_weight=None, **kwargs):
         """Estimate the scale of multiple mutations in a genotype-phenotype map."""

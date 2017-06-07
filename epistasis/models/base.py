@@ -101,7 +101,7 @@ class BaseModel(object):
 
     @classmethod
     def from_epistasis(cls, epistasis, **kwargs):
-        """ """
+        """"""
         self = cls(**kwargs)
         self.epistasis = epistasis
         return self
