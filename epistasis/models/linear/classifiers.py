@@ -1,11 +1,14 @@
 from functools import wraps
 import numpy as np
 
+# Scikit-learn classifiers
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
 from sklearn.naive_bayes import BernoulliNB
+from sklearn.preprocessing import binarize
 
-from ..base import BaseModel, X_fitter, X_predictor, sklearn_to_epistasis
+from ..base import BaseModel, X_fitter, X_predictor
+from ..utils import sklearn_to_epistasis
 
 class EpistasisBaseClassifier(BaseModel):
     """Base class for implementing epistasis classification using scikit-learn models.
@@ -21,6 +24,8 @@ class EpistasisBaseClassifier(BaseModel):
     @X_fitter
     def fit(self, X=None, y=None, sample_weight=None):
         # Build input linear regression.
+        y[y<self.threshold] = 0
+        y[y>self.threshold] = 1
         super(self.__class__, self).fit(X, y, sample_weight=None)
         return self
 
@@ -43,18 +48,42 @@ class EpistasisBaseClassifier(BaseModel):
 
 @sklearn_to_epistasis()
 class EpistasisLogisticRegression(LogisticRegression, EpistasisBaseClassifier):
-    """Logistic Regression used to categorize phenotypes as either alive or dead.
-    """
+    """Logistic Regression used to categorize phenotypes as either alive or dead."""
 
 @sklearn_to_epistasis()
 class EpistasisBernoulliNB(BernoulliNB, EpistasisBaseClassifier):
-    """
-    """
+    """"""
 
 @sklearn_to_epistasis()
 class EpistasisSVC(SVC, EpistasisBaseClassifier):
-    """Logistic Regression used to categorize phenotypes as either alive or dead.
-    """
+    """Logistic Regression used to categorize phenotypes as either alive or dead."""
     @property
     def coef_(self):
         return self.support_vectors_
+
+
+class ModelPreprocessor(object):
+    """Adds a preprocessing classifier to other epistasis models
+    """
+    @property
+    def classes(self):
+        """Binary output for phenotypes (dead/alive) under some threshold."""
+        if hasattr(self, "_classes") is False:
+            return 1
+        return self._classes
+
+    @property
+    def complete_classes(self):
+        """Predicted Binary output for phenotypes (dead/alive) under some threshold."""
+        if hasattr(self, "_complete_classes") is False:
+            return 1
+        return self._complete_classes
+
+    def classify(self, threshold):
+        """Add a threshold to data."""
+        self.threshold = threshold
+        self.Classifier = EpistasisLogisticRegression.from_gpm(self.gpm, threshold=threshold, order=1, model_type=self.model_type)
+        self.Classifier.fit()
+        self._classes = binarize(self.gpm.phenotypes.reshape((1,-1)), threshold=self.threshold)[0]
+        self._complete_classes = self.Classifier.predict()
+        return self

@@ -106,3 +106,25 @@ class BayesianSampler(Sampler):
         scores = sampler.flatlnprobability
         self.write_dataset("coefs", samples)
         self.write_dataset("scores", scores)
+
+    def predict_from_weighted_samples(self, n):
+        """Draw from predicted phenotypes, sampling
+
+        Parameters
+        ----------
+        n : int
+            Number of top models to draw to create a set of predictions.
+
+        Returns
+        -------
+        predictions : 2d array
+            Sets of data predicted from the sampled models.
+        """
+        sample_size, coef_size = self.coefs.shape
+        scores = np.exp(self.scores.value)
+        weights = scores / scores.sum()
+        model_indices = np.random.choice(np.arange(sample_size), n, replace=True, p=weights)
+        samples = np.empty((n, coef_size))
+        for i, index in enumerate(model_indices):
+            samples[i,:] = self.coefs[index, :]
+        return self.predict(samples=samples)

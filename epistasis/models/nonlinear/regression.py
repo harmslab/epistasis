@@ -8,6 +8,8 @@ from sklearn.base import BaseEstimator, RegressorMixin
 from ..base import BaseModel, X_fitter, X_predictor
 
 from ..linear.regression import EpistasisLinearRegression
+from ..linear.classifiers import ModelPreprocessor
+
 from epistasis.stats import pearson
 # decorators for catching errors
 from gpmap.utils import ipywidgets_missing
@@ -66,15 +68,11 @@ class Parameters(object):
         """ Get an ordered list of the parameters."""
         return [getattr(self, self._mapping_[i]) for i in range(len(self._mapping_))]
 
-class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
+class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel, ModelPreprocessor):
     """Epistasis estimator for nonlinear genotype-phenotype maps.
 
     Parameters
     ----------
-
-
-
-
     """
     def __init__(self,
         function,
@@ -137,6 +135,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         # Fit with an additive model
         self.Additive = EpistasisLinearRegression(order=1, model_type=self.model_type)
         self.Additive.attach_gpm(self.gpm)
+        #if self.Additive
 
         # Prepare a high-order model
         self.Linear = EpistasisLinearRegression(order=self.order, model_type=self.model_type)

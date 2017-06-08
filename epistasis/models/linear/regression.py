@@ -5,11 +5,13 @@ from epistasis.models.base import BaseModel as _BaseModel
 from epistasis.models.base import X_fitter as X_fitter
 from epistasis.models.base import X_predictor as X_predictor
 
+from .classifiers import ModelPreprocessor as _ModelPreprocessor
+
 # Suppress an annoying error from scikit-learn
 import warnings
 warnings.filterwarnings(action="ignore", module="scipy", message="^internal gelsd")
 
-class EpistasisLinearRegression(_LinearRegression, _BaseModel):
+class EpistasisLinearRegression(_LinearRegression, _BaseModel, _ModelPreprocessor):
     """Ordinary least-squares regression of epistatic interactions.
     """
     def __init__(self, order=1, model_type="global", n_jobs=1, **kwargs):
@@ -22,14 +24,12 @@ class EpistasisLinearRegression(_LinearRegression, _BaseModel):
 
     @X_fitter
     def fit(self, X=None, y=None, sample_weight=None):
-        # Build input linear regression.
-        super(self.__class__, self).fit(X, y, sample_weight)
-        self._score = self.score(X,y)
-        return self
+        # If a threshold exists in the data, pre-classify genotypes
+        return super(self.__class__, self).fit(X, y, sample_weight)
 
     @X_predictor
     def predict(self, X=None):
-        return super(self.__class__, self).predict(X)
+        return super(self.__class__, self).predict(X) * self.complete_classes
 
     @X_fitter
     def score(self, X=None, y=None):
