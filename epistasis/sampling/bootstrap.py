@@ -26,7 +26,14 @@ class BootstrapSampler(Sampler):
     def sample(self):
         """"""
         pseudo_p = np.random.normal(loc=self.model.gpm.phenotypes, scale=self.model.gpm.err.upper)
-        self.model.fit(y=pseudo_p)
+        try:
+            parameters = self.model.parameters()
+            parameters["B"] = -10
+            print(parameters)
+            print(pseudo_p)
+            self.model.fit(X=None, y=pseudo_p, **parameters)
+        except:
+            self.model.fit(X=None, y=pseudo_p)
         coefs = self.model.epistasis.values
         ssr = self.model.score()
         return coefs, ssr

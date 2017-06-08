@@ -29,7 +29,7 @@ class EpistasisLinearRegression(_LinearRegression, _BaseModel, _ModelPreprocesso
 
     @X_predictor
     def predict(self, X=None):
-        return super(self.__class__, self).predict(X) * self.complete_classes
+        return super(self.__class__, self).predict(X)
 
     @X_fitter
     def score(self, X=None, y=None):

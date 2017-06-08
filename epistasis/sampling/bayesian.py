@@ -44,7 +44,7 @@ class BayesianSampler(Sampler):
         """
         ydata = model.gpm.phenotypes
         yerr = model.gpm.std.upper
-        ymodel = model.hypothesis(X=model.X, thetas=coefs)
+        ymodel = model.hypothesis(thetas=coefs)
         inv_sigma2 = 1.0/(yerr**2)
         return -0.5*(np.sum((ydata-ymodel)**2*inv_sigma2 - np.log(inv_sigma2)))
 
@@ -75,10 +75,13 @@ class BayesianSampler(Sampler):
         lp = BayesianSampler.lnprior(coefs)
         if not np.isfinite(lp):
             return -np.inf
-        #x = lp + BayesianSampler.lnlike(coefs, model)
+        x = lp + BayesianSampler.lnlike(coefs, model)
+        # Constrol against Nans -- check if this is too much of a hack later.
+        if np.isnan(x).any():
+            return -np.inf
         return lp + BayesianSampler.lnlike(coefs, model)
 
-    def add_samples(self, n_mcsteps, nwalkers=None, starting_widths=1e-4):
+    def add_samples(self, n_mcsteps, nwalkers=None, starting_widths=1e-3):
         """Add samples to database"""
         # Calculate the maximum likelihood estimate for the epistasis model.
         try:

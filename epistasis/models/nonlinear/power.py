@@ -8,6 +8,8 @@ from ..linear.regression import EpistasisLinearRegression
 from epistasis.stats import gmean
 from ..base import X_fitter
 
+
+
 def power_transform(x, lmbda, A, B):
     """Power transformation function. Ignore zeros in gmean calculation"""
     # Check for zeros
@@ -78,7 +80,7 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
         # Part 1: Estimate average, independent mutational effects and fit
         #         nonlinear scale.
         # ----------------------------------------------------------------------
-        self.Additive.fit()
+        self.Additive.fit(y=y)
         x = self.Additive.predict(X=self.Additive.X)
 
         # Set up guesses

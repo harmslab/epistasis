@@ -147,8 +147,7 @@ class Sampler(object):
         X = self.model.X_constructor(genotypes=self.model.gpm.complete_genotypes)
         predictions = np.empty((samples.shape[0], len(self.model.gpm.complete_genotypes)), dtype=float)
         for i in range(len(samples)):
-            test = self.model.hypothesis(X=X, thetas=samples[i,:])
-            print(test)
+            test = self.model.hypothesis(thetas=samples[i,:])
             predictions[i,:] = test
         return predictions
 

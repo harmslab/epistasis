@@ -135,10 +135,14 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel, Mod
         # Fit with an additive model
         self.Additive = EpistasisLinearRegression(order=1, model_type=self.model_type)
         self.Additive.attach_gpm(self.gpm)
-        #if self.Additive
+        if hasattr(self, "threshold") is True:
+            self.Additive.classify(threshold=self.threshold)
 
         # Prepare a high-order model
         self.Linear = EpistasisLinearRegression(order=self.order, model_type=self.model_type)
+        self.Linear.attach_gpm(self.gpm)
+        if hasattr(self, "threshold"):
+            self.Linear.classify(threshold=self.threshold)
         self.Linear.X = X
         self.coef_ = np.zeros(len(self.epistasis.sites))
 
@@ -169,7 +173,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel, Mod
         # Part 1: Estimate average, independent mutational effects and fit
         #         nonlinear scale.
         # ----------------------------------------------------------------------
-        self.Additive.fit()
+        self.Additive.fit(y=y)
         x = self.Additive.predict()
 
         # Set up guesses
@@ -207,6 +211,8 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel, Mod
         """Predict new targets from model."""
         x = self.Linear.predict(X)
         y = self.function(x, *self.parameters.values)
+        # Find rows in X that were set to zero by threshold
+        y[X.sum(axis=1) < 1] = 0
         return y
 
     @X_fitter
@@ -224,25 +230,25 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel, Mod
         """
         return np.concatenate((self.parameters.values, self.Linear.coef_))
 
-    @X_predictor
-    def hypothesis(self, X=None, thetas=None):
-        """Given a set of parameters, compute a set of phenotypes. This is method
+    def hypothesis(self, thetas=None):
+        """Given a set of parameters, compute a set of phenotypes. Does not predict. This is method
         can be used to test a set of parameters (Useful for bayesian sampling).
         """
-        # Test that a maximum likelihood model has been
-        # NEED TO WRITE THIS CHECK.
-        if hasattr(self, "X") is False:
-            raise Exception("A model matrix X needs to be attached to the model. "
-                "Try calling `X_constructor()`.")
+        X = self.X_constructor(genotypes=self.gpm.binary.genotypes)
 
         # ----------------------------------------------------------------------
         # Part 0: Break up thetas
         # ----------------------------------------------------------------------
+
         i, j = self.parameters.n, self.epistasis.n
         parameters = thetas[:i]
         epistasis = thetas[i:i+j]
+
         # Part 1: Linear portion
         y1 = np.dot(X, epistasis)
         # Part 2: Nonlinear portion
         y2 = self.function(y1, *parameters)
+
+        # Find rows in X that were set to zero by threshold
+        y2[X.sum(axis=1) < 1] = 0
         return y2
