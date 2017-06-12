@@ -37,8 +37,6 @@ def X_predictor(method):
             genotypes = self.gpm.binary.complete_genotypes
             coefs = self.epistasis.sites
             X = get_model_matrix(genotypes, coefs)
-            #if hasattr(self, "_complete_classes"):
-            #    X = np.multiply(X, self._complete_classes[:, np.newaxis])
 
         # Save this matrix for later predictions.
         self.Xpredict = X
@@ -71,10 +69,6 @@ def X_fitter(method):
         # Check to see if an Xfit matrix already exists.
         elif hasattr(self, "Xfit"):
             X = self.Xfit
-            # If the model was preprocessed, subset data.
-            #if hasattr(self, "_classes"):
-            #    X = X[y > self.threshold]
-            #    y = y[y > self.threshold]
 
             # Reference the model coefficients in the epistasis map.
             output = method(self, X=X, y=y, *args, **kwargs)
@@ -95,11 +89,6 @@ def X_fitter(method):
             # Append a nested mapping class to the epistasis attribute
             self.epistasis = epistasis.mapping.EpistasisMap(coefs, order=order, model_type=model_type)
             self.epistasis.values = self.coef_
-
-            # If the model was preprocessed, subset data.
-            #if hasattr(self, "_classes"):
-            #    X = X[y > self.threshold]
-            #    y = y[y > self.threshold]
 
         # Store the X matrix and return the fit method output.
         self.Xfit = X

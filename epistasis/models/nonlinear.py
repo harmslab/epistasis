@@ -130,16 +130,9 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel, Mod
         self.Additive = EpistasisLinearRegression(order=1, model_type=self.model_type)
         self.Additive.attach_gpm(self.gpm)
 
-        #if hasattr(self, "threshold") is True:
-        #    self.Additive.classify(threshold=self.threshold)
-
         # Prepare a high-order model
         self.Linear = EpistasisLinearRegression(order=self.order, model_type=self.model_type)
         self.Linear.attach_gpm(self.gpm)
-
-        #if hasattr(self, "threshold"):
-        #    self.Linear.classify(threshold=self.threshold)
-
         self.Linear.Xfit = X
 
         ## Use widgets to guess the value?
@@ -209,8 +202,6 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel, Mod
         """Predict new targets from model."""
         x = self.Linear.predict(X)
         y = self.function(x, *self.parameters.values)
-        # Find rows in X that were set to zero by threshold
-        # y[X.sum(axis=1) < 1] = 0
         return y
 
     @X_fitter
@@ -252,6 +243,4 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel, Mod
         # Part 2: Nonlinear portion
         ynonlin = self.function(ylin, *parameters)
 
-        # Find rows in X that were set to zero by threshold
-        #ynonlin[X.sum(axis=1) < 1] = 0
         return ynonlin

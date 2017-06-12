@@ -24,8 +24,7 @@ class EpistasisBaseClassifier(BaseModel):
     @X_fitter
     def fit(self, X=None, y=None, sample_weight=None):
         # Build input linear regression.
-        y[y<self.threshold] = 0
-        y[y>self.threshold] = 1
+        y = binarize(y, self.threshold)[0]
         super(self.__class__, self).fit(X, y, sample_weight=None)
         return self
 
@@ -57,29 +56,3 @@ class EpistasisBernoulliNB(BernoulliNB, EpistasisBaseClassifier):
 @sklearn_to_epistasis()
 class EpistasisSVC(SVC, EpistasisBaseClassifier):
     """Logistic Regression used to categorize phenotypes as either alive or dead."""
-
-class ModelPreprocessor(object):
-    """Adds a preprocessing classifier to other epistasis models
-    """
-    @property
-    def classes(self):
-        """Binary output for phenotypes (dead/alive) under some threshold."""
-        if hasattr(self, "_classes") is False:
-            return 1
-        return self._classes
-
-    @property
-    def complete_classes(self):
-        """Predicted Binary output for phenotypes (dead/alive) under some threshold."""
-        if hasattr(self, "_complete_classes") is False:
-            return 1
-        return self._complete_classes
-
-    def classify(self, threshold):
-        """Add a threshold to data."""
-        self.threshold = threshold
-        self.Classifier = EpistasisLogisticRegression.from_gpm(self.gpm, threshold=threshold, order=1, model_type=self.model_type)
-        self.Classifier.fit()
-        self._classes = binarize(self.gpm.phenotypes.reshape((1,-1)), threshold=self.threshold)[0]
-        self._complete_classes = self.Classifier.predict()
-        return self
