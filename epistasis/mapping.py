@@ -29,11 +29,11 @@ def assert_epistasis(method):
         return method(self, *args, **kwargs)
     return wrapper
 
-def site_to_key(label, state=""):
-    """ Convert interaction label to key. `state` is added to end of key."""
+def site_to_key(site, state=""):
+    """Convert site to key. `state` is added to end of key."""
     if type(state) != str:
         raise Exception("`state` must be a string.")
-    return ",".join([str(l) for l in label]) + state
+    return ",".join([str(l) for l in site]) + state
 
 def key_to_site(key):
     """ Convert an interaction key to label."""
@@ -52,52 +52,15 @@ def genotype_coeffs(genotype, order=None):
         params += [list(z) for z in it.combinations(mutations, o)]
     return params
 
-def mutations_to_coeffs(mutations):
-    """Write a dictionary that maps mutations dictionary to indices in dummy
-    variable matrix.
-
-    Parameters
-    ----------
-    mutations : dict
-        mapping each site to their accessible mutations alphabet.
-        mutations = {site_number : alphabet} If site does not mutate,
-        value should be None.
-
-    Returns
-    -------
-    mutations : dict
-        `mutations = { site_number : indices }`. If the site alphabet is
-        note included, the model will assume binary between wildtype and derived.
-
-    Example
-    -------
-    .. code-block:: python
-
-        mutations = {
-            0: [indices],
-            1: [indices],
-            ...
-        }
-    """
-    param_map = dict()
-    n_sites = 1
-    for m in mutations:
-        if mutations[m] is None:
-            param_map[m] = None
-        else:
-            param_map[m] = list(range(n_sites, n_sites + len(mutations[m]) - 1))
-            n_sites += len(mutations[m])-1
-    return param_map
-
-def build_model_coeffs(order, mutations, start_order=0):
-    """ Build interaction sites up to nth order given a mutation alphabet.
+def mutations_to_sites(order, mutations, start_order=0):
+    """Build interaction sites up to nth order given a mutation alphabet.
 
     Parameters
     ----------
     order : int
         order of interactions
     mutations  : dict
-        `mutations = { site_number : indices }`. If the site
+        `mutations = { site_number : ["mutation-1", "mutation-2"] }`. If the site
         alphabet is note included, the model will assume binary
         between wildtype and derived.
 
@@ -106,26 +69,36 @@ def build_model_coeffs(order, mutations, start_order=0):
     .. code-block:: python
 
         mutations = {
-            0: [indices],
-            1: [indices],
+            0: ["A", "V"],
+            1: ["A", "V"],
             ...
         }
 
     Returns
     -------
-    interactions : list
+    sites : list
         list of all interaction sites for system with
         sequences of a given length and epistasis with given order.
     """
+    # Convert a mutations mapping dictionary to a site mapping dictionary
+    sitemap = dict()
+    n_sites = 1
+    for m in mutations:
+        if mutations[m] is None:
+            sitemap[m] = None
+        else:
+            sitemap[m] = list(range(n_sites, n_sites + len(mutations[m]) - 1))
+            n_sites += len(mutations[m])-1
+
     # Include the intercept interaction?
     if start_order == 0:
-        interactions = [[0]]
+        sites = [[0]]
         orders = range(1,order+1)
     else:
-        interactions = list()
+        sites = list()
         orders = range(start_order,order+1)
 
-    length = len(mutations)
+    length = len(sitemap)
     # Recursive algorithm that's difficult to follow.
 
     # Iterate through each order
@@ -136,20 +109,25 @@ def build_model_coeffs(order, mutations, start_order=0):
             bad_term = False
             lists = []
             for i in range(len(term)):
-                if mutations[term[i]] == None:
+                if [term[i]] == None:
                     bad_term = True
                     break
                 else:
-                    lists.append(mutations[term[i]])
+                    lists.append(sitemap[term[i]])
             # Else, add interactions combinations to list
             if bad_term is False:
                 for r in it.product(*lists):
-                    interactions.append(list(r))
-    return interactions
+                    sites.append(list(r))
+    return sites
 
 class EpistasisMap(BaseMap):
     """Efficient mapping object for epistatic coefficients in an EpistasisModel.
     """
+    def __init__(self, sites, order=1, model_type="global"):
+        self.sites = sites
+        self.order = order
+        self.model_type = model_type
+
     def to_json(self, filename):
         """Write epistasis map to json file."""
         with open(filename, "w") as f:
@@ -199,10 +177,7 @@ class EpistasisMap(BaseMap):
         """Set coef sites from mutations and order.
         """
         self.order = order
-        self._sites = build_model_coeffs(
-            self.order,
-            mutations_to_coeffs(mutations)
-        )
+        self._sites = mutations_to_sites(self.order, self.mutations)
         self.model_type = model_type
 
     @classmethod
