@@ -86,3 +86,15 @@ def test_EpistasisNonlinearRegression_thetas():
     coefs = model.thetas
     # Tests
     tools.assert_equals(len(coefs), 6)
+
+def test_EpistasisNonlinearRegression_hypothesis():
+    toolkit = Toolkit()
+    model = EpistasisNonlinearRegression.from_gpm(toolkit.gpm,
+        function=toolkit.function,
+        reverse=toolkit.reverse,
+        order=2,
+        model_type="local")
+    model.fit(A=1,B=0)
+    predictions = model.hypothesis()
+    # Tests
+    np.testing.assert_almost_equal(predictions, model.gpm.phenotypes)

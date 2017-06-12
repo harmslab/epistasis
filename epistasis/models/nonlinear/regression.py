@@ -70,16 +70,12 @@ class Parameters(object):
 
 class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel, ModelPreprocessor):
     """Epistasis estimator for nonlinear genotype-phenotype maps.
-
-    Parameters
-    ----------
     """
     def __init__(self,
         function,
         reverse,
         order=1,
         model_type="global",
-        fix_linear=True,
         **kwargs):
 
         # Do some inspection to
@@ -97,8 +93,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel, Mod
         #self.__parameters =
         self.parameters = Parameters(parameters[1:])
         self.set_params(order=order,
-            model_type=model_type,
-            fix_linear=fix_linear)
+            model_type=model_type)
 
     @X_fitter
     def fit(self, X=None, y=None, sample_weight=None, use_widgets=False, **parameters):
@@ -135,16 +130,18 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel, Mod
         # Fit with an additive model
         self.Additive = EpistasisLinearRegression(order=1, model_type=self.model_type)
         self.Additive.attach_gpm(self.gpm)
-        if hasattr(self, "threshold") is True:
-            self.Additive.classify(threshold=self.threshold)
+
+        #if hasattr(self, "threshold") is True:
+        #    self.Additive.classify(threshold=self.threshold)
 
         # Prepare a high-order model
         self.Linear = EpistasisLinearRegression(order=self.order, model_type=self.model_type)
         self.Linear.attach_gpm(self.gpm)
-        if hasattr(self, "threshold"):
-            self.Linear.classify(threshold=self.threshold)
-        self.Linear.X = X
-        self.coef_ = np.zeros(len(self.epistasis.sites))
+
+        #if hasattr(self, "threshold"):
+        #    self.Linear.classify(threshold=self.threshold)
+
+        self.Linear.Xfit = X
 
         ## Use widgets to guess the value?
         if use_widgets:
@@ -174,7 +171,8 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel, Mod
         #         nonlinear scale.
         # ----------------------------------------------------------------------
         self.Additive.fit(y=y)
-        x = self.Additive.predict()
+        Xadd = self.Additive.Xfit # Use Xfit to get the transformed phenotypes
+        x = self.Additive.predict(X=Xadd)
 
         # Set up guesses
         guesses = np.ones(self.parameters.n)
@@ -199,9 +197,10 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel, Mod
 
         # Construct a linear epistasis model.
         if self.order > 1:
-            linearized_y = self.reverse(y, *self.parameters.values)
+            Xlin = self.Linear.Xfit
+            ylin = self.reverse(y, *self.parameters.values)
             # Now fit with a linear epistasis model.
-            self.Linear.fit(X=self.Linear.X, y=linearized_y)
+            self.Linear.fit(X=Xlin, y=ylin)
         else:
             self.Linear = self.Additive
         self.coef_ = self.Linear.coef_
@@ -212,16 +211,19 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel, Mod
         x = self.Linear.predict(X)
         y = self.function(x, *self.parameters.values)
         # Find rows in X that were set to zero by threshold
-        y[X.sum(axis=1) < 1] = 0
+        # y[X.sum(axis=1) < 1] = 0
         return y
 
     @X_fitter
     def score(self, X=None, y=None):
         """Calculates the squared-pearson coefficient for the nonlinear fit.
+
+        Returns two r-squared values, linear-portion and nonlinear portion.
         """
-        y_pred = self.function(self.Additive.predict(X=self.Additive.X), *self.parameters.get_params())
-        y_rev = self.reverse(y, *self.parameters.get_params())
-        return pearson(y, y_pred)**2, self.Linear.score(X=self.Linear.X, y=y_rev)
+        xlin = self.Additive.predict(X=self.Additive.Xfit)
+        ypred = self.function(xlin, *self.parameters.get_params())
+        yrev = self.reverse(y, *self.parameters.get_params())
+        return pearson(y, ypred)**2, self.Linear.score(X=self.Linear.X, y=yrev)
 
     @property
     def thetas(self):
@@ -230,25 +232,27 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel, Mod
         """
         return np.concatenate((self.parameters.values, self.Linear.coef_))
 
-    def hypothesis(self, thetas=None):
+    @X_predictor
+    def hypothesis(self, X=None, thetas=None):
         """Given a set of parameters, compute a set of phenotypes. Does not predict. This is method
         can be used to test a set of parameters (Useful for bayesian sampling).
         """
-        X = self.X_constructor(genotypes=self.gpm.binary.genotypes)
-
         # ----------------------------------------------------------------------
         # Part 0: Break up thetas
         # ----------------------------------------------------------------------
+        # Get thetas from model.
+        if thetas is None:
+            thetas = self.thetas
 
         i, j = self.parameters.n, self.epistasis.n
         parameters = thetas[:i]
         epistasis = thetas[i:i+j]
 
         # Part 1: Linear portion
-        y1 = np.dot(X, epistasis)
+        ylin = np.dot(X, epistasis)
         # Part 2: Nonlinear portion
-        y2 = self.function(y1, *parameters)
+        ynonlin = self.function(ylin, *parameters)
 
         # Find rows in X that were set to zero by threshold
-        y2[X.sum(axis=1) < 1] = 0
-        return y2
+        #ynonlin[X.sum(axis=1) < 1] = 0
+        return ynonlin

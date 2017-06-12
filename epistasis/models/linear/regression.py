@@ -44,4 +44,4 @@ class EpistasisLinearRegression(_LinearRegression, _BaseModel, _ModelPreprocesso
 
     @property
     def thetas(self):
-        return self.epistasis.values
+        return self.coef_

@@ -3,6 +3,10 @@ from functools import wraps
 from ..model_matrix_ext import get_model_matrix
 import epistasis.mapping
 
+import warnings
+# Suppresse the future warnings given by X_fitter function.
+warnings.simplefilter(action='ignore', category=FutureWarning)
+
 def sklearn_to_epistasis():
     """Decorate a scikit learn class with this function and automagically convert it into a
     epistasis sklearn model class.
@@ -90,7 +94,7 @@ def X_fitter(method):
 
             # Append a nested mapping class to the epistasis attribute
             self.epistasis = epistasis.mapping.EpistasisMap(coefs, order=order, model_type=model_type)
-            self.epistasis.values = np.reshape(self.coef_, (len(self.epistasis.sites),))
+            self.epistasis.values = self.coef_
 
             # If the model was preprocessed, subset data.
             #if hasattr(self, "_classes"):
