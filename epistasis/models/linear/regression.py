@@ -40,10 +40,7 @@ class EpistasisLinearRegression(_LinearRegression, _BaseModel, _ModelPreprocesso
         """Given a set of parameters, compute a set of phenotypes. This is method
         can be used to test a set of parameters (Useful for bayesian sampling).
         """
-        if hasattr(self, "X") is False:
-            raise Exception("A model matrix X needs to be attached to the model. "
-                "Try calling `X_constructor()`.")
-        return _np.dot(self.X, thetas)
+        return _np.dot(X, thetas)
 
     @property
     def thetas(self):

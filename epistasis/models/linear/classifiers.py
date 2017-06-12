@@ -57,10 +57,6 @@ class EpistasisBernoulliNB(BernoulliNB, EpistasisBaseClassifier):
 @sklearn_to_epistasis()
 class EpistasisSVC(SVC, EpistasisBaseClassifier):
     """Logistic Regression used to categorize phenotypes as either alive or dead."""
-    @property
-    def coef_(self):
-        return self.support_vectors_
-
 
 class ModelPreprocessor(object):
     """Adds a preprocessing classifier to other epistasis models

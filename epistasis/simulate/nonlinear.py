@@ -2,7 +2,7 @@ import inspect
 import numpy as np
 from .base import BaseSimulation
 from epistasis.models.nonlinear.regression import Parameters
-from epistasis.decomposition import generate_dv_matrix
+from epistasis.model_matrix_ext import get_model_matrix
 
 class NonlinearSimulation(BaseSimulation):
     """ Nonlinear epistasis simulator. Creates a Genotype-Phen"""

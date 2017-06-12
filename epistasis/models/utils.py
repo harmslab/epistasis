@@ -1,9 +1,7 @@
 import numpy as np
 from functools import wraps
-from sklearn.preprocessing import binarize
-
-import warnings
-warnings.filterwarnings("ignore")
+from ..model_matrix_ext import get_model_matrix
+import epistasis.mapping
 
 def sklearn_to_epistasis():
     """Decorate a scikit learn class with this function and automagically convert it into a
@@ -22,50 +20,85 @@ def X_predictor(method):
     @wraps(method)
     def inner(self, X=None, *args, **kwargs):
         """"""
-        # Build input to
-        if X is None:
-            X = self.X_constructor(genotypes=self.gpm.binary.complete_genotypes)
-            if hasattr(self, "_complete_classes"):
-                X = np.multiply(X, self._complete_classes[:, np.newaxis])
+        # Prepare X for predictor method.
+        if X is not None:
+            # If X is given, nothing needs to be done.
+            pass
+
+        elif hasattr(self, "Xpredict") is True:
+            X = self.Xpredict
+
+        else:
+            # Construct an X matrix if none is given. Assumes
+            genotypes = self.gpm.binary.complete_genotypes
+            coefs = self.epistasis.sites
+            X = get_model_matrix(genotypes, coefs)
+            #if hasattr(self, "_complete_classes"):
+            #    X = np.multiply(X, self._complete_classes[:, np.newaxis])
+
+        # Save this matrix for later predictions.
+        self.Xpredict = X
         return method(self, X=X, *args, **kwargs)
+
     return inner
 
 def X_fitter(method):
-    """Decorator to automatically generate X for fit methods in epistasis models.
-
-    This takes a few things into account.
+    """Wraps a 'scikit-learn'-like fit method with a function that creates
+    an X fitter matrix. This requires that a GenotypePhenotypeMap object be attached
+    to the model class.
     """
     @wraps(method)
     def inner(self, X=None, y=None, *args, **kwargs):
+        # If X and y is not given, a GenotypePhenotypeMap must be attached. If
+        # a GenotypePhenotypeMap is not attached, raise an exception.
+        if None in [X,y] and hasattr(self, "gpm") is False:
+            raise Exception("If both X and y are not given, a GenotypePhenotypeMap must be attached.")
+
         # If no Y is given, try to get it from
-        module = self.__module__.split(".")[-1]
         if y is None:
             # Pull y from the phenotypes in a GenotypePhenotypeMap
             y = np.array(self.gpm.binary.phenotypes)
 
-        # If X is not given, build one.
-        if X is None and y is not None:
-            # See if an X already exists in the model
-            X = self.X_constructor(genotypes=self.gpm.binary.genotypes)
-
-            # If the model was preprocessed, subset data.
-            if hasattr(self, "_classes"):
-                X = X[y > self.threshold]
-                y = y[y > self.threshold]
-
-            self.X = X
+        # Prepare X for fit method.
+        if X is not None:
+            # If X is given, nothing needs to be done.
             output = method(self, X=X, y=y, *args, **kwargs)
+
+        # Check to see if an Xfit matrix already exists.
+        elif hasattr(self, "Xfit"):
+            X = self.Xfit
+            # If the model was preprocessed, subset data.
+            #if hasattr(self, "_classes"):
+            #    X = X[y > self.threshold]
+            #    y = y[y > self.threshold]
+
             # Reference the model coefficients in the epistasis map.
-            self.epistasis.values = np.reshape(self.coef_, (len(self.epistasis.sites),))
-            return output
-
-        else:
-            # If the model was preprocessed, subset data.
-            if hasattr(self, "_classes"):
-                X = X[y > self.threshold]
-                y = y[y > self.threshold]
-
-            self.X = X
             output = method(self, X=X, y=y, *args, **kwargs)
-            return output
+
+        # If no Xfit matrix exists, create one using the genotype phenotype map.
+        else:
+            # Prepare for construction of new model.
+            genotypes = self.gpm.binary.genotypes
+            mutations = self.gpm.mutations
+            order = self.order
+            model_type = self.model_type
+            coefs = epistasis.mapping.mutations_to_sites(order, mutations)
+            X = get_model_matrix(genotypes, coefs, model_type=model_type)
+
+            # Call fitter method
+            output = method(self, X=X, y=y, *args, **kwargs)
+
+            # Append a nested mapping class to the epistasis attribute
+            self.epistasis = epistasis.mapping.EpistasisMap(coefs, order=order, model_type=model_type)
+            self.epistasis.values = np.reshape(self.coef_, (len(self.epistasis.sites),))
+
+            # If the model was preprocessed, subset data.
+            #if hasattr(self, "_classes"):
+            #    X = X[y > self.threshold]
+            #    y = y[y > self.threshold]
+
+        # Store the X matrix and return the fit method output.
+        self.Xfit = X
+        return output
+
     return inner

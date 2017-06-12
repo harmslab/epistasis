@@ -8,7 +8,7 @@ import numpy as np
 from gpmap.gpm import GenotypePhenotypeMap
 
 # local imports
-from epistasis.decomposition import generate_dv_matrix
+from epistasis.model_matrix_ext import get_model_matrix
 from epistasis.simulate.base import BaseSimulation
 
 # ------------------------------------------------------------
