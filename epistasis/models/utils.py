@@ -40,7 +40,16 @@ def X_predictor(method):
 
         # Save this matrix for later predictions.
         self.Xpredict = X
-        return method(self, X=X, *args, **kwargs)
+        predictions = method(self, X=X, *args, **kwargs)
+
+        # Apply classificiation assignments, if it exists
+        try:
+            classes = self.Classifier.predict()
+            predictions = np.multiply(predictions, classes)
+        except AttributeError:
+            pass
+
+        return predictions
 
     return inner
 
@@ -83,10 +92,19 @@ def X_fitter(method):
             coefs = epistasis.mapping.mutations_to_sites(order, mutations)
             X = get_model_matrix(genotypes, coefs, model_type=model_type)
 
+            # Apply classificiation assignments, if it exists
+            try:
+                classes = self.Classifier.classes
+                X = X[classes == 1, :]
+                y = y[classes == 1]
+                predictions = np.multiply(predictions, classes)
+            except AttributeError:
+                pass
+
             # Call fitter method
             output = method(self, X=X, y=y, *args, **kwargs)
 
-            # Append a nested mapping class to the epistasis attribute
+            # Assign a nested mapping class to the epistasis attribute
             self.epistasis = epistasis.mapping.EpistasisMap(coefs, order=order, model_type=model_type)
             self.epistasis.values = self.coef_
 

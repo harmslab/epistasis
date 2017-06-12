@@ -24,7 +24,8 @@ class EpistasisBaseClassifier(BaseModel):
     @X_fitter
     def fit(self, X=None, y=None, sample_weight=None):
         # Build input linear regression.
-        y = binarize(y, self.threshold)[0]
+        # Save the classes for y values.
+        self.classes = binarize(y, self.threshold)[0]
         super(self.__class__, self).fit(X, y, sample_weight=None)
         return self
 
