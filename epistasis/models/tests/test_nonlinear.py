@@ -4,7 +4,7 @@ from nose import tools
 from gpmap.simulate import GenotypePhenotypeSimulation
 
 # Module to test
-from ..regression import *
+from ..nonlinear import *
 
 class Toolkit(object):
 

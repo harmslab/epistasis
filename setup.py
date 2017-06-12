@@ -14,8 +14,6 @@ extension1 = Extension('epistasis.model_matrix_ext', ["epistasis/model_matrix_ex
 packages = [
     'epistasis',
     'epistasis.models',
-    'epistasis.models.linear',
-    'epistasis.models.nonlinear',
     'epistasis.plot',
     'epistasis.sampling',
     'epistasis.simulate',

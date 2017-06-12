@@ -4,7 +4,7 @@ from nose import tools
 from gpmap.simulate import GenotypePhenotypeSimulation
 
 # Module to test
-from ..regression import *
+from ..linear import *
 
 def test_EpistasisLinearRegression_initialization():
     gpm = GenotypePhenotypeSimulation.from_length(2)

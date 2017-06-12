@@ -1,6 +1,6 @@
 import numpy as np
 from functools import wraps
-from ..model_matrix_ext import get_model_matrix
+from epistasis.model_matrix_ext import get_model_matrix
 import epistasis.mapping
 
 import warnings

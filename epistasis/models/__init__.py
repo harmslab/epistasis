@@ -1,3 +1,3 @@
-from .linear.regression import EpistasisLinearRegression
-from .nonlinear.power import EpistasisPowerTransform
-from .nonlinear.regression import EpistasisNonlinearRegression
+from .linear import EpistasisLinearRegression
+from .power import EpistasisPowerTransform
+from .nonlinear import EpistasisNonlinearRegression

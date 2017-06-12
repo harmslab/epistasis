@@ -7,8 +7,8 @@ from sklearn.svm import SVC
 from sklearn.naive_bayes import BernoulliNB
 from sklearn.preprocessing import binarize
 
-from ..base import BaseModel, X_fitter, X_predictor
-from ..utils import sklearn_to_epistasis
+from epistasis.models.base import BaseModel, X_fitter, X_predictor
+from epistasis.models.utils import sklearn_to_epistasis
 
 class EpistasisBaseClassifier(BaseModel):
     """Base class for implementing epistasis classification using scikit-learn models.

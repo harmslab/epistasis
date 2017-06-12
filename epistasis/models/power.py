@@ -3,12 +3,11 @@ import numpy as np
 import inspect
 import json
 from scipy.optimize import curve_fit
-from .regression import EpistasisNonlinearRegression, Parameters
-from ..linear.regression import EpistasisLinearRegression
+
+from epistasis.models.nonlinear import EpistasisNonlinearRegression, Parameters
+from epistasis.models.linear import EpistasisLinearRegression
+from epistasis.models.base import X_fitter
 from epistasis.stats import gmean
-from ..base import X_fitter
-
-
 
 def power_transform(x, lmbda, A, B):
     """Power transformation function. Ignore zeros in gmean calculation"""

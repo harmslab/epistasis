@@ -1,7 +1,7 @@
 import inspect
 import numpy as np
 from .base import BaseSimulation
-from epistasis.models.nonlinear.regression import Parameters
+from epistasis.models.nonlinear import Parameters
 from epistasis.model_matrix_ext import get_model_matrix
 
 class NonlinearSimulation(BaseSimulation):
