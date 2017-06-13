@@ -29,8 +29,6 @@ class BootstrapSampler(Sampler):
         try:
             parameters = self.model.parameters()
             parameters["B"] = -10
-            print(parameters)
-            print(pseudo_p)
             self.model.fit(X=None, y=pseudo_p, **parameters)
         except:
             self.model.fit(X=None, y=pseudo_p)
