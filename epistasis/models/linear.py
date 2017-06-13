@@ -5,7 +5,7 @@ from epistasis.models.base import BaseModel as _BaseModel
 from epistasis.models.base import X_fitter as X_fitter
 from epistasis.models.base import X_predictor as X_predictor
 
-from .classifiers import ModelPreprocessor as _ModelPreprocessor
+from epistasis.models.preprocessor import ModelPreprocessor as _ModelPreprocessor
 
 # Suppress an annoying error from scikit-learn
 import warnings

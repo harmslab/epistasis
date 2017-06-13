@@ -10,7 +10,12 @@ class ModelPreprocessor(object):
         are
         """
         # Classify phenotypes into dead or alive.
-        return EpistasisLogisticRegression.from_gpm(self.gpm,
+        setattr(self, "get_mutation_lethality", self._get_mutation_lethality)
+        self.Classifier = EpistasisLogisticRegression.from_gpm(self.gpm,
                 threshold=threshold,
                 order=1,
                 model_type=self.model_type).fit()
+        return self
+
+    def _get_mutation_lethality(self):
+        return EpistasisLogisticRegression.coefs_

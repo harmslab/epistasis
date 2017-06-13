@@ -7,7 +7,7 @@ from scipy.optimize import curve_fit
 from sklearn.base import BaseEstimator, RegressorMixin
 from epistasis.models.base import BaseModel, X_fitter, X_predictor
 from epistasis.models.linear import EpistasisLinearRegression
-from epistasis.models.classifiers import ModelPreprocessor
+from epistasis.models.preprocessor import ModelPreprocessor
 
 from epistasis.stats import pearson
 # decorators for catching errors

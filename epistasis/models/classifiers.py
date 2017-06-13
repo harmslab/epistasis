@@ -23,10 +23,10 @@ class EpistasisBaseClassifier(BaseModel):
 
     @X_fitter
     def fit(self, X=None, y=None, sample_weight=None):
-        # Build input linear regression.
         # Save the classes for y values.
         self.classes = binarize(y, self.threshold)[0]
-        super(self.__class__, self).fit(X, y, sample_weight=None)
+        super(self.__class__, self).fit(X, y=self.classes, sample_weight=None)
+        self.coef_ = self.coef_[0] # Reshape the coefs_, because scikit learn uses a weird shape
         return self
 
     @X_predictor

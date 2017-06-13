@@ -46,8 +46,7 @@ def X_predictor(method):
         try:
             classes = self.Classifier.predict()
             predictions = np.multiply(predictions, classes)
-        except AttributeError:
-            pass
+        except AttributeError: pass
 
         return predictions
 
@@ -73,14 +72,14 @@ def X_fitter(method):
         # Prepare X for fit method.
         if X is not None:
             # If X is given, nothing needs to be done.
-            output = method(self, X=X, y=y, *args, **kwargs)
+            model = method(self, X=X, y=y, *args, **kwargs)
 
         # Check to see if an Xfit matrix already exists.
         elif hasattr(self, "Xfit"):
             X = self.Xfit
 
             # Reference the model coefficients in the epistasis map.
-            output = method(self, X=X, y=y, *args, **kwargs)
+            model = method(self, X=X, y=y, *args, **kwargs)
 
         # If no Xfit matrix exists, create one using the genotype phenotype map.
         else:
@@ -97,12 +96,10 @@ def X_fitter(method):
                 classes = self.Classifier.classes
                 X = X[classes == 1, :]
                 y = y[classes == 1]
-                predictions = np.multiply(predictions, classes)
-            except AttributeError:
-                pass
+            except AttributeError: pass
 
             # Call fitter method
-            output = method(self, X=X, y=y, *args, **kwargs)
+            model = method(self, X=X, y=y, *args, **kwargs)
 
             # Assign a nested mapping class to the epistasis attribute
             self.epistasis = epistasis.mapping.EpistasisMap(coefs, order=order, model_type=model_type)
@@ -110,6 +107,6 @@ def X_fitter(method):
 
         # Store the X matrix and return the fit method output.
         self.Xfit = X
-        return output
+        return model
 
     return inner
