@@ -89,5 +89,19 @@ Documentation and API reference can be viewed [here](http://epistasis.readthedoc
 * [jupyter notebook](): interactive notebook application for running python kernels interactively.   
 * [ipywidgets](): interactive widgets in python.
 
+## Development
+
+We welcome pull requests! If you find a bug, we'd love to have you fix it. If
+there is a feature you'd like to add, feel free to submit a
+pull request with a description of the addition. We also ask that you write the
+appropriate unit-tests for the new feature and add documentation to our Sphinx docs.
+
+To run the tests on this package, run nose tests on the command line:
+
+```
+nosetests
+```
+
+
 ## Citations
 If you use this API for research, please cite this [paper](https://doi.org/10.1534/genetics.116.195214).
