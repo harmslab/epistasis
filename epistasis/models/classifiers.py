@@ -19,14 +19,13 @@ class EpistasisBaseClassifier(BaseModel):
         self.threshold = threshold
         self.order = order
         self.model_type = model_type
-        super(self.__class__, self).__init__(**kwargs)
+        super(self.__class__, self).__init__(fit_intercept=False, **kwargs)
 
     @X_fitter
     def fit(self, X=None, y=None, sample_weight=None):
         # Save the classes for y values.
         self.classes = binarize(y, self.threshold)[0]
         super(self.__class__, self).fit(X, y=self.classes, sample_weight=None)
-        self.coef_ = self.coef_[0] # Reshape the coefs_, because scikit learn uses a weird shape
         return self
 
     @X_predictor
@@ -49,6 +48,13 @@ class EpistasisBaseClassifier(BaseModel):
 @sklearn_to_epistasis()
 class EpistasisLogisticRegression(LogisticRegression, EpistasisBaseClassifier):
     """Logistic Regression used to categorize phenotypes as either alive or dead."""
+
+    @X_predictor
+    def hypothesis(self, X=None, thetas=None):
+        """"""
+        logit_p = 1 / (1 + np.exp(np.dot(X, thetas)))
+        return logit_p
+
 
 @sklearn_to_epistasis()
 class EpistasisBernoulliNB(BernoulliNB, EpistasisBaseClassifier):

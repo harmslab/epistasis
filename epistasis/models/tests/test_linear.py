@@ -65,13 +65,3 @@ def test_EpistasisLinearRegression_hypothesis():
     check1 = model.hypothesis(thetas=model.coef_)
     # Tests
     np.testing.assert_almost_equal(check1, model.gpm.phenotypes)
-
-def test_EpistasisLinearRegression_classify_gpm_classifies_correctly():
-    gpm = GenotypePhenotypeSimulation.from_length(2)
-    gpm.phenotypes = np.array([0, .4, .6, 1])
-    model = EpistasisLinearRegression.from_gpm(gpm, order=2, model_type="local")
-    model.classify_gpm(.5)
-    model.fit()
-    # Tests
-    np.testing.assert_array_equal([0,0,1,1], model.Classifier.classes)
-    tools.assert_equals((2,4), model.Xfit.shape)

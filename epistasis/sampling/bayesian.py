@@ -131,3 +131,39 @@ class BayesianSampler(Sampler):
         for i, index in enumerate(model_indices):
             samples[i,:] = self.coefs[index, :]
         return self.predict(samples=samples)
+
+
+class MixedBayesianSampler(BayesianSampler):
+    """
+    """
+    @staticmethod
+    def lnlike(coefs, model):
+        """Calculate the log likelihood of a model, given the data.
+
+        Parameters
+        ----------
+        coefs : array
+            All coefficients for an epistasis model. Must be sorted appropriately.
+        model :
+            Any epistasis model in ``epistasis.models``.
+        """
+        ### Data
+        ydata = model.gpm.phenotypes
+        yerr = model.gpm.std.upper
+
+        ###  Pull out coefficients
+        # Logit coefficients
+        logit_coefs = coefs[0:model.Classifier.epistasis.n+1]
+        logit_threshold = logit_coefs[0]
+        # Epistasis model coefficients
+        model_coefs = coefs[model.Classifier.epistasis.n+1:]
+
+        ### log-likelihood of logit model
+        prob_1 = model.Classifier.hypothesis(log_coefs)
+        ybin = binarize(ydata, threshold)[0]
+        lnlike_logit = ybin * np.log(prob_1) + (1 - ybin) * np.log(1-prob_1)
+
+        ### log-likelihood of the epistasis model
+        ymodel = model.hypothesis(thetas=model_coefs)
+        inv_sigma2 = 1.0/(yerr**2)
+        return -0.5*(np.sum((ydata-ymodel)**2*inv_sigma2 - np.log(inv_sigma2))) + lnlike_logit

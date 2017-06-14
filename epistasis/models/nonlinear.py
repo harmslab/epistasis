@@ -7,7 +7,6 @@ from scipy.optimize import curve_fit
 from sklearn.base import BaseEstimator, RegressorMixin
 from epistasis.models.base import BaseModel, X_fitter, X_predictor
 from epistasis.models.linear import EpistasisLinearRegression
-from epistasis.models.preprocessor import ModelPreprocessor
 
 from epistasis.stats import pearson
 # decorators for catching errors
@@ -67,7 +66,7 @@ class Parameters(object):
         """ Get an ordered list of the parameters."""
         return [getattr(self, self._mapping_[i]) for i in range(len(self._mapping_))]
 
-class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel, ModelPreprocessor):
+class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
     """Epistasis estimator for nonlinear genotype-phenotype maps.
     """
     def __init__(self,

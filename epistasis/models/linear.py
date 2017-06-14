@@ -5,13 +5,11 @@ from epistasis.models.base import BaseModel as _BaseModel
 from epistasis.models.base import X_fitter as X_fitter
 from epistasis.models.base import X_predictor as X_predictor
 
-from epistasis.models.preprocessor import ModelPreprocessor as _ModelPreprocessor
-
 # Suppress an annoying error from scikit-learn
 import warnings
 warnings.filterwarnings(action="ignore", module="scipy", message="^internal gelsd")
 
-class EpistasisLinearRegression(_LinearRegression, _BaseModel, _ModelPreprocessor):
+class EpistasisLinearRegression(_LinearRegression, _BaseModel):
     """Ordinary least-squares regression of epistatic interactions.
     """
     def __init__(self, order=1, model_type="global", n_jobs=1, **kwargs):

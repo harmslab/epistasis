@@ -36,7 +36,8 @@ def X_predictor(method):
             # Construct an X matrix if none is given. Assumes
             genotypes = self.gpm.binary.complete_genotypes
             coefs = self.epistasis.sites
-            X = get_model_matrix(genotypes, coefs)
+            model_type = self.model_type
+            X = get_model_matrix(genotypes, coefs, model_type=model_type)
 
         # Save this matrix for later predictions.
         self.Xpredict = X
@@ -103,7 +104,7 @@ def X_fitter(method):
 
             # Assign a nested mapping class to the epistasis attribute
             self.epistasis = epistasis.mapping.EpistasisMap(coefs, order=order, model_type=model_type)
-            self.epistasis.values = self.coef_
+            self.epistasis.values = np.reshape(self.coef_,(-1,))
 
         # Store the X matrix and return the fit method output.
         self.Xfit = X
