@@ -103,5 +103,16 @@ nosetests
 ```
 
 
-## Citations
+## Citing
 If you use this API for research, please cite this [paper](https://doi.org/10.1534/genetics.116.195214).
+
+```
+@misc{zachary_sailer_2017_252927,
+  author       = {Zachary Sailer and Mike Harms},
+  title        = {harmslab/epistasis: Genetics paper release},
+  month        = jan,
+  year         = 2017,
+  doi          = {10.5281/zenodo.252927},
+  url          = {https://doi.org/10.5281/zenodo.252927}
+}
+```
