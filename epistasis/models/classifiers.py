@@ -5,10 +5,15 @@ import numpy as np
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
 from sklearn.naive_bayes import BernoulliNB
+from sklearn.gaussian_process import GaussianProcessClassifier
 from sklearn.preprocessing import binarize
 
-from epistasis.models.base import BaseModel, X_fitter, X_predictor
-from epistasis.models.utils import sklearn_to_epistasis
+from .base import BaseModel
+from .utils import sklearn_to_epistasis, X_fitter, X_predictor
+
+# Suppress Deprecation warning
+import warnings
+warnings.filterwarnings(action="ignore", module="sklearn", category=DeprecationWarning)
 
 class EpistasisBaseClassifier(BaseModel):
     """Base class for implementing epistasis classification using scikit-learn models.
@@ -16,16 +21,17 @@ class EpistasisBaseClassifier(BaseModel):
     scikit-learn classifer class you'd like and this class (second).
     """
     def __init__(self, threshold, order=1, model_type="global", **kwargs):
+        super(self.__class__, self).__init__(**kwargs)
         self.threshold = threshold
         self.order = order
         self.model_type = model_type
-        super(self.__class__, self).__init__(fit_intercept=False, **kwargs)
+        self.fit_intercept=False
 
     @X_fitter
-    def fit(self, X=None, y=None, sample_weight=None):
+    def fit(self, X=None, y=None, **kwargs):
         # Save the classes for y values.
         self.classes = binarize(y, self.threshold)[0]
-        super(self.__class__, self).fit(X, y=self.classes, sample_weight=None)
+        super(self.__class__, self).fit(X, y=self.classes, **kwargs)
         return self
 
     @X_predictor
@@ -42,6 +48,7 @@ class EpistasisBaseClassifier(BaseModel):
 
     @X_fitter
     def score(self, X=None, y=None):
+        y = binarize(y, self.threshold)[0]
         return super(self.__class__, self).score(X, y)
 
 
@@ -51,9 +58,15 @@ class EpistasisLogisticRegression(LogisticRegression, EpistasisBaseClassifier):
 
     @X_predictor
     def hypothesis(self, X=None, thetas=None):
-        """"""
-        logit_p = 1 / (1 + np.exp(np.dot(X, thetas)))
-        return logit_p
+        """Returns the probability of the data given the model."""
+        if thetas is None:
+            thetas = self.thetas
+        logit_p1 = 1 - 1 / (1 + np.exp(np.dot(X, thetas)))
+        return logit_p1
+
+    @property
+    def thetas(self):
+        return self.epistasis.values
 
 
 @sklearn_to_epistasis()
@@ -63,3 +76,8 @@ class EpistasisBernoulliNB(BernoulliNB, EpistasisBaseClassifier):
 @sklearn_to_epistasis()
 class EpistasisSVC(SVC, EpistasisBaseClassifier):
     """Logistic Regression used to categorize phenotypes as either alive or dead."""
+
+
+@sklearn_to_epistasis()
+class EpistasisGaussianProcessClassifier(GaussianProcessClassifier, EpistasisBaseClassifier):
+    """"""

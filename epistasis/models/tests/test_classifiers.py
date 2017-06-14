@@ -25,5 +25,13 @@ def test_EpistasisLogisticRegression_model_matrices_match():
     # Test
     np.testing.assert_array_equal(model.Xfit, model.Xpredict)
 
-def test_EpistasisLogisticRegression():
-    pass
+def test_EpistasisLogisticRegression_compare_proba_to_hypothesis():
+    gpm = GenotypePhenotypeSimulation.from_length(2)
+    gpm.phenotypes = np.array([0, 0.1, 0.5, 1])
+    model = EpistasisLogisticRegression.from_gpm(gpm, threshold=.2, order=1, model_type="global")
+    model.fit()
+    # Two arrays to test
+    proba = model.predict_proba()[:,0]
+    hypothesis =model.hypothesis(thetas=model.epistasis.values)
+    # Test
+    np.testing.assert_array_almost_equal(proba, hypothesis)

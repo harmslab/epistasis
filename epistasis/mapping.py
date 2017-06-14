@@ -121,7 +121,7 @@ def mutations_to_sites(order, mutations, start_order=0):
     return sites
 
 class EpistasisMap(BaseMap):
-    """Efficient mapping object for epistatic coefficients in an EpistasisModel.
+    """Memory-efficient object to store/map epistatic coefficients in epistasis models.
     """
     def __init__(self, sites, order=1, model_type="global"):
         self.sites = sites
@@ -140,8 +140,7 @@ class EpistasisMap(BaseMap):
             }
             try:
                 data.update(stdeviations=self.stdeviations)
-            except AttributeError:
-                pass
+            except AttributeError: pass
             json.dump(data, f)
 
     def from_json(self, filename):
@@ -158,34 +157,12 @@ class EpistasisMap(BaseMap):
         # Now set values.
         setattr(self, "values", vals)
 
-    def _from_sites(self, sites, model_type="global"):
-        """Set coef sites of an epistasis map instance.
-        """
-        self.sites = sites
-        self.order = max([len(l) for l in sites])
-        self.model_type = model_type
-
-    @classmethod
-    def from_sites(cls, sites, model_type="global"):
-        """Construct an EpistasisMap instance from sites.
-        """
-        self = cls()
-        self._from_sites(sites, model_type=model_type)
-        return self
-
-    def _from_mutations(self, mutations, order, model_type="global"):
-        """Set coef sites from mutations and order.
-        """
-        self.order = order
-        self._sites = mutations_to_sites(self.order, self.mutations)
-        self.model_type = model_type
-
     @classmethod
     def from_mutations(cls, mutations, order, model_type="global"):
         """Build a mapping object for epistatic interactions."""
         # construct the mutations mapping
-        self = cls()
-        self._from_mutations(mutations, order, model_type=model_type)
+        sites = mutations_to_sites(order, mutations)
+        self = cls(sites, order=order, model_type=model_type)
         return self
 
     @property

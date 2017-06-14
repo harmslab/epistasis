@@ -6,7 +6,6 @@ from sklearn.preprocessing import binarize
 from gpmap.gpm import GenotypePhenotypeMap
 
 # Local imports
-from .utils import X_predictor, X_fitter
 from epistasis.mapping import EpistasisMap
 from epistasis.model_matrix_ext import get_model_matrix
 from epistasis.utils import extract_mutations_from_genotypes
@@ -38,13 +37,6 @@ class BaseModel(object):
         # Grab all properties from data-structure
         self = cls(**kwargs)
         self.attach_gpm(gpm)
-        return self
-
-    @classmethod
-    def from_epistasis(cls, epistasis, **kwargs):
-        """"""
-        self = cls(**kwargs)
-        self.epistasis = epistasis
         return self
 
     def attach_gpm(self, gpm):

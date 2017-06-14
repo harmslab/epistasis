@@ -24,15 +24,8 @@ def X_predictor(method):
     @wraps(method)
     def inner(self, X=None, *args, **kwargs):
         """"""
-        # Prepare X for predictor method.
-        if X is not None:
-            # If X is given, nothing needs to be done.
-            pass
-
-        elif hasattr(self, "Xpredict") is True:
-            X = self.Xpredict
-
-        else:
+        # If no X is given, ALWAYS build a new Xpredict. This will not use old Xpredict matrices.
+        if X is None:
             # Construct an X matrix if none is given. Assumes
             genotypes = self.gpm.binary.complete_genotypes
             coefs = self.epistasis.sites
@@ -41,15 +34,8 @@ def X_predictor(method):
 
         # Save this matrix for later predictions.
         self.Xpredict = X
-        predictions = method(self, X=X, *args, **kwargs)
-
-        # Apply classificiation assignments, if it exists
-        try:
-            classes = self.Classifier.predict()
-            predictions = np.multiply(predictions, classes)
-        except AttributeError: pass
-
-        return predictions
+        
+        return method(self, X=X, *args, **kwargs)
 
     return inner
 
@@ -72,6 +58,10 @@ def X_fitter(method):
 
         # Prepare X for fit method.
         if X is not None:
+            # Must remove any old epistasis map, since model object has no clue
+            # what the new model matrix is.
+            if hasattr(self, "epistasis"): delattr(self, "epistasis")
+
             # If X is given, nothing needs to be done.
             model = method(self, X=X, y=y, *args, **kwargs)
 
@@ -92,19 +82,17 @@ def X_fitter(method):
             coefs = epistasis.mapping.mutations_to_sites(order, mutations)
             X = get_model_matrix(genotypes, coefs, model_type=model_type)
 
-            # Apply classificiation assignments, if it exists
-            try:
-                classes = self.Classifier.classes
-                X = X[classes == 1, :]
-                y = y[classes == 1]
-            except AttributeError: pass
-
             # Call fitter method
             model = method(self, X=X, y=y, *args, **kwargs)
 
-            # Assign a nested mapping class to the epistasis attribute
-            self.epistasis = epistasis.mapping.EpistasisMap(coefs, order=order, model_type=model_type)
-            self.epistasis.values = np.reshape(self.coef_,(-1,))
+            # Assign a nested mapping class to the epistasis attribute if coefs exist.
+            #values = np.reshape(self.coef_,(-1,))
+            try:
+                values = np.reshape(self.coef_,(-1,))
+                self.epistasis = epistasis.mapping.EpistasisMap(coefs, order=order, model_type=model_type)
+                self.epistasis.values = values
+            except AttributeError:
+                pass
 
         # Store the X matrix and return the fit method output.
         self.Xfit = X

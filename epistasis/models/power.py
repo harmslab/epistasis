@@ -4,9 +4,9 @@ import inspect
 import json
 from scipy.optimize import curve_fit
 
-from epistasis.models.nonlinear import EpistasisNonlinearRegression, Parameters
-from epistasis.models.linear import EpistasisLinearRegression
-from epistasis.models.base import X_fitter
+from .nonlinear import EpistasisNonlinearRegression, Parameters
+from .linear import EpistasisLinearRegression
+from .utils import X_fitter
 from epistasis.stats import gmean
 
 def power_transform(x, lmbda, A, B):

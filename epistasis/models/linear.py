@@ -1,9 +1,9 @@
 import numpy as _np
 from sklearn.linear_model import LinearRegression as _LinearRegression
 
-from epistasis.models.base import BaseModel as _BaseModel
-from epistasis.models.base import X_fitter as X_fitter
-from epistasis.models.base import X_predictor as X_predictor
+from .base import BaseModel as _BaseModel
+from .utils import X_fitter as X_fitter
+from .utils import X_predictor as X_predictor
 
 # Suppress an annoying error from scikit-learn
 import warnings

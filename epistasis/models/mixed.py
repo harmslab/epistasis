@@ -1,46 +1,176 @@
+import numpy as np
 from sklearn.preprocessing import binarize
 
-from .nonlinear import EpistasisNonlinearRegression
+import epistasis.mapping
+from epistasis.model_matrix_ext import get_model_matrix
+
+from .base import BaseModel
+from .linear import EpistasisLinearRegression
 from .classifiers import EpistasisLogisticRegression
-from .utils import X_fitter, X_predictor
 
+class EpistasisMixedRegression(BaseModel):
+    """A generalized, mixed epistasis model. This mixes an epistasis
+    classification and regression model, allowing you to pre-categorize dead/alive
+    phenotypes in your data. It then removes dead phenotypes from the epistasis
+    calculation, but uses those dead phenotypes to predict other dead phenotypes.
+    """
+    def __init__(self, order, threshold, model_type="global",
+        epistasis_model=EpistasisLinearRegression,
+        epistasis_classifier=EpistasisLogisticRegression,
+        **kwargs):
 
-class EpistasisMixedLinearRegression(EpistasisNonlinearRegression):
-    """
-    """
-    def __init__(self, threhold, **kwargs):
+        # Set model specs.
+        self.order = order
         self.threshold = threshold
-        super(EpistasisMixedRegression, self).__init__(**kwargs)
+        self.model_type = model_type
 
-    def binarize(self, y=None):
-        """Transform y, random continuous variables, to binary variables around
-        the model's threshold. If no y is given, the GenotypePhenotypeMap phenotypes
-        will be used.
+        # Initialize the epistasis model
+        self.Model = epistasis_model(order=self.order,
+            model_type=self.model_type)
+
+        # Initialize the epistasis classifier
+        self.Classifier = epistasis_classifier(
+            threshold=self.threshold,
+            order=1,
+            model_type=self.model_type)
+
+    def attach_gpm(self, gpm):
+        """ Attach a GenotypePhenotypeMap object to the epistasis model.
+
+        Also exposes APIs that are only accessible with a GenotypePhenotypeMap
+        attached to the model.
+        """
+        super(EpistasisMixedRegression, self).attach_gpm(gpm)
+        self.Model.attach_gpm(gpm)
+        self.Classifier.attach_gpm(gpm)
+
+    def fit(self, X=None, y=None, **kwargs):
+        """Fit mixed model in two parts. 1. Use Classifier to predict the
+        class of each phenotype (Dead/Alive). 2. Fit epistasis Model.
+
+        If X and y are given, Epistasis maps are not attached to the models.
+
+        Parameters
+        ----------
+        X : 2d array
+            epistasis model matrix.
+        y : 1d array
+            Phenotype array.
+
+        Returns
+        -------
+        self : instance of EpistasisMixedLinearRegression
         """
         if y is None:
             y = self.gpm.phenotypes
-        return binarize(y, self.threshold)[0]
 
-    @X_fitter
-    def fit(self, X=None, y=None, **kwargs):
-        ybin = binarize(y=y)
-        self.Classifer = EpistasisLogisticRegression.from_gpm(self.gpm,
-            model_type=self.model_type,
-            order=1).fit()
+        if X is None:
+            # --------------------------------------------------------
+            # Part 1: classify
+            # --------------------------------------------------------
+            # Build X matrix for classifier
+            order = 1
+            sites = epistasis.mapping.mutations_to_sites(order, self.gpm.mutations)
+            Xclass = get_model_matrix(self.gpm.binary.genotypes, sites, model_type=self.model_type)
 
-        super(EpistasisMixedRegression, self).fit(X=X, y=ybin, **kwargs)
+            # Fit classifier
+            self.Classifier.fit(X=Xclass, y=y)
 
-    @X_predictor
-    def predict(self):
-        pass
+            # Append epistasis map to coefs
+            self.Classifier.epistasis = epistasis.mapping.EpistasisMap(sites,
+                order=order, model_type=self.model_type)
+            self.Classifier.epistasis.values = self.Classifier.coef_.reshape((-1,))
+            ypred = self.Classifier.predict(X=Xclass)
 
-    @X_predictor
-    def hypothesis(self, X=None, thetas):
+            # --------------------------------------------------------
+            # Part 2: fit epistasis
+            # --------------------------------------------------------
+            # Build X matrix for epistasis model
+            order = self.order
+            sites = epistasis.mapping.mutations_to_sites(order, self.gpm.mutations)
+            X = get_model_matrix(self.gpm.binary.genotypes, sites, model_type=self.model_type)
+
+            # Ignore phenotypes that are found "dead"
+            y = y[ypred==1]
+            X = X[ypred==1,:]
+
+            # Fit model
+            self.Model.fit(X=X, y=y)
+
+            # Append epistasis map to coefs
+            self.Model.epistasis = epistasis.mapping.EpistasisMap(sites,
+                order=order, model_type=self.model_type)
+            self.Model.epistasis.values = self.Model.coef_.reshape((-1,))
+        else:
+            # --------------------------------------------------------
+            # Part 1: classify
+            # --------------------------------------------------------
+            self.Classifier.fit()
+            ypred = self.Classifier.predict(X=self.Classifier.Xfit)
+
+            # Ignore phenotypes that are found "dead"
+            y = y[ypred==1]
+            X = X[ypred==1,:]
+
+            # --------------------------------------------------------
+            # Part 2: fit epistasis
+            # --------------------------------------------------------
+            self.Model.fit(X=X, y=y)
+
+        return self
+
+    def predict(self, X=None):
+        """Predict phenotypes given a model matrix. Constructs the predictions in
+        two steps. 1. Use X to predict quantitative phenotypes. 2. Predict phenotypes
+        classes using the Classifier. Xfit for the classifier is truncted to the
+        order given by self.Classifier.order
+
+        Return
+        ------
+        X : array
+            Model matrix.
+        ypred : array
+            Predicted phenotypes.
         """
-        """
-        logit_p = 1 / (1 + np.exp(-np.dot(X, thetas))
-        return logit_p
+        if X is None:
+            # 1. Predict quantitative phenotype
+            ypred = self.Model.predict()
+            # 2. Determine class (Dead/alive) for each phenotype
+            yclasses = self.Classifier.predict()
+            # Update ypred with dead phenotype information
+            ypred[yclasses==1] = 0
+        else:
+            # 1. Predict quantitative phenotype
+            ypred = self.Model.predict(X=X)
+            # 2. Determine class (Dead/alive) for each phenotype
+            nterms = self.Classifier.Xfit.shape[-1]
+            Xclass = X[:,:nterms]
+            yclasses = self.Classifier.predict(X=Xclass)
+            # Update ypred with dead phenotype information
+            ypred[yclasses==0] = 0
+
+        return ypred
+
+    def hypothesis(self, X=None, thetas=None):
+        """Return a model's output with the given model matrix X and coefs."""
+        # Use thetas to predict the probability of 1-class for each phenotype.
+        if thetas is None:
+            thetas = self.thetas
+
+        thetas1 = thetas[0:len(self.Classifier.coef_[0])]
+        thetas2 = thetas[len(self.Classifier.coef_[0]):]
+
+        # 1. Class probability given the coefs
+        proba = self.Classifier.hypothesis(thetas=thetas1)
+        classes = np.ones(len(proba))
+        classes[proba<0.5] = 0
+
+        # 2. Determine ymodel given the coefs.
+        y = self.Model.hypothesis(thetas=thetas2)
+        y = np.multiply(y, classes)
+        return y, proba
 
     @property
     def thetas(self):
-        pass
+        """1d array of all coefs in model."""
+        return np.concatenate((self.Classifier.thetas, self.Model.thetas))
