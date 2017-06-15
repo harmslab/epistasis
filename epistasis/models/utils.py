@@ -34,7 +34,6 @@ def X_predictor(method):
 
         # Save this matrix for later predictions.
         self.Xpredict = X
-        
         return method(self, X=X, *args, **kwargs)
 
     return inner
@@ -48,7 +47,7 @@ def X_fitter(method):
     def inner(self, X=None, y=None, *args, **kwargs):
         # If X and y is not given, a GenotypePhenotypeMap must be attached. If
         # a GenotypePhenotypeMap is not attached, raise an exception.
-        if None in [X,y] and hasattr(self, "gpm") is False:
+        if True in (X is None, y is None) and hasattr(self, "gpm") is False:
             raise Exception("If both X and y are not given, a GenotypePhenotypeMap must be attached.")
 
         # If no Y is given, try to get it from

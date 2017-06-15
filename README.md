@@ -102,7 +102,6 @@ To run the tests on this package, run nose tests on the command line:
 nosetests
 ```
 
-
 ## Citing
 If you use this API for research, please cite this [paper](https://doi.org/10.1534/genetics.116.195214).
 

@@ -9,6 +9,11 @@ from .linear import EpistasisLinearRegression
 from .utils import X_fitter
 from epistasis.stats import gmean
 
+# Suppress an annoying error
+import warnings
+warnings.filterwarnings(action="ignore", category=RuntimeWarning)
+
+
 def power_transform(x, lmbda, A, B):
     """Power transformation function. Ignore zeros in gmean calculation"""
     # Check for zeros
@@ -80,7 +85,7 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
         #         nonlinear scale.
         # ----------------------------------------------------------------------
         self.Additive.fit(y=y)
-        x = self.Additive.predict(X=self.Additive.X)
+        x = self.Additive.predict(X=self.Additive.Xfit)
 
         # Set up guesses
         guesses = np.ones(self.parameters.n)
@@ -109,7 +114,7 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
         if self.order > 1:
             linearized_y = self.reverse(y, *self.parameters.values)
             # Now fit with a linear epistasis model.
-            self.Linear.fit(X=self.Linear.X, y=linearized_y)
+            self.Linear.fit(X=self.Linear.Xfit, y=linearized_y)
         else:
             self.Linear = self.Additive
         self.coef_ = self.Linear.coef_

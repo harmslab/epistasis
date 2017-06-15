@@ -19,6 +19,10 @@ try:
 except ImportError:
     pass
 
+# Suppress an annoying error
+import warnings
+warnings.filterwarnings(action="ignore", category=RuntimeWarning)
+
 class Parameters(object):
     """ A container object for parameters extracted from a nonlinear fit.
     """
@@ -129,6 +133,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         # Fit with an additive model
         self.Additive = EpistasisLinearRegression(order=1, model_type=self.model_type)
         self.Additive.attach_gpm(self.gpm)
+        self.Additive.Xfit = X[:,:self.Additive.gpm.length+1]
 
         # Prepare a high-order model
         self.Linear = EpistasisLinearRegression(order=self.order, model_type=self.model_type)
@@ -213,7 +218,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         xlin = self.Additive.predict(X=self.Additive.Xfit)
         ypred = self.function(xlin, *self.parameters.get_params())
         yrev = self.reverse(y, *self.parameters.get_params())
-        return pearson(y, ypred)**2, self.Linear.score(X=self.Linear.X, y=yrev)
+        return pearson(y, ypred)**2, self.Linear.score(X=self.Linear.Xfit, y=yrev)
 
     @property
     def thetas(self):

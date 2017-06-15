@@ -8,6 +8,11 @@ from .base import BaseModel
 from .linear import EpistasisLinearRegression
 from .classifiers import EpistasisLogisticRegression
 
+# Suppress an annoying error
+import warnings
+warnings.filterwarnings(action="ignore", category=RuntimeWarning)
+
+
 class EpistasisMixedRegression(BaseModel):
     """A generalized, mixed epistasis model. This mixes an epistasis
     classification and regression model, allowing you to pre-categorize dead/alive
@@ -95,12 +100,13 @@ class EpistasisMixedRegression(BaseModel):
             X = X[ypred==1,:]
 
             # Fit model
-            self.Model.fit(X=X, y=y)
+            self.Model.fit(X=X, y=y, **kwargs)
 
             # Append epistasis map to coefs
             self.Model.epistasis = epistasis.mapping.EpistasisMap(sites,
                 order=order, model_type=self.model_type)
             self.Model.epistasis.values = self.Model.coef_.reshape((-1,))
+
         else:
             # --------------------------------------------------------
             # Part 1: classify
@@ -115,7 +121,7 @@ class EpistasisMixedRegression(BaseModel):
             # --------------------------------------------------------
             # Part 2: fit epistasis
             # --------------------------------------------------------
-            self.Model.fit(X=X, y=y)
+            self.Model.fit(X=X, y=y, **kwargs)
 
         return self
 
@@ -138,7 +144,7 @@ class EpistasisMixedRegression(BaseModel):
             # 2. Determine class (Dead/alive) for each phenotype
             yclasses = self.Classifier.predict()
             # Update ypred with dead phenotype information
-            ypred[yclasses==1] = 0
+            ypred[yclasses==0] = 0
         else:
             # 1. Predict quantitative phenotype
             ypred = self.Model.predict(X=X)
