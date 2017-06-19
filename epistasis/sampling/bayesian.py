@@ -41,8 +41,13 @@ class BayesianSampler(Sampler):
             All coefficients for an epistasis model. Must be sorted appropriately.
         model :
             Any epistasis model in ``epistasis.models``.
+
+        Returns
+        -------
+        predictions :
         """
-        return model.lnlikelihood(thetas=coefs)
+        lnlike, predictions = model.lnlikelihood(thetas=coefs)
+        return lnlike, predictions
 
     @staticmethod
     def lnprior(coefs):
@@ -71,11 +76,12 @@ class BayesianSampler(Sampler):
         lp = BayesianSampler.lnprior(coefs)
         if not np.isfinite(lp):
             return -np.inf
-        x = lp + BayesianSampler.lnlike(coefs, model)
+        lnlike, predictions = BayesianSampler.lnlike(coefs, model)
+        x = lp + lnlike
         # Constrol against Nans -- check if this is too much of a hack later.
         if np.isnan(x).any():
-            return -np.inf
-        return lp + BayesianSampler.lnlike(coefs, model)
+            return -np.inf, predictions
+        return x, predictions
 
     def add_samples(self, n_mcsteps, nwalkers=None, starting_widths=1e-3):
         """Add samples to database"""
@@ -105,6 +111,12 @@ class BayesianSampler(Sampler):
         scores = sampler.flatlnprobability
         self.write_dataset("coefs", samples)
         self.write_dataset("scores", scores)
+
+        # Get predictions from sample blobs
+        pred = np.array(sampler.blobs)
+        # Flatten predictions
+        predictions = pred.reshape((-1, len(self.model.gpm.complete_genotypes)))
+        self.write_dataset("predictions", predictions)
 
     def predict_from_weighted_samples(self, n):
         """Draw from predicted phenotypes, sampling

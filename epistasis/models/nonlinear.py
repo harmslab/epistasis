@@ -260,4 +260,4 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         yerr = self.gpm.std.upper
         ymodel = self.hypothesis(X=X, thetas=thetas)
         inv_sigma2 = 1.0/(yerr**2)
-        return -0.5*(np.sum((ydata-ymodel)**2*inv_sigma2 - np.log(inv_sigma2)))
+        return -0.5*(np.sum((ydata-ymodel)**2*inv_sigma2 - np.log(inv_sigma2))), ymodel

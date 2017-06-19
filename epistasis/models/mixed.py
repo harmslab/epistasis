@@ -189,6 +189,8 @@ class EpistasisMixedRegression(BaseModel):
         ### Data
         ydata = self.gpm.phenotypes
         yerr = self.gpm.std.upper
+        # Binarize the data
+        ybin = binarize(ydata, threshold=self.threshold)[0]#np.ones(len(y_class_prob))
 
         if thetas is None:
             thetas = self.thetas
@@ -205,8 +207,6 @@ class EpistasisMixedRegression(BaseModel):
         ymodel = self.Model.hypothesis(thetas=thetas2)
         ymodel = np.multiply(ymodel, classes)
 
-        ybin = np.ones(len(y_class_prob))
-        ybin[y_class_prob < 0.5] = 0
         ### log-likelihood of logit model
         lnlikelihood = ybin * np.log(y_class_prob) + (1 - ybin) * np.log(1-y_class_prob)
 
@@ -214,7 +214,7 @@ class EpistasisMixedRegression(BaseModel):
         inv_sigma2 = 1.0/(yerr**2)
         lngaussian = (ydata-ymodel)**2*inv_sigma2 - np.log(inv_sigma2)
         lnlikelihood[ybin==1] = np.add(lnlikelihood[ybin==1], lngaussian[ybin==1])
-        return -0.5 * sum(lnlikelihood)
+        return -0.5 * sum(lnlikelihood), ymodel
 
     @property
     def thetas(self):

@@ -50,6 +50,8 @@ class Sampler(object):
         # Add database
         if "coefs" not in self.File:
             self.File.create_dataset("coefs", (0,0), maxshape=(None,None), compression="gzip")
+        if "predictions" not in self.File:
+            self.File.create_dataset("predictions", (0,0), maxshape=(None,None), compression="gzip")
         if "scores" not in self.File:
             self.File.create_dataset("scores", (0,), maxshape=(None,), compression="gzip")
 
@@ -122,6 +124,11 @@ class Sampler(object):
         return self.File["scores"]
 
     @property
+    def predictions(self):
+        """Samples of epistatic coefficients. Rows are samples, Columns are coefs."""
+        return self.File["predictions"]
+
+    @property
     def best_coefs(self):
         """Most probable model."""
         index = np.argmax(self.scores.value)
@@ -146,9 +153,7 @@ class Sampler(object):
         """
         predictions = np.empty((samples.shape[0], len(self.model.gpm.complete_genotypes)), dtype=float)
         for i in range(len(samples)):
-            test = self.model.hypothesis(thetas=samples[i,:])
-            print(test)
-            predictions[i,:] = test
+            predictions[i,:] = self.model.hypothesis(thetas=samples[i,:])
         return predictions
 
     def predict_from_random_samples(self, n):

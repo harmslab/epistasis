@@ -55,12 +55,11 @@ class EpistasisBaseClassifier(BaseModel):
     def lnlikelihood(self, X=None, thetas=None):
         """"""
         # 1. Class probability given the coefs
+        ydata = self.gpm.phenotypes
+        ydata = binarize(ydata, threshold=self.threshold)[0]
         y_class_prob = self.hypothesis(thetas=thetas)
-        ybin = np.ones(len(y_class_prob))
-        ybin[y_class_prob < 0.5] = 0
         ### log-likelihood of logit model
-        return ybin * np.log(y_class_prob) + (1 - ybin) * np.log(1-y_class_prob)
-
+        return ydata * np.log(y_class_prob) + (1 - ydata) * np.log(1-y_class_prob), y_class_prob
 
 @sklearn_to_epistasis()
 class EpistasisLogisticRegression(LogisticRegression, EpistasisBaseClassifier):
