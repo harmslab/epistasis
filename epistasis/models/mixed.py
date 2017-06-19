@@ -176,19 +176,29 @@ class EpistasisMixedRegression(BaseModel):
         y = np.multiply(y, classes)
         return y
 
-    def lnlikelihood(self, thetas=None):
-        """Calculate the log likelihood of a model, given the data.
+    def lnlikelihood(self, ydata=None, yerr=None, thetas=None):
+        """Calculate the log likelihood of data, given a set of model coefficients.
 
         Parameters
         ----------
-        coefs : array
-            All coefficients for an epistasis model. Must be sorted appropriately.
-        model :
-            Any epistasis model in ``epistasis.models``.
+        X : 2d array
+            model matrix
+        yerr: array
+            uncertainty in data
+        thetas : array
+            array of model coefficients
+
+        Returns
+        -------
+        lnlike : float
+            log-likelihood of the data given the model.
+        ymodel : array
+            predicted output from model.
         """
         ### Data
-        ydata = self.gpm.phenotypes
-        yerr = self.gpm.std.upper
+        if ydata is None:
+            ydata = self.gpm.phenotypes
+            yerr = self.gpm.std.upper
         # Binarize the data
         ybin = binarize(ydata, threshold=self.threshold)[0]#np.ones(len(y_class_prob))
 

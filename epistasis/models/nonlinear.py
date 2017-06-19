@@ -252,12 +252,32 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         return ynonlin
 
     @X_predictor
-    def lnlikelihood(self, X=None, thetas=None):
-        """Calculate the log likelihood of the model."""
+    def lnlikelihood(self, X=None, ydata=None, yerr=None, thetas=None):
+        """Calculate the log likelihood of data, given a set of model coefficients.
+
+        Parameters
+        ----------
+        X : 2d array
+            model matrix
+        ydata : array
+            data to calculate the likelihood
+        yerr: array
+            uncertainty in data
+        thetas : array
+            array of model coefficients
+
+        Returns
+        -------
+        lnlike : float
+            log-likelihood of the data given the model.
+        ymodel : array
+            predicted output from model.
+        """
         if thetas is None:
             thetas = self.thetas
-        ydata = self.gpm.phenotypes
-        yerr = self.gpm.std.upper
+        if yerr is None:
+            ydata = self.gpm.phenotypes
+            yerr = self.gpm.std.upper
         ymodel = self.hypothesis(X=X, thetas=thetas)
         inv_sigma2 = 1.0/(yerr**2)
         return -0.5*(np.sum((ydata-ymodel)**2*inv_sigma2 - np.log(inv_sigma2))), ymodel

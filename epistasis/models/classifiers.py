@@ -52,14 +52,34 @@ class EpistasisBaseClassifier(BaseModel):
         return super(self.__class__, self).score(X, y)
 
     @X_predictor
-    def lnlikelihood(self, X=None, thetas=None):
-        """"""
+    def lnlikelihood(self, X=None, ydata=None, thetas=None):
+        """Calculate the log likelihood of data, given a set of model coefficients.
+
+        Parameters
+        ----------
+        X : 2d array
+            model matrix
+        ydata : array
+            data to calculate the likelihood
+        yerr: array
+            uncertainty in data
+        thetas : array
+            array of model coefficients
+
+        Returns
+        -------
+        lnlike : float
+            log-likelihood of the data given the model.
+        ymodel : array
+            predicted output from model.
+        """
         # 1. Class probability given the coefs
-        ydata = self.gpm.phenotypes
+        if ymodel is None:
+            ydata = self.gpm.phenotypes
         ydata = binarize(ydata, threshold=self.threshold)[0]
-        y_class_prob = self.hypothesis(thetas=thetas)
+        ymodel = self.hypothesis(thetas=thetas)
         ### log-likelihood of logit model
-        return ydata * np.log(y_class_prob) + (1 - ydata) * np.log(1-y_class_prob), y_class_prob
+        return ydata * np.log(ymodel) + (1 - ydata) * np.log(1-ymodel), ymodel
 
 @sklearn_to_epistasis()
 class EpistasisLogisticRegression(LogisticRegression, EpistasisBaseClassifier):
