@@ -86,7 +86,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         function_sign = inspect.signature(function)
         parameters = list(function_sign.parameters.keys())
         if parameters[0] != "x":
-            raise Exception(""" First argument of the nonlinear function must be `x`. """)
+            raise Exception(""" First argument of the nonlinear function must be `x`.""")
 
         # Set up the function for fitting.
         self.function = function
@@ -97,6 +97,13 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         self.parameters = Parameters(parameters[1:])
         self.set_params(order=order,
             model_type=model_type)
+
+    @property
+    def thetas(self):
+        """Get all parameters in the model as a single array. This concatenates
+        the nonlinear parameters and high-order epistatic coefficients.
+        """
+        return np.concatenate((self.parameters.values, self.Linear.coef_))
 
     @X_fitter
     def fit(self, X=None, y=None, sample_weight=None, use_widgets=False, **parameters):
@@ -220,13 +227,6 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         yrev = self.reverse(y, *self.parameters.get_params())
         return pearson(y, ypred)**2, self.Linear.score(X=self.Linear.Xfit, y=yrev)
 
-    @property
-    def thetas(self):
-        """Get all parameters in the model as a single array. This concatenates
-        the nonlinear parameters and high-order epistatic coefficients.
-        """
-        return np.concatenate((self.parameters.values, self.Linear.coef_))
-
     @X_predictor
     def hypothesis(self, X=None, thetas=None):
         """Given a set of parameters, compute a set of phenotypes. Does not predict. This is method
@@ -245,7 +245,19 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
 
         # Part 1: Linear portion
         ylin = np.dot(X, epistasis)
+
         # Part 2: Nonlinear portion
         ynonlin = self.function(ylin, *parameters)
 
         return ynonlin
+
+    @X_predictor
+    def lnlikelihood(self, X=None, thetas=None):
+        """Calculate the log likelihood of the model."""
+        if thetas is None:
+            thetas = self.thetas
+        ydata = self.gpm.phenotypes
+        yerr = self.gpm.std.upper
+        ymodel = self.hypothesis(X=X, thetas=thetas)
+        inv_sigma2 = 1.0/(yerr**2)
+        return -0.5*(np.sum((ydata-ymodel)**2*inv_sigma2 - np.log(inv_sigma2)))

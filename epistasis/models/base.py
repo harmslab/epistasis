@@ -56,3 +56,9 @@ class BaseModel(object):
 
     def predict(self, *args, **kwargs):
         raise Exception("Must be defined in a subclass.")
+
+    def hypothesis(self, *args, **kwargs):
+        raise Exception("Must be defined in a subclass.")
+
+    def lnlikelihood(self, *args, **kwargs):
+        raise Exception("Must be defined in a subclass.")

@@ -20,6 +20,10 @@ class EpistasisLinearRegression(_LinearRegression, _BaseModel):
         self.n_jobs = n_jobs
         self.set_params(model_type=model_type, order=order)
 
+    @property
+    def thetas(self):
+        return self.coef_
+
     @X_fitter
     def fit(self, X=None, y=None, sample_weight=None):
         # If a threshold exists in the data, pre-classify genotypes
@@ -40,6 +44,13 @@ class EpistasisLinearRegression(_LinearRegression, _BaseModel):
         """
         return _np.dot(X, thetas)
 
-    @property
-    def thetas(self):
-        return self.coef_
+    @X_predictor
+    def lnlikelihood(self, X=None, thetas=None):
+        """Calculate the log likelihood of the model."""
+        if thetas is None:
+            thetas = self.thetas
+        ydata = self.gpm.phenotypes
+        yerr = self.gpm.std.upper
+        ymodel = self.hypothesis(X=X, thetas=thetas)
+        inv_sigma2 = 1.0/(yerr**2)
+        return -0.5*(np.sum((ydata-ymodel)**2*inv_sigma2 - np.log(inv_sigma2)))

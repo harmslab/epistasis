@@ -174,7 +174,47 @@ class EpistasisMixedRegression(BaseModel):
         # 2. Determine ymodel given the coefs.
         y = self.Model.hypothesis(thetas=thetas2)
         y = np.multiply(y, classes)
-        return y, proba
+        return y
+
+    def lnlikelihood(self, thetas=None):
+        """Calculate the log likelihood of a model, given the data.
+
+        Parameters
+        ----------
+        coefs : array
+            All coefficients for an epistasis model. Must be sorted appropriately.
+        model :
+            Any epistasis model in ``epistasis.models``.
+        """
+        ### Data
+        ydata = self.gpm.phenotypes
+        yerr = self.gpm.std.upper
+
+        if thetas is None:
+            thetas = self.thetas
+
+        thetas1 = thetas[0:len(self.Classifier.coef_[0])]
+        thetas2 = thetas[len(self.Classifier.coef_[0]):]
+
+        # 1. Class probability given the coefs
+        y_class_prob = self.Classifier.hypothesis(thetas=thetas1)
+        classes = np.ones(len(y_class_prob))
+        classes[y_class_prob<0.5] = 0
+
+        # 2. Determine ymodel given the coefs.
+        ymodel = self.Model.hypothesis(thetas=thetas2)
+        ymodel = np.multiply(ymodel, classes)
+
+        ybin = np.ones(len(y_class_prob))
+        ybin[y_class_prob < 0.5] = 0
+        ### log-likelihood of logit model
+        lnlikelihood = ybin * np.log(y_class_prob) + (1 - ybin) * np.log(1-y_class_prob)
+
+        ### log-likelihood of the epistasis model
+        inv_sigma2 = 1.0/(yerr**2)
+        lngaussian = (ydata-ymodel)**2*inv_sigma2 - np.log(inv_sigma2)
+        lnlikelihood[ybin==1] = np.add(lnlikelihood[ybin==1], lngaussian[ybin==1])
+        return -0.5 * sum(lnlikelihood)
 
     @property
     def thetas(self):
