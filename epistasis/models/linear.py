@@ -44,7 +44,6 @@ class EpistasisLinearRegression(_LinearRegression, _BaseModel):
         """
         return _np.dot(X, thetas)
 
-    @X_predictor
     def lnlikelihood(self, X=None, ydata=None, yerr=None, thetas=None):
         """Calculate the log likelihood of data, given a set of model coefficients.
 
@@ -63,14 +62,14 @@ class EpistasisLinearRegression(_LinearRegression, _BaseModel):
         -------
         lnlike : float
             log-likelihood of the data given the model.
-        ymodel : array
-            predicted output from model.
         """
         if thetas is None:
             thetas = self.thetas
         if ydata is None:
             ydata = self.gpm.phenotypes
             yerr = self.gpm.std.upper
+        if X is None:
+            X = self.Xfit
         ymodel = self.hypothesis(X=X, thetas=thetas)
         inv_sigma2 = 1.0/(yerr**2)
-        return -0.5*(np.sum((ydata-ymodel)**2*inv_sigma2 - np.log(inv_sigma2))), ymodel
+        return -0.5*(np.sum((ydata-ymodel)**2*inv_sigma2 - np.log(inv_sigma2)))

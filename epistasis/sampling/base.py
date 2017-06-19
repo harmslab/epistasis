@@ -19,9 +19,10 @@ class Sampler(object):
     """A base class to be inherited by sampling classes. Constructs a database for
     storing the samples.
     """
-    def __init__(self, model, db_dir=None):
+    def __init__(self, model, db_dir=None, n_jobs=1):
         # Check the model
         self._model = model
+        self.n_jobs = n_jobs
         if hasattr(self.model, "gpm") is False:
             raise SamplerError("The Epistasis model must have a GenotypePhenotypeMap as the `gpm` attribute.")
 
@@ -50,8 +51,6 @@ class Sampler(object):
         # Add database
         if "coefs" not in self.File:
             self.File.create_dataset("coefs", (0,0), maxshape=(None,None), compression="gzip")
-        if "predictions" not in self.File:
-            self.File.create_dataset("predictions", (0,0), maxshape=(None,None), compression="gzip")
         if "scores" not in self.File:
             self.File.create_dataset("scores", (0,), maxshape=(None,), compression="gzip")
 
@@ -124,11 +123,6 @@ class Sampler(object):
         return self.File["scores"]
 
     @property
-    def predictions(self):
-        """Samples of epistatic coefficients. Rows are samples, Columns are coefs."""
-        return self.File["predictions"]
-
-    @property
     def best_coefs(self):
         """Most probable model."""
         index = np.argmax(self.scores.value)
@@ -170,11 +164,8 @@ class Sampler(object):
             Sets of data predicted from the sampled models.
         """
         sample_size, coef_size = self.coefs.shape
-        model_indices = np.random.choice(np.arange(sample_size), n, replace=False)
-        samples = np.empty((n, coef_size))
-        for i, index in enumerate(model_indices):
-            samples[i,:] = self.coefs[index, :]
-        return self.predict(samples=samples)
+        indices = np.random.choice(np.arange(sample_size), n, replace=True)
+        return self.predict(samples=self.coefs.value[indices,:])
 
     def predict_from_top_samples(self, n):
         """Draw from top sampled models and predict phenotypes.

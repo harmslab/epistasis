@@ -176,7 +176,7 @@ class EpistasisMixedRegression(BaseModel):
         y = np.multiply(y, classes)
         return y
 
-    def lnlikelihood(self, ydata=None, yerr=None, thetas=None):
+    def lnlikelihood(self, X=None, ydata=None, yerr=None, thetas=None):
         """Calculate the log likelihood of data, given a set of model coefficients.
 
         Parameters
@@ -192,8 +192,6 @@ class EpistasisMixedRegression(BaseModel):
         -------
         lnlike : float
             log-likelihood of the data given the model.
-        ymodel : array
-            predicted output from model.
         """
         ### Data
         if ydata is None:
@@ -209,12 +207,17 @@ class EpistasisMixedRegression(BaseModel):
         thetas2 = thetas[len(self.Classifier.coef_[0]):]
 
         # 1. Class probability given the coefs
-        y_class_prob = self.Classifier.hypothesis(thetas=thetas1)
+        Xclass = self.Classifier.Xfit
+        y_class_prob = self.Classifier.hypothesis(X=Xclass, thetas=thetas1)
         classes = np.ones(len(y_class_prob))
         classes[y_class_prob<0.5] = 0
 
         # 2. Determine ymodel given the coefs.
-        ymodel = self.Model.hypothesis(thetas=thetas2)
+        if X is None:
+            sites = epistasis.mapping.mutations_to_sites(self.order, self.gpm.mutations)
+            X = get_model_matrix(self.gpm.binary.genotypes, sites, model_type=self.model_type)
+
+        ymodel = self.Model.hypothesis(X=X,thetas=thetas2)
         ymodel = np.multiply(ymodel, classes)
 
         ### log-likelihood of logit model
@@ -224,7 +227,7 @@ class EpistasisMixedRegression(BaseModel):
         inv_sigma2 = 1.0/(yerr**2)
         lngaussian = (ydata-ymodel)**2*inv_sigma2 - np.log(inv_sigma2)
         lnlikelihood[ybin==1] = np.add(lnlikelihood[ybin==1], lngaussian[ybin==1])
-        return -0.5 * sum(lnlikelihood), ymodel
+        return -0.5 * sum(lnlikelihood)
 
     @property
     def thetas(self):

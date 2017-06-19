@@ -46,8 +46,8 @@ class BayesianSampler(Sampler):
         -------
         predictions :
         """
-        lnlike, predictions = model.lnlikelihood(thetas=coefs)
-        return lnlike, predictions
+        lnlike = model.lnlikelihood(thetas=coefs)
+        return lnlike
 
     @staticmethod
     def lnprior(coefs):
@@ -76,12 +76,12 @@ class BayesianSampler(Sampler):
         lp = BayesianSampler.lnprior(coefs)
         if not np.isfinite(lp):
             return -np.inf
-        lnlike, predictions = BayesianSampler.lnlike(coefs, model)
+        lnlike = BayesianSampler.lnlike(coefs, model)
         x = lp + lnlike
         # Constrol against Nans -- check if this is too much of a hack later.
         if np.isnan(x).any():
-            return -np.inf, predictions
-        return x, predictions
+            return -np.inf
+        return x
 
     def add_samples(self, n_mcsteps, nwalkers=None, starting_widths=1e-3):
         """Add samples to database"""
@@ -101,7 +101,7 @@ class BayesianSampler(Sampler):
         pos = np.array([ml_coefs for i in range(nwalkers)]) + multigauss_err
 
         # Construct MCMC Sampler using emcee
-        sampler = emcee.EnsembleSampler(nwalkers, ndims, self.lnprob, args=(self.model,))
+        sampler = emcee.EnsembleSampler(nwalkers, ndims, self.lnprob, threads=self.n_jobs ,args=(self.model,))
 
         # Run for the number of samples
         sampler.run_mcmc(pos, n_mcsteps)
@@ -111,31 +111,3 @@ class BayesianSampler(Sampler):
         scores = sampler.flatlnprobability
         self.write_dataset("coefs", samples)
         self.write_dataset("scores", scores)
-
-        # Get predictions from sample blobs
-        pred = np.array(sampler.blobs)
-        # Flatten predictions
-        predictions = pred.reshape((-1, len(self.model.gpm.complete_genotypes)))
-        self.write_dataset("predictions", predictions)
-
-    def predict_from_weighted_samples(self, n):
-        """Draw from predicted phenotypes, sampling
-
-        Parameters
-        ----------
-        n : int
-            Number of top models to draw to create a set of predictions.
-
-        Returns
-        -------
-        predictions : 2d array
-            Sets of data predicted from the sampled models.
-        """
-        sample_size, coef_size = self.coefs.shape
-        scores = np.exp(self.scores.value)
-        weights = scores / scores.sum()
-        model_indices = np.random.choice(np.arange(sample_size), n, replace=True, p=weights)
-        samples = np.empty((n, coef_size))
-        for i, index in enumerate(model_indices):
-            samples[i,:] = self.coefs[index, :]
-        return self.predict(samples=samples)
