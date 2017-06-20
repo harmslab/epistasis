@@ -76,16 +76,16 @@ class EpistasisMixedRegression(BaseModel):
             # Build X matrix for classifier
             order = 1
             sites = epistasis.mapping.mutations_to_sites(order, self.gpm.mutations)
-            Xclass = get_model_matrix(self.gpm.binary.genotypes, sites, model_type=self.model_type)
+            self.Xclass = get_model_matrix(self.gpm.binary.genotypes, sites, model_type=self.model_type)
 
             # Fit classifier
-            self.Classifier.fit(X=Xclass, y=y)
+            self.Classifier.fit(X=self.Xclass, y=y)
 
             # Append epistasis map to coefs
             self.Classifier.epistasis = epistasis.mapping.EpistasisMap(sites,
                 order=order, model_type=self.model_type)
             self.Classifier.epistasis.values = self.Classifier.coef_.reshape((-1,))
-            ypred = self.Classifier.predict(X=Xclass)
+            ypred = self.Classifier.predict(X=self.Xclass)
 
             # --------------------------------------------------------
             # Part 2: fit epistasis
@@ -93,11 +93,11 @@ class EpistasisMixedRegression(BaseModel):
             # Build X matrix for epistasis model
             order = self.order
             sites = epistasis.mapping.mutations_to_sites(order, self.gpm.mutations)
-            X = get_model_matrix(self.gpm.binary.genotypes, sites, model_type=self.model_type)
+            self.Xfit = get_model_matrix(self.gpm.binary.genotypes, sites, model_type=self.model_type)
 
             # Ignore phenotypes that are found "dead"
             y = y[ypred==1]
-            X = X[ypred==1,:]
+            X = self.Xfit[ypred==1,:]
 
             # Fit model
             self.Model.fit(X=X, y=y, **kwargs)
@@ -207,15 +207,14 @@ class EpistasisMixedRegression(BaseModel):
         thetas2 = thetas[len(self.Classifier.coef_[0]):]
 
         # 1. Class probability given the coefs
-        Xclass = self.Classifier.Xfit
+        Xclass = self.Xclass
         y_class_prob = self.Classifier.hypothesis(X=Xclass, thetas=thetas1)
         classes = np.ones(len(y_class_prob))
         classes[y_class_prob<0.5] = 0
 
         # 2. Determine ymodel given the coefs.
         if X is None:
-            sites = epistasis.mapping.mutations_to_sites(self.order, self.gpm.mutations)
-            X = get_model_matrix(self.gpm.binary.genotypes, sites, model_type=self.model_type)
+            X = self.Xfit
 
         ymodel = self.Model.hypothesis(X=X,thetas=thetas2)
         ymodel = np.multiply(ymodel, classes)

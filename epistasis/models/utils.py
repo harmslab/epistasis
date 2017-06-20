@@ -25,15 +25,17 @@ def X_predictor(method):
     def inner(self, X=None, *args, **kwargs):
         """"""
         # If no X is given, ALWAYS build a new Xpredict. This will not use old Xpredict matrices.
-        if X is None:
+        if X is None and hasattr(self, "Xpredict"):
+            X = self.Xpredict
+        elif X is None:
             # Construct an X matrix if none is given. Assumes
             genotypes = self.gpm.binary.complete_genotypes
             coefs = self.epistasis.sites
             model_type = self.model_type
             X = get_model_matrix(genotypes, coefs, model_type=model_type)
+            self.Xpredict = X
 
         # Save this matrix for later predictions.
-        self.Xpredict = X
         return method(self, X=X, *args, **kwargs)
 
     return inner
