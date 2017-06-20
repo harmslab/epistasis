@@ -132,6 +132,18 @@ class Sampler(object):
         """Return credibility regions (Bayes) or confidence intervals (Bootstrap)."""
         return np.percentile(self.coefs.value, percentiles, axis=0)
 
+    def fit(self, **kwargs):
+        """Calls the model's fit method to get the ML fit. Passes kwargs to that model.
+        ML fit is written to disk.
+        """
+        # Write model to db_dir
+        self.model.fit(**kwargs)
+
+        # Write the ML fit to
+        with open(self._model_path, "wb") as f:
+            pickle.dump(self.model, f)
+        return self.model
+
     def predict(self, samples):
         """Use a set of models to predict pseudodata.
 
