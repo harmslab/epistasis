@@ -85,25 +85,6 @@ class BayesianSampler(Sampler):
             return -np.inf
         return x
 
-    def equilibrate(self, n_mcsteps, nwalkers=None):
-        """
-        """
-        # Calculate the maximum likelihood estimate for the epistasis model.
-        try:
-            ml_coefs = self.model.thetas
-        except AttributeError:
-            raise Exception("Need to call the `fit` method to acquire a ML fit first.")
-
-        # Prepare walker number for bayesian sampler
-        ndims = len(ml_coefs)
-        if nwalkers is None:
-            nwalkers = 2 * len(ml_coefs)
-
-        # Construct a bunch of walkers gaussians around each ml_coef
-        multigauss_err = starting_widths*np.random.randn(nwalkers, ndims)
-        p0 = np.array([ml_coefs for i in range(nwalkers)]) + multigauss_err
-
-
     def add_samples(self, n_mcsteps, nwalkers=None, equil_steps=100):
         """Add samples to database"""
         # Calculate the maximum likelihood estimate for the epistasis model.
