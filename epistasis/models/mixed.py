@@ -5,7 +5,7 @@ import epistasis.mapping
 from epistasis.model_matrix_ext import get_model_matrix
 
 from .base import BaseModel
-from .linear import EpistasisLinearRegression
+from .power import EpistasisPowerTransform
 from .classifiers import EpistasisLogisticRegression
 
 # Suppress an annoying error
@@ -20,7 +20,7 @@ class EpistasisMixedRegression(BaseModel):
     calculation, but uses those dead phenotypes to predict other dead phenotypes.
     """
     def __init__(self, order, threshold, model_type="global",
-        epistasis_model=EpistasisLinearRegression,
+        epistasis_model=EpistasisPowerTransform,
         epistasis_classifier=EpistasisLogisticRegression,
         **kwargs):
 
