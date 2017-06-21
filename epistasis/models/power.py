@@ -78,6 +78,22 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
         gmean = self.gmean
         return (gmean**(lmbda-1)*lmbda*(y - B) + 1)**(1/lmbda) - A
 
+    def hypothesis(self, X=None, thetas=None):
+        """Given a set of parameters, compute a set of phenotypes. Does not predict. This is method
+        can be used to test a set of parameters (Useful for bayesian sampling).
+        """
+        y = super(EpistasisPowerTransform, self).hypothesis(X=X, thetas=thetas)
+        # NOTE: sets nan values to the saturation point.
+        y[np.isnan(y)==True] = self.parameters.B
+        return y
+
+    def predict(self, X=None):
+        """Predict new targets from model."""
+        y = super(EpistasisPowerTransform, self).predict(X=X)
+        # NOTE: sets nan values to the saturation point.
+        y[np.isnan(y)==True] = self.parameters.B
+        return y
+
     def _fit_(self, X=None, y=None, sample_weight=None, **kwargs):
         """Estimate the scale of multiple mutations in a genotype-phenotype map."""
         # ----------------------------------------------------------------------

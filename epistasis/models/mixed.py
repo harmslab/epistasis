@@ -173,7 +173,8 @@ class EpistasisMixedRegression(BaseModel):
 
         # 2. Determine ymodel given the coefs.
         y = self.Model.hypothesis(thetas=thetas2)
-        y = np.multiply(y, classes)
+        y[classes==0] = 0
+        #y = np.multiply(y, classes)
         return y
 
     def lnlikelihood(self, X=None, ydata=None, yerr=None, thetas=None):
@@ -217,7 +218,9 @@ class EpistasisMixedRegression(BaseModel):
             X = self.Xfit
 
         ymodel = self.Model.hypothesis(X=X,thetas=thetas2)
-        ymodel = np.multiply(ymodel, classes)
+        ymodel[classes==0] = 0
+
+        #ymodel = np.multiply(ymodel, classes)
 
         ### log-likelihood of logit model
         lnlikelihood = ybin * np.log(y_class_prob) + (1 - ybin) * np.log(1-y_class_prob)

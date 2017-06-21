@@ -5,6 +5,9 @@ from datetime import datetime
 import pickle
 import numpy as np
 
+# Progress bar module
+import tqdm
+
 class SamplerError(Exception):
     """Raise an exception from the Sampler class"""
 
@@ -23,6 +26,8 @@ class Sampler(object):
         # Check the model
         self._model = model
         self.n_jobs = n_jobs
+        self.n_samples = 0
+
         if hasattr(self.model, "gpm") is False:
             raise SamplerError("The Epistasis model must have a GenotypePhenotypeMap as the `gpm` attribute.")
 

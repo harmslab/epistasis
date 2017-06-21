@@ -2,6 +2,8 @@ import numpy as np
 import emcee as emcee
 from .base import Sampler
 
+import tqdm
+
 class BayesianSampler(Sampler):
     """A sampling class to estimate the uncertainties in an epistasis model's
     coefficients using a Bayesian approach. This object samples from
@@ -83,8 +85,9 @@ class BayesianSampler(Sampler):
             return -np.inf
         return x
 
-    def add_samples(self, n_mcsteps, nwalkers=None, starting_widths=1e-3):
-        """Add samples to database"""
+    def equilibrate(self, n_mcsteps, nwalkers=None):
+        """
+        """
         # Calculate the maximum likelihood estimate for the epistasis model.
         try:
             ml_coefs = self.model.thetas
@@ -98,16 +101,50 @@ class BayesianSampler(Sampler):
 
         # Construct a bunch of walkers gaussians around each ml_coef
         multigauss_err = starting_widths*np.random.randn(nwalkers, ndims)
-        pos = np.array([ml_coefs for i in range(nwalkers)]) + multigauss_err
+        p0 = np.array([ml_coefs for i in range(nwalkers)]) + multigauss_err
 
-        # Construct MCMC Sampler using emcee
-        sampler = emcee.EnsembleSampler(nwalkers, ndims, self.lnprob, threads=self.n_jobs ,args=(self.model,))
 
-        # Run for the number of samples
-        sampler.run_mcmc(pos, n_mcsteps)
+    def add_samples(self, n_mcsteps, nwalkers=None, equil_steps=100):
+        """Add samples to database"""
+        # Calculate the maximum likelihood estimate for the epistasis model.
+        try:
+            ml_coefs = self.model.thetas
+        except AttributeError:
+            raise Exception("Need to call the `fit` method to acquire a ML fit first.")
+
+        # Prepare walker number for bayesian sampler
+        ndims = len(ml_coefs)
+        if nwalkers is None:
+            nwalkers = 2 * len(ml_coefs)
+
+        # Equilibrate if this if the first time sampling.
+        if self.n_samples == 0:
+
+            # Construct a bunch of walkers gaussians around each ml_coef
+            multigauss_err = 1e-3*np.random.randn(nwalkers, ndims)
+            p0 = np.array([ml_coefs for i in range(nwalkers)]) + multigauss_err
+
+            # Construct MCMC Sampler using emcee
+            self.sampler = emcee.EnsembleSampler(nwalkers, ndims, self.lnprob, args=(self.model,))
+
+            # Run for the number of samples
+            pos, prob, state = self.sampler.run_mcmc(p0, n_mcsteps, storechain=False)
+            self.sampler.reset()
+
+        else:
+
+            # Get the last position in the MCMC chain.
+            pos = self.coefs[-1,:]
+
+        # Sample
+        self.sampler.run_mcmc(pos, n_mcsteps)
+        self.n_samples += n_mcsteps
 
         # Write samples to database
-        samples = sampler.flatchain
-        scores = sampler.flatlnprobability
+        samples = self.sampler.flatchain
+        scores = self.sampler.flatlnprobability
         self.write_dataset("coefs", samples)
         self.write_dataset("scores", scores)
+
+        # Reset the sampler.
+        self.sampler.reset()
