@@ -229,7 +229,13 @@ class EpistasisMixedRegression(BaseModel):
         inv_sigma2 = 1.0/(yerr**2)
         lngaussian = (ydata-ymodel)**2*inv_sigma2 - np.log(inv_sigma2)
         lnlikelihood[ybin==1] = np.add(lnlikelihood[ybin==1], lngaussian[ybin==1])
-        return -0.5 * sum(lnlikelihood)
+        lnlikelihood = -0.5 * sum(lnlikelihood)
+
+        # If log-likelihood is infinite, set to negative infinity.
+        if np.isinf(lnlikelihood):
+            return -np.inf
+
+        return lnlikelihood
 
     @property
     def thetas(self):

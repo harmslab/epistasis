@@ -117,34 +117,27 @@ class BayesianSampler(Sampler):
         if nwalkers is None:
             nwalkers = 2 * len(ml_coefs)
 
-        # Equilibrate if this if the first time sampling.
-        if self.n_samples == 0:
+        # Initialize a sampler
+        sampler = emcee.EnsembleSampler(nwalkers, ndims, self.lnprob, args=(self.model,))
 
+        # Equilibrate if this if the first time sampling.
+        if self.coefs.len() == 0:
             # Construct a bunch of walkers gaussians around each ml_coef
             multigauss_err = 1e-3*np.random.randn(nwalkers, ndims)
             p0 = np.array([ml_coefs for i in range(nwalkers)]) + multigauss_err
 
-            # Construct MCMC Sampler using emcee
-            self.sampler = emcee.EnsembleSampler(nwalkers, ndims, self.lnprob, args=(self.model,))
-
             # Run for the number of samples
-            pos, prob, state = self.sampler.run_mcmc(p0, n_mcsteps, storechain=False)
-            self.sampler.reset()
-
+            pos, prob, state = sampler.run_mcmc(p0, equil_steps, storechain=False)
+            sampler.reset()
         else:
-
-            # Get the last position in the MCMC chain.
-            pos = self.coefs[-1,:]
+            # Start from a previous position
+            pos = self.coefs[-nwalkers:,:]
 
         # Sample
-        self.sampler.run_mcmc(pos, n_mcsteps)
-        self.n_samples += n_mcsteps
+        sampler.run_mcmc(pos, n_mcsteps)
 
         # Write samples to database
-        samples = self.sampler.flatchain
-        scores = self.sampler.flatlnprobability
+        samples = sampler.flatchain
+        scores = sampler.flatlnprobability
         self.write_dataset("coefs", samples)
         self.write_dataset("scores", scores)
-
-        # Reset the sampler.
-        self.sampler.reset()

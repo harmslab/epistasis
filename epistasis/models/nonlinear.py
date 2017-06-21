@@ -279,4 +279,10 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
             X = self.Xfit
         ymodel = self.hypothesis(X=X, thetas=thetas)
         inv_sigma2 = 1.0/(yerr**2)
-        return -0.5*(np.sum((ydata-ymodel)**2*inv_sigma2 - np.log(inv_sigma2)))
+        lnlikelihood = -0.5*(np.sum((ydata-ymodel)**2*inv_sigma2 - np.log(inv_sigma2)))
+
+        # If log-likelihood is infinite, set to negative infinity.
+        if np.isinf(lnlikelihood):
+            return -np.inf
+
+        return lnlikelihood
