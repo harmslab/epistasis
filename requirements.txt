@@ -1,7 +1,4 @@
-gpmap
 numpy
-scikit-learn
-sklearn
 scipy
 matplotlib>=2.0
 jupyter
@@ -9,6 +6,8 @@ notebook
 ipython
 ipywidgets
 cython
+scikit-learn
+gpmap
 emcee
 h5py
 tqdm
