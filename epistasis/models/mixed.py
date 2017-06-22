@@ -12,7 +12,6 @@ from .classifiers import EpistasisLogisticRegression
 import warnings
 warnings.filterwarnings(action="ignore", category=RuntimeWarning)
 
-
 class EpistasisMixedRegression(BaseModel):
     """A generalized, mixed epistasis model. This mixes an epistasis
     classification and regression model, allowing you to pre-categorize dead/alive
@@ -128,7 +127,7 @@ class EpistasisMixedRegression(BaseModel):
     def predict(self, X=None):
         """Predict phenotypes given a model matrix. Constructs the predictions in
         two steps. 1. Use X to predict quantitative phenotypes. 2. Predict phenotypes
-        classes using the Classifier. Xfit for the classifier is truncted to the
+        classes using the Classifier. Xfit for the classifier is truncated to the
         order given by self.Classifier.order
 
         Return

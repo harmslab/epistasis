@@ -122,3 +122,4 @@ class BayesianSampler(Sampler):
         scores = sampler.flatlnprobability
         self.write_dataset("coefs", samples)
         self.write_dataset("scores", scores)
+        return samples

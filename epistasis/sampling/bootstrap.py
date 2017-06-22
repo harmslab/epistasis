@@ -52,3 +52,4 @@ class BootstrapSampler(Sampler):
         # Write samples to database
         self.write_dataset("coefs", samples)
         self.write_dataset("scores", scores)
+        return samples
