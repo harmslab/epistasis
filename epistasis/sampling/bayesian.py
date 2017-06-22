@@ -85,7 +85,7 @@ class BayesianSampler(Sampler):
             return -np.inf
         return x
 
-    def add_samples(self, n_mcsteps, nwalkers=None, equil_steps=100):
+    def add_samples(self, n_samples, nwalkers=None, equil_steps=100):
         """Add samples to database"""
         # Calculate the maximum likelihood estimate for the epistasis model.
         try:
@@ -97,6 +97,9 @@ class BayesianSampler(Sampler):
         ndims = len(ml_coefs)
         if nwalkers is None:
             nwalkers = 2 * len(ml_coefs)
+
+        # Calculate the number of steps to take
+        mcmc_steps = n_samples / nwalkers
 
         # Initialize a sampler
         sampler = emcee.EnsembleSampler(nwalkers, ndims, self.lnprob, args=(self.model,))
@@ -115,11 +118,10 @@ class BayesianSampler(Sampler):
             pos = self.coefs[-nwalkers:,:]
 
         # Sample
-        sampler.run_mcmc(pos, n_mcsteps)
+        sampler.run_mcmc(pos, mcmc_steps)
 
         # Write samples to database
         samples = sampler.flatchain
         scores = sampler.flatlnprobability
         self.write_dataset("coefs", samples)
         self.write_dataset("scores", scores)
-        return samples
