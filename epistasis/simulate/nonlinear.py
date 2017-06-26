@@ -1,8 +1,8 @@
 import inspect
 import numpy as np
 from .base import BaseSimulation
-from epistasis.models.nonlinear.regression import Parameters
-from epistasis.decomposition import generate_dv_matrix
+from epistasis.models.nonlinear import Parameters
+from epistasis.model_matrix_ext import get_model_matrix
 
 class NonlinearSimulation(BaseSimulation):
     """ Nonlinear epistasis simulator. Creates a Genotype-Phen"""
@@ -37,7 +37,7 @@ class NonlinearSimulation(BaseSimulation):
     def p_additive(self):
         """Get the additive phenotypes"""
         orders = self.epistasis.get_orders(0,1)
-        x = generate_dv_matrix(self.binary.genotypes, orders.sites, model_type=self.model_type)
+        x = get_model_matrix(self.binary.genotypes, orders.sites, model_type=self.model_type)
         linear = np.dot(x, orders.values)
         return self.function(linear, *self.parameters.get_params())
 
@@ -53,6 +53,6 @@ class NonlinearSimulation(BaseSimulation):
         """ Build nonlinear map from epistasis and function.
         """
         # Get model type:
-        self.X = generate_dv_matrix(self.binary.genotypes, self.epistasis.sites, model_type=self.model_type)
+        self.X = get_model_matrix(self.binary.genotypes, self.epistasis.sites, model_type=self.model_type)
         _phenotypes = np.dot(self.X, self.epistasis.values)
         self.phenotypes = self.function(_phenotypes, *self.parameters.values)

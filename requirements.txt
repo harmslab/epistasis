@@ -1,13 +1,13 @@
-gpmap
 numpy
-scikit-learn
-sklearn
 scipy
-matplotlib>=2.0
+matplotlib
 jupyter
 notebook
 ipython
 ipywidgets
 cython
+scikit-learn
+gpmap
 emcee
 h5py
+tqdm

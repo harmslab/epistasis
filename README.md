@@ -1,11 +1,11 @@
-# High Order Epistasis Models/Regressions for Genotype-Phenotype Maps
+# Python API for estimating statistical, high-order epistasis
 
 [![Join the chat at https://gitter.im/harmslab/epistasis](https://badges.gitter.im/harmslab/epistasis.svg)](https://gitter.im/harmslab/epistasis?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Binder](http://mybinder.org/badge.svg)](http://mybinder.org:/repo/harmslab/epistasis)
 [![Documentation Status](https://readthedocs.org/projects/epistasis/badge/?version=latest)](http://epistasis.readthedocs.io/?badge=latest)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.242665.svg)](https://doi.org/10.5281/zenodo.242665)
 
-A python API for modeling statistical, high-order epistasis in genotype-phenotype maps. All models follow a *Scikit-learn* interface, making it easy to integrate `epistasis` models with other pipelines and software. It includes a plotting module built on matplotlib for visualizing high-order interactions and interactive widgets to simplify complex nonlinear fits.
+A python API for estimating statistical, high-order epistasis in linear and nonlinear genotype-phenotype maps. All models follow a *Scikit-learn* interface, making it easy to integrate `epistasis` models with other pipelines and software. It includes a plotting module built on matplotlib for visualizing high-order interactions and interactive widgets to simplify complex nonlinear fits.
 
 This package includes APIs for both linear and nonlinear epistasis models, described in this [paper](https://doi.org/10.1534/genetics.116.195214).
 
@@ -21,9 +21,6 @@ from epistasis.models import EpistasisLinearRegression
 # Read data from file and estimate epistasis
 model = EpistasisLinearRegression.from_json("dataset.json", order=3)
 model.fit()
-
-# Estimate the uncertainty in epistatic coefficients
-model.bootstrap_fit()
 ```
 
 If analyzing a nonlinear genotype-phenotype map, use `NonlinearEpistasisModel`
@@ -92,5 +89,29 @@ Documentation and API reference can be viewed [here](http://epistasis.readthedoc
 * [jupyter notebook](): interactive notebook application for running python kernels interactively.   
 * [ipywidgets](): interactive widgets in python.
 
-## Citations
-If you use this API for research, please cite this [paper](http://biorxiv.org/content/early/2016/12/02/072256).
+## Development
+
+We welcome pull requests! If you find a bug, we'd love to have you fix it. If
+there is a feature you'd like to add, feel free to submit a
+pull request with a description of the addition. We also ask that you write the
+appropriate unit-tests for the new feature and add documentation to our Sphinx docs.
+
+To run the tests on this package, run nose tests on the command line:
+
+```
+nosetests
+```
+
+## Citing
+If you use this API for research, please cite this [paper](https://doi.org/10.1534/genetics.116.195214).
+
+```
+@misc{zachary_sailer_2017_252927,
+  author       = {Zachary Sailer and Mike Harms},
+  title        = {harmslab/epistasis: Genetics paper release},
+  month        = jan,
+  year         = 2017,
+  doi          = {10.5281/zenodo.252927},
+  url          = {https://doi.org/10.5281/zenodo.252927}
+}
+```

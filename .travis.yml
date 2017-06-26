@@ -1,0 +1,10 @@
+# https://travis-ci.org/harmslab/epistasis
+language: python
+python:
+    - 3.6
+    - 3.5
+install:
+    - pip install -r requirements.txt
+    - python setup.py build_ext -i
+    - python setup.py install
+script: nosetests

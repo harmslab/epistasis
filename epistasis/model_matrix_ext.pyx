@@ -4,7 +4,7 @@
 
 import numpy as np
 
-def generate_dv_matrix(sequences, interactions, model_type="local"):
+def get_model_matrix(sequences, interactions, model_type="local"):
     """ Build the X matrix of dummy variable for linear regression
         in epistasis model.
     """

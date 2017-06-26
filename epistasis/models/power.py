@@ -3,10 +3,16 @@ import numpy as np
 import inspect
 import json
 from scipy.optimize import curve_fit
-from .regression import EpistasisNonlinearRegression, Parameters
-from ..linear.regression import EpistasisLinearRegression
+
+from .nonlinear import EpistasisNonlinearRegression, Parameters
+from .linear import EpistasisLinearRegression
+from .utils import X_fitter
 from epistasis.stats import gmean
-from ..base import X_fitter
+
+# Suppress an annoying error
+import warnings
+warnings.filterwarnings(action="ignore", category=RuntimeWarning)
+
 
 def power_transform(x, lmbda, A, B):
     """Power transformation function. Ignore zeros in gmean calculation"""
@@ -72,14 +78,30 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
         gmean = self.gmean
         return (gmean**(lmbda-1)*lmbda*(y - B) + 1)**(1/lmbda) - A
 
+    def hypothesis(self, X=None, thetas=None):
+        """Given a set of parameters, compute a set of phenotypes. Does not predict. This is method
+        can be used to test a set of parameters (Useful for bayesian sampling).
+        """
+        y = super(EpistasisPowerTransform, self).hypothesis(X=X, thetas=thetas)
+        # NOTE: sets nan values to the saturation point.
+        y[np.isnan(y)==True] = self.parameters.B
+        return y
+
+    def predict(self, X=None):
+        """Predict new targets from model."""
+        y = super(EpistasisPowerTransform, self).predict(X=X)
+        # NOTE: sets nan values to the saturation point.
+        y[np.isnan(y)==True] = self.parameters.B
+        return y
+
     def _fit_(self, X=None, y=None, sample_weight=None, **kwargs):
         """Estimate the scale of multiple mutations in a genotype-phenotype map."""
         # ----------------------------------------------------------------------
         # Part 1: Estimate average, independent mutational effects and fit
         #         nonlinear scale.
         # ----------------------------------------------------------------------
-        self.Additive.fit()
-        x = self.Additive.predict(X=self.Additive.X)
+        self.Additive.fit(y=y)
+        x = self.Additive.predict(X=self.Additive.Xfit)
 
         # Set up guesses
         guesses = np.ones(self.parameters.n)
@@ -108,7 +130,7 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
         if self.order > 1:
             linearized_y = self.reverse(y, *self.parameters.values)
             # Now fit with a linear epistasis model.
-            self.Linear.fit(X=self.Linear.X, y=linearized_y)
+            self.Linear.fit(X=self.Linear.Xfit, y=linearized_y)
         else:
             self.Linear = self.Additive
         self.coef_ = self.Linear.coef_

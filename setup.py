@@ -8,14 +8,12 @@ from distutils.extension import Extension
 
 
 # Define extensions
-extension1 = Extension('epistasis.decomposition', ["epistasis/decomposition.c"])
+extension1 = Extension('epistasis.model_matrix_ext', ["epistasis/model_matrix_ext.c"])
 
 # define all packages for distribution
 packages = [
     'epistasis',
     'epistasis.models',
-    'epistasis.models.linear',
-    'epistasis.models.nonlinear',
     'epistasis.plot',
     'epistasis.sampling',
     'epistasis.simulate',

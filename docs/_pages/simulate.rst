@@ -6,8 +6,9 @@ than three-way interactions). The ``epistasis`` package provides flexibles class
 build simulated genotype-phenotype maps that exhibit such features. A few out-of-box classes
 examples are shown below.
 
-Simulate a linear epistatic genotype-phenotype map
------------------------------------------------------
+Basic Linear Example
+--------------------
+
 The following examples show a variety ways to simulate a genotype-phenotype map
 with linear, high-order epistatic interactions. The simulation interface provides
 methods to easily dictate the construction of a simulated genotype-phenotype map.
@@ -51,8 +52,8 @@ For all simulated genotype-phenotype maps, one can initialize a genotype-phenoty
 map from an existing dataset. Scroll through class methods that start with ``from_`` to
 see all options for initializing simulated genotype-phenotype maps.
 
-Simulate a nonlinear genotype-phenotype map
--------------------------------------------
+Basic Nonlinear Example
+-----------------------
 
 Often, the genotype-phenotype map is nonlinear. That is to say, the genotypes and
 phenotypes change on different scales. Genotypes, for example, differ by discrete,
@@ -79,8 +80,8 @@ argument represents the linearized phenotypes to be transformed.
     gpm.set_coefs_random((0,1))
 
 
-Simulate a multiplicative epistatic genotype-phenotype map
-----------------------------------------------------------
+Basic Multiplicative Example
+----------------------------
 
 Multiplicative epistasis is a common nonlinear, phenotypic scale. You can simulate
 a multiplicative genotype-phenotype map using the ``NonlinearSimulation`` class.

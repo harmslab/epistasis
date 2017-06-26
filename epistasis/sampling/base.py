@@ -5,6 +5,9 @@ from datetime import datetime
 import pickle
 import numpy as np
 
+# Progress bar module
+import tqdm
+
 class SamplerError(Exception):
     """Raise an exception from the Sampler class"""
 
@@ -19,9 +22,12 @@ class Sampler(object):
     """A base class to be inherited by sampling classes. Constructs a database for
     storing the samples.
     """
-    def __init__(self, model, db_dir=None):
+    def __init__(self, model, db_dir=None, n_jobs=1):
         # Check the model
         self._model = model
+        self.n_jobs = n_jobs
+        self.n_samples = 0
+
         if hasattr(self.model, "gpm") is False:
             raise SamplerError("The Epistasis model must have a GenotypePhenotypeMap as the `gpm` attribute.")
 
@@ -131,61 +137,14 @@ class Sampler(object):
         """Return credibility regions (Bayes) or confidence intervals (Bootstrap)."""
         return np.percentile(self.coefs.value, percentiles, axis=0)
 
-    def predict(self, samples):
-        """Use a set of models to predict pseudodata.
-
-        Parameters
-        ----------
-        samples : 2d array
-            Sets of parameters from different models to predict.
-
-        Returns
-        -------
-        predictions : 2d array
-            Sets of data predicted from the sampled models.
+    def fit(self, **kwargs):
+        """Calls the model's fit method to get the ML fit. Passes kwargs to that model.
+        ML fit is written to disk.
         """
-        X = self.model.X_constructor(genotypes=self.model.gpm.complete_genotypes)
-        predictions = np.empty((samples.shape[0], len(self.model.gpm.complete_genotypes)), dtype=float)
-        for i in range(len(samples)):
-            predictions[i,:] = self.model.hypothesis(X=X, thetas=self.coefs[i,:])
-        return predictions
+        # Write model to db_dir
+        self.model.fit(**kwargs)
 
-    def predict_from_random_samples(self, n):
-        """Randomly draw from sampled models and predict phenotypes.
-
-        Parameters
-        ----------
-        n : int
-            Number of models to randomly draw to create a set of predictions.
-
-        Returns
-        -------
-        predictions : 2d array
-            Sets of data predicted from the sampled models.
-        """
-        sample_size, coef_size = self.coefs.shape
-        model_indices = np.random.choice(np.arange(sample_size), n, replace=False)
-        samples = np.empty((n, coef_size))
-        for i, index in enumerate(model_indices):
-            samples[i,:] = self.coefs[index, :]
-        return self.predict(samples=samples)
-
-    def predict_from_top_samples(self, n):
-        """Draw from top sampled models and predict phenotypes.
-
-        Parameters
-        ----------
-        n : int
-            Number of top models to draw to create a set of predictions.
-
-        Returns
-        -------
-        predictions : 2d array
-            Sets of data predicted from the sampled models.
-        """
-        sample_size, coef_size = self.coefs.shape
-        model_indices = np.argsort(self.scores)[::-1]
-        samples = np.empty((n, coef_size))
-        for i, index in enumerate(model_indices[:n]):
-            samples[i,:] = self.coefs[index, :]
-        return self.predict(samples=samples)
+        # Write the ML fit to
+        with open(self._model_path, "wb") as f:
+            pickle.dump(self.model, f)
+        return self.model

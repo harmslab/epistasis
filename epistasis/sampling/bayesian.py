@@ -2,6 +2,8 @@ import numpy as np
 import emcee as emcee
 from .base import Sampler
 
+import tqdm
+
 class BayesianSampler(Sampler):
     """A sampling class to estimate the uncertainties in an epistasis model's
     coefficients using a Bayesian approach. This object samples from
@@ -41,12 +43,13 @@ class BayesianSampler(Sampler):
             All coefficients for an epistasis model. Must be sorted appropriately.
         model :
             Any epistasis model in ``epistasis.models``.
+
+        Returns
+        -------
+        predictions :
         """
-        ydata = model.gpm.phenotypes
-        yerr = model.gpm.std.upper
-        ymodel = model.hypothesis(X=model.X, thetas=coefs)
-        inv_sigma2 = 1.0/(yerr**2)
-        return -0.5*(np.sum((ydata-ymodel)**2*inv_sigma2 - np.log(inv_sigma2)))
+        lnlike = model.lnlikelihood(thetas=coefs)
+        return lnlike
 
     @staticmethod
     def lnprior(coefs):
@@ -75,10 +78,14 @@ class BayesianSampler(Sampler):
         lp = BayesianSampler.lnprior(coefs)
         if not np.isfinite(lp):
             return -np.inf
-        #x = lp + BayesianSampler.lnlike(coefs, model)
-        return lp + BayesianSampler.lnlike(coefs, model)
+        lnlike = BayesianSampler.lnlike(coefs, model)
+        x = lp + lnlike
+        # Constrol against Nans -- check if this is too much of a hack later.
+        if np.isnan(x).any():
+            return -np.inf
+        return x
 
-    def add_samples(self, n_mcsteps, nwalkers=None, starting_widths=1e-4):
+    def add_samples(self, n_samples, nwalkers=None, equil_steps=100):
         """Add samples to database"""
         # Calculate the maximum likelihood estimate for the epistasis model.
         try:
@@ -91,15 +98,27 @@ class BayesianSampler(Sampler):
         if nwalkers is None:
             nwalkers = 2 * len(ml_coefs)
 
-        # Construct a bunch of walkers gaussians around each ml_coef
-        multigauss_err = starting_widths*np.random.randn(nwalkers, ndims)
-        pos = np.array([ml_coefs for i in range(nwalkers)]) + multigauss_err
+        # Calculate the number of steps to take
+        mcmc_steps = n_samples / nwalkers
 
-        # Construct MCMC Sampler using emcee
+        # Initialize a sampler
         sampler = emcee.EnsembleSampler(nwalkers, ndims, self.lnprob, args=(self.model,))
 
-        # Run for the number of samples
-        sampler.run_mcmc(pos, n_mcsteps)
+        # Equilibrate if this if the first time sampling.
+        if self.coefs.len() == 0:
+            # Construct a bunch of walkers gaussians around each ml_coef
+            multigauss_err = 1e-3*np.random.randn(nwalkers, ndims)
+            p0 = np.array([ml_coefs for i in range(nwalkers)]) + multigauss_err
+
+            # Run for the number of samples
+            pos, prob, state = sampler.run_mcmc(p0, equil_steps, storechain=False)
+            sampler.reset()
+        else:
+            # Start from a previous position
+            pos = self.coefs[-nwalkers:,:]
+
+        # Sample
+        sampler.run_mcmc(pos, mcmc_steps)
 
         # Write samples to database
         samples = sampler.flatchain
