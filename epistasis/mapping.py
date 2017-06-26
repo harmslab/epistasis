@@ -109,7 +109,7 @@ def mutations_to_sites(order, mutations, start_order=0):
             bad_term = False
             lists = []
             for i in range(len(term)):
-                if [term[i]] == None:
+                if sitemap[term[i]] == None:
                     bad_term = True
                     break
                 else:
