@@ -1,5 +1,5 @@
 import numpy as np
-from .base import Sampler
+from .base import Sampler, file_handler
 
 class BootstrapSampler(Sampler):
     """A sampling class to estimate the uncertainties in an epistasis model's
@@ -36,6 +36,7 @@ class BootstrapSampler(Sampler):
         ssr = self.model.score()
         return coefs, ssr
 
+    @file_handler
     def add_samples(self, n):
         """Add samples to database."""
         # Create a first sample.

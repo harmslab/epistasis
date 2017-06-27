@@ -1,6 +1,6 @@
 import numpy as np
 import emcee as emcee
-from .base import Sampler
+from .base import Sampler, file_handler
 
 import tqdm
 
@@ -85,6 +85,7 @@ class BayesianSampler(Sampler):
             return -np.inf
         return x
 
+    @file_handler
     def add_samples(self, n_samples, nwalkers=None, equil_steps=100):
         """Add samples to database"""
         # Calculate the maximum likelihood estimate for the epistasis model.
@@ -105,7 +106,7 @@ class BayesianSampler(Sampler):
         sampler = emcee.EnsembleSampler(nwalkers, ndims, self.lnprob, args=(self.model,))
 
         # Equilibrate if this if the first time sampling.
-        if self.coefs.len() == 0:
+        if len(self.coefs) == 0:
             # Construct a bunch of walkers gaussians around each ml_coef
             multigauss_err = 1e-3*np.random.randn(nwalkers, ndims)
             p0 = np.array([ml_coefs for i in range(nwalkers)]) + multigauss_err

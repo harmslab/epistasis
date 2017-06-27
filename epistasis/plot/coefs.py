@@ -357,9 +357,9 @@ def coefs(betas=[], sites=[], errors=None, **kwargs):
             for j in range(star_counter):
                 bar_axis.text(x=(i+0),y=ymin+(j*min_offset),s="*", fontsize=16)
 
-    # remove x tick sites
+    # remove x tick labels
     try:
-        plt.setp([a.get_xticksites() for a in fig.axes[:-1]], visible=False)
+        plt.setp([a.get_xticklabels() for a in fig.axes[:-1]], visible=False)
     except IndexError:
         pass
 

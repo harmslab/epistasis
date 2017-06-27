@@ -4,6 +4,7 @@ import h5py
 from datetime import datetime
 import pickle
 import numpy as np
+from functools import wraps
 
 # Progress bar module
 import tqdm
@@ -17,6 +18,17 @@ def add_datetime_to_filename(filepath):
     # Get current date/time in isoformat
     t = datetime.strftime(datetime.now(), '%Y-%m-%d-%Hh%Mm%Ss')
     return "{:}-{:}{:}".format(*[name, t, ext])
+
+def file_handler(method):
+    """Wrap method within Sampler object to """
+    @wraps(method)
+    def inner(self, *args, **kwargs):
+        """"""
+        # Create the hdf5 file for saving samples.
+        with h5py.File(self._db_path, "a") as self.File:
+            output = method(self, *args, **kwargs)
+            return output
+    return inner
 
 class Sampler(object):
     """A base class to be inherited by sampling classes. Constructs a database for
@@ -46,18 +58,23 @@ class Sampler(object):
         self._db_path = os.path.join(self._db_dir, "sample-db.hdf5")
         self._model_path = os.path.join(self._db_dir, "model.pickle")
 
-        # Create the hdf5 file for saving samples.
-        self.File = h5py.File(self._db_path, "a")
-
         # Write model to db_dir
         with open(self._model_path, "wb") as f:
             pickle.dump(self.model, f)
+
+        ## PREPARE FILE.
+
+        # Create the hdf5 file for saving samples.
+        self.File = h5py.File(self._db_path, "a")
 
         # Add database
         if "coefs" not in self.File:
             self.File.create_dataset("coefs", (0,0), maxshape=(None,None), compression="gzip")
         if "scores" not in self.File:
             self.File.create_dataset("scores", (0,), maxshape=(None,), compression="gzip")
+
+        # Close the file
+        self.File.close()
 
     @classmethod
     def from_db(cls, db_dir, overwrite=True):
@@ -94,6 +111,7 @@ class Sampler(object):
         """Get model. Protects the model from being changed once passed to sampler."""
         return self._model
 
+    @file_handler
     def write_dataset(self, key, data):
         """Write data to database file.
         """
@@ -113,9 +131,10 @@ class Sampler(object):
             ds[old_dims[0]:new_dims[0], :] = data
 
     @property
+    @file_handler
     def coefs(self):
         """Samples of epistatic coefficients. Rows are samples, Columns are coefs."""
-        return self.File["coefs"]
+        return self.File["coefs"].value
 
     @property
     def labels(self):
@@ -123,9 +142,10 @@ class Sampler(object):
         return self.model.epistasis.labels
 
     @property
+    @file_handler
     def scores(self):
         """Samples of epistatic coefficients. Rows are samples, Columns are coefs."""
-        return self.File["scores"]
+        return self.File["scores"].value
 
     @property
     def best_coefs(self):
