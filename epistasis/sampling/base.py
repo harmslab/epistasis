@@ -62,19 +62,17 @@ class Sampler(object):
         with open(self._model_path, "wb") as f:
             pickle.dump(self.model, f)
 
-        ## PREPARE FILE.
+        self._try_to_create_file()
 
-        # Create the hdf5 file for saving samples.
-        self.File = h5py.File(self._db_path, "a")
-
+    @file_handler
+    def _try_to_create_file(self):
+        """Try to create contents for database HDF5 file.
+        """
         # Add database
         if "coefs" not in self.File:
             self.File.create_dataset("coefs", (0,0), maxshape=(None,None), compression="gzip")
         if "scores" not in self.File:
             self.File.create_dataset("scores", (0,), maxshape=(None,), compression="gzip")
-
-        # Close the file
-        self.File.close()
 
     @classmethod
     def from_db(cls, db_dir, overwrite=True):
@@ -131,27 +129,27 @@ class Sampler(object):
             ds[old_dims[0]:new_dims[0], :] = data
 
     @property
-    @file_handler
-    def coefs(self):
-        """Samples of epistatic coefficients. Rows are samples, Columns are coefs."""
-        return self.File["coefs"].value
-
-    @property
     def labels(self):
         """Labels of the coefs."""
         return self.model.epistasis.labels
-
-    @property
-    @file_handler
-    def scores(self):
-        """Samples of epistatic coefficients. Rows are samples, Columns are coefs."""
-        return self.File["scores"].value
 
     @property
     def best_coefs(self):
         """Most probable model."""
         index = np.argmax(self.scores.value)
         return self.coefs[index,:]
+
+    @property
+    @file_handler
+    def coefs(self):
+        """Samples of epistatic coefficients. Rows are samples, Columns are coefs."""
+        return self.File["coefs"].value
+
+    @property
+    @file_handler
+    def scores(self):
+        """Samples of epistatic coefficients. Rows are samples, Columns are coefs."""
+        return self.File["scores"].value
 
     def percentiles(self, percentiles):
         """Return credibility regions (Bayes) or confidence intervals (Bootstrap)."""
