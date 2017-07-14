@@ -29,6 +29,7 @@ Table of Contents
 .. toctree::
    :maxdepth: 2
 
+   _gallery/index.rst
    _pages/install
    _pages/fitting
    _pages/estimating-uncertainty

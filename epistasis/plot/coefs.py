@@ -89,7 +89,7 @@ def coefs(betas=[], sites=[], errors=None, **kwargs):
         "sigmas" : 0,
         "log_space" : False,
         "y_scalar" : 1.5,
-        "y_axis_name" : "interaction",
+        "y_axis_name" : "",
         "figwidth" : 5,
         "figheight": 3,
         "figsize" : (5,3),

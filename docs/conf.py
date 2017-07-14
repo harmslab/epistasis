@@ -72,8 +72,18 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.mathjax',
     'sphinx.ext.githubpages',
-    'sphinx.ext.napoleon'
+    'sphinx.ext.napoleon',
+    'sphinx_gallery.gen_gallery'
 ]
+
+# Sphinx gallery conf
+sphinx_gallery_conf = {
+    # path to your examples scripts
+    'examples_dirs' : '../examples/py',
+    # path where to save gallery generated examples
+    'gallery_dirs'  : '_gallery',
+    'backreferences_dir': False,
+    'download_section_examples' : False}
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

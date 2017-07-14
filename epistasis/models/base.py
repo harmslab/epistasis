@@ -19,7 +19,7 @@ class BaseModel(object):
     def from_json(cls, filename, **kwargs):
         """"""
         self = cls(**kwargs)
-        self.attach_gpm( GenotypePhenotypeMap.from_json(filename, **kwargs) )
+        self.add_gpm( GenotypePhenotypeMap.from_json(filename, **kwargs) )
         return self
 
     @classmethod
@@ -28,7 +28,7 @@ class BaseModel(object):
         coefficients in a genotype-phenotype map. This assumes the map is linear."""
         self = cls(**kwargs)
         gpm = GenotypePhenotypeMap(wildtype, genotypes, phenotypes, **kwargs)
-        self.attach_gpm(gpm)
+        self.add_gpm(gpm)
         return self
 
     @classmethod
@@ -36,11 +36,19 @@ class BaseModel(object):
         """ Initialize an epistasis model from a Genotype-phenotypeMap object """
         # Grab all properties from data-structure
         self = cls(**kwargs)
-        self.attach_gpm(gpm)
+        self.add_gpm(gpm)
         return self
 
-    def attach_gpm(self, gpm):
-        """ Attach a GenotypePhenotypeMap object to the epistasis model.
+    def add_data(self, wildtype, genotypes, phenotypes, **kwargs):
+        """Add genotype and phenotype data to the model.
+        """
+        # Build a genotype-phenotype map object from data.
+        gpm = GenotypePhenotypeMap(wildtype, genotypes, phenotypes, **kwargs)
+        self.add_gpm(gpm)
+        return self
+
+    def add_gpm(self, gpm):
+        """Add a GenotypePhenotypeMap object to the epistasis model.
 
         Also exposes APIs that are only accessible with a GenotypePhenotypeMap
         attached to the model.
