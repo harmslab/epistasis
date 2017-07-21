@@ -2,8 +2,6 @@ import numpy as np
 import emcee as emcee
 from .base import Sampler, file_handler
 
-import tqdm
-
 class BayesianSampler(Sampler):
     """A sampling class to estimate the uncertainties in an epistasis model's
     coefficients using a Bayesian approach. This object samples from

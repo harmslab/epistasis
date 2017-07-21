@@ -35,11 +35,11 @@ class NonlinearSimulation(BaseSimulation):
 
     @property
     def p_additive(self):
-        """Get the additive phenotypes"""
+        """Get the linear, additive phenotypes"""
         orders = self.epistasis.get_orders(0,1)
         x = get_model_matrix(self.binary.genotypes, orders.sites, model_type=self.model_type)
         linear = np.dot(x, orders.values)
-        return self.function(linear, *self.parameters.get_params())
+        return linear
 
     @classmethod
     def from_linear(cls, model, function, p0=[], **kwargs):

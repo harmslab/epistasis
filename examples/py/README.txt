@@ -1,4 +1,4 @@
-Tutorials
-=========
+Example Gallery
+===============
 
-List of tutorials.
+The following gallery contains various examples from the package.

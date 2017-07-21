@@ -1,5 +1,5 @@
-Setup
-=====
+Installation
+============
 
 Install
 -------

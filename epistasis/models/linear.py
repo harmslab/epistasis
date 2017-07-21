@@ -25,7 +25,7 @@ class EpistasisLinearRegression(_LinearRegression, _BaseModel):
         return self.coef_
 
     @X_fitter
-    def fit(self, X=None, y=None, sample_weight=None):
+    def fit(self, X=None, y=None, sample_weight=None, **kwargs):
         # If a threshold exists in the data, pre-classify genotypes
         return super(self.__class__, self).fit(X, y, sample_weight)
 

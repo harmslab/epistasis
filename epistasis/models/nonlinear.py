@@ -106,7 +106,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         return np.concatenate((self.parameters.values, self.Linear.coef_))
 
     @X_fitter
-    def fit(self, X=None, y=None, sample_weight=None, use_widgets=False, **parameters):
+    def fit(self, X=None, y=None, sample_weight=None, use_widgets=False, **kwargs):
         """Fit nonlinearity in genotype-phenotype map.
 
         Parameters
@@ -139,12 +139,12 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
 
         # Fit with an additive model
         self.Additive = EpistasisLinearRegression(order=1, model_type=self.model_type)
-        self.Additive.attach_gpm(self.gpm)
+        self.Additive.add_gpm(self.gpm)
         self.Additive.Xfit = X[:,:self.Additive.gpm.length+1]
 
         # Prepare a high-order model
         self.Linear = EpistasisLinearRegression(order=self.order, model_type=self.model_type)
-        self.Linear.attach_gpm(self.gpm)
+        self.Linear.add_gpm(self.gpm)
         self.Linear.Xfit = X
 
         ## Use widgets to guess the value?
@@ -153,7 +153,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
             def fitting(**parameters):
                 """ Callable to be controlled by widgets. """
                 # Fit the nonlinear least squares fit
-                self._fit_(X, y, sample_weight=sample_weight, **parameters)
+                self._fit_(X, y, sample_weight=sample_weight, **kwargs)
                 #if print_stats:
                 # Print score
                 print("R-squared of fit: " + str(self.score()))
@@ -161,11 +161,11 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
                 for kw in self.parameters._mapping:
                     print(kw + ": " + str(getattr(self.parameters, kw)))
             # Construct and return the widget box
-            widgetbox = ipywidgets.interactive(fitting, **parameters)
+            widgetbox = ipywidgets.interactive(fitting, **kwargs)
             return widgetbox
         # Don't use widgets to fit data
         else:
-            self._fit_(X, y, sample_weight=sample_weight, **parameters)
+            self._fit_(X, y, sample_weight=sample_weight, **kwargs)
         return self
 
     def _fit_(self, X=None, y=None, sample_weight=None, **kwargs):

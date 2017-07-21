@@ -38,15 +38,15 @@ class EpistasisMixedRegression(BaseModel):
             order=1,
             model_type=self.model_type)
 
-    def attach_gpm(self, gpm):
+    def add_gpm(self, gpm):
         """ Attach a GenotypePhenotypeMap object to the epistasis model.
 
         Also exposes APIs that are only accessible with a GenotypePhenotypeMap
         attached to the model.
         """
-        super(EpistasisMixedRegression, self).attach_gpm(gpm)
-        self.Model.attach_gpm(gpm)
-        self.Classifier.attach_gpm(gpm)
+        super(EpistasisMixedRegression, self).add_gpm(gpm)
+        self.Model.add_gpm(gpm)
+        self.Classifier.add_gpm(gpm)
 
     def fit(self, X=None, y=None, **kwargs):
         """Fit mixed model in two parts. 1. Use Classifier to predict the
