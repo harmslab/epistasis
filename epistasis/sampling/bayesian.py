@@ -98,7 +98,7 @@ class BayesianSampler(Sampler):
             nwalkers = 2 * len(ml_coefs)
 
         # Calculate the number of steps to take
-        mcmc_steps = n_samples / nwalkers
+        mcmc_steps = int(n_samples / nwalkers)
 
         # Initialize a sampler
         sampler = emcee.EnsembleSampler(nwalkers, ndims, self.lnprob, args=(self.model,))

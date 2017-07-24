@@ -28,14 +28,21 @@ def power_transform(x, lmbda, A, B):
 class EpistasisPowerTransform(EpistasisNonlinearRegression):
     """Fit a power transform to linearize a genotype-phenotype map.
     """
-    def __init__(self, order=1, model_type="global", fix_linear=True, **kwargs):
+    def __init__(self, order=1, model_type="global", fix_linear=True, **p0):
         # Construct parameters object
         self.parameters = Parameters(["lmbda","A","B"])
         self.set_params(order=order,
             model_type=model_type,
             fix_linear=fix_linear,
         )
+        # Construct parameters object
+        self.parameters = Parameters(parameters[1:])
+        self.set_params(order=order,
+            model_type=model_type)
 
+        # Initial parameters guesses
+        self.p0 = p0
+        
     def function(self, x, lmbda, A, B):
         """Power transformation function. Exposed to the user for transforming
         test data (not training data.)

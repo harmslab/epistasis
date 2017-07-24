@@ -79,7 +79,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         reverse,
         order=1,
         model_type="global",
-        **kwargs):
+        **p0):
 
         # Do some inspection to
         # Get the parameters from the nonlinear function argument list
@@ -93,10 +93,12 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         self.reverse = reverse
 
         # Construct parameters object
-        #self.__parameters =
         self.parameters = Parameters(parameters[1:])
         self.set_params(order=order,
             model_type=model_type)
+
+        # Initial parameters guesses
+        self.p0 = p0
 
     @property
     def thetas(self):
@@ -178,7 +180,9 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         Xadd = self.Additive.Xfit # Use Xfit to get the transformed phenotypes
         x = self.Additive.predict(X=Xadd)
 
-        # Set up guesses
+        # Set up guesses for parameters
+        self.p0.update(**kwargs)
+        kwargs = self.p0
         guesses = np.ones(self.parameters.n)
         for kw in kwargs:
             index = self.parameters._mapping[kw]

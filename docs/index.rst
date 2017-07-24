@@ -12,7 +12,7 @@ interactions. Find nonlinearity in the genotype-phenotype map. Calculate the
 contributions of different epistatic orders. Estimate the importance of high-order
 interactions on evolution.
 
-Currently, this package works only as an API. There is not a command-line
+Currently, this package works only as an API. There is no command-line
 interface, and it includes few ways to read/write the data to disk out-of-the-box.
 We plan to improve this moving forward. Instead, we encourage you use this package
 inside `Jupyter notebooks`_ .
