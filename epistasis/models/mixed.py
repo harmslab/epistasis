@@ -13,15 +13,34 @@ import warnings
 warnings.filterwarnings(action="ignore", category=RuntimeWarning)
 
 class EpistasisMixedRegression(BaseModel):
-    """A generalized, mixed epistasis model. This mixes an epistasis
-    classification and regression model, allowing you to pre-categorize dead/alive
-    phenotypes in your data. It then removes dead phenotypes from the epistasis
-    calculation, but uses those dead phenotypes to predict other dead phenotypes.
+    """A high-order epistasis regression that first classifies genotypes as
+    viable/nonviable (given some threshold) and then estimates epistatic coefficients
+    in viable phenotypes.
+
+
+    Parameters
+    ----------
+    order : int
+        Order of epistasis in model
+    threshold : float
+        value below which phenotypes are considered dead
+    model_type : str
+        type of epistasis model to use.
+    epistasis_model : epistasis.models object
+        Epistasis model to use.
+    epistasis_classifier : epistasis.models.classifier
+        Epistasis classifier to use.
+
+    Keyword Arguments
+    -----------------
+    Keyword arguments are interpreted as intial guesses for the nonlinear function
+    parameters. Must have the same name as parameters in the nonlinear function
+
     """
     def __init__(self, order, threshold, model_type="global",
         epistasis_model=EpistasisPowerTransform,
         epistasis_classifier=EpistasisLogisticRegression,
-        **kwargs):
+        **p0):
 
         # Set model specs.
         self.order = order
@@ -30,7 +49,7 @@ class EpistasisMixedRegression(BaseModel):
 
         # Initialize the epistasis model
         self.Model = epistasis_model(order=self.order,
-            model_type=self.model_type)
+            model_type=self.model_type, **p0)
 
         # Initialize the epistasis classifier
         self.Classifier = epistasis_classifier(
@@ -238,5 +257,9 @@ class EpistasisMixedRegression(BaseModel):
 
     @property
     def thetas(self):
-        """1d array of all coefs in model."""
+        """1d array of all coefs in model. The classifier coefficients are first
+        in the array, then the model coefficients. See the thetas attributes of
+        the input classifier/epistasis models to determine what is included in this
+        combined array.
+        """
         return np.concatenate((self.Classifier.thetas, self.Model.thetas))

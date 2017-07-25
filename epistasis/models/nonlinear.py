@@ -24,7 +24,7 @@ import warnings
 warnings.filterwarnings(action="ignore", category=RuntimeWarning)
 
 class Parameters(object):
-    """ A container object for parameters extracted from a nonlinear fit.
+    """A container object for parameters extracted from a nonlinear fit.
     """
     def __init__(self, params):
         self._param_list = params
@@ -72,7 +72,48 @@ class Parameters(object):
         return [getattr(self, self._mapping_[i]) for i in range(len(self._mapping_))]
 
 class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
-    """Epistasis estimator for nonlinear genotype-phenotype maps.
+    """Use nonlinear least-squares regression to estimate epistatic coefficients
+    and nonlinear scale in a nonlinear genotype-phenotype map.
+
+    This models has three steps:
+        1. Fit an additive, linear regression to approximate the average effect of
+            individual mutations.
+        2. Fit the nonlinear function to the observed phenotypes vs. the additive
+            phenotypes estimated in step 1.
+        3. Transform the phenotypes to this linear scale and fit leftover variation
+            with high-order epistasis model.
+
+    Methods are described in the following publication:
+        Sailer, Z. R. & Harms, M. J. Detecting High-Order Epistasis in Nonlinear
+            Genotype-Phenotype Maps. Genetics 205, 1079–1088 (2017).
+
+    Parameters
+    ----------
+    function : callable
+        Nonlinear function between Pobs and Padd
+    reverse : callable
+        The inverse of the nonlinear function used to back transform from nonlinear
+        phenotypic scale to linear scale.
+    order : int
+        order of epistasis to fit.
+    model_type : str (default: global)
+        type of epistasis model to use. See paper above for more information.
+
+    Keyword Arguments
+    -----------------
+    Keyword arguments are interpreted as intial guesses for the nonlinear function
+    parameters. Must have the same name as parameters in the nonlinear function
+
+    Attributes
+    ----------
+    epistasis : EpistasisMap
+        Mapping object containing high-order epistatic coefficients
+    Linear : EpistasisLinearRegression
+        Linear regression object for fitting high-order epistasis model
+    Additive : EpistasisLinearRegression
+        Linear regression object for fitting additive model
+    parameters : Parameters object
+        Mapping object for nonlinear coefficients
     """
     def __init__(self,
         function,

@@ -10,7 +10,21 @@ import warnings
 warnings.filterwarnings(action="ignore", module="scipy", message="^internal gelsd")
 
 class EpistasisLinearRegression(_LinearRegression, _BaseModel):
-    """Ordinary least-squares regression of epistatic interactions.
+    """Ordinary least-squares regression for estimating high-order, epistatic
+    interactions in a genotype-phenotype map.
+
+    Methods are described in the following publication:
+        Sailer, Z. R. & Harms, M. J. Detecting High-Order Epistasis in Nonlinear
+            Genotype-Phenotype Maps. Genetics 205, 1079–1088 (2017).
+
+
+    Parameters
+    ----------
+    order : int
+        order of epistasis
+    model_type : str (default="global")
+        model matrix type. See publication above for more information
+
     """
     def __init__(self, order=1, model_type="global", n_jobs=1, **kwargs):
         # Set Linear Regression settings.

@@ -82,8 +82,20 @@ class EpistasisBaseClassifier(BaseModel):
 
 @sklearn_to_epistasis()
 class EpistasisLogisticRegression(LogisticRegression, EpistasisBaseClassifier):
-    """Logistic Regression used to categorize phenotypes as either alive or dead."""
+    """Logistic regression for estimating epistatic interactions that lead to
+    nonviable phenotypes. Useful for predicting viable/nonviable phenotypes.
 
+    Parameters
+    ----------
+    threshold : float
+        value below which phenotypes are considered nonviable.
+    order : int
+        order of epistasis model
+    model_type : str (default="global")
+        type of model matrix to use. "global" defines epistasis with respect to
+        a background-averaged "genotype-phenotype". "local" defines epistasis
+        with respect to the wildtype genotype.
+    """
     @X_predictor
     def hypothesis(self, X=None, thetas=None):
         """Returns the probability of the data given the model."""

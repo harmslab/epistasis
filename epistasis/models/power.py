@@ -26,7 +26,44 @@ def power_transform(x, lmbda, A, B):
     return out
 
 class EpistasisPowerTransform(EpistasisNonlinearRegression):
-    """Fit a power transform to linearize a genotype-phenotype map.
+    """Use power-transform function, via nonlinear least-squares regression,
+    to estimate epistatic coefficients and the nonlinear scale in a nonlinear
+    genotype-phenotype map.
+
+    This models has three steps:
+        1. Fit an additive, linear regression to approximate the average effect of
+            individual mutations.
+        2. Fit the nonlinear function to the observed phenotypes vs. the additive
+            phenotypes estimated in step 1.
+        3. Transform the phenotypes to this linear scale and fit leftover variation
+            with high-order epistasis model.
+
+    Methods are described in the following publication:
+        Sailer, Z. R. & Harms, M. J. Detecting High-Order Epistasis in Nonlinear
+            Genotype-Phenotype Maps. Genetics 205, 1079–1088 (2017).
+
+    Parameters
+    ----------
+    order : int
+        order of epistasis to fit.
+    model_type : str (default: global)
+        type of epistasis model to use. See paper above for more information.
+
+    Keyword Arguments
+    -----------------
+    Keyword arguments are interpreted as intial guesses for the nonlinear function
+    parameters. Must have the same name as parameters in the nonlinear function
+
+    Attributes
+    ----------
+    epistasis : EpistasisMap
+        Mapping object containing high-order epistatic coefficients
+    Linear : EpistasisLinearRegression
+        Linear regression object for fitting high-order epistasis model
+    Additive : EpistasisLinearRegression
+        Linear regression object for fitting additive model
+    parameters : Parameters object
+        Mapping object for nonlinear coefficients
     """
     def __init__(self, order=1, model_type="global", fix_linear=True, **p0):
         # Construct parameters object
@@ -42,7 +79,7 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
 
         # Initial parameters guesses
         self.p0 = p0
-        
+
     def function(self, x, lmbda, A, B):
         """Power transformation function. Exposed to the user for transforming
         test data (not training data.)
