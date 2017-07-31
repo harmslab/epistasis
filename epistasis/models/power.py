@@ -39,8 +39,8 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
             with high-order epistasis model.
 
     Methods are described in the following publication:
-        Sailer, Z. R. & Harms, M. J. Detecting High-Order Epistasis in Nonlinear
-            Genotype-Phenotype Maps. Genetics 205, 1079–1088 (2017).
+        Sailer, Z. R. & Harms, M. J. 'Detecting High-Order Epistasis in Nonlinear
+        Genotype-Phenotype Maps'. Genetics 205, 1079-1088 (2017).
 
     Parameters
     ----------
@@ -72,11 +72,6 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
             model_type=model_type,
             fix_linear=fix_linear,
         )
-        # Construct parameters object
-        self.parameters = Parameters(parameters[1:])
-        self.set_params(order=order,
-            model_type=model_type)
-
         # Initial parameters guesses
         self.p0 = p0
 

@@ -2,8 +2,8 @@ __doc__ = """\
 Simulating Genotype-Phenotype maps with high-order epistasis
 ============================================================
 
-This module for simulating genotype-phenotype map data from
-high-order epistatic interactions.
+This module includes objects to simulate genotype-phenotype maps with high-order
+epistasis.
 
 All simulation objects in this module inherit the `GenotypePhenotypeMap`
 object from the `gpmap` package and possess an `epistasis` attribute which is
@@ -12,8 +12,6 @@ an `EpistasisMap` object.
 # Hide the base class
 __all__ = [
     "linear",
-    "multiplicative",
-    "nk",
     "nonlinear"
 ]
 

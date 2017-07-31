@@ -11,7 +11,8 @@ from epistasis.model_matrix_ext import get_model_matrix
 from epistasis.utils import extract_mutations_from_genotypes
 
 class BaseModel(object):
-    """ This object should be used as the parent class to all epistasis models.
+    """Base class for all models.
+
     Manages attachment of GenotypePhenotypeMap and EpistasisMaps to the Epistasis
     models.
     """

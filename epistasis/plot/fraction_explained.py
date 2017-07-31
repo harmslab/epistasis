@@ -31,8 +31,6 @@ def fraction_explained(fraction_explained, color_vector=None, num_bins=1000,lw=0
             err = "len(color_vector) must be >= len(fx_vector)\n"
             raise ValueError(err)
 
-
-
     # Discretize the input vector with appropriately scaled
     side_length = np.int(np.round(np.sqrt(num_bins),0))
     num_bins = side_length*side_length

@@ -17,7 +17,7 @@ from collections import OrderedDict
 # ----------------------------------------------------------
 
 import gpmap
-from gpmap.base import BaseMap
+from gpmap.mapping import BaseMap
 
 def assert_epistasis(method):
     """Assert that an epistasis map has been attached to the object.

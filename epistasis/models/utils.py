@@ -15,7 +15,9 @@ def sklearn_to_epistasis():
         base_model = cls.__bases__[-1]
         for attr in base_model.__dict__:
             method = getattr(base_model, attr)
-            setattr(cls, attr, getattr(base_model, attr))
+            try:
+                setattr(cls, attr, getattr(base_model, attr))
+            except AttributeError: pass
         return cls
     return inner
 
