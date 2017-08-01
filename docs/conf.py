@@ -53,6 +53,7 @@ MOCK_MODULES = ['numpy','scipy',
     'sklearn.metrics',
     'Cython.Build',
     'emcee',
+    'pandas'
 ]
 
 try:
