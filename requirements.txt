@@ -1,6 +1,7 @@
 numpy
 scipy
 matplotlib
+pandas
 jupyter
 notebook
 ipython
@@ -10,4 +11,3 @@ scikit-learn
 gpmap
 emcee
 h5py
-tqdm
