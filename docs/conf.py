@@ -15,6 +15,7 @@
 
 import os
 import sys
+import sphinx_gallery
 sys.path.insert(0, os.path.abspath('.'))
 
 # importing modules with weird dependencies
@@ -40,14 +41,13 @@ MOCK_MODULES = ['numpy','scipy',
     'ipywidgets',
     'jupyter',
     'notebook',
-    'matplotlib.pyplot',
+    #'matplotlib.pyplot',
     'matplotlib.cbook',
-    'matplotlib.path',
-    'matplotlib.path.Path',
-    'matplotlib.patches',
-    'matplotlib.cbook',
-    'matplotlib.gridspec',
-    'matplotlib',
+    #'matplotlib.path',
+    #'matplotlib.path.Path',
+    #'matplotlib.patches',
+    #'matplotlib.gridspec',
+    #'matplotlib',
     'sklearn.decomposition',
     'sklearn.decomposition.PCA',
     'sklearn.metrics',
