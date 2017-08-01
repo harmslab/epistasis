@@ -6,11 +6,13 @@
 # Outside imports
 # ----------------------------------------------------------
 
-from functools import wraps
-import itertools as it
-import numpy as np
 import json
+import itertools as it
+from functools import wraps
 from collections import OrderedDict
+
+import numpy as np
+import pandas as pd
 
 # ----------------------------------------------------------
 # Local imports
@@ -127,6 +129,7 @@ class EpistasisMap(BaseMap):
         self.sites = sites
         self.order = order
         self.model_type = model_type
+        self.stdeviations = None
 
     def to_json(self, filename):
         """Write epistasis map to json file."""
@@ -171,6 +174,12 @@ class EpistasisMap(BaseMap):
         return self._model_type
 
     @property
+    def df(self):
+        """EpistasisMap DataFrame."""
+        data = {"sites":self.keys, "values":self.values, "stdeviations":self.stdeviations}
+        return pd.DataFrame(data, columns=["sites", "values", "stdeviations"])
+
+    @property
     def n(self):
         """ Return the number of Interactions. """
         return len(self.sites)
@@ -191,9 +200,9 @@ class EpistasisMap(BaseMap):
         return self._values
 
     @property
-    def indices(self):
+    def index(self):
         """ Get the interaction index in interaction matrix. """
-        return self._indices
+        return self.sites.index
 
     @property
     def sites(self):
@@ -208,15 +217,7 @@ class EpistasisMap(BaseMap):
         if hasattr(self, '_keys'):
             return self._keys
         else:
-            return np.array([label_to_key(lab) for lab in self.sites])
-
-    @property
-    def genotypes(self):
-        """ Get the interaction genotype. """
-        elements = ['w.t.']
-        for label in self._sites[1:]:
-            elements.append(self._label_to_genotype(label))
-        return elements
+            return np.array([site_to_key(lab) for lab in self.sites])
 
     @property
     def stdeviations(self):
@@ -239,27 +240,24 @@ class EpistasisMap(BaseMap):
     @sites.setter
     def sites(self, sites):
         """ Manually set the interactions considered in the map. Useful for building epistasis models manually. """
-        self._sites = sites
-        self._indices = np.arange(0, len(self.sites))
+        self._sites = pd.Series(sites)
 
     @values.setter
     def values(self, values):
         """ Set the interactions of the system, set by an Epistasis model (see ..models.py)."""
         if hasattr(self, "_sites") is False:
             raise AttributeError(self.__name__ + " does not have coef sites set.")
-        elif len(self._sites) != len(values):
-            raise Exception("Length of `values` must much length of `sites`.")
-        self._values = values
+        self._values = pd.Series(values, index=self.index)
 
     @keys.setter
     def keys(self, keys):
         """ Manually set keys. NEED TO do some quality control here. """
-        self._keys = keys
+        self._keys = pd.Series(keys, index=self.index)
 
     @stdeviations.setter
     def stdeviations(self, stdeviations):
         """Set the standard deviations of the epistatic coefficients."""
-        self._stdeviations = stdeviations
+        self._stdeviations = pd.Series(stdeviations, index=self.index)
         self.std = gpmap.errors.StandardDeviationMap(self)
         self.err = gpmap.errors.StandardErrorMap(self)
 
@@ -283,7 +281,13 @@ class Orders(BaseMap):
         return dict(zip(self.keys, self.values))
 
     @property
-    def indices(self):
+    def df(self):
+        """Dataframe for orders object."""
+        data = {"sites": self.sites, "values": self.values, "stdeviations": self.stdeviations}
+        return pd.DataFrame(data, columns=["sites", "values","stdeviations"])
+
+    @property
+    def index(self):
         """Get indices of epistasis from this order."""
         # Check is multiple orders were given
         try:
@@ -300,19 +304,19 @@ class Orders(BaseMap):
     @property
     def sites(self):
         """Get epistatic sites"""
-        return [self._epistasismap.sites[int(i)] for i in self.indices]
+        return pd.Series([self._epistasismap.sites[int(i)] for i in self.index], index=self.index)
 
     @property
     def values(self):
         """Get values of epistasis for this order."""
-        return [self._epistasismap.values[int(i)] for i in self.indices]
+        return pd.Series([self._epistasismap.values[int(i)] for i in self.index], index=self.index)
 
     @property
     def keys(self):
         """Get keys of epistasis for this order."""
-        return [self._epistasismap.keys[int(i)] for i in self.indices]
+        return pd.Series([self._epistasismap.keys[int(i)] for i in self.index], index=self.index)
 
     @property
     def stdeviations(self):
         """Get stdeviations of epistasis for this order."""
-        return self._epistasismap.stdeviations[self.indices]
+        return pd.Series(self._epistasismap.stdeviations[self.index], index=self.index)
