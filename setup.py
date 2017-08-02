@@ -20,7 +20,7 @@ packages = [
 ]
 
 setup(name='epistasis',
-      version='0.1.2',
+      version='0.2.0',
       description='High Order Epistasis Models/Regressions for Genotype-Phenotype Maps',
       author='Zach Sailer',
       author_email='zachsailer@gmail.com',
@@ -36,4 +36,6 @@ setup(name='epistasis',
         'Programming Language :: Python :: 3.4',
       ],
       ext_modules=[extension1],
-      zip_safe=False)
+      zip_safe=False,
+      license='UNLICENSE',
+      keywords='epistasis high-order genetics')

@@ -6,7 +6,6 @@ jupyter
 notebook
 ipython
 ipywidgets
-cython
 scikit-learn
 gpmap
 emcee

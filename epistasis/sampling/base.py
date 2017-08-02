@@ -6,9 +6,6 @@ import pickle
 import numpy as np
 from functools import wraps
 
-# Progress bar module
-import tqdm
-
 class SamplerError(Exception):
     """Raise an exception from the Sampler class"""
 

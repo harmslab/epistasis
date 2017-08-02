@@ -108,6 +108,8 @@ nosetests
 ## Citing
 If you use this API for research, please cite this [paper](https://doi.org/10.1534/genetics.116.195214).
 
+You can also cite the software directly:
+
 ```
 @misc{zachary_sailer_2017_252927,
   author       = {Zachary Sailer and Mike Harms},
