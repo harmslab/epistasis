@@ -10,4 +10,3 @@ scikit-learn
 gpmap
 emcee
 h5py
-sphinx-gallery

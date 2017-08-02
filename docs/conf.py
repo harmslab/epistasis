@@ -16,6 +16,7 @@
 import os
 import sys
 import sphinx_gallery
+
 sys.path.insert(0, os.path.abspath('.'))
 
 # importing modules with weird dependencies
@@ -29,14 +30,12 @@ class Mock(MagicMock):
     def __getattr__(cls, name):
             return Mock()
 
-MOCK_MODULES = ['numpy','scipy',
-    'sklearn',
+MOCK_MODULES = ['sklearn',
     'sklearn.linear_model',
     'sklearn.base',
     'scipy.optimize',
     'scipy.misc',
     'scipy.stats',
-    'networkx',
     'ipython',
     'ipywidgets',
     'jupyter',
@@ -65,7 +64,6 @@ except RecursionError:
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.mathjax',
-    'sphinx.ext.githubpages',
     'sphinx.ext.napoleon',
     'sphinx_gallery.gen_gallery'
 ]
