@@ -15,9 +15,10 @@
 
 import os
 import sys
-import sphinx_gallery
 
-sys.path.insert(0, os.path.abspath('.'))
+# Import sphinx gallery
+sys.path.insert(0, os.path.abspath('sphinxext'))
+import sphinx_gallery
 
 # importing modules with weird dependencies
 try:
