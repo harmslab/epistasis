@@ -48,7 +48,7 @@ Basic Example
     fig = corner.corner(bayes.coefs.value, truths=sim.epistasis.values)
 
 
-.. image:: ../_img/bayes-estimate-uncertainty.png
+.. image:: ../img/bayes-estimate-uncertainty.png
 
 
 Defining a prior
@@ -69,25 +69,3 @@ the BayesianSampler static method:
 
     # Apply to fitter from above
     fitter.lnprior = lnprior
-
-
-API
-~~~
-
-.. _BayesianSampler:
-
-BayesianSampler
----------------
-
-.. autoclass:: epistasis.sampling.bayesian.BayesianSampler
-    :members:
-    :inherited-members:
-
-.. _BootstrapSampler:
-
-BootstrapSampler
-----------------
-
-.. autoclass:: epistasis.sampling.bootstrap.BootstrapSampler
-    :members:
-    :inherited-members:

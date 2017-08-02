@@ -1,6 +1,6 @@
 
 
-.. _sphx_glr__gallery_plot_logistic_regression.py:
+.. _sphx_glr_gallery_plot_logistic_regression.py:
 
 
 Epistasis LogisticRegression
@@ -12,7 +12,7 @@ of mutations.
 
 
 
-.. image:: /_gallery/images/sphx_glr_plot_logistic_regression_001.png
+.. image:: /gallery/images/sphx_glr_plot_logistic_regression_001.png
     :align: center
 
 
@@ -53,7 +53,7 @@ of mutations.
     fig, ax = epistasis.plot.coefs(vals, sites, figsize=(1,3))
     fig
 
-**Total running time of the script:** ( 0 minutes  0.139 seconds)
+**Total running time of the script:** ( 0 minutes  0.186 seconds)
 
 
 

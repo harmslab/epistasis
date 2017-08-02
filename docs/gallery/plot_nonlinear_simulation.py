@@ -37,9 +37,8 @@ plt.show()
 
 ################################################
 # Define the wildtype/ancestor and mutations
-# in the genotype-phenotype map.
-#
-# Then, initialize the simulation
+# in the genotype-phenotype map. Then, initialize 
+# the simulation.
 
 wildtype = "0000"
 mutations = {
@@ -49,7 +48,6 @@ mutations = {
     3: ["0","1"]
 }
 
-# Initialize the simulation.
 # The simulation takes the nonlinear function as an argument
 # and the p0 takes values for any extra parametes in the function.
 

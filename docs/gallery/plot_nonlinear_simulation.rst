@@ -1,6 +1,6 @@
 
 
-.. _sphx_glr__gallery_plot_nonlinear_simulation.py:
+.. _sphx_glr_gallery_plot_nonlinear_simulation.py:
 
 
 NonlinearSimulation
@@ -56,16 +56,15 @@ The example below models diminishing returns.
 
 
 
-.. image:: /_gallery/images/sphx_glr_plot_nonlinear_simulation_001.png
+.. image:: /gallery/images/sphx_glr_plot_nonlinear_simulation_001.png
     :align: center
 
 
 
 
 Define the wildtype/ancestor and mutations
-in the genotype-phenotype map.
-
-Then, initialize the simulation
+in the genotype-phenotype map. Then, initialize 
+the simulation.
 
 
 
@@ -80,7 +79,6 @@ Then, initialize the simulation
         3: ["0","1"]
     }
 
-    # Initialize the simulation.
     # The simulation takes the nonlinear function as an argument
     # and the p0 takes values for any extra parametes in the function.
 
@@ -101,13 +99,13 @@ Then, initialize the simulation
 
 
 
-.. image:: /_gallery/images/sphx_glr_plot_nonlinear_simulation_002.png
+.. image:: /gallery/images/sphx_glr_plot_nonlinear_simulation_002.png
     :align: center
 
 
 
 
-**Total running time of the script:** ( 0 minutes  0.113 seconds)
+**Total running time of the script:** ( 0 minutes  0.182 seconds)
 
 
 

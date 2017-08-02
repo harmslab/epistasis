@@ -1,9 +1,9 @@
 :orphan:
 
-Tutorials
-=========
+Example Gallery
+===============
 
-List of tutorials.
+The following gallery contains various examples from the package.
 
 
 
@@ -13,9 +13,9 @@ List of tutorials.
 
 .. only:: html
 
-    .. figure:: /_gallery/images/thumb/sphx_glr_plot_linear_regression_thumb.png
+    .. figure:: /gallery/images/thumb/sphx_glr_plot_linear_regression_thumb.png
 
-        :ref:`sphx_glr__gallery_plot_linear_regression.py`
+        :ref:`sphx_glr_gallery_plot_linear_regression.py`
 
 .. raw:: html
 
@@ -25,7 +25,7 @@ List of tutorials.
 .. toctree::
    :hidden:
 
-   /_gallery/plot_linear_regression
+   /gallery/plot_linear_regression
 
 .. raw:: html
 
@@ -33,9 +33,9 @@ List of tutorials.
 
 .. only:: html
 
-    .. figure:: /_gallery/images/thumb/sphx_glr_plot_logistic_regression_thumb.png
+    .. figure:: /gallery/images/thumb/sphx_glr_plot_logistic_regression_thumb.png
 
-        :ref:`sphx_glr__gallery_plot_logistic_regression.py`
+        :ref:`sphx_glr_gallery_plot_logistic_regression.py`
 
 .. raw:: html
 
@@ -45,7 +45,7 @@ List of tutorials.
 .. toctree::
    :hidden:
 
-   /_gallery/plot_logistic_regression
+   /gallery/plot_logistic_regression
 
 .. raw:: html
 
@@ -53,9 +53,9 @@ List of tutorials.
 
 .. only:: html
 
-    .. figure:: /_gallery/images/thumb/sphx_glr_plot_nonlinear_simulation_thumb.png
+    .. figure:: /gallery/images/thumb/sphx_glr_plot_nonlinear_simulation_thumb.png
 
-        :ref:`sphx_glr__gallery_plot_nonlinear_simulation.py`
+        :ref:`sphx_glr_gallery_plot_nonlinear_simulation.py`
 
 .. raw:: html
 
@@ -65,7 +65,7 @@ List of tutorials.
 .. toctree::
    :hidden:
 
-   /_gallery/plot_nonlinear_simulation
+   /gallery/plot_nonlinear_simulation
 .. raw:: html
 
     <div style='clear:both'></div>
@@ -77,13 +77,13 @@ List of tutorials.
 
   .. container:: sphx-glr-download
 
-    :download:`Download all examples in Python source code: _gallery_python.zip <//Users/Zsailer/Documents/Research/projects/pkgs/epistasis/docs/_gallery/_gallery_python.zip>`
+    :download:`Download all examples in Python source code: gallery_python.zip <//Users/Zsailer/Documents/Research/projects/pkgs/epistasis/docs/gallery/gallery_python.zip>`
 
 
 
   .. container:: sphx-glr-download
 
-    :download:`Download all examples in Jupyter notebooks: _gallery_jupyter.zip <//Users/Zsailer/Documents/Research/projects/pkgs/epistasis/docs/_gallery/_gallery_jupyter.zip>`
+    :download:`Download all examples in Jupyter notebooks: gallery_jupyter.zip <//Users/Zsailer/Documents/Research/projects/pkgs/epistasis/docs/gallery/gallery_jupyter.zip>`
 
 .. rst-class:: sphx-glr-signature
 

@@ -27,9 +27,4 @@ a box plot (see example below), and signficicance as stars using a t-test.
 Figure
 ~~~~~~
 
-.. image:: ../_img/coefs.png
-
-API
-~~~
-
-.. autofunction:: epistasis.plot.coefs.coefs
+.. image:: ../img/coefs.png

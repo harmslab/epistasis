@@ -29,13 +29,13 @@ Table of Contents
 .. toctree::
    :maxdepth: 2
 
-   _gallery/index.rst
-   _pages/install
-   _pages/fitting
-   _pages/estimating-uncertainty
-   _pages/simulate
-   _pages/plot
-   _pages/io
+   gallery/index.rst
+   pages/install
+   pages/fitting
+   pages/estimating-uncertainty
+   pages/simulate
+   pages/plot
+   pages/io
 
 
 Indices and tables

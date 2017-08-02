@@ -1,6 +1,6 @@
 
 
-.. _sphx_glr__gallery_plot_linear_regression.py:
+.. _sphx_glr_gallery_plot_linear_regression.py:
 
 
 Epistasis LinearRegression
@@ -21,7 +21,7 @@ argument if you don't explicitly pass an ``X`` argument into the ``fit`` method.
 
 
 
-.. image:: /_gallery/images/sphx_glr_plot_linear_regression_001.png
+.. image:: /gallery/images/sphx_glr_plot_linear_regression_001.png
     :align: center
 
 
@@ -58,7 +58,7 @@ argument if you don't explicitly pass an ``X`` argument into the ``fit`` method.
     fig, ax = epistasis.plot.coefs(vals, sites, figsize=(2,3))
     plt.show()
 
-**Total running time of the script:** ( 0 minutes  1.182 seconds)
+**Total running time of the script:** ( 0 minutes  1.125 seconds)
 
 
 

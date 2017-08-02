@@ -72,9 +72,9 @@ def coefs(betas=[], sites=[], errors=None, **kwargs):
     """
     ## Set up plotting user options. Type check the options to make sure nothing
     # will break. Also helps with widgets.
-
+    sites = list(sites)
     # Prepare an cycle of colors
-    order = len(sites[-1])
+    order = len(sites[-1:])
     prop_cycle = plt.rcParams['axes.prop_cycle']
     color_cycle = prop_cycle.by_key()['color']
     color_scalar = int(order / len(color_cycle))  + 1
