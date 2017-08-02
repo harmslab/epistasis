@@ -34,6 +34,9 @@ class Mock(MagicMock):
 MOCK_MODULES = ['sklearn',
     'sklearn.linear_model',
     'sklearn.base',
+    'sklearn.decomposition',
+    'sklearn.decomposition.PCA',
+    'sklearn.metrics',
     'scipy.optimize',
     'scipy.misc',
     'scipy.stats',
@@ -41,9 +44,6 @@ MOCK_MODULES = ['sklearn',
     'ipywidgets',
     'jupyter',
     'notebook',
-    'sklearn.decomposition',
-    'sklearn.decomposition.PCA',
-    'sklearn.metrics',
     'Cython.Build',
     'emcee',
     'pandas'
@@ -74,7 +74,7 @@ sphinx_gallery_conf = {
     # path to your examples scripts
     'examples_dirs' : '../examples/py',
     # path where to save gallery generated examples
-    'gallery_dirs'  : '_gallery',
+    'gallery_dirs'  : 'gallery',
     'backreferences_dir': False,
     'download_section_examples' : False}
 
