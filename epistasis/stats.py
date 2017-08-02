@@ -40,9 +40,9 @@ def gmean(x):
     """Calculate a geometric mean with zero and negative values.
 
     Following the gmean calculation from this paper:
+    
     Habib, Elsayed AE. "Geometric mean for negative and zero values."
-        International Journal of Research and Reviews in Applied Sciences 11
-        (2012): 419-432.
+    International Journal of Research and Reviews in Applied Sciences 11 (2012): 419-432.
     """
     x_neg = x[x<0]
     x_pos = x[x>0]

@@ -23,9 +23,10 @@ The `gpmap` package is not yet on Pypi either. It will need to be downloaded
 and installed following the same procedure as above.
 
 * gpmap_: Module for constructing powerful genotype-phenotype map python data-structures.
-* Scikit-learn_: Simple to use machine-learning algorithms
-* Numpy_: Python's array manipulation packaged
+* Scikit-learn_: Simple to use machine-learning API.
+* Numpy_: Python's array manipulation package.
 * Scipy_: Efficient scientific array manipulations and fitting.
+* Pandas_: High-performance, easy-to-use data structures and data analysis tools.
 
 There are also some additional dependencies for extra features included in
 the package.
@@ -39,6 +40,7 @@ the package.
 .. _Scikit-learn: http://scikit-learn.org/stable/
 .. _Numpy: http://www.numpy.org/
 .. _Scipy: http://www.scipy.org/
+.. _Pandas: http://pandas.pydata.org/
 .. _matplotlib: http://matplotlib.org/
 .. _ipython: https://ipython.org/
 .. _jupyter notebook: http://jupyter.org/

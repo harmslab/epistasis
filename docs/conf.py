@@ -31,15 +31,7 @@ class Mock(MagicMock):
     def __getattr__(cls, name):
             return Mock()
 
-MOCK_MODULES = ['sklearn',
-    'sklearn.linear_model',
-    'sklearn.base',
-    'sklearn.decomposition',
-    'sklearn.decomposition.PCA',
-    'sklearn.metrics',
-    'scipy.optimize',
-    'scipy.misc',
-    'scipy.stats',
+MOCK_MODULES = [
     'ipython',
     'ipywidgets',
     'jupyter',

@@ -22,20 +22,84 @@ Table of Contents
 =================
 
 .. toctree::
-    :hidden:
-
-    self
-
-.. toctree::
    :maxdepth: 2
 
-   gallery/index.rst
    pages/install
    pages/fitting
    pages/estimating-uncertainty
    pages/simulate
    pages/plot
    pages/io
+   gallery/index.rst
+   api/main.rst
+
+Example Gallery
+===============
+
+The following gallery contains various examples from the package.
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="``EpistasisLinearRegression`` is the base class for fitting epistasis in linear genotype-phenot...">
+
+.. only:: html
+
+    .. figure:: /gallery/images/thumb/sphx_glr_plot_linear_regression_thumb.png
+
+        :ref:`sphx_glr_gallery_plot_linear_regression.py`
+
+.. raw:: html
+
+    </div>
+
+
+.. toctree::
+   :hidden:
+
+   /gallery/plot_linear_regression
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Use a linear, logistic regression model to estimate the positive/negative effects of mutations....">
+
+.. only:: html
+
+    .. figure:: /gallery/images/thumb/sphx_glr_plot_logistic_regression_thumb.png
+
+        :ref:`sphx_glr_gallery_plot_logistic_regression.py`
+
+.. raw:: html
+
+    </div>
+
+
+.. toctree::
+   :hidden:
+
+   /gallery/plot_logistic_regression
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Often, the genotype-phenotype map is nonlinear. That is to say, the genotypes and phenotypes ch...">
+
+.. only:: html
+
+    .. figure:: /gallery/images/thumb/sphx_glr_plot_nonlinear_simulation_thumb.png
+
+        :ref:`sphx_glr_gallery_plot_nonlinear_simulation.py`
+
+.. raw:: html
+
+    </div>
+
+.. toctree::
+   :hidden:
+
+   /gallery/plot_nonlinear_simulation
+.. raw:: html
+
+    <div style='clear:both'></div>
 
 
 Indices and tables
