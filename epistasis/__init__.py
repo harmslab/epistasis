@@ -1,14 +1,19 @@
-__doc__ = """
+"""\
+A Python API for modeling statistical, high-order epistasis in genotype-phenotype maps.
+This library provides methods for:
 
-A python package for estimating high order epistasis in genotype-phenotype maps. This package includes both linear and non-linear epistasis models, as well as various tools for analyzing these spaces.
+    1. Decomposing genotype-phenotype maps into high-order epistatic interactions
+    2. Finding nonlinear scales in the genotype-phenotype map
+    3. Calculating the contributions of different epistatic orders
+    4. Estimating the uncertainty of epistatic coefficients amd
+    5. Interpreting the evolutionary importance of high-order interactions.
 
-The source code can be found at www.github.com/harmslab/epistasis.
+For more information about the epistasis models in this library, see our Genetics paper:
 
-The main documentation for this package can be found on the source-codes wiki page.
+    `Sailer, Z. R., & Harms, M. J. (2017). "Detecting High-Order Epistasis in Nonlinear Genotype-Phenotype Maps." Genetics, 205(3), 1079-1088.`_
 
-To install:
+.. _`Sailer, Z. R., & Harms, M. J. (2017). "Detecting High-Order Epistasis in Nonlinear Genotype-Phenotype Maps." Genetics, 205(3), 1079-1088.`: http://www.genetics.org/content/205/3/1079
 
-    python setup.py install
-
-
+Currently, this package works only as an API and there is no command-line
+interface. Instead, we encourage you use this package inside `Jupyter notebooks`_ .
 """
