@@ -72,7 +72,7 @@ Example
         return (lmbda*y + 1) ** (1/lmbda)
 
     # Initialize the model
-    model = NonlinearEpistasisRegression.from_json("data.json",
+    model = NonlinearEpistasisRegression.read_json("data.json",
         order=1,
         function=boxcox,
         reverse=reverse_boxcox
@@ -124,7 +124,7 @@ Example
         return np.log(y)
 
     # Initialize the model
-    model = NonlinearEpistasisRegression.from_json("data.json",
+    model = NonlinearEpistasisRegression.read_json("data.json",
         order=1,
         function=exp,
         reverse=log

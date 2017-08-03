@@ -16,7 +16,7 @@ a box plot (see example below), and signficicance as stars using a t-test.
     from epistasis.plots import coefs
 
     # Fit with a model.
-    model = EpistasisLinearRegression.from_json("data.json", order=5)
+    model = EpistasisLinearRegression.read_json("data.json", order=5)
     model.fit()
 
     # plot the epistasis coeffs

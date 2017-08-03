@@ -6,17 +6,23 @@
 Introduction
 ============
 
-A Python API for modeling statistical, high-order epistasis in large
-genotype-phenotype maps. Decompose genotype-phenotype maps into high-order epistatic
-interactions. Find nonlinearity in the genotype-phenotype map. Calculate the
-contributions of different epistatic orders. Estimate the importance of high-order
-interactions on evolution.
+A Python API for modeling statistical, high-order epistasis in genotype-phenotype maps.
+This library provides methods for:
 
-Currently, this package works only as an API. There is no command-line
-interface, and it includes few ways to read/write the data to disk out-of-the-box.
-We plan to improve this moving forward. Instead, we encourage you use this package
-inside `Jupyter notebooks`_ .
+    1. Decomposing genotype-phenotype maps into high-order epistatic interactions
+    2. Finding nonlinear scales in the genotype-phenotype map
+    3. Calculating the contributions of different epistatic orders
+    4. Estimating the uncertainty of epistatic coefficients amd
+    5. Interpreting the evolutionary importance of high-order interactions.
 
+For more information about the epistasis models in this library, see our Genetics paper:
+
+    `Sailer, Z. R., & Harms, M. J. (2017). "Detecting High-Order Epistasis in Nonlinear Genotype-Phenotype Maps." Genetics, 205(3), 1079-1088.`_
+
+.. _`Sailer, Z. R., & Harms, M. J. (2017). "Detecting High-Order Epistasis in Nonlinear Genotype-Phenotype Maps." Genetics, 205(3), 1079-1088.`: http://www.genetics.org/content/205/3/1079
+
+Currently, this package works only as an API and there is no command-line
+interface. Instead, we encourage you use this package inside `Jupyter notebooks`_ .
 
 Table of Contents
 =================
@@ -53,12 +59,6 @@ The following gallery contains various examples from the package.
 
     </div>
 
-
-.. toctree::
-   :hidden:
-
-   /gallery/plot_linear_regression
-
 .. raw:: html
 
     <div class="sphx-glr-thumbcontainer" tooltip="Use a linear, logistic regression model to estimate the positive/negative effects of mutations....">
@@ -72,12 +72,6 @@ The following gallery contains various examples from the package.
 .. raw:: html
 
     </div>
-
-
-.. toctree::
-   :hidden:
-
-   /gallery/plot_logistic_regression
 
 .. raw:: html
 
@@ -93,8 +87,6 @@ The following gallery contains various examples from the package.
 
     </div>
 
-.. toctree::
-   :hidden:
 
    /gallery/plot_nonlinear_simulation
 .. raw:: html

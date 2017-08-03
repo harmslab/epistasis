@@ -4,4 +4,8 @@ API documentation
 .. toctree::
    :maxdepth: 4
 
-   epistasis
+   epistasis.models
+   epistasis.plot
+   epistasis.sampling
+   epistasis.simulate
+   epistasis.tests

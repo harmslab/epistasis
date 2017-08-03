@@ -1,12 +1,17 @@
 Installation
 ============
 
-Install
--------
+Installing
+----------
 
-The epistasis package is not yet on Pypi. Our first official release will happen
-as soon as our paper is out of preprint. Until then, all our software is available
-on Github. You can clone from there and pip install a development version.
+This library is now available on PyPi, so it can be installed using pip.
+
+.. code-block:: bash
+
+    pip install epistasis
+
+For the latest version of the package, you can also clone from Github
+and install a development version using pip.
 
 .. code-block:: bash
 
@@ -18,9 +23,7 @@ on Github. You can clone from there and pip install a development version.
 Dependencies
 ------------
 
-The following dependencies are required for the epistasis package. **Note**:
-The `gpmap` package is not yet on Pypi either. It will need to be downloaded
-and installed following the same procedure as above.
+The following dependencies are required for the epistasis package.
 
 * gpmap_: Module for constructing powerful genotype-phenotype map python data-structures.
 * Scikit-learn_: Simple to use machine-learning API.
@@ -45,3 +48,20 @@ the package.
 .. _ipython: https://ipython.org/
 .. _jupyter notebook: http://jupyter.org/
 .. _ipywidgets: https://ipywidgets.readthedocs.io/en/latest/
+
+Testing
+-------
+
+The epistasis package comes with a small suite of tests (hopefully, we'll improve
+the tests moving forward). Running the tests require `nose`, so make sure it is installed.
+
+.. code-block:: bash
+
+    pip install nose
+
+Once nose is installed, run the tests from the base directory of the epistasis package
+using the following command.
+
+.. code-block:: bash
+
+    nosetests
