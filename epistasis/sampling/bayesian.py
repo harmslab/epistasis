@@ -84,7 +84,7 @@ class BayesianSampler(Sampler):
         return x
 
     @file_handler
-    def add_samples(self, n_samples, nwalkers=None, equil_steps=100):
+    def add_samples(self, n_samples, nwalkers=None, equil_steps=100, gauss_width=1e-3):
         """Add samples to database"""
         # Calculate the maximum likelihood estimate for the epistasis model.
         try:
@@ -106,7 +106,7 @@ class BayesianSampler(Sampler):
         # Equilibrate if this if the first time sampling.
         if len(self.coefs) == 0:
             # Construct a bunch of walkers gaussians around each ml_coef
-            multigauss_err = 1e-3*np.random.randn(nwalkers, ndims)
+            multigauss_err = gauss_width*np.random.randn(nwalkers, ndims)
             p0 = np.array([ml_coefs for i in range(nwalkers)]) + multigauss_err
 
             # Run for the number of samples
