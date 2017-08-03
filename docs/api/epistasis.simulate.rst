@@ -1,8 +1,7 @@
 epistasis\.simulate package
 ===========================
 
-Submodules
-----------
+.. automodule:: epistasis.simulate.__init__
 
 epistasis\.simulate\.base module
 --------------------------------
@@ -24,15 +23,6 @@ epistasis\.simulate\.nonlinear module
 -------------------------------------
 
 .. automodule:: epistasis.simulate.nonlinear
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
-Module contents
----------------
-
-.. automodule:: epistasis.simulate
     :members:
     :undoc-members:
     :show-inheritance:

@@ -58,12 +58,3 @@ epistasis\.models\.utils module
     :members:
     :undoc-members:
     :show-inheritance:
-
-
-Module contents
----------------
-
-.. automodule:: epistasis.models
-    :members:
-    :undoc-members:
-    :show-inheritance:

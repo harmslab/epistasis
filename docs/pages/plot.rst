@@ -20,9 +20,9 @@ a box plot (see example below), and signficicance as stars using a t-test.
     model.fit()
 
     # plot the epistasis coeffs
-    labels = model.interactions.labels
-    values = model.interactions.values
-    fig, ax = coefs(labels, values)
+    sites = model.epistasis.sites
+    values = model.epistasis.values
+    fig, ax = coefs(sites, values)
 
 Figure
 ~~~~~~

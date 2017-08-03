@@ -1,8 +1,8 @@
 epistasis\.sampling package
 ===========================
 
-Submodules
-----------
+.. automodule:: epistasis.sampling.__init__
+
 
 epistasis\.sampling\.base module
 --------------------------------
@@ -24,15 +24,6 @@ epistasis\.sampling\.bootstrap module
 -------------------------------------
 
 .. automodule:: epistasis.sampling.bootstrap
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
-Module contents
----------------
-
-.. automodule:: epistasis.sampling
     :members:
     :undoc-members:
     :show-inheritance:

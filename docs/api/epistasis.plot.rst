@@ -1,8 +1,8 @@
 epistasis\.plot package
 =======================
 
-Submodules
-----------
+.. automodule:: epistasis.plot.__init__
+
 
 epistasis\.plot\.coefs module
 -----------------------------
@@ -32,15 +32,6 @@ epistasis\.plot\.utils module
 -----------------------------
 
 .. automodule:: epistasis.plot.utils
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
-Module contents
----------------
-
-.. automodule:: epistasis.plot
     :members:
     :undoc-members:
     :show-inheritance:

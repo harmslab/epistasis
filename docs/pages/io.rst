@@ -15,10 +15,7 @@ Excel files are supported through the ``read_excel`` method. This method require
 ``genotypes`` and ``phenotypes`` columns, and can include ``n_replicates`` and
 ``stdeviations`` as optional columns. All other columns are ignored.
 
-Example
-~~~~~~~
-
-Excel spreadsheet file ("data.xlsx")
+**Example**: Excel spreadsheet file ("data.xlsx")
 
 .. raw:: html
 
@@ -42,7 +39,7 @@ csv files are supported through the ``read_csv`` method. This method requires
 ``genotypes`` and ``phenotypes`` columns, and can include ``n_replicates`` and
 ``stdeviations`` as optional columns. All other columns are ignored.
 
-Example:
+**Example**: CSV spreadsheet file ("data.csv")
 
 .. raw:: html
 
