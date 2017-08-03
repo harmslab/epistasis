@@ -1,8 +1,7 @@
 epistasis\.models package
 =========================
 
-Submodules
-----------
+.. automodule:: epistasis.models.__init__
 
 epistasis\.models\.base module
 ------------------------------

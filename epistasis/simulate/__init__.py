@@ -1,4 +1,4 @@
-__"""\
+"""
 
 A module for simulating genotype-phenotype maps with high-order epistasis.
 
