@@ -70,7 +70,7 @@ sphinx_gallery_conf = {
     'backreferences_dir': False,
     'download_section_examples' : False}
 
-# Add any paths that contain templates here, relative to this directory.
+    # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
 # The suffix(es) of source filenames.
