@@ -1,13 +1,6 @@
 epistasis\.models package
 =========================
 
-Subpackages
------------
-
-.. toctree::
-
-    epistasis.models.tests
-
 Submodules
 ----------
 

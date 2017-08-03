@@ -8,4 +8,3 @@ API documentation
    epistasis.plot
    epistasis.sampling
    epistasis.simulate
-   epistasis.tests

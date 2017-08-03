@@ -1,13 +1,6 @@
 epistasis\.simulate package
 ===========================
 
-Subpackages
------------
-
-.. toctree::
-
-    epistasis.simulate.tests
-
 Submodules
 ----------
 

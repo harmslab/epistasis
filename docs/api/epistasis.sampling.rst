@@ -1,13 +1,6 @@
 epistasis\.sampling package
 ===========================
 
-Subpackages
------------
-
-.. toctree::
-
-    epistasis.sampling.tests
-
 Submodules
 ----------
 
