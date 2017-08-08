@@ -9,4 +9,5 @@ ipywidgets
 scikit-learn
 gpmap
 emcee
+corner
 h5py

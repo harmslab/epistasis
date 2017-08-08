@@ -144,7 +144,8 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
     @property
     def thetas(self):
         """Get all parameters in the model as a single array. This concatenates
-        the nonlinear parameters and high-order epistatic coefficients.
+        the nonlinear parameters and high-order epistatic coefficients. Nonlinear
+        parameters are first in the array; linear coefficients are second.
         """
         return np.concatenate((self.parameters.values, self.Linear.coef_))
 
@@ -192,20 +193,32 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
 
         ## Use widgets to guess the value?
         if use_widgets:
+            import matplotlib.pyplot as plt
+            import epistasis.plot
+
             # Build fitting method to pass into widget box
             def fitting(**parameters):
-                """ Callable to be controlled by widgets. """
+                """Callable to be controlled by widgets."""
                 # Fit the nonlinear least squares fit
-                self._fit_(X, y, sample_weight=sample_weight, **kwargs)
-                #if print_stats:
+                self._fit_(X, y, sample_weight=sample_weight, **parameters)
+
                 # Print score
                 print("R-squared of fit: " + str(self.score()))
                 # Print parameters
                 for kw in self.parameters._mapping:
                     print(kw + ": " + str(getattr(self.parameters, kw)))
+
+                # Plot the nonlinear fit!
+                ylin = self.Additive.predict(X=self.Additive.Xfit)
+                epistasis.plot.corr_resid(ylin, y, figsize=(3,5))
+                plt.show()
+
             # Construct and return the widget box
             widgetbox = ipywidgets.interactive(fitting, **kwargs)
+
             return widgetbox
+
+
         # Don't use widgets to fit data
         else:
             self._fit_(X, y, sample_weight=sample_weight, **kwargs)
@@ -256,7 +269,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
 
     @X_predictor
     def predict(self, X=None):
-        """Predict new targets from model."""
+        """Infer phenotypes from model coefficients and nonlinear function."""
         x = self.Linear.predict(X)
         y = self.function(x, *self.parameters.values)
         return y
@@ -265,7 +278,13 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
     def score(self, X=None, y=None):
         """Calculates the squared-pearson coefficient for the nonlinear fit.
 
-        Returns two r-squared values, linear-portion and nonlinear portion.
+        Returns
+        -------
+        r_nonlinear : float
+            squared pearson coefficient between phenotypes and nonlinear function.
+        r_linear : float
+            squared pearson coefficient between linearized phenotypes and linear epistasis model
+            described by epistasis.values.
         """
         xlin = self.Additive.predict(X=self.Additive.Xfit)
         ypred = self.function(xlin, *self.parameters.get_params())

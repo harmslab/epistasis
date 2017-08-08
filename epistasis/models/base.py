@@ -17,14 +17,28 @@ class BaseModel(object):
     models.
     """
     @classmethod
-    def from_json(cls, filename, **kwargs):
-        """"""
+    def read_json(cls, filename, **kwargs):
+        """Read genotype-phenotype data from a json file."""
         self = cls(**kwargs)
-        self.add_gpm( GenotypePhenotypeMap.from_json(filename, **kwargs) )
+        self.add_gpm( GenotypePhenotypeMap.read_json(filename, **kwargs) )
         return self
 
     @classmethod
-    def from_data(cls, wildtype, genotypes, phenotypes, **kwargs):
+    def read_excel(cls, filename, **kwargs):
+        """Read genotype-phenotype data from a excel file."""
+        self = cls(**kwargs)
+        self.add_gpm( GenotypePhenotypeMap.read_excel(filename, **kwargs) )
+        return self
+
+    @classmethod
+    def read_csv(cls, filename, **kwargs):
+        """Read genotype-phenotype data from a csv file."""
+        self = cls(**kwargs)
+        self.add_gpm( GenotypePhenotypeMap.read_csv(filename, **kwargs) )
+        return self
+
+    @classmethod
+    def read_data(cls, wildtype, genotypes, phenotypes, **kwargs):
         """ Uses a simple linear, least-squares regression to estimate epistatic
         coefficients in a genotype-phenotype map. This assumes the map is linear."""
         self = cls(**kwargs)
@@ -33,7 +47,7 @@ class BaseModel(object):
         return self
 
     @classmethod
-    def from_gpm(cls, gpm, **kwargs):
+    def read_gpm(cls, gpm, **kwargs):
         """ Initialize an epistasis model from a Genotype-phenotypeMap object """
         # Grab all properties from data-structure
         self = cls(**kwargs)

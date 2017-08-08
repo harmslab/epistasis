@@ -145,6 +145,7 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
         # Set up guesses
         self.p0.update(**kwargs)
         kwargs = self.p0
+
         guesses = np.ones(self.parameters.n)
         for kw in kwargs:
             index = self.parameters._mapping[kw]

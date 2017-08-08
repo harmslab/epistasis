@@ -1,5 +1,8 @@
-Fitting
-=======
+The problem
+===========
+
+The genotype-phenotype map
+
 
 Basic Linear Example
 --------------------

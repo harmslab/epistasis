@@ -7,22 +7,35 @@
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.242665.svg)](https://doi.org/10.5281/zenodo.242665)
 
 
-
 A python API for estimating statistical, high-order epistasis in linear and nonlinear genotype-phenotype maps. All models follow a *Scikit-learn* interface, making it easy to integrate `epistasis` models with other pipelines and software. It includes a plotting module built on matplotlib for visualizing high-order interactions and interactive widgets to simplify complex nonlinear fits.
 
 This package includes APIs for both linear and nonlinear epistasis models, described in this [paper](https://doi.org/10.1534/genetics.116.195214).
 
 If you'd like to see how we used the epistasis package in our recent Genetics paper (2017), run our Jupyter notebooks [here](http://mybinder.org:/repo/harmslab/notebooks-nonlinear-high-order-epistasis)!
 
-## Basic examples
+## Examples
 
-A simple example of fitting a data set with a linear epistasis model.  
+Read a list of genotypes and corresponding phenotypes from a csv.
+
+**data.csv**
+
+|   | genotypes | phenotypes | stdeviations | n_replicates |
+| 0 | AAA |
+| 1 | AAV |
+| 2 | AVA |
+| 3 | VAA |
+| 4 | AVV |
+| 5 | VAV |
+| 6 | VVA |
+| 7 | VVV |
+
 ```python
 # Import epistasis model
 from epistasis.models import EpistasisLinearRegression
 
 # Read data from file and estimate epistasis
-model = EpistasisLinearRegression.from_json("dataset.json", order=3)
+model = EpistasisLinearRegression.read_json("dataset.json", order=3)
+
 model.fit()
 ```
 
