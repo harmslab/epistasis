@@ -9,9 +9,9 @@ from ..base import BaseModel
 
 from nose import tools
 
-def test_BaseModel_from_gpm():
+def test_BaseModel_read_gpm():
     gpm = GenotypePhenotypeSimulation.from_length(3)
-    model = BaseModel.from_gpm(gpm)
+    model = BaseModel.read_gpm(gpm)
     tools.assert_true(hasattr(model, "gpm"))
 
 def test_BaseModel_fit_raises_subclass_exception():

@@ -21,7 +21,7 @@ class Toolkit(object):
 
 def test_EpistasisNonlinearRegression_initialization():
     toolkit = Toolkit()
-    model = EpistasisNonlinearRegression.from_gpm(toolkit.gpm,
+    model = EpistasisNonlinearRegression.read_gpm(toolkit.gpm,
         function=toolkit.function,
         reverse=toolkit.reverse,
         order=2,
@@ -37,7 +37,7 @@ def test_EpistasisNonlinearRegression_initialization():
 
 def test_EpistasisNonlinearRegression_init_sets_parameter_object():
     toolkit = Toolkit()
-    model = EpistasisNonlinearRegression.from_gpm(toolkit.gpm,
+    model = EpistasisNonlinearRegression.read_gpm(toolkit.gpm,
         function=toolkit.function,
         reverse=toolkit.reverse,
         order=2,
@@ -52,7 +52,7 @@ def test_EpistasisNonlinearRegression_init_sets_parameter_object():
 
 def test_EpistasisNonlinearRegression_fit_sets_Xfit():
     toolkit = Toolkit()
-    model = EpistasisNonlinearRegression.from_gpm(toolkit.gpm,
+    model = EpistasisNonlinearRegression.read_gpm(toolkit.gpm,
         function=toolkit.function,
         reverse=toolkit.reverse,
         order=2,
@@ -65,7 +65,7 @@ def test_EpistasisNonlinearRegression_fit_sets_Xfit():
 
 def test_EpistasisNonlinearRegression_predict():
     toolkit = Toolkit()
-    model = EpistasisNonlinearRegression.from_gpm(toolkit.gpm,
+    model = EpistasisNonlinearRegression.read_gpm(toolkit.gpm,
         function=toolkit.function,
         reverse=toolkit.reverse,
         order=2,
@@ -73,11 +73,11 @@ def test_EpistasisNonlinearRegression_predict():
     model.fit(A=1,B=0)
     y = model.predict()
     # Tests
-    np.testing.assert_almost_equal(y, model.gpm.phenotypes)
+    np.testing.assert_almost_equal(sorted(y), sorted(model.gpm.phenotypes))
 
 def test_EpistasisNonlinearRegression_thetas():
     toolkit = Toolkit()
-    model = EpistasisNonlinearRegression.from_gpm(toolkit.gpm,
+    model = EpistasisNonlinearRegression.read_gpm(toolkit.gpm,
         function=toolkit.function,
         reverse=toolkit.reverse,
         order=2,
@@ -89,7 +89,7 @@ def test_EpistasisNonlinearRegression_thetas():
 
 def test_EpistasisNonlinearRegression_hypothesis():
     toolkit = Toolkit()
-    model = EpistasisNonlinearRegression.from_gpm(toolkit.gpm,
+    model = EpistasisNonlinearRegression.read_gpm(toolkit.gpm,
         function=toolkit.function,
         reverse=toolkit.reverse,
         order=2,
@@ -97,4 +97,4 @@ def test_EpistasisNonlinearRegression_hypothesis():
     model.fit(A=1,B=0)
     predictions = model.hypothesis()
     # Tests
-    np.testing.assert_almost_equal(predictions, model.gpm.phenotypes)
+    np.testing.assert_almost_equal(sorted(predictions), sorted(model.gpm.phenotypes))
