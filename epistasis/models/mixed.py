@@ -67,7 +67,7 @@ class EpistasisMixedRegression(BaseModel):
         self.Model.add_gpm(gpm)
         self.Classifier.add_gpm(gpm)
 
-    def fit(self, X=None, y=None, **kwargs):
+    def fit(self, X=None, y=None, use_widgets=False, **kwargs):
         """Fit mixed model in two parts. 1. Use Classifier to predict the
         class of each phenotype (Dead/Alive). 2. Fit epistasis Model.
 
@@ -115,10 +115,14 @@ class EpistasisMixedRegression(BaseModel):
 
             # Ignore phenotypes that are found "dead"
             y = y[ypred==1]
+            y = y.reset_index(drop=True)
             X = self.Xfit[ypred==1,:]
 
             # Fit model
-            self.Model.fit(X=X, y=y, **kwargs)
+            out = self.Model.fit(X=X, y=y, use_widgets=use_widgets, **kwargs)
+
+            if use_widgets:
+                return out
 
             # Append epistasis map to coefs
             self.Model.epistasis = epistasis.mapping.EpistasisMap(sites,
@@ -134,6 +138,7 @@ class EpistasisMixedRegression(BaseModel):
 
             # Ignore phenotypes that are found "dead"
             y = y[ypred==1]
+            y = y.reset_index(drop=True)
             X = X[ypred==1,:]
 
             # --------------------------------------------------------

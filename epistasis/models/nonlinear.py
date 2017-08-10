@@ -203,7 +203,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
                 self._fit_(X, y, sample_weight=sample_weight, **parameters)
 
                 # Print score
-                print("R-squared of fit: " + str(self.score()))
+                print("R-squared of fit: " + str(self.score(X=X, y=y)))
                 # Print parameters
                 for kw in self.parameters._mapping:
                     print(kw + ": " + str(getattr(self.parameters, kw)))
