@@ -44,7 +44,6 @@ class BaseSimulation(GenotypePhenotypeMap):
         order = max([len(s) for s in sites])
         self.epistasis = EpistasisMap(sites, order=order, model_type="global")
 
-    @assert_epistasis
     def set_coefs(self, sites, values):
         """Set the epistatic coefs
 
