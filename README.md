@@ -17,18 +17,6 @@ If you'd like to see how we used the epistasis package in our recent Genetics pa
 
 Read a list of genotypes and corresponding phenotypes from a csv.
 
-**data.csv**
-
-|   | genotypes | phenotypes | stdeviations | n_replicates |
-| 0 | AAA |
-| 1 | AAV |
-| 2 | AVA |
-| 3 | VAA |
-| 4 | AVV |
-| 5 | VAV |
-| 6 | VVA |
-| 7 | VVV |
-
 ```python
 # Import epistasis model
 from epistasis.models import EpistasisLinearRegression
@@ -55,7 +43,7 @@ def reverse_boxcox(y, lmbda, lmbda2):
     return (lmbda*y + 1) ** (1/lmbda) + lmbda2
 
 # Read data from file and estimate nonlinearity in dataset.
-model = EpistasisNonlinearRegression.from_json("dataset.json",
+model = EpistasisNonlinearRegression.read_json("dataset.json",
     function=boxbox,
     reverse=reverse_boxcox,
     order=1,
