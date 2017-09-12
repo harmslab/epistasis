@@ -54,9 +54,9 @@ class LinearSimulation(BaseSimulation):
     @property
     def p_additive(self):
         """Get the additive phenotypes"""
-        orders = self.epistasis.getorder
-        sites = list(orders[0].sites) + list(orders[1].sites)
-        vals = list(orders[0].values) + list(orders[1].values)
+        orders = self.epistasis.get_orders(0,1)
+        sites = orders.sites
+        vals = orders.values
         x = get_model_matrix(self.binary.genotypes, sites, model_type=self.model_type)
         return np.dot(x, vals)
 

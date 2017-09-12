@@ -40,7 +40,7 @@ def gmean(x):
     """Calculate a geometric mean with zero and negative values.
 
     Following the gmean calculation from this paper:
-    
+
     Habib, Elsayed AE. "Geometric mean for negative and zero values."
     International Journal of Research and Reviews in Applied Sciences 11 (2012): 419-432.
     """
@@ -195,10 +195,7 @@ def pearson(y_obs, y_pred):
     xbar = np.mean(y_obs)
     ybar = np.mean(y_pred)
 
-    terms = np.zeros(len(x), dtype=float)
-
-    for i in range(len(x)):
-        terms[i] = (x[i] - xbar) * (y[i] - ybar)
+    terms = (x - xbar) * (y - ybar)
 
     numerator = sum(terms)
 

@@ -27,7 +27,7 @@ def resid(y_pred, y_obs, fig=None, ax=None, figsize=None):
         ax = fig.add_subplot(111)
     residuals = y_obs - y_pred
     # Make residual plot
-    ax.plot(y_pred, residuals, '.')
+    ax.plot(residuals, '.')
     ax.hlines(0,min(y_pred), max(y_pred), linestyle="--", color="gray")
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)

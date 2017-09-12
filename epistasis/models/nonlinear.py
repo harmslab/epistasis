@@ -184,12 +184,14 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         # Fit with an additive model
         self.Additive = EpistasisLinearRegression(order=1, model_type=self.model_type)
         self.Additive.add_gpm(self.gpm)
-        self.Additive.Xfit = X[:,:self.Additive.gpm.length+1]
+        self.Additive.Xfit = X[:,:self.Additive.gpm.binary.length+1]
+        self.Additive.Xpredict = self.Additive.Xfit
 
         # Prepare a high-order model
         self.Linear = EpistasisLinearRegression(order=self.order, model_type=self.model_type)
         self.Linear.add_gpm(self.gpm)
         self.Linear.Xfit = X
+        self.Linear.Xpredict = self.Linear.Xfit
 
         ## Use widgets to guess the value?
         if use_widgets:
