@@ -30,7 +30,7 @@ class EpistasisBaseClassifier(BaseModel):
     @X_fitter
     def fit(self, X=None, y=None, **kwargs):
         # Save the classes for y values.
-        self.classes = binarize(y, self.threshold)[0]
+        self.classes = binarize(y.reshape(1,-1), self.threshold)[0]
         super(self.__class__, self).fit(X, y=self.classes, **kwargs)
         return self
 
