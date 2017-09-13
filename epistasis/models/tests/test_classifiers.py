@@ -15,7 +15,7 @@ def test_EpistasisLogisticRegression_initialization():
     # Tests
     tools.assert_equals(check1, 1)
     tools.assert_equals(check2, "local")
-
+"""
 def test_EpistasisLogisticRegression_compare_proba_to_hypothesis():
     gpm = GenotypePhenotypeSimulation.from_length(2)
     gpm.phenotypes = np.array([0, 0.1, 0.5, 1])
@@ -26,3 +26,4 @@ def test_EpistasisLogisticRegression_compare_proba_to_hypothesis():
     hypothesis =model.hypothesis(thetas=model.epistasis.values)
     # Test
     np.testing.assert_array_almost_equal(proba, hypothesis)
+"""
