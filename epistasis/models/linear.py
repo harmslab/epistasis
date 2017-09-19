@@ -31,26 +31,27 @@ class EpistasisLinearRegression(_LinearRegression, _BaseModel):
         self.copy_X = False
         self.n_jobs = n_jobs
         self.set_params(model_type=model_type, order=order)
+        self.Xbuilt = {}
 
     @property
     def thetas(self):
         return self.coef_
 
     @X_fitter
-    def fit(self, X=None, y=None, sample_weight=None, **kwargs):
+    def fit(self, X='obs', y='obs', sample_weight=None, **kwargs):
         # If a threshold exists in the data, pre-classify genotypes
         return super(self.__class__, self).fit(X, y, sample_weight)
 
     @X_predictor
-    def predict(self, X=None):
+    def predict(self, X='complete'):
         return super(self.__class__, self).predict(X)
 
     @X_fitter
-    def score(self, X=None, y=None):
+    def score(self, X='obs', y='obs'):
         return super(self.__class__, self).score(X, y)
 
     @X_predictor
-    def hypothesis(self, X=None, thetas=None):
+    def hypothesis(self, X='complete', thetas=None):
         """Given a set of parameters, compute a set of phenotypes. This is method
         can be used to test a set of parameters (Useful for bayesian sampling).
         """

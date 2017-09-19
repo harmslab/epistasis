@@ -3,12 +3,14 @@ import numpy as np
 import json
 from functools import wraps
 from scipy.optimize import curve_fit
-
+import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
 from sklearn.base import BaseEstimator, RegressorMixin
+
+# Import epistasis modules.
 from .base import BaseModel
 from .utils import  X_fitter, X_predictor
 from .linear import EpistasisLinearRegression
-
 from epistasis.stats import pearson
 # decorators for catching errors
 from gpmap.utils import ipywidgets_missing
@@ -140,6 +142,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
 
         # Initial parameters guesses
         self.p0 = p0
+        self.Xbuilt = {}
 
     @property
     def thetas(self):
@@ -150,7 +153,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         return np.concatenate((self.parameters.values, self.Linear.coef_))
 
     @X_fitter
-    def fit(self, X=None, y=None, sample_weight=None, use_widgets=False, **kwargs):
+    def fit(self, X='obs', y='obs', sample_weight=None, use_widgets=False, plot_fit=True, **kwargs):
         """Fit nonlinearity in genotype-phenotype map.
 
         Parameters
@@ -178,7 +181,8 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
                 "map is not attached to the model class. Use the `attach_gpm` method")
 
         # ----------------------------------------------------------------------
-        # Part 0: Prepare model for fitting and run fit
+        # Part 1: Estimate average, independent mutational effects and fit
+        #         nonlinear scale.
         # ----------------------------------------------------------------------
 
         # Fit with an additive model
@@ -186,7 +190,19 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         self.Additive.add_gpm(self.gpm)
         self.Additive.Xfit = X[:,:self.Additive.gpm.binary.length+1]
         self.Additive.Xpredict = self.Additive.Xfit
+        
+        self.Additive.fit(y=y)
+        Xadd = self.Additive.Xfit # Use Xfit to get the transformed phenotypes
+        x = self.Additive.predict(X=Xadd)
+        
+        # If true, make a plot of the
+        #if plot_fit:
+        #    fig, ax = self.plot_fit()
 
+        # ----------------------------------------------------------------------
+        # Part 2: Estimate nonlinear function.
+        # ----------------------------------------------------------------------
+        
         # Prepare a high-order model
         self.Linear = EpistasisLinearRegression(order=self.order, model_type=self.model_type)
         self.Linear.add_gpm(self.gpm)
@@ -202,7 +218,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
             def fitting(**parameters):
                 """Callable to be controlled by widgets."""
                 # Fit the nonlinear least squares fit
-                self._fit_(X, y, sample_weight=sample_weight, **parameters)
+                self._fit_(x, y, sample_weight=sample_weight, **parameters)
 
                 # Print score
                 print("R-squared of fit: " + str(self.score(X=X, y=y)))
@@ -217,24 +233,16 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
 
             # Construct and return the widget box
             widgetbox = ipywidgets.interactive(fitting, **kwargs)
-
             return widgetbox
-
 
         # Don't use widgets to fit data
         else:
-            self._fit_(X, y, sample_weight=sample_weight, **kwargs)
+            self._fit_(x, y, sample_weight=sample_weight, **kwargs)
         return self
 
-    def _fit_(self, X=None, y=None, sample_weight=None, **kwargs):
+    def _fit_(self, x, y, sample_weight=None, **kwargs):
         """Estimate the scale of multiple mutations in a genotype-phenotype map."""
-        # ----------------------------------------------------------------------
-        # Part 1: Estimate average, independent mutational effects and fit
-        #         nonlinear scale.
-        # ----------------------------------------------------------------------
-        self.Additive.fit(y=y)
-        Xadd = self.Additive.Xfit # Use Xfit to get the transformed phenotypes
-        x = self.Additive.predict(X=Xadd)
+
 
         # Set up guesses for parameters
         self.p0.update(**kwargs)
@@ -269,15 +277,24 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
             self.Linear = self.Additive
         self.coef_ = self.Linear.coef_
 
+    def plot_fit(self):
+        """Plots the observed phenotypes against the additive model phenotypes"""
+        padd = self.Additive.predict()
+        pobs = self.gpm.phenotypes
+        fig, ax = plt.subplots(figsize=(3,3))
+        ax.plot(padd, pobs, '.b')
+        plt.show()
+        return fig, ax        
+
     @X_predictor
-    def predict(self, X=None):
+    def predict(self, X='complete'):
         """Infer phenotypes from model coefficients and nonlinear function."""
         x = self.Linear.predict(X)
         y = self.function(x, *self.parameters.values)
         return y
 
     @X_fitter
-    def score(self, X=None, y=None):
+    def score(self, X='obs', y='obs'):
         """Calculates the squared-pearson coefficient for the nonlinear fit.
 
         Returns
@@ -294,7 +311,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         return pearson(y, ypred)**2, self.Linear.score(X=self.Linear.Xfit, y=yrev)
 
     @X_predictor
-    def hypothesis(self, X=None, thetas=None):
+    def hypothesis(self, X='complete', thetas=None):
         """Given a set of parameters, compute a set of phenotypes. Does not predict. This is method
         can be used to test a set of parameters (Useful for bayesian sampling).
         """

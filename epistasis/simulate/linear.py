@@ -47,8 +47,7 @@ class LinearSimulation(BaseSimulation):
         super(LinearSimulation,self).__init__(
             wildtype,
             mutations,
-            **kwargs
-        )
+            **kwargs)
         self.model_type = model_type
 
     @property

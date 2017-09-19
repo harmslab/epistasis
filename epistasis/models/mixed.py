@@ -17,7 +17,6 @@ class EpistasisMixedRegression(BaseModel):
     viable/nonviable (given some threshold) and then estimates epistatic coefficients
     in viable phenotypes.
 
-
     Parameters
     ----------
     order : int
@@ -36,6 +35,7 @@ class EpistasisMixedRegression(BaseModel):
     Keyword arguments are interpreted as intial guesses for the nonlinear function
     parameters. Must have the same name as parameters in the nonlinear function
 
+
     """
     def __init__(self, order, threshold, model_type="global",
         epistasis_model=EpistasisPowerTransform,
@@ -46,6 +46,7 @@ class EpistasisMixedRegression(BaseModel):
         self.order = order
         self.threshold = threshold
         self.model_type = model_type
+        self.Xbuilt = {}
 
         # Initialize the epistasis model
         self.Model = epistasis_model(order=self.order,
@@ -147,6 +148,17 @@ class EpistasisMixedRegression(BaseModel):
             self.Model.fit(X=X, y=y, **kwargs)
 
         return self
+
+
+    def plot_fit(self):
+        """Plots the observed phenotypes against the additive model phenotypes"""        
+        padd = self.Additive.predict()
+        pobs = self.gpm.phenotypes
+        fig, ax = plt.subplots(figsize=(3,3))
+        ax.plot(padd, pobs, '.b')
+        plt.show()
+        return fig, ax    
+
 
     def predict(self, X=None):
         """Predict phenotypes given a model matrix. Constructs the predictions in

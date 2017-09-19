@@ -12,8 +12,7 @@ class NonlinearSimulation(BaseSimulation):
         **kwargs):
         # Initialize base class.
         super(NonlinearSimulation, self).__init__(wildtype, mutations,
-            **kwargs
-        )
+            **kwargs)
         self.model_type = model_type
         self.set_function(function, p0=p0)
 

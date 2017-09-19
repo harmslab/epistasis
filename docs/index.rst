@@ -31,6 +31,7 @@ Table of Contents
    :maxdepth: 2
 
    pages/install
+   pages/models
    pages/fitting
    pages/estimating-uncertainty
    pages/simulate

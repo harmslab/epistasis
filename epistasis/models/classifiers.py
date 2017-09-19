@@ -26,28 +26,30 @@ class EpistasisBaseClassifier(BaseModel):
         self.order = order
         self.model_type = model_type
         self.fit_intercept=False
+        self.Xbuilt = {}
+
 
     @X_fitter
-    def fit(self, X=None, y=None, **kwargs):
+    def fit(self, X='obs', y='obs', **kwargs):
         # Save the classes for y values.
         self.classes = binarize(y.reshape(1,-1), self.threshold)[0]
         super(self.__class__, self).fit(X, y=self.classes, **kwargs)
         return self
 
     @X_predictor
-    def predict(self, X=None):
+    def predict(self, X='complete'):
         return super(self.__class__, self).predict(X)
 
     @X_predictor
-    def predict_log_proba(self, X=None):
+    def predict_log_proba(self, X='complete'):
         return super(self.__class__, self).predict_log_proba(X)
 
     @X_predictor
-    def predict_proba(self, X=None):
+    def predict_proba(self, X='complete'):
         return super(self.__class__, self).predict_proba(X)
 
     @X_fitter
-    def score(self, X=None, y=None):
+    def score(self, X='obs', y='obs'):
         y = binarize(y, self.threshold)[0]
         return super(self.__class__, self).score(X, y)
 

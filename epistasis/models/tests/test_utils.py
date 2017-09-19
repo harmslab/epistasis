@@ -9,6 +9,7 @@ class MockModel(object):
         self.gpm = GenotypePhenotypeSimulation.from_length(2)
         self.model_type = "local"
         self.order = 2
+        self.Xbuilt={}
 
     @X_fitter
     def fit(self, X=None, y=None):

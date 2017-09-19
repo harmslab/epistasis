@@ -74,6 +74,7 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
         )
         # Initial parameters guesses
         self.p0 = p0
+        self.Xbuilt = {}
 
     def function(self, x, lmbda, A, B):
         """Power transformation function. Exposed to the user for transforming
@@ -126,22 +127,15 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
         y[np.isnan(y)==True] = self.parameters.B
         return y
 
-    def predict(self, X=None):
+    def predict(self, X='complete'):
         """Predict new targets from model."""
         y = super(EpistasisPowerTransform, self).predict(X=X)
         # NOTE: sets nan values to the saturation point.
         y[np.isnan(y)==True] = self.parameters.B
         return y
 
-    def _fit_(self, X=None, y=None, sample_weight=None, **kwargs):
+    def _fit_(self, x, y, sample_weight=None, **kwargs):
         """Estimate the scale of multiple mutations in a genotype-phenotype map."""
-        # ----------------------------------------------------------------------
-        # Part 1: Estimate average, independent mutational effects and fit
-        #         nonlinear scale.
-        # ----------------------------------------------------------------------
-        self.Additive.fit(y=y)
-        x = self.Additive.predict(X=self.Additive.Xfit)
-
         # Set up guesses
         self.p0.update(**kwargs)
         kwargs = self.p0
