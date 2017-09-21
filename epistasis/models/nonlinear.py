@@ -23,7 +23,7 @@ except ImportError:
 
 # Suppress an annoying error
 import warnings
-warnings.filterwarnings(action="ignore", category=RuntimeWarning)
+#warnings.filterwarnings(action="ignore", category=RuntimeWarning)
 
 class Parameters(object):
     """A container object for parameters extracted from a nonlinear fit.

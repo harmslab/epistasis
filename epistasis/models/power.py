@@ -11,7 +11,7 @@ from epistasis.stats import gmean
 
 # Suppress an annoying error
 import warnings
-warnings.filterwarnings(action="ignore", category=RuntimeWarning)
+#warnings.filterwarnings(action="ignore", category=RuntimeWarning)
 
 
 def power_transform(x, lmbda, A, B):
