@@ -132,12 +132,12 @@ def X_fitter(method):
                 
         # Make sure X and y strings match
         if type(X) == str and type(y) == str and X != y:
-            raise FitError("Any string passed to X must be the same as any string passed to y. "
+            raise FittingError("Any string passed to X must be the same as any string passed to y. "
                            "For example: X='obs', y='obs'.")
             
         # Else if both are arrays, check that X and y match dimensions.
-        elif type(X) != str and type(y) != str and X.shape[1] != y.shape[0]:
-            raise FitError("X dimensions {} and y dimensions {} don't match.".format(X.shape[1], y.shape[0]))
+        elif type(X) != str and type(y) != str and X.shape[0] != y.shape[0]:
+            raise FittingError("X dimensions {} and y dimensions {} don't match.".format(X.shape[1], y.shape[0]))
             
         ######## Handle y.
         
@@ -149,7 +149,7 @@ def X_fitter(method):
         # Else, numpy array or dataframe
         elif type(y) != np.array and type(y) != pd.Series:
             
-            raise FitError("y is not valid. Must be one of the following: 'obs', 'complete', "
+            raise FittingError("y is not valid. Must be one of the following: 'obs', 'complete', "
                            "numpy.array", "pandas.Series")    
         
         ######## Handle X

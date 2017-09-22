@@ -54,7 +54,7 @@ class EpistasisMixedRegression(BaseModel):
         self.order = order
         self.threshold = threshold
         self.model_type = model_type
-        self.Xbuilt = {}
+        self._Xbuilt = {}
 
         # Initialize the epistasis model
         self.Model = epistasis_model(order=self.order,
@@ -65,6 +65,19 @@ class EpistasisMixedRegression(BaseModel):
             threshold=self.threshold,
             order=1,
             model_type=self.model_type)
+
+    @property
+    def Xbuilt(self):
+        """
+        Keys
+        ----
+        obs : the X matrix built by using the observe genotypes
+        class : the X matrix used to fit the classifier
+        fit : the X matrix used to fit the model
+        complete : the X matrix built by using all possible genotypes
+        predict : the X matrix used last to predict phenotypes from model.
+        """
+        return self._Xbuilt
 
     def add_gpm(self, gpm):
         """ Attach a GenotypePhenotypeMap object to the epistasis model.
@@ -108,12 +121,12 @@ class EpistasisMixedRegression(BaseModel):
                 
         # Make sure X and y strings match
         if type(X) == str and type(y) == str and X != y:
-            raise FitError("Any string passed to X must be the same as any string passed to y. "
+            raise FittingError("Any string passed to X must be the same as any string passed to y. "
                            "For example: X='obs', y='obs'.")
             
         # Else if both are arrays, check that X and y match dimensions.
         elif type(X) != str and type(y) != str and X.shape[1] != y.shape[0]:
-            raise FitError("X dimensions {} and y dimensions {} don't match.".format(X.shape[1], y.shape[0]))
+            raise FittingError("X dimensions {} and y dimensions {} don't match.".format(X.shape[1], y.shape[0]))
             
         ######## Handle y.
         
@@ -125,15 +138,14 @@ class EpistasisMixedRegression(BaseModel):
         # Else, numpy array or dataframe
         elif type(y) != np.array and type(y) != pd.Series:
             
-            raise FitError("y is not valid. Must be one of the following: 'obs', 'complete', "
+            raise FittiungError("y is not valid. Must be one of the following: 'obs', 'complete', "
                            "numpy.array", "pandas.Series")    
-            
             
         ######## Handle X
         
-        # Check if X has already been built, to avoid rebuilding when not necessary.
+        # Check if X has already been built. Avoid rebuilding if not necessary.
         try:
-            
+
             Xclass = self.Xbuilt['class']
             Xfit = self.Xbuilt[X]
             self.Classifier.fit(X=Xclass, y=y)
@@ -155,24 +167,90 @@ class EpistasisMixedRegression(BaseModel):
                 # This model is not meant for high-order Classifier models. 
                 classifier_order = 1
                 sites = epistasis.mapping.mutations_to_sites(classifier_order, self.gpm.mutations)
-                Xclass = get_model_matrix(self.gpm.binary.genotypes, sites, model_type=self.model_type)
-                
-                self.Xbuilt['class'] = Xclass
-
-                # Fit classifier
-                self.Classifier.fit(X=self.Xclass, y=y)
-                
-                # Append epistasis map to coefs
+                # Append an EpistasisMap to the Classifier.
                 self.Classifier.epistasis = epistasis.mapping.EpistasisMap(sites,
                     order=classifier_order, model_type=self.model_type)
+                
+                # Build X matrix for classifier model
+                self.Xclass = get_model_matrix(index, sites, model_type=self.model_type)            
+                
+                # Store X
+                self._Xbuilt['class'] = self.Xclass
 
-
-                # We need to reshape the Classifier's Scikit parameters to be a vector, not column
+                # Fit Classifier model
+                self.Classifier.fit(X=self.Xclass, y=y)
+                
+                # Reshape the Classifier's Scikit parameters to be an array, not column
                 vals = self.Classifier.coef_.reshape((-1,))
                 self.Classifier.epistasis.values = vals
                 
-                # Use the regressed model to predict classes for each phenotype.
-                ypred = self.Classifier.predict(X='obs')
+                # Use the regressed model to predict classes for observed phenotypes phenotype.
+                ypred = self.Classifier.predict(X=self.Xclass)
+                    
+                # --------------------------------------------------------
+                # Part 2: fit nonlinear scale and any epistasis
+                # --------------------------------------------------------
+                
+                # Build X matrix for epistasis model
+                model_order = self.order
+                sites = epistasis.mapping.mutations_to_sites(model_order, self.gpm.mutations)
+                self.Model.epistasis = epistasis.mapping.EpistasisMap(sites,
+                    order=model_order, model_type=self.model_type)    
+                                            
+                # Build X for epistasis model
+                self.Xfit = get_model_matrix(index, sites, model_type=self.model_type)
+                self.Xbuilt[X] = self.Xfit
+                
+                # Ignore phenotypes that are found "dead"
+                y = y[ypred==1]
+                y = y.reset_index(drop=True)
+                self.Xfit = self.Xfit[ypred==1,:]
+                self.Xbuilt["fit"] = X
+                
+                # Fit model
+                out = self.Model.fit(X=self.Xfit, y=y, use_widgets=use_widgets, **kwargs)                
+
+                if use_widgets:
+                    return out
+            
+                # Point the EpistasisMap to the fitted-model coefficients. 
+                self.Model.epistasis.values = self.Model.coef_
+                # RSHAPE ?? self.Model.epistasis.values = self.Model.coef_.reshape((-1,)) 
+
+            elif type(X) == np.ndarray or type(X) == pd.DataFrame:
+
+                if X.shape[0] != len(y):
+                    raise XMatrixException("X dimensions do no match y.")
+            
+                try:                    
+                    # Use the regressed model to predict classes for observed phenotypes phenotype.
+                    ypred = self.Classifier.predict(X=self.Xclass)
+                except:
+                    raise FittingError("This `fit` method cannot accept an array argument for X "
+                                       "until the Classifier fit method is called.")
+                                       
+                if len(ypred) != len(y):
+                    raise FittingError("len(y) is not compatible with the Classifier X matrix.")
+                    
+                # Ignore phenotypes that are found "dead"
+                y = y[ypred==1]
+                y = y.reset_index(drop=True)
+                self.Xfit = self.Xfit[ypred==1,:]
+                self.Xbuilt["fit"] = X
+                
+                # Fit model
+                out = self.Model.fit(X=self.Xfit, y=y, use_widgets=use_widgets, **kwargs)                
+
+                if use_widgets:
+                    return out
+            
+                # Point the EpistasisMap to the fitted-model coefficients. 
+                self.Model.epistasis.values = self.Model.coef_
+                # RSHAPE ?? self.Model.epistasis.values = self.Model.coef_.reshape((-1,)) 
+            
+            else:
+                raise XMatrixException("X is a not a valid datatype.")
+                
                 
                 
         #         
