@@ -142,7 +142,6 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
 
         # Initial parameters guesses
         self.p0 = p0
-        self.Xbuilt = {}
 
     @property
     def thetas(self):
@@ -183,6 +182,15 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         # Part 1: Estimate average, independent mutational effects and fit
         #         nonlinear scale.
         # ----------------------------------------------------------------------
+        # Get pobs for nonlinear fit.
+        if type(y) is str and y in ["obs", "complete"]:            
+            pobs = self.gpm.binary.phenotypes
+        # Else, numpy array or dataframe
+        elif type(y) == np.array and type(y) == pd.Series:
+            pobs = y
+        else:
+            raise FittingError("y is not valid. Must be one of the following: 'obs', 'complete', "
+                           "numpy.array", "pandas.Series")    
 
         # Fit with an additive model
         self.Additive = EpistasisLinearRegression(order=1, model_type=self.model_type)
@@ -192,7 +200,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         self.Additive.fit(X=X, y=y)
         
         # Linearize phenotypes
-        plin = self.Additive.predict(X=X)
+        padd = self.Additive.predict(X=X)
         
         # If true, make a plot of the
         #if plot_fit:
@@ -207,6 +215,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         self.Linear.add_gpm(self.gpm)
         # Call fit one time on nonlinear space to built X matrix
         self.Linear.fit(X=X)
+        print(self.Linear.Xbuilt)
 
         ## Use widgets to guess the value?
         if use_widgets:
@@ -217,7 +226,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
             def fitting(**parameters):
                 """Callable to be controlled by widgets."""
                 # Fit the nonlinear least squares fit
-                self._fit_(plin, y, sample_weight=sample_weight, **parameters)
+                self._fit_(padd, pobs, sample_weight=sample_weight, **parameters)
 
                 # Print score
                 print("R-squared of fit: " + str(self.score(X=X, y=y)))
@@ -236,7 +245,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
 
         # Don't use widgets to fit data
         else:
-            self._fit_(plin, y, sample_weight=sample_weight, **kwargs)
+            self._fit_(padd, pobs, sample_weight=sample_weight, **kwargs)
         return self
 
     def _fit_(self, x, y, sample_weight=None, **kwargs):
@@ -246,6 +255,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         self.p0.update(**kwargs)
         kwargs = self.p0
         guesses = np.ones(self.parameters.n)
+                
         for kw in kwargs:
             index = self.parameters._mapping[kw]
             guesses[index] = kwargs[kw]

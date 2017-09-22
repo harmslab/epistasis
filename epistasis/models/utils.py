@@ -190,6 +190,9 @@ def X_fitter(method):
                 
                 # Run fit.
                 model = method(self, X=x, y=y, *args, **kwargs)
+                                
+                # Store Xmatrix.
+                self.Xbuilt["fit"] = x
                 
                 # Add an epistasis mapping attribute to the model, if (and only if) fit worked.
                 try:

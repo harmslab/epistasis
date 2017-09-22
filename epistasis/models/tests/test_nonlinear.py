@@ -1,100 +1,100 @@
 # Externel imports
+import pytest
+
 import numpy as np
-from nose import tools
-from gpmap.simulate import GenotypePhenotypeSimulation
+from gpmap import GenotypePhenotypeMap
 
 # Module to test
 from ..nonlinear import *
 
-class Toolkit(object):
 
-    def __init__(self):
-        self.gpm = GenotypePhenotypeSimulation.from_length(2)
+@pytest.fixture
+def gpm():
+    """Create a genotype-phenotype map"""
+    wildtype = "000"
+    genotypes =  ["000", "001", "010", "100", "011", "101", "110", "111"]
+    phenotypes = [  0.0,   0.1,   0.5,   0.4,   0.2,   0.8,   0.5,   1.0]
+    return GenotypePhenotypeMap(wildtype, genotypes, phenotypes)
 
-    @staticmethod
-    def function(x, A, B):
-        return A*x + B
 
-    @staticmethod
-    def reverse(y, A, B):
-        return (y - B) / A
+def function(x, A, B):
+    return A*x + B 
 
-def test_EpistasisNonlinearRegression_initialization():
-    toolkit = Toolkit()
-    model = EpistasisNonlinearRegression.read_gpm(toolkit.gpm,
-        function=toolkit.function,
-        reverse=toolkit.reverse,
-        order=2,
-        model_type="local")
-    # Checks
-    check1 = hasattr(model, 'parameters')
-    check2 = hasattr(model, 'function')
-    check3 = hasattr(model, 'reverse')
-    # Tests
-    tools.assert_true(check1)
-    tools.assert_true(check2)
-    tools.assert_true(check3)
+def reverse(y, A, B):
+    return (y - B) / A
 
-def test_EpistasisNonlinearRegression_init_sets_parameter_object():
-    toolkit = Toolkit()
-    model = EpistasisNonlinearRegression.read_gpm(toolkit.gpm,
-        function=toolkit.function,
-        reverse=toolkit.reverse,
-        order=2,
-        model_type="local")
-    parameters = model.parameters
-    # Checks
-    check1 = hasattr(parameters, 'A')
-    check2 = hasattr(parameters, 'B')
-    # Tests
-    tools.assert_true(check1)
-    tools.assert_true(check2)
 
-def test_EpistasisNonlinearRegression_fit_sets_Xfit():
-    toolkit = Toolkit()
-    model = EpistasisNonlinearRegression.read_gpm(toolkit.gpm,
-        function=toolkit.function,
-        reverse=toolkit.reverse,
-        order=2,
-        model_type="local")
-    model.fit(A=1,B=0)
-    # Checks
-    check1 = hasattr(model, 'Xfit')
-    # Tests
-    tools.assert_true(check1)
+class TestEpistasisNonlinearRegression(object):
 
-def test_EpistasisNonlinearRegression_predict():
-    toolkit = Toolkit()
-    model = EpistasisNonlinearRegression.read_gpm(toolkit.gpm,
-        function=toolkit.function,
-        reverse=toolkit.reverse,
-        order=2,
-        model_type="local")
-    model.fit(A=1,B=0)
-    y = model.predict()
-    # Tests
-    np.testing.assert_almost_equal(sorted(y), sorted(model.gpm.phenotypes))
+    order = 3
+    model_type = "local"
+    
+    
+    def test_init(self, gpm):
+        model = EpistasisNonlinearRegression.read_gpm(gpm,
+            function=function,
+            reverse=reverse,
+            order=self.order,
+            model_type=self.model_type)
 
-def test_EpistasisNonlinearRegression_thetas():
-    toolkit = Toolkit()
-    model = EpistasisNonlinearRegression.read_gpm(toolkit.gpm,
-        function=toolkit.function,
-        reverse=toolkit.reverse,
-        order=2,
-        model_type="local")
-    model.fit(A=1,B=0)
-    coefs = model.thetas
-    # Tests
-    tools.assert_equals(len(coefs), 6)
+        # Checks
+        assert hasattr(model, 'parameters') == True
+        assert hasattr(model, 'function') == True
+        assert hasattr(model, 'reverse') == True
+                
+        parameters = model.parameters
+            
+        # Checks
+        assert hasattr(parameters, 'A') == True
+        assert hasattr(parameters, 'B') == True
 
-def test_EpistasisNonlinearRegression_hypothesis():
-    toolkit = Toolkit()
-    model = EpistasisNonlinearRegression.read_gpm(toolkit.gpm,
-        function=toolkit.function,
-        reverse=toolkit.reverse,
-        order=2,
-        model_type="local")
-    model.fit(A=1,B=0)
-    predictions = model.hypothesis()
-    # Tests
-    np.testing.assert_almost_equal(sorted(predictions), sorted(model.gpm.phenotypes))
+    def test_fit(self, gpm):
+
+        model = EpistasisNonlinearRegression.read_gpm(gpm,
+            function=function,
+            reverse=reverse,
+            order=self.order,
+            model_type=self.model_type)
+        
+        model.fit(A=1, B=0)
+        
+        assert hasattr(model.Linear, 'Xbuilt') == True
+        assert "fit" in model.Linear.Xbuilt
+
+    def test_predict(self, gpm):
+        model = EpistasisNonlinearRegression.read_gpm(gpm,
+            function=function,
+            reverse=reverse,
+            order=self.order,
+            model_type=self.model_type)
+        
+        model.fit(A=1, B=0)
+        y = model.predict()
+        
+        # Tests
+        np.testing.assert_almost_equal(sorted(y), sorted(model.gpm.phenotypes))
+    # 
+    # def test_thetas(self, gpm):
+    #     model = EpistasisNonlinearRegression.read_gpm(gpm,
+    #         function=function,
+    #         reverse=reverse,
+    #         order=self.order,
+    #         model_type=self.model_type)
+    #     
+    #     model.fit(A=1,B=0)
+    #     coefs = model.thetas
+    #     # Tests
+    #     assert len(coefs) == 6
+    # 
+    # def test_hypothesis(self, gpm):
+    # 
+    #     model = EpistasisNonlinearRegression.read_gpm(gpm,
+    #         function=function,
+    #         reverse=reverse,
+    #         order=self.order,
+    #         model_type=self.model_type)
+    #     
+    #     model.fit(A=1,B=0)
+    #     predictions = model.hypothesis()
+    #     # Tests
+    #     np.testing.assert_almost_equal(sorted(predictions), sorted(model.gpm.phenotypes))
