@@ -72,6 +72,8 @@ class EpistasisBaseClassifier(BaseModel):
         lnlike : float
             log-likelihood of the data given the model.
         """
+        raise Exception("not working yet.")
+        
         # 1. Class probability given the coefs
         if ymodel is None:
             ydata = self.gpm.phenotypes

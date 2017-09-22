@@ -16,6 +16,8 @@ class BaseModel(object):
     Manages attachment of GenotypePhenotypeMap and EpistasisMaps to the Epistasis
     models.
     """
+    Xbuilt = {}    
+    
     @classmethod
     def read_json(cls, filename, **kwargs):
         """Read genotype-phenotype data from a json file."""

@@ -51,8 +51,8 @@ def X_predictor(method):
         ######## Handle X
         try:
             x = self.Xbuilt[X]
+            self.Xbuilt["predict"] = x
             # Run fit.
-            self.Xpredict = x
             return method(self, X=x, *args, **kwargs)
 
         except (KeyError, TypeError):
@@ -77,8 +77,7 @@ def X_predictor(method):
                 
                 # Store Xmatrix.
                 self.Xbuilt[X] = x
-                self.Xpredict = x
-                
+                self.Xbuilt["predict"] = x
                 # Run fit.
                 prediction = method(self, X=x, *args, **kwargs)
 
@@ -86,7 +85,6 @@ def X_predictor(method):
                                 
                 # Store Xmatrix.
                 self.Xbuilt["predict"] = X
-                self.Xpredict = X
                 prediction = method(self, X=X, *args, **kwargs)
 
             else:
@@ -100,7 +98,7 @@ def X_predictor(method):
 
 def X_fitter(method):
     """Wraps a 'scikit-learn'-like fit method with a function that creates
-    an X matrix for regression. 
+    an X matrix for regression. Also, saves all X matrices in the `Xbuilt` attribute.
     
     X must be:
         
@@ -137,7 +135,7 @@ def X_fitter(method):
             
         # Else if both are arrays, check that X and y match dimensions.
         elif type(X) != str and type(y) != str and X.shape[0] != y.shape[0]:
-            raise FittingError("X dimensions {} and y dimensions {} don't match.".format(X.shape[1], y.shape[0]))
+            raise FittingError("X dimensions {} and y dimensions {} don't match.".format(X.shape[0], y.shape[0]))
             
         ######## Handle y.
         
@@ -157,7 +155,7 @@ def X_fitter(method):
             x = self.Xbuilt[X]
             # Run fit.
             model = method(self, X=x, y=y, *args, **kwargs)
-            self.Xfit = x
+            self.Xbuilt["fit"] = x
                         
         except (KeyError, TypeError):
                 
@@ -206,7 +204,6 @@ def X_fitter(method):
                 
                 # Store Xmatrix.
                 self.Xbuilt["fit"] = X
-                self.Xfit = X
             
             else:
                 raise XMatrixException("X must be one of the following: 'obs', 'complete', "

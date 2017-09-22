@@ -152,7 +152,6 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         """
         return np.concatenate((self.parameters.values, self.Linear.coef_))
 
-    @X_fitter
     def fit(self, X='obs', y='obs', sample_weight=None, use_widgets=False, plot_fit=True, **kwargs):
         """Fit nonlinearity in genotype-phenotype map.
 
@@ -188,12 +187,12 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         # Fit with an additive model
         self.Additive = EpistasisLinearRegression(order=1, model_type=self.model_type)
         self.Additive.add_gpm(self.gpm)
-        self.Additive.Xfit = X[:,:self.Additive.gpm.binary.length+1]
-        self.Additive.Xpredict = self.Additive.Xfit
         
-        self.Additive.fit(y=y)
-        Xadd = self.Additive.Xfit # Use Xfit to get the transformed phenotypes
-        x = self.Additive.predict(X=Xadd)
+        # Fit Additive model
+        self.Additive.fit(X=X, y=y)
+        
+        # Linearize phenotypes
+        plin = self.Additive.predict(X=X)
         
         # If true, make a plot of the
         #if plot_fit:
@@ -206,8 +205,8 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         # Prepare a high-order model
         self.Linear = EpistasisLinearRegression(order=self.order, model_type=self.model_type)
         self.Linear.add_gpm(self.gpm)
-        self.Linear.Xfit = X
-        self.Linear.Xpredict = self.Linear.Xfit
+        # Call fit one time on nonlinear space to built X matrix
+        self.Linear.fit(X=X)
 
         ## Use widgets to guess the value?
         if use_widgets:
@@ -218,7 +217,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
             def fitting(**parameters):
                 """Callable to be controlled by widgets."""
                 # Fit the nonlinear least squares fit
-                self._fit_(x, y, sample_weight=sample_weight, **parameters)
+                self._fit_(plin, y, sample_weight=sample_weight, **parameters)
 
                 # Print score
                 print("R-squared of fit: " + str(self.score(X=X, y=y)))
@@ -227,7 +226,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
                     print(kw + ": " + str(getattr(self.parameters, kw)))
 
                 # Plot the nonlinear fit!
-                ylin = self.Additive.predict(X=self.Additive.Xfit)
+                ylin = self.Additive.predict(X=X)
                 epistasis.plot.corr_resid(ylin, y, figsize=(3,5))
                 plt.show()
 
@@ -237,13 +236,12 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
 
         # Don't use widgets to fit data
         else:
-            self._fit_(x, y, sample_weight=sample_weight, **kwargs)
+            self._fit_(plin, y, sample_weight=sample_weight, **kwargs)
         return self
 
     def _fit_(self, x, y, sample_weight=None, **kwargs):
         """Estimate the scale of multiple mutations in a genotype-phenotype map."""
-
-
+        
         # Set up guesses for parameters
         self.p0.update(**kwargs)
         kwargs = self.p0
@@ -269,7 +267,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
 
         # Construct a linear epistasis model.
         if self.order > 1:
-            Xlin = self.Linear.Xfit
+            Xlin = self.Linear.Xbuilt["fit"]
             ylin = self.reverse(y, *self.parameters.values)
             # Now fit with a linear epistasis model.
             self.Linear.fit(X=Xlin, y=ylin)
@@ -286,14 +284,12 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         plt.show()
         return fig, ax        
 
-    @X_predictor
     def predict(self, X='complete'):
         """Infer phenotypes from model coefficients and nonlinear function."""
         x = self.Linear.predict(X)
         y = self.function(x, *self.parameters.values)
         return y
 
-    @X_fitter
     def score(self, X='obs', y='obs'):
         """Calculates the squared-pearson coefficient for the nonlinear fit.
 
@@ -305,16 +301,18 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
             squared pearson coefficient between linearized phenotypes and linear epistasis model
             described by epistasis.values.
         """
-        xlin = self.Additive.predict(X=self.Additive.Xfit)
+        xlin = self.Additive.predict(X=X)
         ypred = self.function(xlin, *self.parameters.get_params())
         yrev = self.reverse(y, *self.parameters.get_params())
-        return pearson(y, ypred)**2, self.Linear.score(X=self.Linear.Xfit, y=yrev)
+        return pearson(y, ypred)**2, self.Linear.score(X=X, y=yrev)
 
-    @X_predictor
     def hypothesis(self, X='complete', thetas=None):
         """Given a set of parameters, compute a set of phenotypes. Does not predict. This is method
         can be used to test a set of parameters (Useful for bayesian sampling).
         """
+
+        raise Exception("not working right now.")
+
         # ----------------------------------------------------------------------
         # Part 0: Break up thetas
         # ----------------------------------------------------------------------
@@ -353,6 +351,9 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         lnlike : float
             log-likelihood of the data given the model.
         """
+        raise Exception("not working right now.")
+        
+        
         if thetas is None:
             thetas = self.thetas
         if yerr is None:
