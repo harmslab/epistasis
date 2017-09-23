@@ -198,7 +198,7 @@ class EpistasisMap(BaseMap):
     @property
     def values(self):
         """ Get the values of the interaction in the system"""
-        return self._values
+        return pd.Series(self._values, index=self.index)
 
     @property
     def index(self):
@@ -242,13 +242,6 @@ class EpistasisMap(BaseMap):
     def sites(self, sites):
         """ Manually set the interactions considered in the map. Useful for building epistasis models manually. """
         self._sites = pd.Series(sites)
-
-    @values.setter
-    def values(self, values):
-        """ Set the interactions of the system, set by an Epistasis model (see ..models.py)."""
-        if hasattr(self, "_sites") is False:
-            raise AttributeError(self.__name__ + " does not have coef sites set.")
-        self._values = pd.Series(values, index=self.index)
 
     @keys.setter
     def keys(self, keys):

@@ -60,6 +60,9 @@ class BaseModel(object):
             
                 # Map those columns to epistastalis dataframe.
                 self.epistasis = EpistasisMap(columns, order=self.order, model_type=self.model_type)
+                self.coef_ = []
+                self.epistasis._values = self.coef_
+                
                 
             # Use desired set of genotypes for rows in X matrix.        
             if X == "obs":

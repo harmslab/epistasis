@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 from sklearn.preprocessing import binarize
 
 import epistasis.mapping
@@ -132,7 +133,7 @@ class EpistasisMixedRegression(BaseModel):
         if type(y) is str and y in ["obs", "complete"]:            
             pobs = self.gpm.binary.phenotypes
         # Else, numpy array or dataframe
-        elif type(y) == np.array and type(y) == pd.Series:
+        elif type(y) == np.array or type(y) == pd.Series:
             pobs = y
         else:
             raise FittingError("y is not valid. Must be one of the following: 'obs', 'complete', "
@@ -146,15 +147,15 @@ class EpistasisMixedRegression(BaseModel):
         
         # Build an X matrix for the epistasis model.
         x = self.Model.add_X(X="obs")
-
+        
         # Subset the data to only include alive genotypes/phenotypes
-        y_subset = y[ypred==1]
-        y_subset = y.reset_index(drop=True)
+        y_subset = pobs[ypred==1]
+        y_subset = y_subset.reset_index(drop=True)
         x_subset = x[ypred==1,:]        
 
         # Fit model to the alive phenotype supset
-        out = self.Model.fit(X=x_subset, y=y_subset)
-        self.Model.epistasis.values = self.Model.coef_
+        out = self.Model.fit(X=x_subset, y=y_subset, use_widgets=use_widgets, **kwargs)
+        return out
         
         # # Check if X has already been built. Avoid rebuilding if not necessary.
         # try:

@@ -55,14 +55,14 @@ class BaseSimulation(GenotypePhenotypeMap):
             list of floats representing to epistatic coefficients.
         """
         self.set_coefs_sites(sites)
-        self.epistasis.values = values
+        self.epistasis._values = values
         self.build()
 
     @assert_epistasis
     def set_coefs_values(self, values):
         """Set coefficient values.
         """
-        self.epistasis.values = values
+        self.epistasis._values = values
         self.build()
 
     @assert_epistasis
@@ -76,7 +76,7 @@ class BaseSimulation(GenotypePhenotypeMap):
             low and high bounds for coeff values.
         """
         # Add values to epistatic interactions
-        self.epistasis.values = np.random.uniform(coef_range[0], coef_range[1], size=len(self.epistasis.sites))
+        self.epistasis._values = np.random.uniform(coef_range[0], coef_range[1], size=len(self.epistasis.sites))
         self.build()
 
     @classmethod

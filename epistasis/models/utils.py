@@ -148,7 +148,7 @@ def X_fitter(method):
         elif type(y) != np.array and type(y) != pd.Series:
             
             raise FittingError("y is not valid. Must be one of the following: 'obs', 'complete', "
-                           "numpy.array", "pandas.Series")    
+                           "numpy.array, pandas.Series. Right now, its {}".format(type(y)))    
         
         ######## Handle X
         try:
@@ -175,6 +175,10 @@ def X_fitter(method):
                     # Map those columns to epistastalis dataframe.
                     self.epistasis = EpistasisMap(columns, order=self.order, model_type=self.model_type)
                     
+                    # Link coef_ from sklearn to epistasis map
+                    self.coef_ = []
+                    self.epistasis._values = self.coef_
+                    
                 # Use desired set of genotypes for rows in X matrix.        
                 if X == "obs":
                     index = self.gpm.binary.genotypes
@@ -187,7 +191,6 @@ def X_fitter(method):
                 # Store Xmatrix.                
                 # (if the GenotypePhenotypeMap is complete (no missig genotypes), then
                 # the 'obs' X == 'complete' X)
-                self.Xfit = x
                 if len(self.gpm.binary.missing_genotypes) == 0:
                     self.Xbuilt["complete"] = x
                     self.Xbuilt["obs"] = x
@@ -201,11 +204,11 @@ def X_fitter(method):
                 # Store Xmatrix.
                 self.Xbuilt["fit"] = x
                 
-                # Add an epistasis mapping attribute to the model, if (and only if) fit worked.
-                try:
-                    values = np.reshape(self.coef_,(-1,))
-                    self.epistasis.values = values
-                except AttributeError: pass
+                # # Add an epistasis mapping attribute to the model, if (and only if) fit worked.
+                # try:
+                #     values = np.reshape(self.coef_,(-1,))
+                #     self.epistasis.values = values
+                # except AttributeError: pass
             
             elif type(X) == np.ndarray or type(X) == pd.DataFrame: 
                 # Call method with X and y.

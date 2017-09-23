@@ -1,5 +1,6 @@
 import inspect
 import numpy as np
+import pandas as pd
 import json
 from functools import wraps
 from scipy.optimize import curve_fit
@@ -9,7 +10,7 @@ from sklearn.base import BaseEstimator, RegressorMixin
 
 # Import epistasis modules.
 from .base import BaseModel
-from .utils import  X_fitter, X_predictor
+from .utils import  X_fitter, X_predictor, FittingError
 from .linear import EpistasisLinearRegression
 from epistasis.stats import pearson
 # decorators for catching errors
@@ -186,18 +187,19 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         if type(y) is str and y in ["obs", "complete"]:            
             pobs = self.gpm.binary.phenotypes
         # Else, numpy array or dataframe
-        elif type(y) == np.array and type(y) == pd.Series:
+        elif type(y) == np.array or type(y) == pd.Series:
             pobs = y
         else:
             raise FittingError("y is not valid. Must be one of the following: 'obs', 'complete', "
-                           "numpy.array", "pandas.Series")    
+                           "numpy.array, pandas.Series. Right now, its {}".format(type(y)))    
+        
 
         # Fit with an additive model
         self.Additive = EpistasisLinearRegression(order=1, model_type=self.model_type)
         self.Additive.add_gpm(self.gpm)
         
         # Fit Additive model
-        self.Additive.fit(X=X, y=y)
+        self.Additive.fit(X=X, y=pobs)
         
         # Linearize phenotypes
         padd = self.Additive.predict(X=X)
@@ -214,8 +216,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         self.Linear = EpistasisLinearRegression(order=self.order, model_type=self.model_type)
         self.Linear.add_gpm(self.gpm)
         # Call fit one time on nonlinear space to built X matrix
-        self.Linear.fit(X=X)
-        print(self.Linear.Xbuilt)
+        self.Linear.fit(X=X, y=pobs)
 
         ## Use widgets to guess the value?
         if use_widgets:
