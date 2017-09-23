@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from functools import wraps
 from epistasis.model_matrix_ext import get_model_matrix
-import epistasis.mapping
+from epistasis.mapping import EpistasisMap, mutations_to_sites 
 
 import warnings
 # Suppresse the future warnings given by X_fitter function.
@@ -64,7 +64,7 @@ def X_predictor(method):
                                            "a GenotypePhenotypeMap must be attached.")
                 
                 # Build epistasis interactions as columns in X matrix.
-                columns = epistasis.mapping.mutations_to_sites(self.order, self.gpm.mutations)
+                columns = mutations_to_sites(self.order, self.gpm.mutations)
                 
                 # Use desired set of genotypes for rows in X matrix.        
                 if X == "obs":
@@ -165,9 +165,16 @@ def X_fitter(method):
                     raise XMatrixException("To build 'obs' or 'complete' X matrix, "
                                            "a GenotypePhenotypeMap must be attached.")
                 
-                # Build epistasis interactions as columns in X matrix.
-                columns = epistasis.mapping.mutations_to_sites(self.order, self.gpm.mutations)
+                # Create a list of epistatic interaction for this model.
+                if hasattr(self, "epistasis"):
+                    columns = self.epistasis.sites
+                else:
+                    # Build epistasis interactions as columns in X matrix.
+                    columns = mutations_to_sites(self.order, self.gpm.mutations)
                 
+                    # Map those columns to epistastalis dataframe.
+                    self.epistasis = EpistasisMap(columns, order=self.order, model_type=self.model_type)
+                    
                 # Use desired set of genotypes for rows in X matrix.        
                 if X == "obs":
                     index = self.gpm.binary.genotypes
@@ -197,7 +204,6 @@ def X_fitter(method):
                 # Add an epistasis mapping attribute to the model, if (and only if) fit worked.
                 try:
                     values = np.reshape(self.coef_,(-1,))
-                    self.epistasis = epistasis.mapping.EpistasisMap(columns, order=self.order, model_type=self.model_type)
                     self.epistasis.values = values
                 except AttributeError: pass
             

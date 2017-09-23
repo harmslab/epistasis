@@ -5,7 +5,7 @@ and functionality of the GenotypePhenotypeMap object.
 import os, json
 import pytest
 from gpmap import GenotypePhenotypeMap
-from ..base import BaseModel
+from ..base import BaseModel, XMatrixException
 
 @pytest.fixture
 def gpm():
@@ -16,6 +16,23 @@ def gpm():
     return GenotypePhenotypeMap(wildtype, genotypes, phenotypes)
 
 class TestBaseModel():
+    
+    def test_add_X(self, gpm):
+        model = BaseModel()
+        
+        # Check that calling add_X before a gpm is attaches raises an error
+        with pytest.raises(XMatrixException):
+            model.add_X(X="obs")
+            
+        # Check that add_X works with each type of X
+        model.add_gpm(gpm)
+        model.order = 3 
+        model.model_type = "local"
+        model.add_X(X="obs")
+        
+        assert "obs" in model.Xbuilt
+        assert model.Xbuilt["obs"].shape == (8,8)
+            
     
     def test_read_gpm(self, gpm):
         model = BaseModel.read_gpm(gpm)

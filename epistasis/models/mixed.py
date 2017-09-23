@@ -54,7 +54,6 @@ class EpistasisMixedRegression(BaseModel):
         self.order = order
         self.threshold = threshold
         self.model_type = model_type
-        self._Xbuilt = {}
 
         ### Initialize the epistasis model
         self.Model = epistasis_model(order=self.order,
@@ -68,19 +67,6 @@ class EpistasisMixedRegression(BaseModel):
             threshold=self.threshold,
             order=classifier_order,
             model_type=self.model_type)
-
-    @property
-    def Xbuilt(self):
-        """
-        Keys
-        ----
-        obs : the X matrix built by using the observe genotypes
-        class : the X matrix used to fit the classifier
-        fit : the X matrix used to fit the model
-        complete : the X matrix built by using all possible genotypes
-        predict : the X matrix used last to predict phenotypes from model.
-        """
-        return self._Xbuilt
 
     def add_gpm(self, gpm):
         """ Attach a GenotypePhenotypeMap object to the epistasis model.
@@ -126,7 +112,6 @@ class EpistasisMixedRegression(BaseModel):
         Keyword Arguments
         -----------------
         Keyword arguments are read as parameters to the nonlinear scale fit.
-
         """
         ######## Sanity checks on input.
         if hasattr(self, "gpm") is False:
@@ -143,79 +128,94 @@ class EpistasisMixedRegression(BaseModel):
             
         ######## Handle y.
         
-        # Check if string.
+        # Get pobs for nonlinear fit.
         if type(y) is str and y in ["obs", "complete"]:            
-
-            y = self.gpm.binary.phenotypes
-
+            pobs = self.gpm.binary.phenotypes
         # Else, numpy array or dataframe
-        elif type(y) != np.array and type(y) != pd.Series:
-            
-            raise FittiungError("y is not valid. Must be one of the following: 'obs', 'complete', "
+        elif type(y) == np.array and type(y) == pd.Series:
+            pobs = y
+        else:
+            raise FittingError("y is not valid. Must be one of the following: 'obs', 'complete', "
                            "numpy.array", "pandas.Series")    
             
         ######## Handle X
+        self.Classifier.fit(X=X, y=y)
+    
+        # Use model to infer dead phenotypes
+        ypred = self.Classifier.predict(X="fit")
         
-        # Check if X has already been built. Avoid rebuilding if not necessary.
-        try:
+        # Build an X matrix for the epistasis model.
+        x = self.Model.add_X(X="obs")
 
-            Xclass = self.Xbuilt['class']
-            Xfit = self.Xbuilt[X]
-            self.Classifier.fit(X=Xclass, y=y)
+        # Subset the data to only include alive genotypes/phenotypes
+        y_subset = y[ypred==1]
+        y_subset = y.reset_index(drop=True)
+        x_subset = x[ypred==1,:]        
 
-        except (KeyError, TypeError):                        
-            
-            # If X is a string.
-            if type(X) == str:
-                
-                # Get rows for X matrix
-                if X == "obs":
-                    index = self.gpm.binary.genotypes
-                elif X == "complete":
-                    index = self.gpm.binary.complete_genotypes
-                else:
-                    raise XMatrixException("X string argument is not valid.")
-
-                # Fit Classifier model
-                self.Classifier.fit(X=X, y=y)
-                                
-                # Store X from classifier
-                self._Xbuilt['class'] = self.Classifier.Xfit
-                self.Xclass = self.Classifier.Xfit
-                            
-                # Use the regressed model to predict classes for observed phenotypes phenotype.
-                ypred = self.Classifier.predict(X=self.Xclass)
-                    
-                # --------------------------------------------------------
-                # Part 2: fit nonlinear scale and any epistasis
-                # --------------------------------------------------------
-
-                # Build epistasis interactions as columns in X matrix.
-                columns = epistasis.mapping.mutations_to_sites(self.order, self.gpm.mutations)
-                # Build numpy array
-                x = get_model_matrix(index, columns, model_type=self.model_type)
-                self.Xfit = x
-
-                # Ignore phenotypes that are found "dead"
-                y = y[ypred==1]
-                y = y.reset_index(drop=True)
-                X = self.Xfit[ypred==1,:]
-                self.Xbuilt["fit"] = X
-                
-                # Fit model
-                out = self.Model.fit(X=X, y=y, use_widgets=use_widgets, **kwargs)                
-
-                if use_widgets:
-                    return out
-            
-                # Point the EpistasisMap to the fitted-model coefficients. 
-                self.Model.epistasis.values = self.Model.coef_
-                # RSHAPE ?? self.Model.epistasis.values = self.Model.coef_.reshape((-1,)) 
-            
-            else:
-                raise XMatrixException("X is a not a valid datatype.")
-                
-            
+        # Fit model to the alive phenotype supset
+        out = self.Model.fit(X=x_subset, y=y_subset)
+        self.Model.epistasis.values = self.Model.coef_
+        
+        # # Check if X has already been built. Avoid rebuilding if not necessary.
+        # try:
+        # 
+        #     Xclass = self.Xbuilt['class']
+        #     Xfit = self.Xbuilt[X]
+        #     self.Classifier.fit(X=Xclass, y=y)
+        # 
+        # except (KeyError, TypeError):                        
+        #     
+        #     # If X is a string.
+        #     if type(X) == str:
+        #         
+        #         # Get rows for X matrix
+        #         if X == "obs":
+        #             index = self.gpm.binary.genotypes
+        #         elif X == "complete":
+        #             index = self.gpm.binary.complete_genotypes
+        #         else:
+        #             raise XMatrixException("X string argument is not valid.")
+        # 
+        #         # Fit Classifier model
+        #         self.Classifier.fit(X=X, y=y)
+        #                         
+        #         # Store X from classifier
+        #         self._Xbuilt['class'] = self.Classifier.Xfit
+        #         self.Xclass = self.Classifier.Xfit
+        #                     
+        #         # Use the regressed model to predict classes for observed phenotypes phenotype.
+        #         ypred = self.Classifier.predict(X=self.Xclass)
+        #             
+        #         # --------------------------------------------------------
+        #         # Part 2: fit nonlinear scale and any epistasis
+        #         # --------------------------------------------------------
+        # 
+        #         # Build epistasis interactions as columns in X matrix.
+        #         columns = epistasis.mapping.mutations_to_sites(self.order, self.gpm.mutations)
+        #         # Build numpy array
+        #         x = get_model_matrix(index, columns, model_type=self.model_type)
+        #         self.Xfit = x
+        # 
+        #         # Ignore phenotypes that are found "dead"
+        #         y = y[ypred==1]
+        #         y = y.reset_index(drop=True)
+        #         X = self.Xfit[ypred==1,:]
+        #         self.Xbuilt["fit"] = X
+        #         
+        #         # Fit model
+        #         out = self.Model.fit(X=X, y=y, use_widgets=use_widgets, **kwargs)                
+        # 
+        #         if use_widgets:
+        #             return out
+        #     
+        #         # Point the EpistasisMap to the fitted-model coefficients. 
+        #         self.Model.epistasis.values = self.Model.coef_
+        #         # RSHAPE ?? self.Model.epistasis.values = self.Model.coef_.reshape((-1,)) 
+        #     
+        #     else:
+        #         raise XMatrixException("X is a not a valid datatype.")
+        #         
+        #     
         #         
         #         
         #         

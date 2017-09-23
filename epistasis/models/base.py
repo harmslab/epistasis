@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 from functools import wraps
 from sklearn.preprocessing import binarize
 
@@ -6,9 +7,10 @@ from sklearn.preprocessing import binarize
 from gpmap.gpm import GenotypePhenotypeMap
 
 # Local imports
-from epistasis.mapping import EpistasisMap
+from epistasis.mapping import EpistasisMap, mutations_to_sites 
 from epistasis.model_matrix_ext import get_model_matrix
 from epistasis.utils import extract_mutations_from_genotypes
+from .utils import XMatrixException
 
 class BaseModel(object):
     """Base class for all models.
@@ -18,6 +20,77 @@ class BaseModel(object):
     """
     Xbuilt = {}    
     
+    def add_X(self,X="complete", key=None):
+        """Add X to Xbuilt
+        
+        X must be:
+            
+            - 'obs' : Uses `gpm.binary.genotypes` to construct X. If genotypes are missing
+                they will not be included in fit. At the end of fitting, an epistasis map attribute
+                is attached to the model class.
+            - 'complete' : Uses `gpm.binary.complete_genotypes` to construct X. All genotypes
+                missing from the data are included. Warning, will break in most fitting methods.
+                At the end of fitting, an epistasis map attribute is attached to the model class.
+            - 'fit' : a previously defined array/dataframe matrix. Prevents copying for efficiency.
+
+        Parameters
+        ----------
+        X : 
+            see above for details.
+        key : str
+            name for storing the matrix.
+            
+        Returns
+        -------
+        X_builts : numpy.ndarray
+            newly built 2d array matrix 
+        """
+        if type(X) is str and X in ['obs', 'complete']:
+            
+            if hasattr(self, "gpm") == False:
+                raise XMatrixException("To build 'obs' or 'complete' X matrix, "
+                                       "a GenotypePhenotypeMap must be attached.")
+            
+            # Create a list of epistatic interaction for this model.
+            if hasattr(self, "epistasis"):
+                columns = self.epistasis.sites
+            else:
+                # Build epistasis interactions as columns in X matrix.
+                columns = mutations_to_sites(self.order, self.gpm.mutations)
+            
+                # Map those columns to epistastalis dataframe.
+                self.epistasis = EpistasisMap(columns, order=self.order, model_type=self.model_type)
+                
+            # Use desired set of genotypes for rows in X matrix.        
+            if X == "obs":
+                index = self.gpm.binary.genotypes
+            else:
+                index = self.gpm.binary.complete_genotypes
+            
+            # Build numpy array
+            x = get_model_matrix(index, columns, model_type=self.model_type)
+
+            # Set matrix with given key.
+            if key is None:
+                key = X
+            
+            self.Xbuilt[key] = x
+            
+        elif type(X) == np.ndarray or type(X) == pd.DataFrame: 
+            # Set key
+            if key is None:
+                raise Exception("A key must be given to store.")            
+                            
+            # Store Xmatrix.
+            self.Xbuilt[key] = X
+
+        else:
+            raise XMatrixException("X must be one of the following: 'obs', 'complete', "
+                                   "numpy.ndarray, or pandas.DataFrame.")
+            
+        X_built = self.Xbuilt[key]        
+        return X_built
+
     @classmethod
     def read_json(cls, filename, **kwargs):
         """Read genotype-phenotype data from a json file."""
