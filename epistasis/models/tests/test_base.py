@@ -6,6 +6,7 @@ import os, json
 import pytest
 from gpmap import GenotypePhenotypeMap
 from ..base import BaseModel, XMatrixException
+from ...mapping import EpistasisMap
 
 @pytest.fixture
 def gpm():
@@ -16,6 +17,22 @@ def gpm():
     return GenotypePhenotypeMap(wildtype, genotypes, phenotypes)
 
 class TestBaseModel():
+    
+    def test_add_gpm(self, gpm):
+        model = BaseModel()
+        model.add_gpm(gpm)
+        
+        assert hasattr(model, "gpm")
+    
+    def test_add_epistasis(self, gpm):
+        model = BaseModel()
+        model.order = 2
+        model.model_type = "local"
+        model.add_gpm(gpm)
+        model.add_epistasis()
+        
+        assert hasattr(model, "epistasis")
+        assert type(model.epistasis) == EpistasisMap
     
     def test_add_X(self, gpm):
         model = BaseModel()
@@ -32,12 +49,7 @@ class TestBaseModel():
         
         assert "obs" in model.Xbuilt
         assert model.Xbuilt["obs"].shape == (8,8)
-            
     
-    def test_read_gpm(self, gpm):
-        model = BaseModel.read_gpm(gpm)
-        assert hasattr(model, "gpm") == True
-
     def test_fit(self, gpm):
         model = BaseModel()
         with pytest.raises(Exception):
@@ -47,3 +59,17 @@ class TestBaseModel():
         model = BaseModel()
         with pytest.raises(Exception):
             model.predict()
+
+    def test_hypothesis(self, gpm):
+        model = BaseModel()
+        with pytest.raises(Exception):
+            model.hypothesis()
+
+    def test_lnlikelihood(self, gpm):
+        model = BaseModel()
+        with pytest.raises(Exception):
+            model.lnlikelihood()
+
+    def test_read_gpm(self, gpm):
+        model = BaseModel.read_gpm(gpm)
+        assert hasattr(model, "gpm") == True

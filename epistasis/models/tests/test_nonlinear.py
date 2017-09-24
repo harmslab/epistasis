@@ -29,7 +29,6 @@ class TestEpistasisNonlinearRegression(object):
     order = 3
     model_type = "local"
     
-    
     def test_init(self, gpm):
         model = EpistasisNonlinearRegression.read_gpm(gpm,
             function=function,

@@ -33,10 +33,6 @@ class EpistasisLinearRegression(_LinearRegression, _BaseModel):
         self.set_params(model_type=model_type, order=order)
         self.Xbuilt = {}
 
-    @property
-    def thetas(self):
-        return self.coef_
-
     @X_fitter
     def fit(self, X='obs', y='obs', sample_weight=None, **kwargs):
         # If a threshold exists in the data, pre-classify genotypes
@@ -50,6 +46,10 @@ class EpistasisLinearRegression(_LinearRegression, _BaseModel):
     def score(self, X='obs', y='obs'):
         return super(self.__class__, self).score(X, y)
 
+    @property
+    def thetas(self):
+        return self.coef_
+
     @X_predictor
     def hypothesis(self, X='complete', thetas=None):
         """Given a set of parameters, compute a set of phenotypes. This is method
@@ -57,14 +57,15 @@ class EpistasisLinearRegression(_LinearRegression, _BaseModel):
         """
         return _np.dot(X, thetas)
 
-    def lnlikelihood(self, X="obs", ydata="obs", yerr="obs", thetas=None):
+    @X_fitter
+    def lnlikelihood(self, X="obs", y="obs", yerr="obs", thetas=None):
         """Calculate the log likelihood of data, given a set of model coefficients.
 
         Parameters
         ----------
         X : 2d array
             model matrix
-        ydata : array
+        y : array
             data to calculate the likelihood
         yerr: array
             uncertainty in data
@@ -76,14 +77,11 @@ class EpistasisLinearRegression(_LinearRegression, _BaseModel):
         lnlike : float
             log-likelihood of the data given the model.
         """
-        raise Exception("Not working currently")
+        raise Exception("not working right now.")
+
         if thetas is None:
             thetas = self.thetas
-        if ydata is None:
-            ydata = self.gpm.phenotypes
-            yerr = self.gpm.std.upper
-        if X is None:
-            X = self.Xbuilt[X]
+
         ymodel = self.hypothesis(X=X, thetas=thetas)
         inv_sigma2 = 1.0/(yerr**2)
-        return -0.5*(_np.sum((ydata-ymodel)**2*inv_sigma2 - _np.log(inv_sigma2)))
+        return -0.5*(_np.sum((y-ymodel)**2*inv_sigma2 - _np.log(inv_sigma2)))

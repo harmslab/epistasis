@@ -124,8 +124,8 @@ class EpistasisMixedRegression(BaseModel):
                            "For example: X='obs', y='obs'.")
             
         # Else if both are arrays, check that X and y match dimensions.
-        elif type(X) != str and type(y) != str and X.shape[1] != y.shape[0]:
-            raise FittingError("X dimensions {} and y dimensions {} don't match.".format(X.shape[1], y.shape[0]))
+        elif type(X) != str and type(y) != str and X.shape[0] != y.shape[0]:
+            raise FittingError("X dimensions {} and y dimensions {} don't match.".format(X.shape[0], y.shape[0]))
             
         ######## Handle y.
         
@@ -156,167 +156,7 @@ class EpistasisMixedRegression(BaseModel):
         # Fit model to the alive phenotype supset
         out = self.Model.fit(X=x_subset, y=y_subset, use_widgets=use_widgets, **kwargs)
         
-        return out
-        
-        # # Check if X has already been built. Avoid rebuilding if not necessary.
-        # try:
-        # 
-        #     Xclass = self.Xbuilt['class']
-        #     Xfit = self.Xbuilt[X]
-        #     self.Classifier.fit(X=Xclass, y=y)
-        # 
-        # except (KeyError, TypeError):                        
-        #     
-        #     # If X is a string.
-        #     if type(X) == str:
-        #         
-        #         # Get rows for X matrix
-        #         if X == "obs":
-        #             index = self.gpm.binary.genotypes
-        #         elif X == "complete":
-        #             index = self.gpm.binary.complete_genotypes
-        #         else:
-        #             raise XMatrixException("X string argument is not valid.")
-        # 
-        #         # Fit Classifier model
-        #         self.Classifier.fit(X=X, y=y)
-        #                         
-        #         # Store X from classifier
-        #         self._Xbuilt['class'] = self.Classifier.Xfit
-        #         self.Xclass = self.Classifier.Xfit
-        #                     
-        #         # Use the regressed model to predict classes for observed phenotypes phenotype.
-        #         ypred = self.Classifier.predict(X=self.Xclass)
-        #             
-        #         # --------------------------------------------------------
-        #         # Part 2: fit nonlinear scale and any epistasis
-        #         # --------------------------------------------------------
-        # 
-        #         # Build epistasis interactions as columns in X matrix.
-        #         columns = epistasis.mapping.mutations_to_sites(self.order, self.gpm.mutations)
-        #         # Build numpy array
-        #         x = get_model_matrix(index, columns, model_type=self.model_type)
-        #         self.Xfit = x
-        # 
-        #         # Ignore phenotypes that are found "dead"
-        #         y = y[ypred==1]
-        #         y = y.reset_index(drop=True)
-        #         X = self.Xfit[ypred==1,:]
-        #         self.Xbuilt["fit"] = X
-        #         
-        #         # Fit model
-        #         out = self.Model.fit(X=X, y=y, use_widgets=use_widgets, **kwargs)                
-        # 
-        #         if use_widgets:
-        #             return out
-        #     
-        #         # Point the EpistasisMap to the fitted-model coefficients. 
-        #         self.Model.epistasis.values = self.Model.coef_
-        #         # RSHAPE ?? self.Model.epistasis.values = self.Model.coef_.reshape((-1,)) 
-        #     
-        #     else:
-        #         raise XMatrixException("X is a not a valid datatype.")
-        #         
-        #     
-        #         
-        #         
-        #         
-        #         # --------------------------------------------------------
-        #         # Part 2: fit epistasis
-        #         # --------------------------------------------------------
-        #         # Build X matrix for epistasis model
-        #         order = self.order
-        #         sites = epistasis.mapping.mutations_to_sites(order, self.gpm.mutations)
-        #         self.Xfit = get_model_matrix(self.gpm.binary.genotypes, sites, model_type=self.model_type)
-        # 
-        #         # Ignore phenotypes that are found "dead"
-        #         y = y[ypred==1]
-        #         y = y.reset_index(drop=True)
-        #         X = self.Xfit[ypred==1,:]
-        # 
-        #         # Fit model
-        #         out = self.Model.fit(X=X, y=y, use_widgets=use_widgets, **kwargs)
-        # 
-        #         if use_widgets:
-        #             return out
-        # 
-        #         # Append epistasis map to coefs
-        #         self.Model.epistasis = epistasis.mapping.EpistasisMap(sites,
-        #             order=order, model_type=self.model_type)
-        #         self.Model.epistasis.values = self.Model.coef_.reshape((-1,))
-        # 
-        #         
-        #     elif type(X) == np.ndarray or type(X) == pd.DataFrame:
-        #         
-        #         ## 
-        #         pass
-        #     
-        #     
-        #     else:
-        #         raise XMatrixException("X is a not a valid datatype.")
-        # 
-        # if X is None:
-        #     # --------------------------------------------------------
-        #     # Part 1: classify
-        #     # --------------------------------------------------------
-        #     # Build X matrix for classifier
-        #     order = 1
-        #     sites = epistasis.mapping.mutations_to_sites(order, self.gpm.mutations)
-        #     self.Xclass = get_model_matrix(self.gpm.binary.genotypes, sites, model_type=self.model_type)
-        # 
-        #     # Fit classifier
-        #     self.Classifier.fit(X=self.Xclass, y=y)
-        # 
-        #     # Append epistasis map to coefs
-        #     self.Classifier.epistasis = epistasis.mapping.EpistasisMap(sites,
-        #         order=order, model_type=self.model_type)
-        #         
-        #     self.Classifier.epistasis.values = self.Classifier.coef_.reshape((-1,))
-        #     ypred = self.Classifier.predict(X=self.Xclass)
-        # 
-        #     # --------------------------------------------------------
-        #     # Part 2: fit epistasis
-        #     # --------------------------------------------------------
-        #     # Build X matrix for epistasis model
-        #     order = self.order
-        #     sites = epistasis.mapping.mutations_to_sites(order, self.gpm.mutations)
-        #     self.Xfit = get_model_matrix(self.gpm.binary.genotypes, sites, model_type=self.model_type)
-        # 
-        #     # Ignore phenotypes that are found "dead"
-        #     y = y[ypred==1]
-        #     y = y.reset_index(drop=True)
-        #     X = self.Xfit[ypred==1,:]
-        # 
-        #     # Fit model
-        #     out = self.Model.fit(X=X, y=y, use_widgets=use_widgets, **kwargs)
-        # 
-        #     if use_widgets:
-        #         return out
-        # 
-        #     # Append epistasis map to coefs
-        #     self.Model.epistasis = epistasis.mapping.EpistasisMap(sites,
-        #         order=order, model_type=self.model_type)
-        #     self.Model.epistasis.values = self.Model.coef_.reshape((-1,))
-        # 
-        # else:
-        #     # --------------------------------------------------------
-        #     # Part 1: classify
-        #     # --------------------------------------------------------
-        #     self.Classifier.fit()
-        #     ypred = self.Classifier.predict(X=self.Classifier.Xfit)
-        # 
-        #     # Ignore phenotypes that are found "dead"
-        #     y = y[ypred==1]
-        #     y = y.reset_index(drop=True)
-        #     X = X[ypred==1,:]
-        # 
-        #     # --------------------------------------------------------
-        #     # Part 2: fit epistasis
-        #     # --------------------------------------------------------
-        #     self.Model.fit(X=X, y=y, **kwargs)
-        # 
-        # return self
-
+        return out        
 
     def plot_fit(self):
         """Plots the observed phenotypes against the additive model phenotypes"""        
@@ -327,8 +167,7 @@ class EpistasisMixedRegression(BaseModel):
         plt.show()
         return fig, ax    
 
-
-    def predict(self, X=None):
+    def predict(self, X="complete"):
         """Predict phenotypes given a model matrix. Constructs the predictions in
         two steps. 1. Use X to predict quantitative phenotypes. 2. Predict phenotypes
         classes using the Classifier. Xfit for the classifier is truncated to the
@@ -341,25 +180,17 @@ class EpistasisMixedRegression(BaseModel):
         ypred : array
             Predicted phenotypes.
         """
-        if X is None:
-            # 1. Predict quantitative phenotype
-            ypred = self.Model.predict()
-            # 2. Determine class (Dead/alive) for each phenotype
-            yclasses = self.Classifier.predict()
-            # Update ypred with dead phenotype information
-            ypred[yclasses==0] = 0
-        else:
-            # 1. Predict quantitative phenotype
-            ypred = self.Model.predict(X=X)
-            # 2. Determine class (Dead/alive) for each phenotype
-            nterms = self.Classifier.Xfit.shape[-1]
-            Xclass = X[:,:nterms]
-            yclasses = self.Classifier.predict(X=Xclass)
-            # Update ypred with dead phenotype information
-            ypred[yclasses==0] = 0
-
+        # Predict the phenotypes from the epistasis model first.
+        ypred = self.Model.predict(X=X)
+        
+        # Then predict the classes.
+        yclasses = self.Classifier.predict(X=X)
+        
+        # Set any 0-class phenotypes to a value of 0
+        ypred[yclasses==0] = 0
+        
         return ypred
-
+        
     def hypothesis(self, X=None, thetas=None):
         """Return a model's output with the given model matrix X and coefs."""
         # Use thetas to predict the probability of 1-class for each phenotype.
