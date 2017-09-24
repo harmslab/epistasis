@@ -143,6 +143,10 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
 
         # Initial parameters guesses
         self.p0 = p0
+        
+        # Set up additive and high-order linear model
+        self.Additive = EpistasisLinearRegression(order=1, model_type=self.model_type)
+        self.Linear = EpistasisLinearRegression(order=self.order, model_type=self.model_type)
 
     @property
     def thetas(self):
@@ -177,7 +181,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         """
         if hasattr(self, 'gpm') is False:
             raise Exception("This model will not work if a genotype-phenotype "
-                "map is not attached to the model class. Use the `attach_gpm` method")
+                "map is not attached to the model class. Use the `add_gpm` method")
 
         # ----------------------------------------------------------------------
         # Part 1: Estimate average, independent mutational effects and fit
@@ -193,16 +197,22 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
             raise FittingError("y is not valid. Must be one of the following: 'obs', 'complete', "
                            "numpy.array, pandas.Series. Right now, its {}".format(type(y)))    
         
-
         # Fit with an additive model
-        self.Additive = EpistasisLinearRegression(order=1, model_type=self.model_type)
         self.Additive.add_gpm(self.gpm)
+        self.Additive.add_epistasis()
+        
+        # Use a first order matrix only.
+        if type(X) == np.ndarray or type(X) == pd.DataFrame:
+            Xadd = X[:,:self.Additive.epistasis.n]
+        else:
+            Xadd = X
         
         # Fit Additive model
-        self.Additive.fit(X=X, y=pobs)
+        self.Additive.fit(X=Xadd, y=pobs)
+        self.Additive.epistasis.values = self.Additive.coef_
         
         # Linearize phenotypes
-        padd = self.Additive.predict(X=X)
+        padd = self.Additive.predict(X=Xadd)
         
         # If true, make a plot of the
         #if plot_fit:
@@ -213,10 +223,11 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         # ----------------------------------------------------------------------
         
         # Prepare a high-order model
-        self.Linear = EpistasisLinearRegression(order=self.order, model_type=self.model_type)
         self.Linear.add_gpm(self.gpm)
+        self.Linear.add_epistasis()
+
         # Call fit one time on nonlinear space to built X matrix
-        self.Linear.fit(X=X, y=pobs)
+        self.Linear.add_X(X=X, key="fit")
 
         ## Use widgets to guess the value?
         if use_widgets:
@@ -230,13 +241,13 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
                 self._fit_(padd, pobs, sample_weight=sample_weight, **parameters)
 
                 # Print score
-                print("R-squared of fit: " + str(self.score(X=X, y=y)))
+                #print("R-squared of fit: " + str(self.score(X=Xadd, y=padd)))
                 # Print parameters
                 for kw in self.parameters._mapping:
                     print(kw + ": " + str(getattr(self.parameters, kw)))
 
                 # Plot the nonlinear fit!
-                ylin = self.Additive.predict(X=X)
+                ylin = self.Additive.predict(X=Xadd)
                 epistasis.plot.corr_resid(ylin, y, figsize=(3,5))
                 plt.show()
 
@@ -284,7 +295,8 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
             self.Linear.fit(X=Xlin, y=ylin)
         else:
             self.Linear = self.Additive
-        self.coef_ = self.Linear.coef_
+        # Map to epistasis.
+        self.Linear.epistasis.values = self.Linear.coef_
 
     def plot_fit(self):
         """Plots the observed phenotypes against the additive model phenotypes"""

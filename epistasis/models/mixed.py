@@ -145,16 +145,17 @@ class EpistasisMixedRegression(BaseModel):
         # Use model to infer dead phenotypes
         ypred = self.Classifier.predict(X="fit")
         
-        # Build an X matrix for the epistasis model.
+        # Build an X matrix for the Epistasis model.
         x = self.Model.add_X(X="obs")
         
-        # Subset the data to only include alive genotypes/phenotypes
+        # Subset the data (and x matrix) to only include alive genotypes/phenotypes
         y_subset = pobs[ypred==1]
         y_subset = y_subset.reset_index(drop=True)
-        x_subset = x[ypred==1,:]        
+        x_subset = x[ypred==1,:]     
 
         # Fit model to the alive phenotype supset
         out = self.Model.fit(X=x_subset, y=y_subset, use_widgets=use_widgets, **kwargs)
+        
         return out
         
         # # Check if X has already been built. Avoid rebuilding if not necessary.

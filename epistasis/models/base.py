@@ -20,6 +20,15 @@ class BaseModel(object):
     """
     Xbuilt = {}    
     
+    def add_epistasis(self):
+        """Add an EpistasisMap to model.
+        """
+        # Build epistasis interactions as columns in X matrix.
+        sites = mutations_to_sites(self.order, self.gpm.mutations)
+    
+        # Map those columns to epistastalis dataframe.
+        self.epistasis = EpistasisMap(sites, order=self.order, model_type=self.model_type)
+    
     def add_X(self,X="complete", key=None):
         """Add X to Xbuilt
         
@@ -50,19 +59,13 @@ class BaseModel(object):
             if hasattr(self, "gpm") == False:
                 raise XMatrixException("To build 'obs' or 'complete' X matrix, "
                                        "a GenotypePhenotypeMap must be attached.")
-            
+                
             # Create a list of epistatic interaction for this model.
             if hasattr(self, "epistasis"):
                 columns = self.epistasis.sites
             else:
-                # Build epistasis interactions as columns in X matrix.
-                columns = mutations_to_sites(self.order, self.gpm.mutations)
-            
-                # Map those columns to epistastalis dataframe.
-                self.epistasis = EpistasisMap(columns, order=self.order, model_type=self.model_type)
-                self.coef_ = []
-                self.epistasis._values = self.coef_
-                
+                self.add_epistasis()
+                columns = self.epistasis.sites
                 
             # Use desired set of genotypes for rows in X matrix.        
             if X == "obs":

@@ -74,7 +74,10 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
         )
         # Initial parameters guesses
         self.p0 = p0
-        self.Xbuilt = {}
+        
+        # Set up additive and high-order linear model
+        self.Additive = EpistasisLinearRegression(order=1, model_type=self.model_type)
+        self.Linear = EpistasisLinearRegression(order=self.order, model_type=self.model_type)
 
     def function(self, x, lmbda, A, B):
         """Power transformation function. Exposed to the user for transforming
@@ -167,9 +170,11 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
 
         # Construct a linear epistasis model.
         if self.order > 1:
-            linearized_y = self.reverse(y, *self.parameters.values)
+            Xlin = self.Linear.Xbuilt["fit"]
+            ylin = self.reverse(y, *self.parameters.values)
             # Now fit with a linear epistasis model.
-            self.Linear.fit(X=self.Linear.Xfit, y=linearized_y)
+            self.Linear.fit(X=Xlin, y=ylin)
         else:
             self.Linear = self.Additive
-        self.coef_ = self.Linear.coef_
+        # Map to epistasis.
+        self.Linear.epistasis.values = self.Linear.coef_

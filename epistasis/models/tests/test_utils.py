@@ -1,7 +1,9 @@
 from gpmap.simulate import GenotypePhenotypeSimulation
 from ..utils import *
 
-class MockModel(object):
+from ..base import BaseModel
+
+class MockModel(BaseModel):
 
     def __init__(self):
         self.gpm = GenotypePhenotypeSimulation.from_length(2)
@@ -17,7 +19,7 @@ class MockModel(object):
     @X_predictor
     def predict(self, X='complete', y='complete'):
         return None
-
+            
 def test_X_fitter():
     model = MockModel()
     model.fit()

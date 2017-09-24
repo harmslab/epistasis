@@ -198,8 +198,8 @@ class EpistasisMap(BaseMap):
     @property
     def values(self):
         """ Get the values of the interaction in the system"""
-        return pd.Series(self._values, index=self.index)
-
+        return self._values
+    
     @property
     def index(self):
         """ Get the interaction index in interaction matrix. """
@@ -242,6 +242,11 @@ class EpistasisMap(BaseMap):
     def sites(self, sites):
         """ Manually set the interactions considered in the map. Useful for building epistasis models manually. """
         self._sites = pd.Series(sites)
+
+    @values.setter
+    def values(self, values):
+        """ Manually set keys. NEED TO do some quality control here. """
+        self._values = pd.Series(values, index=self.index)
 
     @keys.setter
     def keys(self, keys):

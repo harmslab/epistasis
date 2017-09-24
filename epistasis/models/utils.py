@@ -165,20 +165,12 @@ def X_fitter(method):
                     raise XMatrixException("To build 'obs' or 'complete' X matrix, "
                                            "a GenotypePhenotypeMap must be attached.")
                 
-                # Create a list of epistatic interaction for this model.
-                if hasattr(self, "epistasis"):
-                    columns = self.epistasis.sites
-                else:
-                    # Build epistasis interactions as columns in X matrix.
-                    columns = mutations_to_sites(self.order, self.gpm.mutations)
+                # Add EpistasisMap.
+                self.add_epistasis()
                 
-                    # Map those columns to epistastalis dataframe.
-                    self.epistasis = EpistasisMap(columns, order=self.order, model_type=self.model_type)
-                    
-                    # Link coef_ from sklearn to epistasis map
-                    self.coef_ = []
-                    self.epistasis._values = self.coef_
-                    
+                # Get sites for X matrix
+                columns = self.epistasis.sites
+                                    
                 # Use desired set of genotypes for rows in X matrix.        
                 if X == "obs":
                     index = self.gpm.binary.genotypes
@@ -203,12 +195,7 @@ def X_fitter(method):
                                 
                 # Store Xmatrix.
                 self.Xbuilt["fit"] = x
-                
-                # # Add an epistasis mapping attribute to the model, if (and only if) fit worked.
-                # try:
-                #     values = np.reshape(self.coef_,(-1,))
-                #     self.epistasis.values = values
-                # except AttributeError: pass
+                self.epistasis.values = np.reshape(self.coef_,(-1,))
             
             elif type(X) == np.ndarray or type(X) == pd.DataFrame: 
                 # Call method with X and y.
@@ -220,7 +207,7 @@ def X_fitter(method):
             else:
                 raise XMatrixException("X must be one of the following: 'obs', 'complete', "
                                        "numpy.ndarray, or pandas.DataFrame.")
-        
+
         # Return model
         return model
     
