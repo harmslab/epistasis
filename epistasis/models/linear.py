@@ -55,18 +55,20 @@ class EpistasisLinearRegression(_LinearRegression, _BaseModel):
         """Given a set of parameters, compute a set of phenotypes. This is method
         can be used to test a set of parameters (Useful for bayesian sampling).
         """
+        if thetas is None:
+            thetas = self.thetas
         return _np.dot(X, thetas)
 
     @X_fitter
     def lnlikelihood(self, X="obs", y="obs", yerr="obs", thetas=None):
-        """Calculate the log likelihood of data, given a set of model coefficients.
+        """Calculate the log likelihood of y, given a set of model coefficients.
 
         Parameters
         ----------
         X : 2d array
             model matrix
         y : array
-            data to calculate the likelihood
+            observed phenotypes.
         yerr: array
             uncertainty in data
         thetas : array
@@ -77,11 +79,21 @@ class EpistasisLinearRegression(_LinearRegression, _BaseModel):
         lnlike : float
             log-likelihood of the data given the model.
         """
-        raise Exception("not working right now.")
-
+        # If thetas are not explicitly named, get them from the model
         if thetas is None:
             thetas = self.thetas
 
+        ######## Handle yerr.
+        # Check if yerr is string
+        if type(yerr) is str and yerr in ["obs", "complete"]:
+            yerr = self.gpm.binary.err.upper
+
+        # Else, numpy array or dataframe
+        elif type(y) != np.array and type(y) != pd.Series:
+            raise FittingError("yerr is not valid. Must be one of the following: 'obs', 'complete', "
+                           "numpy.array, pandas.Series. Right now, its {}".format(type(yerr)))    
+
+        # Calculate
         ymodel = self.hypothesis(X=X, thetas=thetas)
-        inv_sigma2 = 1.0/(yerr**2)
-        return -0.5*(_np.sum((y-ymodel)**2*inv_sigma2 - _np.log(inv_sigma2)))
+        return -0.5 * _np.sum( _np.log(2*_np.pi*yerr**2) + ((y - ymodel)/yerr)**2 )
+        

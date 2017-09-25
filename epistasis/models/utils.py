@@ -149,7 +149,7 @@ def X_fitter(method):
             
             raise FittingError("y is not valid. Must be one of the following: 'obs', 'complete', "
                            "numpy.array, pandas.Series. Right now, its {}".format(type(y)))    
-        
+                
         ######## Handle X
         try:
             x = self.Xbuilt[X]

@@ -208,7 +208,6 @@ class EpistasisMixedRegression(BaseModel):
         # 2. Determine ymodel given the coefs.
         y = self.Model.hypothesis(thetas=thetas2)
         y[classes==0] = 0
-        #y = np.multiply(y, classes)
         return y
 
     def lnlikelihood(self, X=None, ydata=None, yerr=None, thetas=None):
