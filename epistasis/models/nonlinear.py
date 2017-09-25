@@ -329,13 +329,11 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         yrev = self.reverse(y, *self.parameters.get_params())
         return pearson(y, ypred)**2, self.Linear.score(X=X, y=yrev)
 
+    @X_predictor
     def hypothesis(self, X='complete', thetas=None):
         """Given a set of parameters, compute a set of phenotypes. Does not predict. This is method
         can be used to test a set of parameters (Useful for bayesian sampling).
         """
-
-        raise Exception("not working right now.")
-
         # ----------------------------------------------------------------------
         # Part 0: Break up thetas
         # ----------------------------------------------------------------------
@@ -343,7 +341,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         if thetas is None:
             thetas = self.thetas
 
-        i, j = self.parameters.n, self.epistasis.n
+        i, j = self.parameters.n, self.Linear.epistasis.n
         parameters = thetas[:i]
         epistasis = thetas[i:i+j]
 
@@ -355,7 +353,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
 
         return ynonlin
 
-    def lnlikelihood(self, X=None, ydata=None, yerr=None, thetas=None):
+    def lnlikelihood(self, X='obs', y='obs', yerr='obs', thetas=None):
         """Calculate the log likelihood of data, given a set of model coefficients.
 
         Parameters
@@ -374,22 +372,41 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         lnlike : float
             log-likelihood of the data given the model.
         """
-        raise Exception("not working right now.")
-        
-        
+        ####### Prepare input #########
+        # If no model parameters are given, use the model fit.
         if thetas is None:
             thetas = self.thetas
-        if yerr is None:
-            ydata = self.gpm.phenotypes
-            yerr = self.gpm.std.upper
-        if X is None:
-            X = self.Xfit
+
+        ######## Handle y.
+        # Get pobs for nonlinear fit.
+        if type(y) is str and y in ["obs", "complete"]:            
+            ydata = self.gpm.binary.phenotypes
+        # Else, numpy array or dataframe
+        elif type(y) == np.array or type(y) == pd.Series:
+            ydata = y
+        else:
+            raise FittingError("y is not valid. Must be one of the following: 'obs', 'complete', "
+                           "numpy.array, pandas.Series. Right now, its {}".format(type(y)))    
+
+        ######## Handle yerr.
+        # Check if yerr is string
+        if type(yerr) is str and yerr in ["obs", "complete"]:
+            yerr = self.gpm.binary.std.upper
+
+        # Else, numpsy array or dataframe
+        elif type(y) != np.array and type(y) != pd.Series:
+            raise FittingError("yerr is not valid. Must be one of the following: 'obs', 'complete', "
+                           "numpy.array, pandas.Series. Right now, its {}".format(type(yerr)))    
+
+        ####### Calculate likelihood #########
+        # Calculate ymodel
         ymodel = self.hypothesis(X=X, thetas=thetas)
-        inv_sigma2 = 1.0/(yerr**2)
-        lnlikelihood = -0.5*(np.sum((ydata-ymodel)**2*inv_sigma2 - np.log(inv_sigma2)))
 
+        # Likelihood of data given model
+        lnlike = -0.5 * np.sum( np.log(2*np.pi*yerr**2) + ((ydata - ymodel)/yerr)**2 )
         # If log-likelihood is infinite, set to negative infinity.
-        if np.isinf(lnlikelihood):
+        if np.isinf(lnlike):
             return -np.inf
-
-        return lnlikelihood
+        elif np.isnan(lnlike):
+            raise FittingError("Got an NaN in the likelihood.")
+        return lnlike

@@ -86,7 +86,7 @@ class EpistasisLinearRegression(_LinearRegression, _BaseModel):
         ######## Handle yerr.
         # Check if yerr is string
         if type(yerr) is str and yerr in ["obs", "complete"]:
-            yerr = self.gpm.binary.err.upper
+            yerr = self.gpm.binary.std.upper
 
         # Else, numpy array or dataframe
         elif type(y) != np.array and type(y) != pd.Series:
