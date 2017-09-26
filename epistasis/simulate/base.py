@@ -20,6 +20,7 @@ class BaseSimulation(GenotypePhenotypeMap):
         model_type="global",
         **kwargs
         ):
+        self.model_type = model_type
         genotypes = np.array(utils.mutations_to_genotypes(wildtype, mutations))
         phenotypes = np.ones(len(genotypes))
         # Initialize a genotype-phenotype map
@@ -34,15 +35,14 @@ class BaseSimulation(GenotypePhenotypeMap):
         )
 
     def set_coefs_order(self, order):
-        """Set coefs from an epistatic order."""
+        """Construct a set of epistatic coefficients given the epistatic order."""
         # Attach an epistasis model.
         self.epistasis = EpistasisMap.from_mutations(self.mutations, order)
 
     def set_coefs_sites(self, sites):
-        """Set coefs from list of coefs sites.
-        """
+        """Construct a set of epistatic coefficients given a list of coefficient sites."""
         order = max([len(s) for s in sites])
-        self.epistasis = EpistasisMap(sites, order=order, model_type="global")
+        self.epistasis = EpistasisMap(sites, order=order, model_type=self.model_type)
 
     def set_coefs(self, sites, values):
         """Set the epistatic coefs
