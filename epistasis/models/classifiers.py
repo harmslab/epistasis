@@ -50,7 +50,6 @@ class EpistasisBaseClassifier(BaseModel):
     def _fit_(self, X='obs', y='obs', **kwargs):
         """"""
         ###### Fit the classifier
-        #Xclass = self.add_X(X=X)
         yclass = binarize(y.values.reshape(1,-1), self.threshold)[0]
         self.classes = yclass
         super(self.__class__, self).fit(X=X, y=yclass, **kwargs)
@@ -102,7 +101,7 @@ class EpistasisBaseClassifier(BaseModel):
         
         ### log-likelihood of logit model
         # NOTE: This likelihood is not normalized -- not a simple problem.
-        return np.sum( yclass * np.log(ymodel) + (1 - yclass) * np.log(1-ymodel) )
+        return np.sum( yclass * np.log(1-ymodel) + (1 - yclass) * np.log(ymodel))
 
 @sklearn_to_epistasis()
 class EpistasisLogisticRegression(LogisticRegression, EpistasisBaseClassifier):
@@ -125,7 +124,7 @@ class EpistasisLogisticRegression(LogisticRegression, EpistasisBaseClassifier):
         """Returns the probability of the data given the model."""
         if thetas is None:
             thetas = self.thetas
-        logit_p1 = 1 - 1 / (1 + np.exp(np.dot(X, thetas)))
+        logit_p1 = 1 / (1 + np.exp(np.dot(X, thetas)))
         return logit_p1
 
     @property

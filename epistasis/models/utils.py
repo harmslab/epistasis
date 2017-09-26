@@ -169,20 +169,11 @@ def X_fitter(method):
                     raise XMatrixException("To build 'obs' or 'complete' X matrix, "
                                            "a GenotypePhenotypeMap must be attached.")
                 
-                # Add EpistasisMap.
+                # Enforce that a new EpistasisMap is built.
                 self.add_epistasis()
-                
-                # Get sites for X matrix
-                columns = self.epistasis.sites
-                                    
-                # Use desired set of genotypes for rows in X matrix.        
-                if X == "obs":
-                    index = self.gpm.binary.genotypes
-                else:
-                    index = self.gpm.binary.complete_genotypes
-                
-                # Build numpy array
-                x = get_model_matrix(index, columns, model_type=self.model_type)
+
+                # Construct an X for this model.
+                x = self.add_X(X=X)
                 
                 # Store Xmatrix.                
                 # (if the GenotypePhenotypeMap is complete (no missig genotypes), then
