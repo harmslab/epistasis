@@ -12,3 +12,4 @@ __all__ = [
 # Load all Simulation classes on init.
 from .linear import LinearSimulation
 from .nonlinear import NonlinearSimulation
+from .power import PowerScaleSimulation
