@@ -160,7 +160,8 @@ class BaseSimulation(GenotypePhenotypeMap):
         values that decay/shrink with increasing order.
         """
         values = np.empty(self.epistasis.n, dtype=float)
-        for order in range(self.epistasis.order+1):
+        values[0] = 1
+        for order in range(1, self.epistasis.order+1):
             # Get epistasis map for this order.
             em = self.epistasis.get_orders(order)
             index = em.index

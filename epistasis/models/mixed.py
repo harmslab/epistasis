@@ -188,7 +188,8 @@ class EpistasisMixedRegression(BaseModel):
         yclasses = self.Classifier.predict(X=X)
         
         # Set any 0-class phenotypes to a value of 0
-        ypred[yclasses==0] = 0
+        ypred[yclasses==0] = self.threshold
+        ypred[ypred < self.threshold] = self.threshold
         
         return ypred
         
