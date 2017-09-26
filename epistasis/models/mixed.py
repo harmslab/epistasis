@@ -14,14 +14,6 @@ from .utils import FittingError, XMatrixException
 import warnings
 #warnings.filterwarnings(action="ignore", category=RuntimeWarning)
 
-# Warn users that this is still experimental!
-warnings.warn("\n\nWarning!\n"
-              "--------\n"
-              "\nThe EpistasisMixedRegression is *very* experimental and under \n" 
-              "active development! Beware when using -- the API is likely to \n"
-              "change rapidly.\n\n",
-              FutureWarning)
-
 class EpistasisMixedRegression(BaseModel):
     """A high-order epistasis regression that first classifies genotypes as
     viable/nonviable (given some threshold) and then estimates epistatic coefficients
@@ -46,10 +38,19 @@ class EpistasisMixedRegression(BaseModel):
     parameters. Must have the same name as parameters in the nonlinear function
 
     """
+
     def __init__(self, order, threshold, model_type="global",
         epistasis_model=EpistasisPowerTransform,
         epistasis_classifier=EpistasisLogisticRegression,
         **p0):
+
+        # Warn users that this is still experimental!
+        warnings.warn("\n\nWarning!\n"
+                      "--------\n"
+                      "\nThe EpistasisMixedRegression is *very* experimental and under \n" 
+                      "active development! Beware when using -- the API is likely to \n"
+                      "change rapidly.\n\n",
+                      FutureWarning)
 
         ### Set model specs.
         self.order = order

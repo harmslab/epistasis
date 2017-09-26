@@ -1,5 +1,6 @@
 from functools import wraps
 import numpy as np
+import pandas as pd
 
 # Scikit-learn classifiers
 from sklearn.linear_model import LogisticRegression
@@ -9,7 +10,8 @@ from sklearn.gaussian_process import GaussianProcessClassifier
 from sklearn.preprocessing import binarize
 
 from .base import BaseModel
-from .utils import sklearn_to_epistasis, X_fitter, X_predictor
+from .utils import sklearn_to_epistasis, XMatrixException, X_fitter, X_predictor
+from .linear import EpistasisLinearRegression
 
 # Suppress Deprecation warning
 import warnings
@@ -25,15 +27,106 @@ class EpistasisBaseClassifier(BaseModel):
         self.threshold = threshold
         self.order = order
         self.model_type = model_type
-        self.fit_intercept=False
+        self.fit_intercept=True
         self.Xbuilt = {}
+        
+        # Set up additive linear model for pre-classifying
+        self.Additive = EpistasisLinearRegression(order=1, model_type=self.model_type)        
+    
+    def add_X(self, X='complete',key=None):
+        """Add X to Xbuilt
+        
+        X must be:
+            
+            - 'obs' : Uses `gpm.binary.genotypes` to construct X. If genotypes are missing
+                they will not be included in fit. 
+            - 'complete' : Uses `gpm.binary.complete_genotypes` to construct X. All genotypes
+                missing from the data are included. Warning, will break in most fitting methods.
+            - 'fit' : a previously defined array/dataframe matrix. Prevents copying for efficiency.
 
+        Parameters
+        ----------
+        X : 
+            see above for details.
+        key : str
+            name for storing the matrix.
+            
+        Returns
+        -------
+        X_builts : numpy.ndarray
+            newly built 2d array matrix 
+        """
+        if type(X) is str and X in ['obs', 'complete']:
+            
+            if hasattr(self, "gpm") == False:
+                raise XMatrixException("To build 'obs' or 'complete' X matrix, "
+                                       "a GenotypePhenotypeMap must be attached.")
+                
+            if hasattr(self.Additive, "coef_") == False:
+                raise XMatrixException("the Additive model must be `fit` first.")
+                
+            # Calculate Additive model.
+            x = self.Additive.predict(X=X)[:,np.newaxis] 
+            
+            # Set matrix with given key.
+            if key is None:
+                key = X
+            
+            self.Xbuilt[key] = x
+            
+        elif type(X) == np.ndarray or type(X) == pd.DataFrame: 
+            # Set key
+            if key is None:
+                raise Exception("A key must be given to store.")            
+                            
+            # Store Xmatrix.
+            self.Xbuilt[key] = X
 
-    @X_fitter
+        else:
+            raise XMatrixException("X must be one of the following: 'obs', 'complete', "
+                                   "numpy.ndarray, or pandas.DataFrame.")
+            
+        X_built = self.Xbuilt[key]        
+        return X_built
+        
     def fit(self, X='obs', y='obs', **kwargs):
+        """
+        """
         # Save the classes for y values.
-        self.classes = binarize(y.values.reshape(1,-1), self.threshold)[0]
-        super(self.__class__, self).fit(X, y=self.classes, **kwargs)
+        if hasattr(self, 'gpm') is False:
+            raise Exception("This model will not work if a genotype-phenotype "
+                "map is not attached to the model class. Use the `add_gpm` method")
+
+        # ----------------------------------------------------------------------
+        # Part 1: Estimate average, independent mutational effects and fit
+        #         nonlinear scale.
+        # ----------------------------------------------------------------------
+        # Get pobs for nonlinear fit.
+        if type(y) is str and y in ["obs", "complete"]:            
+            pobs = self.gpm.binary.phenotypes
+        # Else, numpy array or dataframe
+        elif type(y) == np.array or type(y) == pd.Series:
+            pobs = y
+        else:
+            raise FittingError("y is not valid. Must be one of the following: 'obs', 'complete', "
+                           "numpy.array, pandas.Series. Right now, its {}".format(type(y)))    
+        
+        
+        ###### Use Additive model to establish the phenotypic scale.
+        # Prepare Additive model
+        self.Additive.add_gpm(self.gpm)
+        self.Additive.add_epistasis()        
+                
+        # Fit the additive model and infer additive phenotypes
+        self.Additive.fit(X=X, y=pobs)
+        padd = self.Additive.predict(X=X)
+        
+        ###### Fit the classifier
+        Xclass = self.add_X(X=X)
+        yclass = binarize(pobs.values.reshape(1,-1), self.threshold)[0]
+        self.classes = yclass
+        
+        super(self.__class__, self).fit(X=Xclass, y=yclass, **kwargs)
         return self
 
     @X_predictor
@@ -53,7 +146,8 @@ class EpistasisBaseClassifier(BaseModel):
         y = binarize(y, self.threshold)[0]
         return super(self.__class__, self).score(X, y)
 
-    def lnlikelihood(self, X=None, ydata=None, thetas=None):
+    @X_fitter
+    def lnlikelihood(self, X='obs', y='obs', thetas=None):
         """Calculate the log likelihood of data, given a set of model coefficients.
 
         Parameters
@@ -72,17 +166,16 @@ class EpistasisBaseClassifier(BaseModel):
         lnlike : float
             log-likelihood of the data given the model.
         """
-        raise Exception("not working yet.")
+        if thetas is None:
+            thetas = self.thetas
         
-        # 1. Class probability given the coefs
-        if ymodel is None:
-            ydata = self.gpm.phenotypes
-        if X is None:
-            X = self.Xfit
-        ydata = binarize(ydata, threshold=self.threshold)[0]
+        ### Calculate Y's
+        yclass = binarize(y.values.reshape(1,-1), threshold=self.threshold)[0]
         ymodel = self.hypothesis(X=X, thetas=thetas)
+        
         ### log-likelihood of logit model
-        return ydata * np.log(ymodel) + (1 - ydata) * np.log(1-ymodel)
+        # NOTE: This likelihood is not normalized -- not a simple problem.
+        return np.sum( yclass * np.log(ymodel) + (1 - yclass) * np.log(1-ymodel) )
 
 @sklearn_to_epistasis()
 class EpistasisLogisticRegression(LogisticRegression, EpistasisBaseClassifier):
@@ -111,7 +204,6 @@ class EpistasisLogisticRegression(LogisticRegression, EpistasisBaseClassifier):
     @property
     def thetas(self):
         return self.epistasis.values
-
 
 @sklearn_to_epistasis()
 class EpistasisBernoulliNB(BernoulliNB, EpistasisBaseClassifier):
