@@ -38,14 +38,6 @@ class EpistasisMixedRegression(BaseModel):
         epistasis_classifier=EpistasisLogisticRegression,
         **p0):
 
-        # # Warn users that this is still experimental!
-        # warnings.warn("\n\nWarning!\n"
-        #               "--------\n"
-        #               "\nThe EpistasisMixedRegression is *very* experimental and under \n" 
-        #               "active development! Beware when using -- the API is likely to \n"
-        #               "change rapidly.\n\n",
-        #               FutureWarning)
-
         ### Set model specs.
         self.order = order
         self.threshold = threshold
@@ -210,6 +202,7 @@ class EpistasisMixedRegression(BaseModel):
         if thetas is None:
             thetas = self.thetas
 
+        # Sort thetas for classifier and model.
         thetas1 = thetas[0:len(self.Classifier.coef_[0])]
         thetas2 = thetas[len(self.Classifier.coef_[0]):]
 
@@ -240,45 +233,21 @@ class EpistasisMixedRegression(BaseModel):
         lnlike : float
             log-likelihood of the data given the model.
         """
+        if thetas is None:
+            thetas = self.thetas
+
+        thetas1 = thetas[0:len(self.Classifier.coef_[0])]
+        thetas2 = thetas[len(self.Classifier.coef_[0]):]
+        
         # Calculate log-likelihood of classifier
-        class_lnlike = self.Classifier.lnlike_of_data(X=X, y=y)
+        class_lnlike = self.Classifier.lnlike_of_data(X=X, y=y, thetas=thetas1)
         classes = self.Classifier.predict(X=X)
         
         # Calculate log-likelihood of the model
-        model_lnlike = self.Model.lnlike_of_data(X=X, y=y)
+        model_lnlike = self.Model.lnlike_of_data(X=X, y=y, thetas=thetas2)
         
         # Set the likelihoods of points below threshold to threshold
         model_lnlike[classes==0] = 0
         
         # Sum the log-likelihoods
         return class_lnlike + model_lnlike
-
-    def lnlikelihood(self, X='obs', y='obs', yerr='obs', thetas=None):
-        """Calculate the log likelihood of data, given a set of model coefficients.
-
-        Parameters
-        ----------
-        X : 2d array
-            model matrix
-        yerr: array
-            uncertainty in data
-        thetas : array
-            array of model coefficients
-
-        Returns
-        -------
-        lnlike : float
-            log-likelihood of the data given the model.
-        """
-        # Calculate the likelihoods of each data point.
-        lnlike = np.sum(self.lnlike_of_data(X=X, y=y, yerr=yerr, thetas=thetas))
-        
-        # If log-likelihood is infinite, set to negative infinity.
-        if np.isinf(lnlike):
-            return -np.inf
-        
-        elif np.isnan(lnlike):
-            raise FittingError("Got an NaN in the likelihood.")
-        # Return the sum of the log-likelihoods
-        
-        return lnlike  

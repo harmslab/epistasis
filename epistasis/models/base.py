@@ -166,6 +166,29 @@ class BaseModel(object):
 
     def lnlike_of_data(self, *args, **kwargs):
         raise Exception("Must be defined in a subclass.")
+        
+    def lnlikelihood(self, X="obs", y="obs", yerr="obs", thetas=None):
+        """Calculate the log likelihood of y, given a set of model coefficients.
 
-    def lnlikelihood(self, *args, **kwargs):
-        raise Exception("Must be defined in a subclass.")
+        Parameters
+        ----------
+        X : 2d array
+            model matrix
+        y : array
+            data to calculate the likelihood
+        yerr: array
+            uncertainty in data
+        thetas : array
+            array of model coefficients
+
+        Returns
+        -------
+        lnlike : float
+            log-likelihood of data given a model.
+        """
+        lnlike = np.nansum( self.lnlike_of_data(X=X, y=y, yerr=yerr, thetas=thetas) )
+        
+        # If log-likelihood is infinite, set to negative infinity.
+        if np.isinf(lnlike):
+            return -np.inf            
+        return lnlike
