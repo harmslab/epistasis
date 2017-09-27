@@ -121,13 +121,10 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
         gmean = self.gmean
         return (gmean**(lmbda-1)*lmbda*(y - B) + 1)**(1/lmbda) - A
 
-    def hypothesis(self, X=None, thetas=None):
+    def hypothesis(self, X='obs', thetas=None):
         """Given a set of parameters, compute a set of phenotypes. Does not predict. This is method
         can be used to test a set of parameters (Useful for bayesian sampling).
-        """
-        raise Exception("not working yet.")
-        
-        
+        """        
         y = super(EpistasisPowerTransform, self).hypothesis(X=X, thetas=thetas)
         # NOTE: sets nan values to the saturation point.
         y[np.isnan(y)==True] = self.parameters.B

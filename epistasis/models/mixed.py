@@ -44,13 +44,13 @@ class EpistasisMixedRegression(BaseModel):
         epistasis_classifier=EpistasisLogisticRegression,
         **p0):
 
-        # Warn users that this is still experimental!
-        warnings.warn("\n\nWarning!\n"
-                      "--------\n"
-                      "\nThe EpistasisMixedRegression is *very* experimental and under \n" 
-                      "active development! Beware when using -- the API is likely to \n"
-                      "change rapidly.\n\n",
-                      FutureWarning)
+        # # Warn users that this is still experimental!
+        # warnings.warn("\n\nWarning!\n"
+        #               "--------\n"
+        #               "\nThe EpistasisMixedRegression is *very* experimental and under \n" 
+        #               "active development! Beware when using -- the API is likely to \n"
+        #               "change rapidly.\n\n",
+        #               FutureWarning)
 
         ### Set model specs.
         self.order = order
@@ -168,7 +168,7 @@ class EpistasisMixedRegression(BaseModel):
         plt.show()
         return fig, ax    
 
-    def predict(self, X="complete"):
+    def predict(self, X='complete'):
         """Predict phenotypes given a model matrix. Constructs the predictions in
         two steps. 1. Use X to predict quantitative phenotypes. 2. Predict phenotypes
         classes using the Classifier. Xfit for the classifier is truncated to the
@@ -190,10 +190,9 @@ class EpistasisMixedRegression(BaseModel):
         # Set any 0-class phenotypes to a value of 0
         ypred[yclasses==0] = self.threshold
         ypred[ypred < self.threshold] = self.threshold
-        
         return ypred
         
-    def hypothesis(self, X=None, thetas=None):
+    def hypothesis(self, X='obs', thetas=None):
         """Return a model's output with the given model matrix X and coefs."""
         # Use thetas to predict the probability of 1-class for each phenotype.
         if thetas is None:
@@ -203,16 +202,16 @@ class EpistasisMixedRegression(BaseModel):
         thetas2 = thetas[len(self.Classifier.coef_[0]):]
 
         # 1. Class probability given the coefs
-        proba = self.Classifier.hypothesis(thetas=thetas1)
+        proba = self.Classifier.hypothesis(X=X, thetas=thetas1)
         classes = np.ones(len(proba))
         classes[proba<0.5] = 0
 
         # 2. Determine ymodel given the coefs.
-        y = self.Model.hypothesis(thetas=thetas2)
-        y[classes==0] = 0
+        y = self.Model.hypothesis(X=X, thetas=thetas2)
+        y[classes==0] = self.threshold
         return y
 
-    def lnlikelihood(self, X=None, ydata=None, yerr=None, thetas=None):
+    def lnlikelihood(self, X='obs', y='obs', yerr='obs', thetas=None):
         """Calculate the log likelihood of data, given a set of model coefficients.
 
         Parameters
@@ -229,48 +228,68 @@ class EpistasisMixedRegression(BaseModel):
         lnlike : float
             log-likelihood of the data given the model.
         """
-        ### Data
-        if ydata is None:
-            ydata = self.gpm.phenotypes
-            yerr = self.gpm.std.upper
-        # Binarize the data
-        ybin = binarize(ydata, threshold=self.threshold)[0]#np.ones(len(y_class_prob))
-
-        if thetas is None:
-            thetas = self.thetas
-
-        thetas1 = thetas[0:len(self.Classifier.coef_[0])]
-        thetas2 = thetas[len(self.Classifier.coef_[0]):]
-
-        # 1. Class probability given the coefs
-        Xclass = self.Xclass
-        y_class_prob = self.Classifier.hypothesis(X=Xclass, thetas=thetas1)
-        classes = np.ones(len(y_class_prob))
-        classes[y_class_prob<0.5] = 0
-
-        # 2. Determine ymodel given the coefs.
-        if X is None:
-            X = self.Xfit
-
-        ymodel = self.Model.hypothesis(X=X,thetas=thetas2)
-        ymodel[classes==0] = 0
-
-        #ymodel = np.multiply(ymodel, classes)
-
-        ### log-likelihood of logit model
-        lnlikelihood = ybin * np.log(y_class_prob) + (1 - ybin) * np.log(1-y_class_prob)
-
-        ### log-likelihood of the epistasis model
-        inv_sigma2 = 1.0/(yerr**2)
-        lngaussian = (ydata-ymodel)**2*inv_sigma2 - np.log(inv_sigma2)
-        lnlikelihood[ybin==1] = np.add(lnlikelihood[ybin==1], lngaussian[ybin==1])
-        lnlikelihood = -0.5 * sum(lnlikelihood)
+        # Calculate log-likelihood of classifier
+        class_lnlike = self.Classifier.lnlikelihood(X=X, y=y)
+        classes = self.Classifier.predict(X=X)
+        
+        # Calculate log-likelihood of the model
+        model_lnlike = self.Model.lnlikelihood(X=X, y=y)
+        model_lnlike[classes==0] = 0
+        
+        
+        
+        
+        # If log-likelihood is infinite, set to negative infinity.
+        if np.isinf(lnlike):
+            return -np.inf
+        
+        elif np.isnan(lnlike):
+            raise FittingError("Got an NaN in the likelihood.")
+        # Return the sum of the log-likelihoods
+        
+        return class_lnlike + model_lnlike        
+        # ### Data
+        # if ydat is None:
+        #     ydata = self.gpm.phenotypes
+        #     yerr = self.gpm.std.upper
+        # # Binarize the data
+        # ybin = binarize(ydata, threshold=self.threshold)[0]#np.ones(len(y_class_prob))
+        # 
+        # if thetas is None:
+        #     thetas = self.thetas
+        # 
+        # thetas1 = thetas[0:len(self.Classifier.coef_[0])]
+        # thetas2 = thetas[len(self.Classifier.coef_[0]):]
+        # 
+        # # 1. Class probability given the coefs
+        # Xclass = self.Xclass
+        # y_class_prob = self.Classifier.hypothesis(X=Xclass, thetas=thetas1)
+        # classes = np.ones(len(y_class_prob))
+        # classes[y_class_prob<0.5] = 0
+        # 
+        # # 2. Determine ymodel given the coefs.
+        # if X is None:
+        #     X = self.Xfit
+        # 
+        # ymodel = self.Model.hypothesis(X=X,thetas=thetas2)
+        # ymodel[classes==0] = 0
+        # 
+        # #ymodel = np.multiply(ymodel, classes)
+        # 
+        # ### log-likelihood of logit model
+        # lnlikelihood = ybin * np.log(y_class_prob) + (1 - ybin) * np.log(1-y_class_prob)
+        # 
+        # ### log-likelihood of the epistasis model
+        # inv_sigma2 = 1.0/(yerr**2)
+        # lngaussian = (ydata-ymodel)**2*inv_sigma2 - np.log(inv_sigma2)
+        # lnlikelihood[ybin==1] = np.add(lnlikelihood[ybin==1], lngaussian[ybin==1])
+        # lnlikelihood = -0.5 * sum(lnlikelihood)
 
         # If log-likelihood is infinite, set to negative infinity.
-        if np.isinf(lnlikelihood):
-            return -np.inf
-
-        return lnlikelihood
+        # if np.isinf(lnlikelihood):
+        #     return -np.inf
+        # 
+        # return lnlikelihood
 
     @property
     def thetas(self):

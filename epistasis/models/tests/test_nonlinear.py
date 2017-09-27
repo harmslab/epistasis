@@ -7,15 +7,19 @@ from gpmap import GenotypePhenotypeMap
 # Module to test
 from ..nonlinear import *
 
+import warnings
+
+# Ignore fitting warnings
+warnings.simplefilter("ignore", RuntimeWarning)
 
 @pytest.fixture
 def gpm():
     """Create a genotype-phenotype map"""
     wildtype = "000"
     genotypes =  ["000", "001", "010", "100", "011", "101", "110", "111"]
-    phenotypes = [  0.0,   0.1,   0.5,   0.4,   0.2,   0.8,   0.5,   1.0]
-    return GenotypePhenotypeMap(wildtype, genotypes, phenotypes)
-
+    phenotypes = [  0.1,   0.1,   0.5,   0.4,   0.2,   0.8,   0.5,   1.0]
+    stdeviations = 0.1
+    return GenotypePhenotypeMap(wildtype, genotypes, phenotypes, stdeviations=stdeviations)
 
 def function(x, A, B):
     return A*x + B 
@@ -72,28 +76,41 @@ class TestEpistasisNonlinearRegression(object):
         
         # Tests
         np.testing.assert_almost_equal(sorted(y), sorted(model.gpm.phenotypes))
-    # 
-    # def test_thetas(self, gpm):
-    #     model = EpistasisNonlinearRegression.read_gpm(gpm,
-    #         function=function,
-    #         reverse=reverse,
-    #         order=self.order,
-    #         model_type=self.model_type)
-    #     
-    #     model.fit(A=1,B=0)
-    #     coefs = model.thetas
-    #     # Tests
-    #     assert len(coefs) == 6
-    # 
-    # def test_hypothesis(self, gpm):
-    # 
-    #     model = EpistasisNonlinearRegression.read_gpm(gpm,
-    #         function=function,
-    #         reverse=reverse,
-    #         order=self.order,
-    #         model_type=self.model_type)
-    #     
-    #     model.fit(A=1,B=0)
-    #     predictions = model.hypothesis()
-    #     # Tests
-    #     np.testing.assert_almost_equal(sorted(predictions), sorted(model.gpm.phenotypes))
+    
+    def test_thetas(self, gpm):
+        model = EpistasisNonlinearRegression.read_gpm(gpm,
+            function=function,
+            reverse=reverse,
+            order=self.order,
+            model_type=self.model_type)
+        
+        model.fit(A=1,B=0)
+        coefs = model.thetas
+        # Tests
+        assert len(coefs) == 10
+    
+    def test_hypothesis(self, gpm):
+    
+        model = EpistasisNonlinearRegression.read_gpm(gpm,
+            function=function,
+            reverse=reverse,
+            order=self.order,
+            model_type=self.model_type)
+        
+        model.fit(A=1,B=0)
+        predictions = model.hypothesis()
+        # Tests
+        np.testing.assert_almost_equal(sorted(predictions), sorted(model.gpm.phenotypes))
+        
+    def test_lnlikelihood(self, gpm):
+        model = EpistasisNonlinearRegression.read_gpm(gpm,
+            function=function,
+            reverse=reverse,
+            order=self.order,
+            model_type=self.model_type)
+        
+        model.fit(A=1,B=0)
+        
+        # Calculate lnlikelihood
+        lnlike = model.lnlikelihood()
+        assert lnlike.dtype == float

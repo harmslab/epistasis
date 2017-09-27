@@ -353,14 +353,14 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
 
         return ynonlin
 
-    def lnlikelihood(self, X='obs', y='obs', yerr='obs', thetas=None):
-        """Calculate the log likelihood of data, given a set of model coefficients.
+    def lnlike_of_data(self, X='obs', y='obs', yerr='obs', thetas=None):
+        """Calculate the log likelihoods of each data point, given a set of model coefficients.
 
         Parameters
         ----------
         X : 2d array
             model matrix
-        ydata : array
+        y : array
             data to calculate the likelihood
         yerr: array
             uncertainty in data
@@ -369,8 +369,8 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
 
         Returns
         -------
-        lnlike : float
-            log-likelihood of the data given the model.
+        lnlike : np.ndarray
+            log-likelihood of each data point given a model.
         """
         ####### Prepare input #########
         # If no model parameters are given, use the model fit.
@@ -403,10 +403,32 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         ymodel = self.hypothesis(X=X, thetas=thetas)
 
         # Likelihood of data given model
-        lnlike = -0.5 * np.sum( np.log(2*np.pi*yerr**2) + ((ydata - ymodel)/yerr)**2 )
+        return np.log(2*np.pi*yerr**2) + ((ydata - ymodel)/yerr)**2 
+    
+    def lnlikelihood(self, X='obs', y='obs', yerr='obs', thetas=None):
+        """Calculate the log likelihood of the data, given a set of model coefficients.
+
+        Parameters
+        ----------
+        X : 2d array
+            model matrix
+        y : array
+            data to calculate the likelihood
+        yerr: array
+            uncertainty in data
+        thetas : array
+            array of model coefficients
+
+        Returns
+        -------
+        lnlike : float
+            log-likelihood of data given a model.
+        """    
+        lnlike = -0.5 * np.sum( self.lnlike_of_data(X=X, y=y, yerr=yerr, thetas=thetas) )
         # If log-likelihood is infinite, set to negative infinity.
         if np.isinf(lnlike):
             return -np.inf
+        
         elif np.isnan(lnlike):
             raise FittingError("Got an NaN in the likelihood.")
         return lnlike

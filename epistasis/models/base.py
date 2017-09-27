@@ -164,5 +164,8 @@ class BaseModel(object):
     def hypothesis(self, *args, **kwargs):
         raise Exception("Must be defined in a subclass.")
 
+    def lnlike_of_data(self, *args, **kwargs):
+        raise Exception("Must be defined in a subclass.")
+
     def lnlikelihood(self, *args, **kwargs):
         raise Exception("Must be defined in a subclass.")

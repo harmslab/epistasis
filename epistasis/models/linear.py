@@ -59,16 +59,16 @@ class EpistasisLinearRegression(_LinearRegression, _BaseModel):
             thetas = self.thetas
         return _np.dot(X, thetas)
 
-    @X_fitter
-    def lnlikelihood(self, X="obs", y="obs", yerr="obs", thetas=None):
-        """Calculate the log likelihood of y, given a set of model coefficients.
+    @X_fitter    
+    def lnlike_of_data(self, X="obs", y="obs", yerr="obs", thetas=None):
+        """Calculate the log likelihoods of each data point, given a set of model coefficients.
 
         Parameters
         ----------
         X : 2d array
             model matrix
         y : array
-            observed phenotypes.
+            data to calculate the likelihood
         yerr: array
             uncertainty in data
         thetas : array
@@ -76,8 +76,8 @@ class EpistasisLinearRegression(_LinearRegression, _BaseModel):
 
         Returns
         -------
-        lnlike : float
-            log-likelihood of the data given the model.
+        lnlike : np.ndarray
+            log-likelihood of each data point given a model.
         """
         # If thetas are not explicitly named, get them from the model
         if thetas is None:
@@ -93,7 +93,34 @@ class EpistasisLinearRegression(_LinearRegression, _BaseModel):
             raise FittingError("yerr is not valid. Must be one of the following: 'obs', 'complete', "
                            "numpy.array, pandas.Series. Right now, its {}".format(type(yerr)))    
 
-        # Calculate
+        # Calculate y from model.
         ymodel = self.hypothesis(X=X, thetas=thetas)
-        return -0.5 * _np.sum( _np.log(2*_np.pi*yerr**2) + ((y - ymodel)/yerr)**2 )
+        return _np.log(2*_np.pi*yerr**2) + ((y - ymodel)/yerr)**2
         
+    def lnlikelihood(self, X="obs", y="obs", yerr="obs", thetas=None):
+        """Calculate the log likelihood of y, given a set of model coefficients.
+
+        Parameters
+        ----------
+        X : 2d array
+            model matrix
+        y : array
+            data to calculate the likelihood
+        yerr: array
+            uncertainty in data
+        thetas : array
+            array of model coefficients
+
+        Returns
+        -------
+        lnlike : float
+            log-likelihood of data given a model.
+        """    
+        lnlike -0.5 * _np.sum( self.lnlike_of_data(X=X, y=y, yerr=yerr, thetas=thetas) )
+        # If log-likelihood is infinite, set to negative infinity.
+        if np.isinf(lnlike):
+            return -np.inf
+        
+        elif np.isnan(lnlike):
+            raise FittingError("Got an NaN in the likelihood.")
+        return lnlike
