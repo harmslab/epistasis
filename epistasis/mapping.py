@@ -18,6 +18,7 @@ import pandas as pd
 # Local imports
 # ----------------------------------------------------------
 
+
 import gpmap
 from gpmap.mapping import BaseMap
 
@@ -198,7 +199,7 @@ class EpistasisMap(BaseMap):
     def values(self):
         """ Get the values of the interaction in the system"""
         return self._values
-
+    
     @property
     def index(self):
         """ Get the interaction index in interaction matrix. """
@@ -244,9 +245,7 @@ class EpistasisMap(BaseMap):
 
     @values.setter
     def values(self, values):
-        """ Set the interactions of the system, set by an Epistasis model (see ..models.py)."""
-        if hasattr(self, "_sites") is False:
-            raise AttributeError(self.__name__ + " does not have coef sites set.")
+        """ Manually set keys. NEED TO do some quality control here. """
         self._values = pd.Series(values, index=self.index)
 
     @keys.setter

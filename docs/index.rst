@@ -31,7 +31,9 @@ Table of Contents
    :maxdepth: 2
 
    pages/install
+   pages/models
    pages/fitting
+   pages/model_matrix
    pages/estimating-uncertainty
    pages/simulate
    pages/plot

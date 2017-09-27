@@ -100,10 +100,10 @@ there is a feature you'd like to add, feel free to submit a
 pull request with a description of the addition. We also ask that you write the
 appropriate unit-tests for the new feature and add documentation to our Sphinx docs.
 
-To run the tests on this package, run nose tests on the command line:
+To run the tests on this package, make sure you have `pytest` installed and run from the base directory:
 
 ```
-nosetests
+pytest
 ```
 
 ## Citing

@@ -47,23 +47,11 @@ class LinearSimulation(BaseSimulation):
         super(LinearSimulation,self).__init__(
             wildtype,
             mutations,
-            **kwargs
-        )
+            **kwargs)
         self.model_type = model_type
-
-    @property
-    def p_additive(self):
-        """Get the additive phenotypes"""
-        orders = self.epistasis.get_orders(0,1)
-        sites = orders.sites
-        vals = orders.values
-        x = get_model_matrix(self.binary.genotypes, sites, model_type=self.model_type)
-        return np.dot(x, vals)
 
     def build(self):
         """ Build the phenotype map from epistatic interactions. """
-        # Allocate phenotype numpy array
-        _phenotypes = np.zeros(self.n, dtype=float)
+        X = self.add_X()
         # Get model type:
-        self.X = get_model_matrix(self.binary.genotypes, self.epistasis.sites, model_type=self.model_type)
-        self.phenotypes = np.dot( self.X, self.epistasis.values)
+        self.phenotypes = np.dot(X, self.epistasis.values)

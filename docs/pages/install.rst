@@ -52,16 +52,16 @@ the package.
 Testing
 -------
 
-The epistasis package comes with a small suite of tests (hopefully, we'll improve
-the tests moving forward). Running the tests require `nose`, so make sure it is installed.
+The epistasis package comes with a suite of tests. Running the tests require `pytest`, 
+so make sure it is installed.
 
 .. code-block:: bash
 
-    pip install nose
+    pip install -U pytest
 
-Once nose is installed, run the tests from the base directory of the epistasis package
+Once pytest is installed, run the tests from the base directory of the epistasis package
 using the following command.
 
 .. code-block:: bash
 
-    nosetests
+    pytest

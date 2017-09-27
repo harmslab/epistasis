@@ -1,5 +1,6 @@
 from functools import wraps
 import numpy as np
+import pandas as pd
 
 # Scikit-learn classifiers
 from sklearn.linear_model import LogisticRegression
@@ -9,7 +10,8 @@ from sklearn.gaussian_process import GaussianProcessClassifier
 from sklearn.preprocessing import binarize
 
 from .base import BaseModel
-from .utils import sklearn_to_epistasis, X_fitter, X_predictor
+from .utils import sklearn_to_epistasis, XMatrixException, X_fitter, X_predictor
+from .linear import EpistasisLinearRegression
 
 # Suppress Deprecation warning
 import warnings
@@ -26,32 +28,82 @@ class EpistasisBaseClassifier(BaseModel):
         self.order = order
         self.model_type = model_type
         self.fit_intercept=False
+        self.Xbuilt = {}
+        
+        # Set up additive linear model for pre-classifying
+        self.Additive = EpistasisLinearRegression(order=1, model_type=self.model_type)        
 
-    @X_fitter
-    def fit(self, X=None, y=None, **kwargs):
-        # Save the classes for y values.
-        self.classes = binarize(y.reshape(1,-1), self.threshold)[0]
-        super(self.__class__, self).fit(X, y=self.classes, **kwargs)
+    def fit(self, X='obs', y='obs', **kwargs):
+        """Fit Classifier to estimate the class of unknown phenotypes."""
+        ###### Use Additive model to establish the phenotypic scale.
+        # Prepare Additive model
+        self.Additive.add_gpm(self.gpm)
+        self.Additive.add_epistasis()        
+                
+        # Fit the additive model and infer additive phenotypes
+        self.Additive.fit(X=X, y=y)
+        padd = self.Additive.predict(X=X)
+        self = self._fit_(X=X, y=y)
         return self
 
+    @X_fitter
+    def _fit_(self, X='obs', y='obs', **kwargs):
+        """"""
+        ###### Fit the classifier
+        yclass = binarize(y.values.reshape(1,-1), self.threshold)[0]
+        self.classes = yclass
+        super(self.__class__, self).fit(X=X, y=yclass, **kwargs)
+        return self 
+    
     @X_predictor
-    def predict(self, X=None):
+    def predict(self, X='complete'):
         return super(self.__class__, self).predict(X)
 
     @X_predictor
-    def predict_log_proba(self, X=None):
+    def predict_log_proba(self, X='complete'):
         return super(self.__class__, self).predict_log_proba(X)
 
     @X_predictor
-    def predict_proba(self, X=None):
+    def predict_proba(self, X='complete'):
         return super(self.__class__, self).predict_proba(X)
 
     @X_fitter
-    def score(self, X=None, y=None):
-        y = binarize(y, self.threshold)[0]
-        return super(self.__class__, self).score(X, y)
+    def score(self, X='obs', y='obs'):
+        yclass = binarize(y.values.reshape(1,-1), threshold=self.threshold)[0]
+        return super(self.__class__, self).score(X=X, y=yclass)
 
-    def lnlikelihood(self, X=None, ydata=None, thetas=None):
+    @X_fitter
+    def lnlike_of_data(self, X='obs', y='obs', thetas=None):
+        """Calculate the log likelihoods of each data point, given a set of model coefficients.
+
+        Parameters
+        ----------
+        X : 2d array
+            model matrix
+        y : array
+            data to calculate the likelihood
+        yerr: array
+            uncertainty in data
+        thetas : array
+            array of model coefficients
+
+        Returns
+        -------
+        lnlike : np.ndarray
+            log-likelihood of each data point given a model.
+        """
+        if thetas is None:
+            thetas = self.thetas
+        
+        ### Calculate Y's
+        yclass = binarize(y.values.reshape(1,-1), threshold=self.threshold)[0]
+        ymodel = self.hypothesis(X=X, thetas=thetas)
+        
+        ### log-likelihood of logit model
+        # NOTE: This likelihood is not normalized -- not a simple problem.
+        return yclass * np.log(1-ymodel) + (1 - yclass) * np.log(ymodel)
+
+    def lnlikelihood(self, X='obs', y='obs', thetas=None):
         """Calculate the log likelihood of data, given a set of model coefficients.
 
         Parameters
@@ -70,15 +122,10 @@ class EpistasisBaseClassifier(BaseModel):
         lnlike : float
             log-likelihood of the data given the model.
         """
-        # 1. Class probability given the coefs
-        if ymodel is None:
-            ydata = self.gpm.phenotypes
-        if X is None:
-            X = self.Xfit
-        ydata = binarize(ydata, threshold=self.threshold)[0]
-        ymodel = self.hypothesis(X=X, thetas=thetas)
         ### log-likelihood of logit model
-        return ydata * np.log(ymodel) + (1 - ydata) * np.log(1-ymodel)
+        # NOTE: This likelihood is not normalized -- not a simple problem.
+        lnlike = self.lnlike_of_data(X=X, y=y, thetas=thetas)
+        return np.sum( lnlike )
 
 @sklearn_to_epistasis()
 class EpistasisLogisticRegression(LogisticRegression, EpistasisBaseClassifier):
@@ -101,13 +148,12 @@ class EpistasisLogisticRegression(LogisticRegression, EpistasisBaseClassifier):
         """Returns the probability of the data given the model."""
         if thetas is None:
             thetas = self.thetas
-        logit_p1 = 1 - 1 / (1 + np.exp(np.dot(X, thetas)))
+        logit_p1 = 1 / (1 + np.exp(np.dot(X, thetas)))
         return logit_p1
 
     @property
     def thetas(self):
         return self.epistasis.values
-
 
 @sklearn_to_epistasis()
 class EpistasisBernoulliNB(BernoulliNB, EpistasisBaseClassifier):

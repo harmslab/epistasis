@@ -1,14 +1,17 @@
 import inspect
 import numpy as np
+import pandas as pd
 import json
 from functools import wraps
 from scipy.optimize import curve_fit
-
+import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
 from sklearn.base import BaseEstimator, RegressorMixin
-from .base import BaseModel
-from .utils import  X_fitter, X_predictor
-from .linear import EpistasisLinearRegression
 
+# Import epistasis modules.
+from .base import BaseModel
+from .utils import  X_fitter, X_predictor, FittingError
+from .linear import EpistasisLinearRegression
 from epistasis.stats import pearson
 # decorators for catching errors
 from gpmap.utils import ipywidgets_missing
@@ -21,7 +24,7 @@ except ImportError:
 
 # Suppress an annoying error
 import warnings
-warnings.filterwarnings(action="ignore", category=RuntimeWarning)
+#warnings.filterwarnings(action="ignore", category=RuntimeWarning)
 
 class Parameters(object):
     """A container object for parameters extracted from a nonlinear fit.
@@ -140,6 +143,10 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
 
         # Initial parameters guesses
         self.p0 = p0
+        
+        # Set up additive and high-order linear model
+        self.Additive = EpistasisLinearRegression(order=1, model_type=self.model_type)
+        self.Linear = EpistasisLinearRegression(order=self.order, model_type=self.model_type)
 
     @property
     def thetas(self):
@@ -149,8 +156,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         """
         return np.concatenate((self.parameters.values, self.Linear.coef_))
 
-    @X_fitter
-    def fit(self, X=None, y=None, sample_weight=None, use_widgets=False, **kwargs):
+    def fit(self, X='obs', y='obs', sample_weight=None, use_widgets=False, plot_fit=True, **kwargs):
         """Fit nonlinearity in genotype-phenotype map.
 
         Parameters
@@ -175,23 +181,53 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         """
         if hasattr(self, 'gpm') is False:
             raise Exception("This model will not work if a genotype-phenotype "
-                "map is not attached to the model class. Use the `attach_gpm` method")
+                "map is not attached to the model class. Use the `add_gpm` method")
 
         # ----------------------------------------------------------------------
-        # Part 0: Prepare model for fitting and run fit
+        # Part 1: Estimate average, independent mutational effects and fit
+        #         nonlinear scale.
         # ----------------------------------------------------------------------
-
+        # Get pobs for nonlinear fit.
+        if type(y) is str and y in ["obs", "complete"]:            
+            pobs = self.gpm.binary.phenotypes
+        # Else, numpy array or dataframe
+        elif type(y) == np.array or type(y) == pd.Series:
+            pobs = y
+        else:
+            raise FittingError("y is not valid. Must be one of the following: 'obs', 'complete', "
+                           "numpy.array, pandas.Series. Right now, its {}".format(type(y)))    
+        
         # Fit with an additive model
-        self.Additive = EpistasisLinearRegression(order=1, model_type=self.model_type)
         self.Additive.add_gpm(self.gpm)
-        self.Additive.Xfit = X[:,:self.Additive.gpm.binary.length+1]
-        self.Additive.Xpredict = self.Additive.Xfit
+        self.Additive.add_epistasis()
+        
+        # Use a first order matrix only.
+        if type(X) == np.ndarray or type(X) == pd.DataFrame:
+            Xadd = X[:,:self.Additive.epistasis.n]
+        else:
+            Xadd = X
+        
+        # Fit Additive model
+        self.Additive.fit(X=Xadd, y=pobs)
+        self.Additive.epistasis.values = self.Additive.coef_
+        
+        # Linearize phenotypes
+        padd = self.Additive.predict(X=Xadd)
+        
+        # If true, make a plot of the
+        #if plot_fit:
+        #    fig, ax = self.plot_fit()
 
+        # ----------------------------------------------------------------------
+        # Part 2: Estimate nonlinear function.
+        # ----------------------------------------------------------------------
+        
         # Prepare a high-order model
-        self.Linear = EpistasisLinearRegression(order=self.order, model_type=self.model_type)
         self.Linear.add_gpm(self.gpm)
-        self.Linear.Xfit = X
-        self.Linear.Xpredict = self.Linear.Xfit
+        self.Linear.add_epistasis()
+
+        # Call fit one time on nonlinear space to built X matrix
+        self.Linear.add_X(X=X, key="fit")
 
         ## Use widgets to guess the value?
         if use_widgets:
@@ -202,44 +238,36 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
             def fitting(**parameters):
                 """Callable to be controlled by widgets."""
                 # Fit the nonlinear least squares fit
-                self._fit_(X, y, sample_weight=sample_weight, **parameters)
+                self._fit_(padd, pobs, sample_weight=sample_weight, **parameters)
 
                 # Print score
-                print("R-squared of fit: " + str(self.score(X=X, y=y)))
+                #print("R-squared of fit: " + str(self.score(X=Xadd, y=padd)))
                 # Print parameters
                 for kw in self.parameters._mapping:
                     print(kw + ": " + str(getattr(self.parameters, kw)))
 
                 # Plot the nonlinear fit!
-                ylin = self.Additive.predict(X=self.Additive.Xfit)
+                ylin = self.Additive.predict(X=Xadd)
                 epistasis.plot.corr_resid(ylin, y, figsize=(3,5))
                 plt.show()
 
             # Construct and return the widget box
             widgetbox = ipywidgets.interactive(fitting, **kwargs)
-
             return widgetbox
-
 
         # Don't use widgets to fit data
         else:
-            self._fit_(X, y, sample_weight=sample_weight, **kwargs)
+            self._fit_(padd, pobs, sample_weight=sample_weight, **kwargs)
         return self
 
-    def _fit_(self, X=None, y=None, sample_weight=None, **kwargs):
+    def _fit_(self, x, y, sample_weight=None, **kwargs):
         """Estimate the scale of multiple mutations in a genotype-phenotype map."""
-        # ----------------------------------------------------------------------
-        # Part 1: Estimate average, independent mutational effects and fit
-        #         nonlinear scale.
-        # ----------------------------------------------------------------------
-        self.Additive.fit(y=y)
-        Xadd = self.Additive.Xfit # Use Xfit to get the transformed phenotypes
-        x = self.Additive.predict(X=Xadd)
-
+        
         # Set up guesses for parameters
         self.p0.update(**kwargs)
         kwargs = self.p0
         guesses = np.ones(self.parameters.n)
+                
         for kw in kwargs:
             index = self.parameters._mapping[kw]
             guesses[index] = kwargs[kw]
@@ -261,23 +289,31 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
 
         # Construct a linear epistasis model.
         if self.order > 1:
-            Xlin = self.Linear.Xfit
+            Xlin = self.Linear.Xbuilt["fit"]
             ylin = self.reverse(y, *self.parameters.values)
             # Now fit with a linear epistasis model.
             self.Linear.fit(X=Xlin, y=ylin)
         else:
             self.Linear = self.Additive
-        self.coef_ = self.Linear.coef_
+        # Map to epistasis.
+        self.Linear.epistasis.values = self.Linear.coef_
 
-    @X_predictor
-    def predict(self, X=None):
+    def plot_fit(self):
+        """Plots the observed phenotypes against the additive model phenotypes"""
+        padd = self.Additive.predict()
+        pobs = self.gpm.phenotypes
+        fig, ax = plt.subplots(figsize=(3,3))
+        ax.plot(padd, pobs, '.b')
+        plt.show()
+        return fig, ax        
+
+    def predict(self, X='complete'):
         """Infer phenotypes from model coefficients and nonlinear function."""
         x = self.Linear.predict(X)
         y = self.function(x, *self.parameters.values)
         return y
 
-    @X_fitter
-    def score(self, X=None, y=None):
+    def score(self, X='obs', y='obs'):
         """Calculates the squared-pearson coefficient for the nonlinear fit.
 
         Returns
@@ -288,13 +324,13 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
             squared pearson coefficient between linearized phenotypes and linear epistasis model
             described by epistasis.values.
         """
-        xlin = self.Additive.predict(X=self.Additive.Xfit)
+        xlin = self.Additive.predict(X=X)
         ypred = self.function(xlin, *self.parameters.get_params())
         yrev = self.reverse(y, *self.parameters.get_params())
-        return pearson(y, ypred)**2, self.Linear.score(X=self.Linear.Xfit, y=yrev)
+        return pearson(y, ypred)**2, self.Linear.score(X=X, y=yrev)
 
     @X_predictor
-    def hypothesis(self, X=None, thetas=None):
+    def hypothesis(self, X='complete', thetas=None):
         """Given a set of parameters, compute a set of phenotypes. Does not predict. This is method
         can be used to test a set of parameters (Useful for bayesian sampling).
         """
@@ -305,7 +341,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         if thetas is None:
             thetas = self.thetas
 
-        i, j = self.parameters.n, self.epistasis.n
+        i, j = self.parameters.n, self.Linear.epistasis.n
         parameters = thetas[:i]
         epistasis = thetas[i:i+j]
 
@@ -317,14 +353,66 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
 
         return ynonlin
 
-    def lnlikelihood(self, X=None, ydata=None, yerr=None, thetas=None):
-        """Calculate the log likelihood of data, given a set of model coefficients.
+    def lnlike_of_data(self, X='obs', y='obs', yerr='obs', thetas=None):
+        """Calculate the log likelihoods of each data point, given a set of model coefficients.
 
         Parameters
         ----------
         X : 2d array
             model matrix
-        ydata : array
+        y : array
+            data to calculate the likelihood
+        yerr: array
+            uncertainty in data
+        thetas : array
+            array of model coefficients
+
+        Returns
+        -------
+        lnlike : np.ndarray
+            log-likelihood of each data point given a model.
+        """
+        ####### Prepare input #########
+        # If no model parameters are given, use the model fit.
+        if thetas is None:
+            thetas = self.thetas
+
+        ######## Handle y.
+        # Get pobs for nonlinear fit.
+        if type(y) is str and y in ["obs", "complete"]:            
+            ydata = self.gpm.binary.phenotypes
+        # Else, numpy array or dataframe
+        elif type(y) == np.array or type(y) == pd.Series:
+            ydata = y
+        else:
+            raise FittingError("y is not valid. Must be one of the following: 'obs', 'complete', "
+                           "numpy.array, pandas.Series. Right now, its {}".format(type(y)))    
+
+        ######## Handle yerr.
+        # Check if yerr is string
+        if type(yerr) is str and yerr in ["obs", "complete"]:
+            yerr = self.gpm.binary.std.upper
+
+        # Else, numpsy array or dataframe
+        elif type(y) != np.array and type(y) != pd.Series:
+            raise FittingError("yerr is not valid. Must be one of the following: 'obs', 'complete', "
+                           "numpy.array, pandas.Series. Right now, its {}".format(type(yerr)))    
+
+        ####### Calculate likelihood #########
+        # Calculate ymodel
+        ymodel = self.hypothesis(X=X, thetas=thetas)
+
+        # Likelihood of data given model
+        return np.log(2*np.pi*yerr**2) + ((ydata - ymodel)/yerr)**2 
+    
+    def lnlikelihood(self, X='obs', y='obs', yerr='obs', thetas=None):
+        """Calculate the log likelihood of the data, given a set of model coefficients.
+
+        Parameters
+        ----------
+        X : 2d array
+            model matrix
+        y : array
             data to calculate the likelihood
         yerr: array
             uncertainty in data
@@ -334,21 +422,13 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         Returns
         -------
         lnlike : float
-            log-likelihood of the data given the model.
-        """
-        if thetas is None:
-            thetas = self.thetas
-        if yerr is None:
-            ydata = self.gpm.phenotypes
-            yerr = self.gpm.std.upper
-        if X is None:
-            X = self.Xfit
-        ymodel = self.hypothesis(X=X, thetas=thetas)
-        inv_sigma2 = 1.0/(yerr**2)
-        lnlikelihood = -0.5*(np.sum((ydata-ymodel)**2*inv_sigma2 - np.log(inv_sigma2)))
-
+            log-likelihood of data given a model.
+        """    
+        lnlike = -0.5 * np.sum( self.lnlike_of_data(X=X, y=y, yerr=yerr, thetas=thetas) )
         # If log-likelihood is infinite, set to negative infinity.
-        if np.isinf(lnlikelihood):
+        if np.isinf(lnlike):
             return -np.inf
-
-        return lnlikelihood
+        
+        elif np.isnan(lnlike):
+            raise FittingError("Got an NaN in the likelihood.")
+        return lnlike

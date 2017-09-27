@@ -11,7 +11,7 @@ from epistasis.stats import gmean
 
 # Suppress an annoying error
 import warnings
-warnings.filterwarnings(action="ignore", category=RuntimeWarning)
+#warnings.filterwarnings(action="ignore", category=RuntimeWarning)
 
 
 def power_transform(x, lmbda, A, B):
@@ -74,6 +74,10 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
         )
         # Initial parameters guesses
         self.p0 = p0
+        
+        # Set up additive and high-order linear model
+        self.Additive = EpistasisLinearRegression(order=1, model_type=self.model_type)
+        self.Linear = EpistasisLinearRegression(order=self.order, model_type=self.model_type)
 
     def function(self, x, lmbda, A, B):
         """Power transformation function. Exposed to the user for transforming
@@ -117,31 +121,24 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
         gmean = self.gmean
         return (gmean**(lmbda-1)*lmbda*(y - B) + 1)**(1/lmbda) - A
 
-    def hypothesis(self, X=None, thetas=None):
+    def hypothesis(self, X='obs', thetas=None):
         """Given a set of parameters, compute a set of phenotypes. Does not predict. This is method
         can be used to test a set of parameters (Useful for bayesian sampling).
-        """
+        """        
         y = super(EpistasisPowerTransform, self).hypothesis(X=X, thetas=thetas)
         # NOTE: sets nan values to the saturation point.
         y[np.isnan(y)==True] = self.parameters.B
         return y
 
-    def predict(self, X=None):
+    def predict(self, X='complete'):
         """Predict new targets from model."""
         y = super(EpistasisPowerTransform, self).predict(X=X)
         # NOTE: sets nan values to the saturation point.
         y[np.isnan(y)==True] = self.parameters.B
         return y
 
-    def _fit_(self, X=None, y=None, sample_weight=None, **kwargs):
+    def _fit_(self, x, y, sample_weight=None, **kwargs):
         """Estimate the scale of multiple mutations in a genotype-phenotype map."""
-        # ----------------------------------------------------------------------
-        # Part 1: Estimate average, independent mutational effects and fit
-        #         nonlinear scale.
-        # ----------------------------------------------------------------------
-        self.Additive.fit(y=y)
-        x = self.Additive.predict(X=self.Additive.Xfit)
-
         # Set up guesses
         self.p0.update(**kwargs)
         kwargs = self.p0
@@ -170,9 +167,11 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
 
         # Construct a linear epistasis model.
         if self.order > 1:
-            linearized_y = self.reverse(y, *self.parameters.values)
+            Xlin = self.Linear.Xbuilt["fit"]
+            ylin = self.reverse(y, *self.parameters.values)
             # Now fit with a linear epistasis model.
-            self.Linear.fit(X=self.Linear.Xfit, y=linearized_y)
+            self.Linear.fit(X=Xlin, y=ylin)
         else:
             self.Linear = self.Additive
-        self.coef_ = self.Linear.coef_
+        # Map to epistasis.
+        self.Linear.epistasis.values = self.Linear.coef_
