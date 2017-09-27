@@ -71,21 +71,21 @@ class TestEpistasisMixedRegression(object):
         # Tests
         assert len(coefs) == 15
     
-    # def test_hypothesis(self, gpm):
-    # 
-    #     model = EpistasisMixedRegression(self.order, self.threshold)
-    #     model.add_gpm(gpm)   
-    #     model.fit(lmbda=0, A=1,B=1)
-    #     
-    #     predictions = model.hypothesis()
-    #     # Need more thorough tests
-    #     assert len(predictions) == gpm.n
-    #     
-    # def test_lnlikelihood(self, gpm):
-    #     model = EpistasisMixedRegression(self.order, self.threshold)
-    #     model.add_gpm(gpm)   
-    #     model.fit(lmbda=0, A=1,B=1)
-    #     
-    #     # Calculate lnlikelihood
-    #     lnlike = model.lnlikelihood()
-    #     assert lnlike.dtype == float
+    def test_hypothesis(self, gpm):
+    
+        model = EpistasisMixedRegression(self.order, self.threshold)
+        model.add_gpm(gpm)   
+        model.fit(lmbda=0, A=1,B=1)
+        
+        predictions = model.hypothesis()
+        # Need more thorough tests
+        assert len(predictions) == gpm.n
+        
+    def test_lnlikelihood(self, gpm):
+        model = EpistasisMixedRegression(self.order, self.threshold)
+        model.add_gpm(gpm)   
+        model.fit(lmbda=0, A=1,B=1)
+        
+        # Calculate lnlikelihood
+        lnlike = model.lnlikelihood()
+        assert lnlike.dtype == float
