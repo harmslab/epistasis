@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import binarize
+from sklearn.base import BaseEstimator, RegressorMixin
 
 import epistasis.mapping
 from epistasis.model_matrix_ext import get_model_matrix
@@ -10,7 +11,7 @@ from .power import EpistasisPowerTransform
 from .classifiers import EpistasisLogisticRegression
 from .utils import FittingError, XMatrixException
 
-class EpistasisMixedRegression(BaseModel):
+class EpistasisMixedRegression(BaseModel, BaseEstimator):
     """A high-order epistasis regression that first classifies genotypes as
     viable/nonviable (given some threshold) and then estimates epistatic coefficients
     in viable phenotypes.
