@@ -141,6 +141,15 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         self.set_params(order=order,
             model_type=model_type)
 
+
+        # Store model specs.
+        self.model_specs = dict(
+            function=function,
+            reverse=reverse,
+            order=self.order,
+            model_type=self.model_type,
+            **p0)
+
         # Initial parameters guesses
         self.p0 = p0
         

@@ -65,15 +65,20 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
     parameters : Parameters object
         Mapping object for nonlinear coefficients
     """
-    def __init__(self, order=1, model_type="global", fix_linear=True, **p0):
+    def __init__(self, order=1, model_type="global", **p0):
         # Construct parameters object
         self.parameters = Parameters(["lmbda","A","B"])
         self.set_params(order=order,
             model_type=model_type,
-            fix_linear=fix_linear,
         )
         # Initial parameters guesses
         self.p0 = p0
+    
+        # Store model specs.
+        self.model_specs = dict(
+            order=self.order,
+            model_type=self.model_type,
+            **p0)
         
         # Set up additive and high-order linear model
         self.Additive = EpistasisLinearRegression(order=1, model_type=self.model_type)

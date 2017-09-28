@@ -30,6 +30,13 @@ class EpistasisBaseClassifier(BaseModel):
         self.fit_intercept=False
         self.Xbuilt = {}
         
+        # Store model specs.
+        self.model_specs = dict(
+            order=self.order,
+            threshold=self.threshold,
+            model_type=self.model_type,
+            **kwargs)
+        
         # Set up additive linear model for pre-classifying
         self.Additive = EpistasisLinearRegression(order=1, model_type=self.model_type)        
 
