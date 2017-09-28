@@ -209,11 +209,12 @@ class EpistasisMixedRegression(BaseModel):
         # 1. Class probability given the coefs
         proba = self.Classifier.hypothesis(X=X, thetas=thetas1)
         classes = np.ones(len(proba))
-        classes[proba<0.5] = 0
+        classes[proba>0.5] = 0
 
         # 2. Determine ymodel given the coefs.
         y = self.Model.hypothesis(X=X, thetas=thetas2)
         y[classes==0] = self.threshold
+        y[y<self.threshold] = self.threshold
         return y
 
     def lnlike_of_data(self, X='obs', y='obs', yerr='obs', thetas=None):

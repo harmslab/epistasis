@@ -412,4 +412,4 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         ymodel = self.hypothesis(X=X, thetas=thetas)
 
         # Likelihood of data given model
-        return - 0.5 * np.log(2*np.pi*yerr**2) - ((ydata - ymodel)/yerr)**2 
+        return - 0.5 * np.log(2*np.pi*yerr**2) - 0.5*((ydata - ymodel)**2/yerr**2) 

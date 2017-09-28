@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import emcee
+import warnings
 
 class BayesianSampler(object):
     """A sampling class to estimate the uncertainties in an epistasis model's
@@ -71,6 +72,7 @@ class BayesianSampler(object):
         
     def sample(self, n_steps=100, n_burn=50):
         """Sample the likelihood of the model by walking n_steps with each walker."""
+        warnings.simplefilter("ignore", RuntimeWarning)
         # Prepare sampler initial conditions. If the sampler was run previously,
         # get ending state and use a initial states.
         if self.last_run is None:
@@ -103,7 +105,6 @@ class BayesianSampler(object):
         for i in samples.index:
             # Slice the row from samples
             thetas = samples.iloc[[i]].values.reshape(-1)
-            print(thetas)
             predictions[i,:] = self.model.hypothesis(X='complete', thetas=thetas)
             
         # Return samples

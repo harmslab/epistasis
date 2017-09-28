@@ -102,4 +102,4 @@ class EpistasisLinearRegression(_LinearRegression, _BaseModel):
 
         # Calculate y from model.
         ymodel = self.hypothesis(X=X, thetas=thetas)
-        return - 0.5 * _np.log(2*_np.pi*yerr**2) - ((y - ymodel)/yerr)**2 
+        return - 0.5 * _np.log(2*_np.pi*yerr**2) - 0.5*((y - ymodel)**2/yerr**2) 
