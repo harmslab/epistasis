@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import emcee
 import warnings
+from functools import wraps
 
 class BayesianSampler(object):
     """A sampling class to estimate the uncertainties in an epistasis model's
@@ -70,7 +71,7 @@ class BayesianSampler(object):
         walker_positions = middle_positions + rel_deviations
         return walker_positions
         
-    def sample(self, n_steps=100, n_burn=50):
+    def sample(self, n_steps=100, n_burn=0):
         """Sample the likelihood of the model by walking n_steps with each walker."""
         warnings.simplefilter("ignore", RuntimeWarning)
         # Prepare sampler initial conditions. If the sampler was run previously,
@@ -87,16 +88,28 @@ class BayesianSampler(object):
             lnprob0 = self.last_run[1]
             rstate0 = self.last_run[2]
             n_steps = n_steps
+        
         # Run sampler
         self.last_run = self.sampler.run_mcmc(pos0, n_steps, rstate0=rstate0, lnprob0=lnprob0)
+        return self
         
     @property
     def samples(self):
         """Get samples."""
         return pd.DataFrame(self.sampler.chain[:, self.n_burn:, :].reshape((-1, self.ndim)))
     
-    def predict(self):
-        """"""
+    @wraps(pd.DataFrame.to_csv)
+    def samples_to_csv(self, *args, **kwargs):  
+        """Write samples DataFrame to csv."""      
+        self.samples.to_csv(*args, **kwargs)
+        
+    @wraps(pd.DataFrame.to_csv)
+    def predictions_to_csv(self, *args, **kwargs):  
+        """Write predictions DataFrame to csv."""      
+        self.predictions.to_csv(*args, **kwargs)
+            
+    def predict(self, store=True):
+        """Predict phenotypes from sampled models."""
         # Initialize predictions array
         samples = self.samples
         predictions = np.empty((len(self.samples), len(self.model.gpm.complete_genotypes)), dtype=float)
@@ -108,6 +121,9 @@ class BayesianSampler(object):
             predictions[i,:] = self.model.hypothesis(X='complete', thetas=thetas)
             
         # Return samples
-        return pd.DataFrame(predictions, columns=self.model.gpm.complete_genotypes)
+        df = pd.DataFrame(predictions, columns=self.model.gpm.complete_genotypes)
+        if store == True:
+            self.predictions = df
+        return df
     
     
