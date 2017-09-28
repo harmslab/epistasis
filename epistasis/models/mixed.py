@@ -10,10 +10,6 @@ from .power import EpistasisPowerTransform
 from .classifiers import EpistasisLogisticRegression
 from .utils import FittingError, XMatrixException
 
-# Suppress an annoying error
-import warnings
-#warnings.filterwarnings(action="ignore", category=RuntimeWarning)
-
 class EpistasisMixedRegression(BaseModel):
     """A high-order epistasis regression that first classifies genotypes as
     viable/nonviable (given some threshold) and then estimates epistatic coefficients
@@ -36,9 +32,7 @@ class EpistasisMixedRegression(BaseModel):
     -----------------
     Keyword arguments are interpreted as intial guesses for the nonlinear function
     parameters. Must have the same name as parameters in the nonlinear function
-
     """
-
     def __init__(self, order, threshold, model_type="global",
         epistasis_model=EpistasisPowerTransform,
         epistasis_classifier=EpistasisLogisticRegression,
@@ -56,6 +50,15 @@ class EpistasisMixedRegression(BaseModel):
         self.order = order
         self.threshold = threshold
         self.model_type = model_type
+        
+        # Store model specs.
+        self.model_specs = dict(
+            order=self.order,
+            threshold=self.threshold,
+            model_type=self.model_type,
+            epistasis_model=EpistasisPowerTransform,
+            epistasis_classifier=EpistasisLogisticRegression,
+            **p0)
 
         ### Initialize the epistasis model
         self.Model = epistasis_model(order=self.order,

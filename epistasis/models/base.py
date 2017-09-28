@@ -18,7 +18,7 @@ class BaseModel(object):
     Manages attachment of GenotypePhenotypeMap and EpistasisMaps to the Epistasis
     models.
     """
-    Xbuilt = {}    
+    Xbuilt = {}
     
     def add_epistasis(self):
         """Add an EpistasisMap to model.

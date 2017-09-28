@@ -32,6 +32,13 @@ class EpistasisLinearRegression(_LinearRegression, _BaseModel):
         self.n_jobs = n_jobs
         self.set_params(model_type=model_type, order=order)
         self.Xbuilt = {}
+        
+                
+        # Store model specs.
+        self.model_specs = dict(
+            order=self.order,
+            model_type=self.model_type,
+            **kwargs)
 
     @X_fitter
     def fit(self, X='obs', y='obs', sample_weight=None, **kwargs):
