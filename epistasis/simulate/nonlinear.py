@@ -49,6 +49,7 @@ class NonlinearSimulation(BaseSimulation):
         
         for i in range(1, len(parameters)):
             self.parameters._set_param(parameters[i], p0[i-1])
+        return self
 
     @classmethod
     def from_linear(cls, model, function, p0=[], **kwargs):
