@@ -132,14 +132,14 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
         """        
         y = super(EpistasisPowerTransform, self).hypothesis(X=X, thetas=thetas)
         # NOTE: sets nan values to the saturation point.
-        y[np.isnan(y)==True] = self.parameters.B
+        #y[np.isnan(y)==True] = self.parameters.B
         return y
 
     def predict(self, X='complete'):
         """Predict new targets from model."""
         y = super(EpistasisPowerTransform, self).predict(X=X)
         # NOTE: sets nan values to the saturation point.
-        y[np.isnan(y)==True] = self.parameters.B
+        #y[np.isnan(y)==True] = self.parameters.B
         return y
 
     def _fit_(self, x, y, sample_weight=None, **kwargs):

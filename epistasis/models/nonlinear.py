@@ -257,8 +257,8 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
 
                 # Plot the nonlinear fit!
                 ylin = self.Additive.predict(X=Xadd)
-                epistasis.plot.corr_resid(ylin, y, figsize=(3,5))
-                plt.show()
+                #epistasis.plot.corr_resid(ylin, y, figsize=(3,5))
+                #plt.show()
 
             # Construct and return the widget box
             widgetbox = ipywidgets.interactive(fitting, **kwargs)

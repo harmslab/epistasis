@@ -186,9 +186,9 @@ class BaseModel(object):
         lnlike : float
             log-likelihood of data given a model.
         """
-        lnlike = np.nansum( self.lnlike_of_data(X=X, y=y, yerr=yerr, thetas=thetas) )
+        lnlike = np.sum( self.lnlike_of_data(X=X, y=y, yerr=yerr, thetas=thetas))
         
         # If log-likelihood is infinite, set to negative infinity.
-        if np.isinf(lnlike):
+        if np.isinf(lnlike) or np.isnan(lnlike):
             return -np.inf            
         return lnlike

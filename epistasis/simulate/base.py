@@ -170,7 +170,7 @@ class BaseSimulation(GenotypePhenotypeMap):
             # Get epistasis map for this order.
             em = self.epistasis.get_orders(order)
             index = em.index
-            values[index[0]: index[-1]+1] = np.exp(-order) * np.random.uniform(-1,1, size=len(index))
+            values[index[0]: index[-1]+1] = np.exp(-order) * np.random.uniform(-0.1,0.1, size=len(index))
         self.epistasis._values = values
         self.build()
         return self
