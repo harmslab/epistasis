@@ -3,4 +3,3 @@ Module for estimating the uncertainty of the coefficients (and nonlinear paramet
 in high-order epistasis models.  
 """
 from .bayesian import BayesianSampler
-from .bootstrap import BootstrapSampler

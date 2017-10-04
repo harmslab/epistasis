@@ -257,8 +257,8 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
 
                 # Plot the nonlinear fit!
                 ylin = self.Additive.predict(X=Xadd)
-                epistasis.plot.corr_resid(ylin, y, figsize=(3,5))
-                plt.show()
+                #epistasis.plot.corr_resid(ylin, y, figsize=(3,5))
+                #plt.show()
 
             # Construct and return the widget box
             widgetbox = ipywidgets.interactive(fitting, **kwargs)
@@ -412,32 +412,4 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         ymodel = self.hypothesis(X=X, thetas=thetas)
 
         # Likelihood of data given model
-        return np.log(2*np.pi*yerr**2) + ((ydata - ymodel)/yerr)**2 
-    
-    def lnlikelihood(self, X='obs', y='obs', yerr='obs', thetas=None):
-        """Calculate the log likelihood of the data, given a set of model coefficients.
-
-        Parameters
-        ----------
-        X : 2d array
-            model matrix
-        y : array
-            data to calculate the likelihood
-        yerr: array
-            uncertainty in data
-        thetas : array
-            array of model coefficients
-
-        Returns
-        -------
-        lnlike : float
-            log-likelihood of data given a model.
-        """    
-        lnlike = -0.5 * np.sum( self.lnlike_of_data(X=X, y=y, yerr=yerr, thetas=thetas) )
-        # If log-likelihood is infinite, set to negative infinity.
-        if np.isinf(lnlike):
-            return -np.inf
-        
-        elif np.isnan(lnlike):
-            raise FittingError("Got an NaN in the likelihood.")
-        return lnlike
+        return - 0.5 * np.log(2*np.pi*yerr**2) - 0.5*((ydata - ymodel)**2/yerr**2) 

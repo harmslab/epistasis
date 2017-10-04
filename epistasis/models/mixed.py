@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import binarize
+from sklearn.base import BaseEstimator, RegressorMixin
 
 import epistasis.mapping
 from epistasis.model_matrix_ext import get_model_matrix
@@ -10,7 +11,7 @@ from .power import EpistasisPowerTransform
 from .classifiers import EpistasisLogisticRegression
 from .utils import FittingError, XMatrixException
 
-class EpistasisMixedRegression(BaseModel):
+class EpistasisMixedRegression(BaseModel, BaseEstimator):
     """A high-order epistasis regression that first classifies genotypes as
     viable/nonviable (given some threshold) and then estimates epistatic coefficients
     in viable phenotypes.
@@ -37,14 +38,6 @@ class EpistasisMixedRegression(BaseModel):
         epistasis_model=EpistasisPowerTransform,
         epistasis_classifier=EpistasisLogisticRegression,
         **p0):
-
-        # # Warn users that this is still experimental!
-        # warnings.warn("\n\nWarning!\n"
-        #               "--------\n"
-        #               "\nThe EpistasisMixedRegression is *very* experimental and under \n" 
-        #               "active development! Beware when using -- the API is likely to \n"
-        #               "change rapidly.\n\n",
-        #               FutureWarning)
 
         ### Set model specs.
         self.order = order
@@ -210,17 +203,19 @@ class EpistasisMixedRegression(BaseModel):
         if thetas is None:
             thetas = self.thetas
 
+        # Sort thetas for classifier and model.
         thetas1 = thetas[0:len(self.Classifier.coef_[0])]
         thetas2 = thetas[len(self.Classifier.coef_[0]):]
 
         # 1. Class probability given the coefs
         proba = self.Classifier.hypothesis(X=X, thetas=thetas1)
         classes = np.ones(len(proba))
-        classes[proba<0.5] = 0
+        classes[proba>0.5] = 0
 
         # 2. Determine ymodel given the coefs.
         y = self.Model.hypothesis(X=X, thetas=thetas2)
         y[classes==0] = self.threshold
+        y[y<self.threshold] = self.threshold
         return y
 
     def lnlike_of_data(self, X='obs', y='obs', yerr='obs', thetas=None):
@@ -240,45 +235,21 @@ class EpistasisMixedRegression(BaseModel):
         lnlike : float
             log-likelihood of the data given the model.
         """
+        if thetas is None:
+            thetas = self.thetas
+
+        thetas1 = thetas[0:len(self.Classifier.coef_[0])]
+        thetas2 = thetas[len(self.Classifier.coef_[0]):]
+        
         # Calculate log-likelihood of classifier
-        class_lnlike = self.Classifier.lnlike_of_data(X=X, y=y)
+        class_lnlike = self.Classifier.lnlike_of_data(X=X, y=y, thetas=thetas1)
         classes = self.Classifier.predict(X=X)
         
         # Calculate log-likelihood of the model
-        model_lnlike = self.Model.lnlike_of_data(X=X, y=y)
+        model_lnlike = self.Model.lnlike_of_data(X=X, y=y, thetas=thetas2)
         
         # Set the likelihoods of points below threshold to threshold
         model_lnlike[classes==0] = 0
         
         # Sum the log-likelihoods
         return class_lnlike + model_lnlike
-
-    def lnlikelihood(self, X='obs', y='obs', yerr='obs', thetas=None):
-        """Calculate the log likelihood of data, given a set of model coefficients.
-
-        Parameters
-        ----------
-        X : 2d array
-            model matrix
-        yerr: array
-            uncertainty in data
-        thetas : array
-            array of model coefficients
-
-        Returns
-        -------
-        lnlike : float
-            log-likelihood of the data given the model.
-        """
-        # Calculate the likelihoods of each data point.
-        lnlike = np.sum(self.lnlike_of_data(X=X, y=y, yerr=yerr, thetas=thetas))
-        
-        # If log-likelihood is infinite, set to negative infinity.
-        if np.isinf(lnlike):
-            return -np.inf
-        
-        elif np.isnan(lnlike):
-            raise FittingError("Got an NaN in the likelihood.")
-        # Return the sum of the log-likelihoods
-        
-        return lnlike  

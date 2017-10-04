@@ -113,11 +113,13 @@ class BaseSimulation(GenotypePhenotypeMap):
         # Attach an epistasis model.
         self.order = order
         self.add_epistasis()
+        return self
 
     def set_coefs_sites(self, sites):
         """Construct a set of epistatic coefficients given a list of coefficient sites."""
         self.order = max([len(s) for s in sites])
         self.add_epistasis()
+        return self
 
     def set_coefs(self, sites, values):
         """Set the epistatic coefs
@@ -132,6 +134,7 @@ class BaseSimulation(GenotypePhenotypeMap):
         self.set_coefs_sites(sites)
         self.epistasis._values = values
         self.build()
+        return self
 
     @assert_epistasis
     def set_coefs_values(self, values):
@@ -139,6 +142,7 @@ class BaseSimulation(GenotypePhenotypeMap):
         """
         self.epistasis._values = values
         self.build()
+        return self
 
     @assert_epistasis
     def set_coefs_random(self, coef_range):
@@ -153,6 +157,7 @@ class BaseSimulation(GenotypePhenotypeMap):
         # Add values to epistatic interactions
         self.epistasis._values = np.random.uniform(coef_range[0], coef_range[1], size=len(self.epistasis.sites))
         self.build()
+        return self
         
     @assert_epistasis
     def set_coefs_decay(self):
@@ -165,9 +170,10 @@ class BaseSimulation(GenotypePhenotypeMap):
             # Get epistasis map for this order.
             em = self.epistasis.get_orders(order)
             index = em.index
-            values[index[0]: index[-1]+1] = np.exp(-order) * np.random.uniform(-1,1, size=len(index))
+            values[index[0]: index[-1]+1] = np.exp(-order) * np.random.uniform(-0.1,0.1, size=len(index))
         self.epistasis._values = values
         self.build()
+        return self
 
     @classmethod
     def from_length(cls, length, **kwargs):
@@ -234,3 +240,4 @@ class BaseSimulation(GenotypePhenotypeMap):
         """
         stdeviations = np.ones(len(self.phenotypes)) * sigma
         self.stdeviations = stdeviations
+        return self

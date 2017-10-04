@@ -32,7 +32,6 @@ class EpistasisLinearRegression(_LinearRegression, _BaseModel):
         self.n_jobs = n_jobs
         self.set_params(model_type=model_type, order=order)
         self.Xbuilt = {}
-        
                 
         # Store model specs.
         self.model_specs = dict(
@@ -102,32 +101,4 @@ class EpistasisLinearRegression(_LinearRegression, _BaseModel):
 
         # Calculate y from model.
         ymodel = self.hypothesis(X=X, thetas=thetas)
-        return _np.log(2*_np.pi*yerr**2) + ((y - ymodel)/yerr)**2
-        
-    def lnlikelihood(self, X="obs", y="obs", yerr="obs", thetas=None):
-        """Calculate the log likelihood of y, given a set of model coefficients.
-
-        Parameters
-        ----------
-        X : 2d array
-            model matrix
-        y : array
-            data to calculate the likelihood
-        yerr: array
-            uncertainty in data
-        thetas : array
-            array of model coefficients
-
-        Returns
-        -------
-        lnlike : float
-            log-likelihood of data given a model.
-        """    
-        lnlike -0.5 * _np.sum( self.lnlike_of_data(X=X, y=y, yerr=yerr, thetas=thetas) )
-        # If log-likelihood is infinite, set to negative infinity.
-        if np.isinf(lnlike):
-            return -np.inf
-        
-        elif np.isnan(lnlike):
-            raise FittingError("Got an NaN in the likelihood.")
-        return lnlike
+        return - 0.5 * _np.log(2*_np.pi*yerr**2) - 0.5*((y - ymodel)**2/yerr**2) 

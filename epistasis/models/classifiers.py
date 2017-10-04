@@ -80,7 +80,7 @@ class EpistasisBaseClassifier(BaseModel):
         return super(self.__class__, self).score(X=X, y=yclass)
 
     @X_fitter
-    def lnlike_of_data(self, X='obs', y='obs', thetas=None):
+    def lnlike_of_data(self, X='obs', y='obs', yerr='obs', thetas=None):
         """Calculate the log likelihoods of each data point, given a set of model coefficients.
 
         Parameters
@@ -110,29 +110,6 @@ class EpistasisBaseClassifier(BaseModel):
         # NOTE: This likelihood is not normalized -- not a simple problem.
         return yclass * np.log(1-ymodel) + (1 - yclass) * np.log(ymodel)
 
-    def lnlikelihood(self, X='obs', y='obs', thetas=None):
-        """Calculate the log likelihood of data, given a set of model coefficients.
-
-        Parameters
-        ----------
-        X : 2d array
-            model matrix
-        ydata : array
-            data to calculate the likelihood
-        yerr: array
-            uncertainty in data
-        thetas : array
-            array of model coefficients
-
-        Returns
-        -------
-        lnlike : float
-            log-likelihood of the data given the model.
-        """
-        ### log-likelihood of logit model
-        # NOTE: This likelihood is not normalized -- not a simple problem.
-        lnlike = self.lnlike_of_data(X=X, y=y, thetas=thetas)
-        return np.sum( lnlike )
 
 @sklearn_to_epistasis()
 class EpistasisLogisticRegression(LogisticRegression, EpistasisBaseClassifier):
@@ -151,7 +128,7 @@ class EpistasisLogisticRegression(LogisticRegression, EpistasisBaseClassifier):
         with respect to the wildtype genotype.
     """
     @X_predictor
-    def hypothesis(self, X=None, thetas=None):
+    def hypothesis(self, X='obs', thetas=None):
         """Returns the probability of the data given the model."""
         if thetas is None:
             thetas = self.thetas
