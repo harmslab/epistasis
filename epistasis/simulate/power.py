@@ -57,6 +57,8 @@ class PowerScaleSimulation(BaseSimulation):
     def build(self, *args):
         """ Build nonlinear map from epistasis and function.
         """
+        self.epistasis.values[0] = self.parameters.B
+        
         # Construct an X for the linear epistasis model
         X = self.add_X()
         

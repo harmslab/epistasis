@@ -113,6 +113,8 @@ class BaseSimulation(GenotypePhenotypeMap):
         # Attach an epistasis model.
         self.order = order
         self.add_epistasis()
+        self.epistasis._values = np.zeros(self.epistasis.n)
+        self.epistasis._values[0] = 1
         return self
 
     def set_coefs_sites(self, sites):
@@ -135,6 +137,12 @@ class BaseSimulation(GenotypePhenotypeMap):
         self.epistasis._values = values
         self.build()
         return self
+
+    @assert_epistasis
+    def set_wildtype_phenotype(self, value):
+        """Set the wildtype phenotype."""
+        self.epistasis._values[0] = value
+        self.build()
 
     @assert_epistasis
     def set_coefs_values(self, values):
@@ -164,14 +172,17 @@ class BaseSimulation(GenotypePhenotypeMap):
         """Use a decaying exponential model to choose random epistatic coefficient
         values that decay/shrink with increasing order.
         """
-        values = np.empty(self.epistasis.n, dtype=float)
-        values[0] = 1
+        wt_phenotype = self.epistasis.values[0]
         for order in range(1, self.epistasis.order+1):
             # Get epistasis map for this order.
             em = self.epistasis.get_orders(order)
             index = em.index
-            values[index[0]: index[-1]+1] = np.exp(-order) * np.random.uniform(-0.1,0.1, size=len(index))
-        self.epistasis._values = values
+            
+            # Randomly choose values for the given order
+            vals = np.exp(-order) * np.random.uniform(-wt_phenotype,wt_phenotype, size=len(index))
+            
+            # Map to epistasis object.
+            self.epistasis._values[index[0]: index[-1]+1] = vals
         self.build()
         return self
 
