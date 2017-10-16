@@ -1,4 +1,15 @@
-import inspect
+import sys
+
+# Dealing with python 2 imports
+if sys.version_info[0] == 3:
+    import inspect
+else:
+    # Try getting inspect working on python 2
+    try:
+        import funcsigs as inspect
+    except ImportError: 
+        raise("Is `funcsigs` installed? Try `pip install funcsigs` before running this package." )
+
 import numpy as np
 import pandas as pd
 import json

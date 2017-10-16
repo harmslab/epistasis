@@ -6,7 +6,6 @@ import pandas as pd
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
 from sklearn.naive_bayes import BernoulliNB
-from sklearn.gaussian_process import GaussianProcessClassifier
 from sklearn.preprocessing import binarize
 
 from .base import BaseModel
@@ -148,6 +147,7 @@ class EpistasisSVC(SVC, EpistasisBaseClassifier):
     """Logistic Regression used to categorize phenotypes as either alive or dead."""
 
 
-@sklearn_to_epistasis()
-class EpistasisGaussianProcessClassifier(GaussianProcessClassifier, EpistasisBaseClassifier):
-    """"""
+#from sklearn.gaussian_process import GaussianProcessClassifier
+# @sklearn_to_epistasis()
+# class EpistasisGaussianProcessClassifier(GaussianProcessClassifier, EpistasisBaseClassifier):
+#     """"""
