@@ -333,10 +333,17 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
             squared pearson coefficient between linearized phenotypes and linear epistasis model
             described by epistasis.values.
         """
+        # Get pobs for nonlinear fit.
+        if type(y) is str and y in ["obs", "complete"]:            
+            pobs = self.gpm.binary.phenotypes
+        # Else, numpy array or dataframe
+        elif type(y) == np.array or type(y) == pd.Series:
+            pobs = y
+        
         xlin = self.Additive.predict(X=X)
         ypred = self.function(xlin, *self.parameters.get_params())
-        yrev = self.reverse(y, *self.parameters.get_params())
-        return pearson(y, ypred)**2, self.Linear.score(X=X, y=yrev)
+        yrev = self.reverse(pobs, *self.parameters.get_params())
+        return pearson(pobs, ypred)**2, self.Linear.score(X=X, y=yrev)
 
     @X_predictor
     def hypothesis(self, X='complete', thetas=None):

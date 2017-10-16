@@ -179,7 +179,7 @@ class BaseSimulation(GenotypePhenotypeMap):
             index = em.index
             
             # Randomly choose values for the given order
-            vals = np.exp(-order) * np.random.uniform(-wt_phenotype,wt_phenotype, size=len(index))
+            vals = 10**(-order) * np.random.uniform(-wt_phenotype,wt_phenotype, size=len(index))
             
             # Map to epistasis object.
             self.epistasis._values[index[0]: index[-1]+1] = vals

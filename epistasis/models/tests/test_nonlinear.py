@@ -64,6 +64,20 @@ class TestEpistasisNonlinearRegression(object):
         assert hasattr(model.Linear, 'Xbuilt') == True
         assert "fit" in model.Linear.Xbuilt
 
+
+    def test_score(self, gpm):
+        model = EpistasisNonlinearRegression.read_gpm(gpm,
+            function=function,
+            reverse=reverse,
+            order=self.order,
+            model_type=self.model_type)
+        
+        model.fit(A=1, B=0)
+        scores = model.score()
+        assert len(scores) == 2
+        assert 0 <= scores[0] <= 1
+        assert 0 <= scores[1] <= 1
+
     def test_predict(self, gpm):
         model = EpistasisNonlinearRegression.read_gpm(gpm,
             function=function,
@@ -75,7 +89,7 @@ class TestEpistasisNonlinearRegression(object):
         y = model.predict()
         
         # Tests
-        np.testing.assert_almost_equal(sorted(y), sorted(model.gpm.phenotypes))
+        np.testing.assert_almost_equal(sorted(y), sorted(model.gpm.phenotypes))    
     
     def test_thetas(self, gpm):
         model = EpistasisNonlinearRegression.read_gpm(gpm,
