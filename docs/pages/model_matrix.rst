@@ -1,17 +1,38 @@
 The Model Matrix
 ================
 
-Defining the model matrix (the `X` argument in epistasis models) is the most
-important piece of any given model. This matrix maps genotypes/phenotypes to 
-epistatic coefficients. 
+The most important piece of an ``epistasis.model`` is the X matrix. This matrix
+maps genotypes to epistatic coefficients. You can read about this matrix 
+in this paper_. 
 
-Constructing this matrix can be a complicated, so this package tries to provide
-plenty of ways to simplify this. For example, most methods allow you to pass a
-key to the `X` argument and the model knows that to do from there. 
+There are two popular X matrices that exist in the epistasis literature, the 
+``global`` and ``local`` model. Each epistasis model takes a ``model_type`` 
+keyword argument that tells the model which matrix to use. Read the paper mentioned
+above for more information on which model to use.
+
+Constructing these models is no easy task, so the ``epistasis`` tries to make this
+simple. Rather than you constructing the matrix yourself, it offers some handy 
+keyword arguments for building common matrices. 
 
 These keys include:
 
-- ``"obs"`` : 
-- ``"complete"`` : 
-- ``"fit"`` : 
-- ``"predict"`` : 
+1. obs_
+2. complete_ 
+3. fit_ 
+4. predict_
+
+See the `Matrix kwargs`_ section below for details about each keyword.
+
+Matrix kwargs
+-------------
+.. _`Matrix kwargs`:
+
+Th
+
+
+
+
+
+.. References in this document
+
+.. _paper: http://www.genetics.org/content/205/3/1079 

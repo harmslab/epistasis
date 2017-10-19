@@ -1,13 +1,10 @@
 Simulating
 ==========
 
-Epistasis can take many forms. It can be nonlinear and/or high-order (i.e. higher
-than three-way interactions). The ``epistasis`` package provides flexibles classes
-build simulated genotype-phenotype maps that exhibit such features. A few out-of-box classes
-examples are shown below.
+Simulate rough, epistatic genotype-phenotype maps using the ``simulate`` module. 
 
-Basic Linear Example
---------------------
+LinearSimulation
+----------------
 
 The following examples show a variety ways to simulate a genotype-phenotype map
 with linear, high-order epistatic interactions. The simulation interface provides
@@ -15,7 +12,7 @@ methods to easily dictate the construction of a simulated genotype-phenotype map
 
 .. code-block:: python
 
-    from epistasis.simulate import AdditiveSimulation
+    from epistasis.simulate import LinearSimulation
 
     # Define the wildtype sequence and possible mutations at each site.
     wildtype = "0000"
@@ -26,7 +23,7 @@ methods to easily dictate the construction of a simulated genotype-phenotype map
         3: ["0", "1"]
     }
     # Initialize a simulation
-    gpm = AdditiveSimulation(wildtype, mutations)
+    gpm = LinearSimulation(wildtype, mutations)
 
     # Set the order of epistasis
     gpm.set_coefs_order(4)
@@ -42,7 +39,7 @@ fine with a simple, binary alphabet at each site.
 
     # define the length of genotypes and the order of epistasis
     length = 4
-    gpm = AdditiveSimulation.from_length(length)
+    gpm = LinearSimulation.from_length(length)
 
     # Generate random epistatic coefs
     gpm.set_coefs_order(4)
@@ -52,15 +49,10 @@ For all simulated genotype-phenotype maps, one can initialize a genotype-phenoty
 map from an existing dataset. Scroll through class methods that start with ``from_`` to
 see all options for initializing simulated genotype-phenotype maps.
 
-Basic Nonlinear Example
------------------------
+NonlinearSimulation
+-------------------
 
-Often, the genotype-phenotype map is nonlinear. That is to say, the genotypes and
-phenotypes change on different scales. Genotypes, for example, differ by discrete,
-linear changes in sequences (known as mutations). How these changes translate to
-phenotype may be less obvious. Sometimes, the effects of mutations simply add together.
-Sometimes, the effects multiply. The ``epistasis`` package has ``NonlinearSimulation``
-class that allows you to construct these more complicated genotype-phenotype maps.
+Simulate a nonlinear, epistatic genotype-phenotype map using ``NonlinearSimulation``. 
 Simply define a function which transforms a linear genotype-phenotype map onto
 a nonlinear scale. Note, the function must have ``x`` as the first argument. This
 argument represents the linearized phenotypes to be transformed.
@@ -79,15 +71,10 @@ argument represents the linearized phenotypes to be transformed.
     gpm.set_coefs_order(4)
     gpm.set_coefs_random((0,1))
 
+**Multiplicative Example**
 
-Basic Multiplicative Example
-----------------------------
-
-Multiplicative epistasis is a common nonlinear, phenotypic scale. You can simulate
-a multiplicative genotype-phenotype map using the ``NonlinearSimulation`` class.
-Remember, the ``epistasis`` package always constructs/decomposes epistasis as a sum of epistatic
-coefficients. To construct a multiplicative map, then, simply use the exponential
-logarithm of the epistatic coefficients:
+Multiplicative epistasis is a common nonlinear, phenotypic scale. Simulate this
+type of map using the ``NonlinearSimulation`` class.
 
 .. math::
 

@@ -1,10 +1,10 @@
-Plotting
-========
+Visualization
+=============
 
 The ``epistasis`` package comes with a few functions to plot epistasis data.
 
-Coefficients
-------------
+coefs
+-----
 
 The plotting module comes with a default function for plotting epistatic
 coefficients. It plots the value of the coefficient as bar graphs, the label as
@@ -24,7 +24,12 @@ a box plot (see example below), and signficicance as stars using a t-test.
     values = model.epistasis.values
     fig, ax = coefs(sites, values)
 
-Figure
-~~~~~~
-
 .. image:: ../img/coefs.png
+
+
+Plot nonlinear scale
+--------------------
+
+
+Plot classification
+-------------------
