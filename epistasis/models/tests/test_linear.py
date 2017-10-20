@@ -3,7 +3,7 @@ import unittest
 import pytest
 
 import numpy as np
-from gpmap.simulate import GenotypePhenotypeSimulation
+from gpmap import GenotypePhenotypeMap
 
 # Module to test
 from ..linear import *
@@ -17,16 +17,16 @@ def gpm():
     stdeviations = 0.1
     return GenotypePhenotypeMap(wildtype, genotypes, phenotypes, stdeviations=stdeviations)
 
-class testEpistasisLinearRegression(object):
+class TestEpistasisLinearRegression(object):
     
-    order = 2
+    order = 3
 
     def test_init(self, gpm):
         model = EpistasisLinearRegression.read_gpm(gpm, order=self.order, model_type="local")
         # Checks
         check1 = model.order
         check2 = model.model_type
-        assert check1 == self.orders
+        assert check1 == self.order
         assert check2 == "local"
 
     def test_fit(self, gpm):
