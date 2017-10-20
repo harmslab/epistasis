@@ -17,9 +17,10 @@ keyword arguments for building common matrices.
 These keys include:
 
 1. obs_
-2. complete_ 
-3. fit_ 
-4. predict_
+2. missing_
+3. complete_ 
+4. fit_ 
+5. predict_
 
 See the `Matrix kwargs`_ section below for details about each keyword.
 
@@ -27,7 +28,6 @@ Matrix kwargs
 -------------
 .. _`Matrix kwargs`:
 
-Th
 
 
 

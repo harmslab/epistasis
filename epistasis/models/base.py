@@ -37,6 +37,9 @@ class BaseModel(object):
             - 'obs' : Uses `gpm.binary.genotypes` to construct X. If genotypes are missing
                 they will not be included in fit. At the end of fitting, an epistasis map attribute
                 is attached to the model class.
+            - 'missing' : Uses `gpm.binary.missing_genotypes` to construct X. All genotypes
+                missing from the data are included. Warning, will break in most fitting methods.
+                At the end of fitting, an epistasis map attribute is attached to the model class.
             - 'complete' : Uses `gpm.binary.complete_genotypes` to construct X. All genotypes
                 missing from the data are included. Warning, will break in most fitting methods.
                 At the end of fitting, an epistasis map attribute is attached to the model class.
@@ -54,10 +57,10 @@ class BaseModel(object):
         X_builts : numpy.ndarray
             newly built 2d array matrix 
         """
-        if type(X) is str and X in ['obs', 'complete']:
+        if type(X) is str and X in ['obs', 'missing', 'complete']:
             
             if hasattr(self, "gpm") == False:
-                raise XMatrixException("To build 'obs' or 'complete' X matrix, "
+                raise XMatrixException("To build 'obs', 'missing', or 'complete' X matrix, "
                                        "a GenotypePhenotypeMap must be attached.")
                 
             # Create a list of epistatic interaction for this model.
@@ -70,6 +73,8 @@ class BaseModel(object):
             # Use desired set of genotypes for rows in X matrix.        
             if X == "obs":
                 index = self.gpm.binary.genotypes
+            elif X == "missing":
+                index = self.gpm.binary.missing_genotypes
             else:
                 index = self.gpm.binary.complete_genotypes
             

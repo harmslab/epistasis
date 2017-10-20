@@ -37,6 +37,9 @@ def X_predictor(method):
         - 'obs' : Uses `gpm.binary.genotypes` to construct X. If genotypes are missing
             they will not be included in fit. At the end of fitting, an epistasis map attribute
             is attached to the model class.
+        - 'missing' : Uses `gpm.binary.missing_genotypes` to construct X. All genotypes
+            missing from the data are included. Warning, will break in most fitting methods.
+            At the end of fitting, an epistasis map attribute is attached to the model class.
         - 'complete' : Uses `gpm.binary.complete_genotypes` to construct X. All genotypes
             missing from the data are included. Warning, will break in most fitting methods.
             At the end of fitting, an epistasis map attribute is attached to the model class.
@@ -57,7 +60,7 @@ def X_predictor(method):
 
         except (KeyError, TypeError):
 
-            if type(X) is str and X in ['obs', 'complete']:
+            if type(X) is str and X in ['obs', 'missing', 'complete']:
                 
                 if hasattr(self, "gpm") == False:
                     raise XMatrixException("To build 'obs' or 'complete' X matrix, "
@@ -65,19 +68,6 @@ def X_predictor(method):
                 
                 # Construct an X for this model.
                 x = self.add_X(X=X)
-                
-                # # Build epistasis interactions as columns in X matrix.
-                # columns = mutations_to_sites(self.order, self.gpm.mutations)
-                # 
-                # # Use desired set of genotypes for rows in X matrix.        
-                # if X == "obs":
-                #     index = self.gpm.binary.genotypes
-                # else:
-                #     index = self.gpm.binary.complete_genotypes
-                # 
-                # # Build numpy array
-                # x = get_model_matrix(index, columns, model_type=self.model_type)
-                # 
                 
                 # Store Xmatrix.
                 self.Xbuilt[X] = x
@@ -200,7 +190,7 @@ def X_fitter(method):
                 self.Xbuilt["fit"] = X
             
             else:
-                raise XMatrixException("X must be one of the following: 'obs', 'complete', "
+                raise XMatrixException("X must be one of the following: 'obs', 'missing', 'complete', "
                                        "numpy.ndarray, or pandas.DataFrame.")
 
         # Return model
