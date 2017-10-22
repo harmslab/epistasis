@@ -206,6 +206,12 @@ def pearson(y_obs, y_pred):
 
     return numerator/denominator
 
+def rmsd(yobs, ypred):
+    """Calculate the root mean squared deviation of an estimator."""
+    ypred = np.array(ypred)
+    yobs = np.array(yobs)
+    return np.sqrt(np.sum((ypred - yobs)**2) / len(ypred)) 
+
 def generalized_r2(y_obs, y_pred):
     """ Calculate the rquared between the observed and predicted y.
     See wikipedia definition of `coefficient of determination`.
