@@ -22,7 +22,7 @@ class BayesianSampler(object):
     model :
         Epistasis model to run a bootstrap calculation.
     """
-    def __init__(self, model, lnprior=None):
+    def __init__(self, model, lnprior=None, last_run=None):
         # Get needed features from ML model.
         self.model = model
         self.lnlikelihood = model.lnlikelihood
@@ -36,18 +36,19 @@ class BayesianSampler(object):
         # Get dimensions of the sampler (number of walkers, number of coefs to sample)
         self.ndim = len(self.ml_thetas)
         self.nwalkers = 2*self.ndim
-        
+        self.last_run = last_run
+
         # Construct sampler
         self.sampler = emcee.EnsembleSampler(self.nwalkers, self.ndim, self.lnprob, args=(self.lnlikelihood,))
-        self.last_run = None
         
     @staticmethod
     def lnprior(thetas):
-        """"""
+        """Prior probability for the given set of model parameters."""
         return 0.0
         
     @staticmethod
     def lnprob(thetas, lnlike):
+        """The posterior probability of a given set of model parameters and likelihood function."""
         lp = BayesianSampler.lnprior(thetas)
         if not np.isfinite(lp):
             return -np.inf
@@ -71,9 +72,37 @@ class BayesianSampler(object):
         walker_positions = middle_positions + rel_deviations
         return walker_positions
         
-    def sample(self, n_steps=100, n_burn=0, starting_index=0):
+    def sample(self, n_steps=100, n_burn=0):
         """Sample the likelihood of the model by walking n_steps with each walker."""
+        # Suppress warnings that occur when sampling the model.
         warnings.simplefilter("ignore", RuntimeWarning)
+        
+        # Check if a previous run was given
+        if self.last_run is None:
+            pos0 = self.get_initial_walkers()
+            if n_burn != 0:
+                self.sampler.run_mcmc(pos0=pos0, 
+                                      N=n_burn, 
+                                      storechain=False)
+            
+            
+        else:
+            pos0 = self.last_run[0]
+            lnprob0 = self.last_run[1]
+            rstate0 = self.last_run[2]            
+        
+            
+        
+        
+        
+        if n_burn != 0:
+            
+            self.sampler.run_mcmc()
+            
+            
+        
+        
+        
         # Prepare sampler initial conditions. If the sampler was run previously,
         # get ending state and use a initial states.
         if self.last_run is None:
@@ -94,19 +123,10 @@ class BayesianSampler(object):
         
         # Store the samples
         samples = self.sampler.chain[:, self.n_burn:, :].reshape((-1, self.ndim))
-        index = np.arange(starting_index, starting_index+len(samples))
+        index = np.arange(len(samples))
         self.samples = pd.DataFrame(samples, index=index)
+        
         return self
-        
-    @wraps(pd.DataFrame.to_csv)
-    def samples_to_csv(self, *args, **kwargs):  
-        """Write samples DataFrame to csv."""      
-        self.samples.to_csv(*args, **kwargs)
-        
-    @wraps(pd.DataFrame.to_csv)
-    def predictions_to_csv(self, *args, **kwargs):  
-        """Write predictions DataFrame to csv."""      
-        self.predictions.to_csv(*args, **kwargs)
             
     def predict(self, store=True):
         """Predict phenotypes from sampled models."""
