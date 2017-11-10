@@ -148,7 +148,7 @@ class EpistasisMixedRegression(BaseModel, BaseEstimator):
         # Subset the data (and x matrix) to only include alive genotypes/phenotypes
         y_subset = pobs[ypred==1]
         y_subset = y_subset.reset_index(drop=True)
-        x_subset = x[ypred==1,:]     
+        x_subset = x[ypred==1,:]    
 
         # Fit model to the alive phenotype supset
         out = self.Model.fit(X=x_subset, y=y_subset, use_widgets=use_widgets, **kwargs)
@@ -181,12 +181,114 @@ class EpistasisMixedRegression(BaseModel, BaseEstimator):
         ypred = self.Model.predict(X=X)
         
         # Then predict the classes.
-        yclasses = self.Classifier.predict(X=X)
-        
+        yclasses = self.Classifier.predict(X='fit')
+            
         # Set any 0-class phenotypes to a value of 0
         ypred[yclasses==0] = self.threshold
         ypred[ypred < self.threshold] = self.threshold
         return ypred
+
+    def score(self, X='obs', y='obs'):
+        """Calculates the squared-pearson coefficient for the nonlinear fit.
+
+        Returns
+        -------
+        r_nonlinear : float
+            squared pearson coefficient between phenotypes and nonlinear function.
+        r_linear : float
+            squared pearson coefficient between linearized phenotypes and linear epistasis model
+            described by epistasis.values.
+        """
+        ######## Sanity checks on input.
+        if hasattr(self, "gpm") is False:
+            raise FittingError("A GenotypePhenotypeMap must be attached to this model.")
+    
+        # Make sure X and y strings match
+        if type(X) == str and type(y) == str and X != y:
+            raise FittingError("Any string passed to X must be the same as any string passed to y. "
+                           "For example: X='obs', y='obs'.")
+            
+        # Else if both are arrays, check that X and y match dimensions.
+        elif type(X) != str and type(y) != str and X.shape[0] != y.shape[0]:
+            raise FittingError("X dimensions {} and y dimensions {} don't match.".format(X.shape[0], y.shape[0]))
+            
+        ######## Handle y.
+        
+        # Get pobs for nonlinear fit.
+        if type(y) is str and y in ["obs", "complete"]:            
+            pobs = self.gpm.binary.phenotypes
+        # Else, numpy array or dataframe
+        elif type(y) == np.array or type(y) == pd.Series:
+            pobs = y
+        else:
+            raise FittingError("y is not valid. Must be one of the following: 'obs', 'complete', "
+                           "numpy.array", "pandas.Series")    
+
+        # Use model to infer dead phenotypes
+        ypred = self.Classifier.predict(X="fit")
+        
+        # Subset the data (and x matrix) to only include alive genotypes/phenotypes
+        y_subset = pobs[ypred==1]
+        y_subset = y_subset.reset_index(drop=True)
+        
+        scores = self.Model.score(X='fit', y=y_subset)
+        return (self.Classifier.score(X=X, y=y),) + scores
+        
+    def contributions(self, X='obs', y='obs'):
+        """Calculate the contributions from nonlinearity and epistasis to the variation in phenotype. 
+        
+        Returns
+        -------
+        contribs 
+        """
+        ######## Sanity checks on input.
+        if hasattr(self, "gpm") is False:
+            raise FittingError("A GenotypePhenotypeMap must be attached to this model.")
+    
+        # Make sure X and y strings match
+        if type(X) == str and type(y) == str and X != y:
+            raise FittingError("Any string passed to X must be the same as any string passed to y. "
+                           "For example: X='obs', y='obs'.")
+            
+        # Else if both are arrays, check that X and y match dimensions.
+        elif type(X) != str and type(y) != str and X.shape[0] != y.shape[0]:
+            raise FittingError("X dimensions {} and y dimensions {} don't match.".format(X.shape[0], y.shape[0]))
+            
+        ######## Handle y.
+        
+        # Get pobs for nonlinear fit.
+        if type(y) is str and y in ["obs", "complete"]:            
+            pobs = self.gpm.binary.phenotypes
+        # Else, numpy array or dataframe
+        elif type(y) == np.array or type(y) == pd.Series:
+            pobs = y
+        else:
+            raise FittingError("y is not valid. Must be one of the following: 'obs', 'complete', "
+                           "numpy.array", "pandas.Series")           
+        
+        # Use model to infer dead phenotypes
+        ypred = self.Classifier.predict(X="fit")
+        
+        # Subset the data (and x matrix) to only include alive genotypes/phenotypes
+        y_subset = pobs[ypred==1]
+        y_subset = y_subset.reset_index(drop=True)
+        return self.Model.contributions(X='fit', y=y_subset)
+        
+        # scores = self.Model.score(X='fit', y=y_subset)
+        # 
+        # # Calculate various pearson coeffs.
+        # add_score = self.Additive.score()
+        # scores = self.score(X=X, y=y)
+        # 
+        # # Calculate the nonlinear contribution
+        # nonlinear_contrib = scores[0] - add_score
+        # 
+        # # Calculate the contribution from epistasis
+        # epistasis_contrib = 1 - scores[0]
+        #         
+        # # Build output dict.
+        # contrib = {'nonlinear': nonlinear_contrib, 'epistasis': epistasis_contrib}
+        # return contrib
 
     @property
     def thetas(self):
