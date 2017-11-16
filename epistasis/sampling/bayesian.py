@@ -86,6 +86,8 @@ class BayesianSampler(object):
                 pos, lnprob, rstate = self.sampler_engine.run_mcmc(pos0=pos, 
                     N=n_burn, 
                     storechain=False)
+            else:
+                lnprob, rstate = None, None
         else:
             # Get previous state.
             pos = previous_state['pos']
@@ -101,4 +103,4 @@ class BayesianSampler(object):
         
         # Store previous run in a dictionary
         previous_state = {'pos':pos, 'lnprob':lnprob, 'rstate':rstate}
-        return self.sampler.flatchain, previous_state
+        return self.sampler_engine.flatchain, previous_state
