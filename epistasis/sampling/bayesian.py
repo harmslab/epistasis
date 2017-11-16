@@ -22,7 +22,7 @@ class BayesianSampler(object):
     model :
         Epistasis model to run a bootstrap calculation.
     """
-    def __init__(self, model, lnprior=None, last_run=None):
+    def __init__(self, model, lnprior=None):
         # Get needed features from ML model.
         self.model = model
         self.lnlikelihood = model.lnlikelihood
@@ -36,10 +36,9 @@ class BayesianSampler(object):
         # Get dimensions of the sampler (number of walkers, number of coefs to sample)
         self.ndim = len(self.ml_thetas)
         self.nwalkers = 2*self.ndim
-        self.last_run = last_run
 
         # Construct sampler
-        self.sampler = emcee.EnsembleSampler(self.nwalkers, self.ndim, self.lnprob, args=(self.lnlikelihood,))
+        self.sampler_engine = emcee.EnsembleSampler(self.nwalkers, self.ndim, self.lnprob, args=(self.lnlikelihood,))
         
     @staticmethod
     def lnprior(thetas):
@@ -71,81 +70,35 @@ class BayesianSampler(object):
         # Return walker positions
         walker_positions = middle_positions + rel_deviations
         return walker_positions
-        
-    def sample(self, n_steps=100, n_burn=0):
+
+    def sample(self, n_steps=100, n_burn=0, previous_state=None):
         """Sample the likelihood of the model by walking n_steps with each walker."""
         # Suppress warnings that occur when sampling the model.
         warnings.simplefilter("ignore", RuntimeWarning)
         
         # Check if a previous run was given
-        if self.last_run is None:
-            pos0 = self.get_initial_walkers()
+        if previous_state is None:
+            # Get initialize positions
+            pos = self.get_initial_walkers()
+            
+            # Run the MCMC walks, burning these states to equilibrate.
             if n_burn != 0:
-                self.sampler.run_mcmc(pos0=pos0, 
-                                      N=n_burn, 
-                                      storechain=False)
-            
-            
+                pos, lnprob, rstate = self.sampler_engine.run_mcmc(pos0=pos, 
+                    N=n_burn, 
+                    storechain=False)
         else:
-            pos0 = self.last_run[0]
-            lnprob0 = self.last_run[1]
-            rstate0 = self.last_run[2]            
-        
+            # Get previous state.
+            pos = previous_state['pos']
+            lnprob = previous_state['lnprob']
+            rstate = previous_state['rstate']
             
+        # Run sampler from previous position
+        pos, lnprob, rstate = self.sampler_engine.run_mcmc(pos0=pos, 
+            N=n_steps, 
+            rstate0=rstate, 
+            lnprob0=lnprob, 
+            storechain=True)
         
-        
-        
-        if n_burn != 0:
-            
-            self.sampler.run_mcmc()
-            
-            
-        
-        
-        
-        # Prepare sampler initial conditions. If the sampler was run previously,
-        # get ending state and use a initial states.
-        if self.last_run is None:
-            # Get initial positions of walkers
-            self.n_burn = n_burn
-            pos0 = self.get_initial_walkers()
-            rstate0 = None
-            lnprob0 = None
-            n_steps = n_steps + n_burn
-        else:
-            pos0 = self.last_run[0]
-            lnprob0 = self.last_run[1]
-            rstate0 = self.last_run[2]
-            n_steps = n_steps
-        
-        # Run sampler
-        self.last_run = self.sampler.run_mcmc(pos0, n_steps, rstate0=rstate0, lnprob0=lnprob0)
-        
-        # Store the samples
-        samples = self.sampler.chain[:, self.n_burn:, :].reshape((-1, self.ndim))
-        index = np.arange(len(samples))
-        self.samples = pd.DataFrame(samples, index=index)
-        
-        return self
-            
-    def predict(self, store=True):
-        """Predict phenotypes from sampled models."""
-        # Initialize predictions array
-        samples = self.samples
-        index = self.samples.index.values
-        
-        predictions = np.empty((len(self.samples), len(self.model.gpm.complete_genotypes)), dtype=float)
-                
-        # Begin predicting samples
-        for i in samples.index:
-            # Slice the row from samples
-            thetas = samples.iloc[[i]].values.reshape(-1)
-            predictions[i,:] = self.model.hypothesis(X='complete', thetas=thetas)
-            
-        # Return samples
-        df = pd.DataFrame(predictions, index=index, columns=self.model.gpm.complete_genotypes)
-        if store == True :
-            self.predictions = df
-        return df
-    
-    
+        # Store previous run in a dictionary
+        previous_state = {'pos':pos, 'lnprob':lnprob, 'rstate':rstate}
+        return self.sampler.flatchain, previous_state
