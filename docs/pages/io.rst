@@ -1,9 +1,8 @@
 Read/Write
 ==========
 
-
-All epistasis models/simulators use Pandas_ Series/DataFrames under the hood, and thus, can read/write
-genotype-phenotype data in various formats. This page lists a few.
+All epistasis models/simulators store data in Pandas_ Series/DataFrames, so the data
+can be easily saved to disk in various formats. This page lists a few.
 
 .. _Pandas: http://pandas.pydata.org/
 

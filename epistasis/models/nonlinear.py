@@ -364,7 +364,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         contribs 
         """
         # Calculate various pearson coeffs.
-        add_score = self.Additive.score()
+        add_score = self.Additive.score(X=X, y=y)
         scores = self.score(X=X, y=y)
         
         # Calculate the nonlinear contribution
@@ -372,7 +372,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         
         # Calculate the contribution from epistasis
         epistasis_contrib = 1 - scores[0]
-        
+                
         # Build output dict.
         contrib = {'nonlinear': nonlinear_contrib, 'epistasis': epistasis_contrib}
         return contrib
