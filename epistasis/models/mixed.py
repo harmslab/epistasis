@@ -76,7 +76,7 @@ class EpistasisMixedRegression(BaseModel, BaseEstimator):
         self.Model.add_gpm(gpm)
         self.Classifier.add_gpm(gpm)
 
-    def fit(self, X='obs', y='obs', use_widgets=False, **kwargs):
+    def fit(self, X='obs', y='obs', sample_weight=None, use_widgets=False, **kwargs):
         """Fit mixed model in two parts. 1. Use Classifier to predict the
         class of each phenotype (Dead/Alive). 2. Fit epistasis Model.
         
@@ -151,7 +151,7 @@ class EpistasisMixedRegression(BaseModel, BaseEstimator):
         x_subset = x[ypred==1,:]    
 
         # Fit model to the alive phenotype supset
-        out = self.Model.fit(X=x_subset, y=y_subset, use_widgets=use_widgets, **kwargs)
+        out = self.Model.fit(X=x_subset, y=y_subset, sample_weight=sample_weight, use_widgets=use_widgets, **kwargs)
         
         return out        
 
@@ -188,7 +188,7 @@ class EpistasisMixedRegression(BaseModel, BaseEstimator):
         ypred[ypred < self.threshold] = self.threshold
         return ypred
 
-    def score(self, X='obs', y='obs'):
+    def score(self, X='obs', y='obs', sample_weight=None):
         """Calculates the squared-pearson coefficient for the nonlinear fit.
 
         Returns
@@ -231,7 +231,7 @@ class EpistasisMixedRegression(BaseModel, BaseEstimator):
         y_subset = pobs[ypred==1]
         y_subset = y_subset.reset_index(drop=True)
         
-        scores = self.Model.score(X='fit', y=y_subset)
+        scores = self.Model.score(X='fit', y=y_subset, sample_weight=sample_weight)
         return (self.Classifier.score(X=X, y=y),) + scores
         
     def contributions(self, X='obs', y='obs'):

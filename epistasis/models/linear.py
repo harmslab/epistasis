@@ -42,15 +42,15 @@ class EpistasisLinearRegression(_LinearRegression, _BaseModel):
     @X_fitter
     def fit(self, X='obs', y='obs', sample_weight=None, **kwargs):
         # If a threshold exists in the data, pre-classify genotypes
-        return super(self.__class__, self).fit(X, y, sample_weight)
+        return super(self.__class__, self).fit(X, y, sample_weight=sample_weight)
 
     @X_predictor
     def predict(self, X='complete'):
         return super(self.__class__, self).predict(X)
 
     @X_fitter
-    def score(self, X='obs', y='obs'):
-        return super(self.__class__, self).score(X, y)
+    def score(self, X='obs', y='obs', sample_weight=None):
+        return super(self.__class__, self).score(X, y, sample_weight=None)
 
     @property
     def thetas(self):
@@ -65,7 +65,7 @@ class EpistasisLinearRegression(_LinearRegression, _BaseModel):
             thetas = self.thetas
         return _np.dot(X, thetas)
 
-    @X_fitter    
+    @X_fitter
     def lnlike_of_data(self, X="obs", y="obs", yerr="obs", thetas=None):
         """Calculate the log likelihoods of each data point, given a set of model coefficients.
 

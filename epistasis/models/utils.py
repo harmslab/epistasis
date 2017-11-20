@@ -118,7 +118,7 @@ def X_fitter(method):
             rows labelled by genotypes.
     """
     @wraps(method)
-    def inner(self, X='obs', y='obs', *args, **kwargs):
+    def inner(self, X='obs', y='obs', sample_weight=None, *args, **kwargs):
         
         ######## Sanity checks on input.
                 
@@ -130,7 +130,7 @@ def X_fitter(method):
         # Else if both are arrays, check that X and y match dimensions.
         elif type(X) != str and type(y) != str and X.shape[0] != y.shape[0]:
             raise FittingError("X dimensions {} and y dimensions {} don't match.".format(X.shape[0], y.shape[0]))
-            
+        
         ######## Handle y.
         
         # Check if string.
@@ -143,6 +143,10 @@ def X_fitter(method):
             
             raise FittingError("y is not valid. Must be one of the following: 'obs', 'complete', "
                            "numpy.array, pandas.Series. Right now, its {}".format(type(y)))    
+
+        ######## Handle sample weights
+        if sample_weight == 'relative':
+            sample_weight = 1 / y
                 
         ######## Handle X
         try:
