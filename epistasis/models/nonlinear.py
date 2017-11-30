@@ -152,7 +152,6 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         self.set_params(order=order,
             model_type=model_type)
 
-
         # Store model specs.
         self.model_specs = dict(
             function=function,
@@ -228,7 +227,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
             Xadd = X
         
         # Fit Additive model
-        self.Additive.fit(X=Xadd, y=pobs)
+        self.Additive.fit(X=Xadd, y=pobs, sample_weight=sample_weight)
         self.Additive.epistasis.values = self.Additive.coef_
         
         # Linearize phenotypes
@@ -333,7 +332,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         y = self.function(x, *self.parameters.values)
         return y
 
-    def score(self, X='obs', y='obs'):
+    def score(self, X='obs', y='obs', sample_weight=None):
         """Calculates the squared-pearson coefficient for the nonlinear fit.
 
         Returns
@@ -354,9 +353,9 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         xlin = self.Additive.predict(X=X)
         ypred = self.function(xlin, *self.parameters.get_params())
         yrev = self.reverse(pobs, *self.parameters.get_params())
-        return pearson(pobs, ypred)**2, self.Linear.score(X=X, y=yrev)
+        return pearson(pobs, ypred)**2, self.Linear.score(X=X, y=yrev, sample_weight=sample_weight)
 
-    def contributions(self, X='obs', y='obs'):
+    def contributions(self, X='obs', y='obs', sample_weight=None):
         """Calculate the contributions from nonlinearity and epistasis to the variation in phenotype. 
         
         Returns
@@ -364,15 +363,15 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         contribs 
         """
         # Calculate various pearson coeffs.
-        add_score = self.Additive.score()
-        scores = self.score(X=X, y=y)
+        add_score = self.Additive.score(X=X, y=y, sample_weight=sample_weight)
+        scores = self.score(X=X, y=y, sample_weight=sample_weight)
         
         # Calculate the nonlinear contribution
         nonlinear_contrib = scores[0] - add_score
         
         # Calculate the contribution from epistasis
         epistasis_contrib = 1 - scores[0]
-        
+                
         # Build output dict.
         contrib = {'nonlinear': nonlinear_contrib, 'epistasis': epistasis_contrib}
         return contrib
@@ -401,7 +400,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
 
         return ynonlin
 
-    def lnlike_of_data(self, X='obs', y='obs', yerr='obs', thetas=None):
+    def lnlike_of_data(self, X='obs', y='obs', yerr='obs', sample_weight=None, thetas=None):
         """Calculate the log likelihoods of each data point, given a set of model coefficients.
 
         Parameters

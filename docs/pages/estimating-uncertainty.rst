@@ -32,10 +32,10 @@ Basic Example
 
     # Initialize a sampler.
     fitter = BayesianSampler(model)
-    fitter.sample(500)
+    samples = fitter.sample(500)
     
     # Plot the Posterior
-    fig = corner.corner(fitter.samples, truths=sim.epistasis.values)
+    fig = corner.corner(samples, truths=sim.epistasis.values)
 
 
 .. image:: ../img/bayes-estimate-uncertainty.png
