@@ -3,8 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-``epistasis`` documentation
-===========================
+Epistasis documentation
+=======================
 
 A Python API for modeling statistical, high-order epistasis in genotype-phenotype maps.
 This library provides modules to:

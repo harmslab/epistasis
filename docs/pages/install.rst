@@ -1,14 +1,17 @@
 Installation
 ============
 
-Installing
-----------
+For users
+---------
 
 This library is now available on PyPi, so it can be installed using pip.
 
 .. code-block:: bash
 
     pip install epistasis
+
+For developers
+--------------
 
 For the latest version of the package, you can also clone from Github
 and install a development version using pip.
