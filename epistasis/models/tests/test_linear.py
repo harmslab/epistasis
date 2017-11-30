@@ -44,6 +44,10 @@ class TestEpistasisLinearRegression(object):
         assert "obs" in model.Xbuilt
         assert "fit" in model.Xbuilt
 
+    def test_fit_sample_weight(self, gpm):
+        model = EpistasisLinearRegression.read_gpm(gpm, order=self.order, model_type="local")
+        model.fit(sample_weight='relative')
+
     def test_predict(self, gpm):
         model = EpistasisLinearRegression.read_gpm(gpm, order=self.order, model_type="local")
         model.fit()

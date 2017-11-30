@@ -156,8 +156,10 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
         # Convert weights to variances on fit parameters.
         if sample_weight is None:
             sigma = None
+        elif sample_weight == 'relative':
+            sigma = 1 / sample_weight
         else:
-            sigma = 1 / np.sqrt(sample_weight)
+            sigma = 1 / sample_weight
 
         # Fit with curve_fit, using
         popt, pcov = curve_fit(self._function, x, y, p0=guesses, sigma=sigma,
@@ -175,7 +177,7 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
             Xlin = self.Linear.Xbuilt["fit"]
             ylin = self.reverse(y, *self.parameters.values)
             # Now fit with a linear epistasis model.
-            self.Linear.fit(X=Xlin, y=ylin)
+            self.Linear.fit(X=Xlin, y=ylin, sample_weight=sample_weight)
         else:
             self.Linear = self.Additive
         # Map to epistasis.

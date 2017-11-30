@@ -146,13 +146,13 @@ def X_fitter(method):
 
         ######## Handle sample weights
         if sample_weight == 'relative':
-            sample_weight = 1 / y
-                
+            sample_weight =  1 / abs(y**2)
+
         ######## Handle X
         try:
             x = self.Xbuilt[X]
             # Run fit.
-            model = method(self, X=x, y=y, *args, **kwargs)
+            model = method(self, X=x, y=y, sample_weight=sample_weight, *args, **kwargs)
             self.Xbuilt["fit"] = x
                         
         except (KeyError, TypeError):
@@ -180,7 +180,7 @@ def X_fitter(method):
                     self.Xbuilt[X] = x
                 
                 # Run fit.
-                model = method(self, X=x, y=y, *args, **kwargs)
+                model = method(self, X=x, y=y, sample_weight=sample_weight, *args, **kwargs)
                                 
                 # Store Xmatrix.
                 self.Xbuilt["fit"] = x
@@ -188,7 +188,7 @@ def X_fitter(method):
             
             elif type(X) == np.ndarray or type(X) == pd.DataFrame: 
                 # Call method with X and y.
-                model = method(self, X=X, y=y, *args, **kwargs)
+                model = method(self, X=X, y=y, sample_weight=sample_weight, *args, **kwargs)
                 
                 # Store Xmatrix.
                 self.Xbuilt["fit"] = X
