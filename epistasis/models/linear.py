@@ -1,9 +1,11 @@
 import numpy as _np
 from sklearn.linear_model import LinearRegression as _LinearRegression
+from sklearn.linear_model import Lasso as _Lasso
 
 from .base import BaseModel as _BaseModel
 from .utils import X_fitter as X_fitter
 from .utils import X_predictor as X_predictor
+from .utils import sklearn_to_epistasis
 
 # Suppress an annoying error from scikit-learn
 import warnings
@@ -115,3 +117,53 @@ class EpistasisLinearRegression(_LinearRegression, _BaseModel):
         ymodel = self.hypothesis(X=X, thetas=thetas)
         return (- 0.5 * _np.log(2 * _np.pi * yerr**2) -
                 (0.5 * ((y - ymodel)**2 / yerr**2)))
+
+
+class EpistasisLasso(_Lasso, _BaseModel):
+    """"""
+    def __init__(self, order=1, model_type="global", alpha=1.0,
+                 precompute=False, max_iter=1000, tol=0.0001,
+                 warm_start=False, positive=False, random_state=None,
+                 selection='cyclic', **kwargs):
+        # Set Linear Regression settings.
+        self.fit_intercept = False
+        self.normalize = False
+        self.copy_X = True
+        self.alpha = alpha
+        self.precompute = precompute
+        self.max_iter = max_iter
+        self.tol = tol
+        self.warm_start = warm_start
+        self.positive = positive
+        self.random_state = random_state
+        self.selection = selection
+        self.l1_ratio = 1.0
+
+        self.set_params(model_type=model_type, order=order)
+        self.Xbuilt = {}
+
+        # Store model specs.
+        self.model_specs = dict(
+            order=self.order,
+            model_type=self.model_type,
+            **kwargs)
+
+    @X_fitter
+    def fit(self, X='obs', y='obs', sample_weight=None, **kwargs):
+        # If a threshold exists in the data, pre-classify genotypes
+        X = _np.asfortranarray(X)
+        return super(self.__class__, self).fit(X, y, sample_weight)
+
+    @X_predictor
+    def predict(self, X='complete'):
+        X = _np.asfortranarray(X)
+        return super(self.__class__, self).predict(X)
+
+    @X_fitter
+    def score(self, X='obs', y='obs'):
+        X = _np.asfortranarray(X)
+        return super(self.__class__, self).score(X, y)
+
+    @property
+    def thetas(self):
+        return self.coef_
