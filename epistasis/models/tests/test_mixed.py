@@ -3,6 +3,7 @@ import unittest
 import pytest
 from gpmap import GenotypePhenotypeMap
 from ..mixed import EpistasisMixedRegression
+from .. import EpistasisLinearRegression, EpistasisLogisticRegression
 import warnings
 
 # Ignore fitting warnings
@@ -34,58 +35,75 @@ class TestEpistasisMixedRegression(object):
     threshold = 1.5622922695718136
 
     def test_init(self, gpm):
-        model = EpistasisMixedRegression(self.order, self.threshold)
+        classifier = EpistasisLogisticRegression(order=1,
+                                                 threshold=self.threshold)
+        epi = EpistasisLinearRegression(order=self.order)
+        model = EpistasisMixedRegression(classifier, epi)
         assert hasattr(model, "Model")
         assert hasattr(model, "Classifier")
-        assert hasattr(model, "order")
-        assert hasattr(model, "threshold")
-        assert hasattr(model, "model_type")
 
     def test_add_gpm(self, gpm):
-        model = EpistasisMixedRegression(self.order, self.threshold)
+        classifier = EpistasisLogisticRegression(order=1,
+                                                 threshold=self.threshold)
+        epi = EpistasisLinearRegression(order=self.order)
+        model = EpistasisMixedRegression(classifier, epi)
         model.add_gpm(gpm)
         assert hasattr(model, "gpm")
         assert hasattr(model.Model, "gpm")
         assert hasattr(model.Classifier, "gpm")
 
     def test_fit(self, gpm):
-        model = EpistasisMixedRegression(self.order, self.threshold)
+        classifier = EpistasisLogisticRegression(order=1,
+                                                 threshold=self.threshold)
+        epi = EpistasisLinearRegression(order=self.order)
+        model = EpistasisMixedRegression(classifier, epi)
         model.add_gpm(gpm)
-        model.fit(lmbda=0, A=1, B=1)
+        model.fit()
         assert hasattr(model, "Model")
 
     def test_predict(self, gpm):
-        model = EpistasisMixedRegression(self.order, self.threshold)
+        classifier = EpistasisLogisticRegression(order=1,
+                                                 threshold=self.threshold)
+        epi = EpistasisLinearRegression(order=self.order)
+        model = EpistasisMixedRegression(classifier, epi)
         model.add_gpm(gpm)
-        model.fit(lmbda=0, A=1, B=1)
+        model.fit()
         predicted = model.predict(X="complete")
-        assert "predict" in model.Model.Linear.Xbuilt
-        assert "predict" in model.Model.Additive.Xbuilt
+        assert "predict" in model.Model.Xbuilt
         assert len(predicted) == gpm.n
 
     def test_thetas(self, gpm):
-        model = EpistasisMixedRegression(self.order, self.threshold)
+        classifier = EpistasisLogisticRegression(order=1,
+                                                 threshold=self.threshold)
+        epi = EpistasisLinearRegression(order=self.order)
+        model = EpistasisMixedRegression(classifier, epi)
         model.add_gpm(gpm)
-        model.fit(lmbda=0, A=1, B=1)
+        model.fit()
 
         coefs = model.thetas
         # Tests
-        assert len(coefs) == 15
+        assert len(coefs) == 12
 
     def test_hypothesis(self, gpm):
 
-        model = EpistasisMixedRegression(self.order, self.threshold)
+        classifier = EpistasisLogisticRegression(order=1,
+                                                 threshold=self.threshold)
+        epi = EpistasisLinearRegression(order=self.order)
+        model = EpistasisMixedRegression(classifier, epi)
         model.add_gpm(gpm)
-        model.fit(lmbda=0, A=1, B=1)
+        model.fit()
 
         predictions = model.hypothesis()
         # Need more thorough tests
         assert len(predictions) == gpm.n
 
     def test_lnlikelihood(self, gpm):
-        model = EpistasisMixedRegression(self.order, self.threshold)
+        classifier = EpistasisLogisticRegression(order=1,
+                                                 threshold=self.threshold)
+        epi = EpistasisLinearRegression(order=self.order)
+        model = EpistasisMixedRegression(classifier, epi)
         model.add_gpm(gpm)
-        model.fit(lmbda=0, A=1, B=1)
+        model.fit()
 
         # Calculate lnlikelihood
         lnlike = model.lnlikelihood()
