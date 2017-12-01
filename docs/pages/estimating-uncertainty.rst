@@ -1,5 +1,5 @@
-Estimating uncertainty
-======================
+Estimating uncertainty in a model
+=================================
 
 The epistasis package includes a ``sampling`` module for estimating uncertainty in
 all coefficients in (Non)linear epistasis models. It follows a Bayesian approach, 

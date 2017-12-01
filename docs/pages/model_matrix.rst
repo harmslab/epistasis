@@ -1,5 +1,11 @@
-The Model Matrix
-================
+Anatomy of the library 
+======================
+
+
+
+
+Model matrix
+------------
 
 A critical piece of the epistasis models in this API is the X matrix. 
 This matrix maps genotypes to epistatic coefficients. You can read about this matrix 
@@ -25,14 +31,6 @@ These keys include:
 5. predict_
 
 See the `Matrix kwargs`_ section below for details about each keyword.
-
-Matrix kwargs
--------------
-.. _`Matrix kwargs`:
-
-
-
-
 
 
 .. References in this document

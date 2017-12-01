@@ -1,8 +1,26 @@
-Installation
-============
+Quick Guide
+===========
+
+Introduction
+------------
+
+
+
+Basic usage
+-----------
+
+
+
+Overview of models
+------------------
+
+
+
+Installation and dependencies
+------------------------------
 
 For users
----------
+~~~~~~~~~
 
 This library is now available on PyPi, so it can be installed using pip.
 
@@ -11,7 +29,7 @@ This library is now available on PyPi, so it can be installed using pip.
     pip install epistasis
 
 For developers
---------------
+~~~~~~~~~~~~~~
 
 For the latest version of the package, you can also clone from Github
 and install a development version using pip.
@@ -24,7 +42,7 @@ and install a development version using pip.
 
 
 Dependencies
-------------
+~~~~~~~~~~~~
 
 The following dependencies are required for the epistasis package.
 
@@ -52,8 +70,8 @@ the package.
 .. _jupyter notebook: http://jupyter.org/
 .. _ipywidgets: https://ipywidgets.readthedocs.io/en/latest/
 
-Testing
--------
+Running tests
+-------------
 
 The epistasis package comes with a suite of tests. Running the tests require `pytest`, 
 so make sure it is installed.

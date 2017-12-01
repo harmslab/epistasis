@@ -1,5 +1,5 @@
-Visualization
-=============
+Plotting and visualizing epistasis
+====================================
 
 The ``epistasis`` package comes with a few functions to plot epistasis data.
 

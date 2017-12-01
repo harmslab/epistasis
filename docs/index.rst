@@ -22,14 +22,17 @@ For more information about the epistasis models in this library, see our Genetic
 
 This library is built on top of well known tools in the scientific Python stack. 
 It uses packages like matplotlib, numpy, scipy, scikit-learn, and pandas. We strive
-to make the interface follow the norms defined by these tools. If you think of ways
-to improve our API, please open an issue on Github! We'd love to hear your feedback.
+to follow similar inferface designs present in this ecosytem. If you notice ways
+we can improve, please open an issue on Github! We'd love to hear your feedback.
 
 Currently, this package works only as an API. There is no command-line
 interface. Instead, we encourage you use this package inside `Jupyter notebooks`_ .
 
 Table of Contents
 =================
+
+We are still working hard on the Docs! You may notice blank spots in various
+places. We appreciate your patience as we try to catch up on docs.
 
 .. toctree::
    :maxdepth: 2
@@ -46,7 +49,7 @@ Table of Contents
 
 Example Gallery
 ===============
-
+s
 The following gallery contains various examples from the package.
 
 
