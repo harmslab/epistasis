@@ -1,4 +1,5 @@
-sites__doc__ = """Submodule with various classes for generating/simulating genotype-phenotype maps."""
+__doc__ = """Submodule with various classes for generating/simulating
+genotype-phenotype maps."""
 
 # ------------------------------------------------------------
 # Imports
@@ -16,6 +17,7 @@ from epistasis.simulate.base import BaseSimulation
 # space for testing the EpistasisModels
 # ------------------------------------------------------------
 
+
 class LinearSimulation(BaseSimulation):
     """Construct an genotype-phenotype from linear building blocks and
     epistatic coefficients.
@@ -26,7 +28,7 @@ class LinearSimulation(BaseSimulation):
 
     Parameters
     ---------
-    wildtype : str
+    wildtype : strß
         Wildtype genotype
     mutations : dict
         Mapping for each site to its alphabet
@@ -39,12 +41,13 @@ class LinearSimulation(BaseSimulation):
         Use a local or global (i.e. Walsh space) epistasis model to construct
         phenotypes
     """
+
     def __init__(self, wildtype, mutations,
-        model_type='global',
-        **kwargs
-        ):
+                 model_type='global',
+                 **kwargs
+                 ):
         # Construct epistasis mapping objects (empty)
-        super(LinearSimulation,self).__init__(
+        super(LinearSimulation, self).__init__(
             wildtype,
             mutations,
             **kwargs)

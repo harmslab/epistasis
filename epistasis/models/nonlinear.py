@@ -15,8 +15,7 @@ from sklearn.base import BaseEstimator, RegressorMixin
 # Import epistasis modules.
 from .base import BaseModel
 from .utils import X_fitter, X_predictor, FittingError
-from .linear import EpistasisLinearRegression
-from .lasso import EpistasisLasso
+from .linear import EpistasisLinearRegression, EpistasisLasso
 from epistasis.stats import pearson
 # decorators for catching errors
 from gpmap.utils import ipywidgets_missing
