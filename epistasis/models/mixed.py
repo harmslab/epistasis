@@ -13,61 +13,22 @@ from .utils import FittingError, XMatrixException
 
 
 class EpistasisMixedRegression(BaseModel, BaseEstimator):
-    """A high-order epistasis regression that first classifies genotypes as
-    viable/nonviable (given some threshold) and then estimates epistatic
-    coefficients in viable phenotypes.
+    """An object that links a phenotype classifier model and an epistasis model
+    seemlessly to allow classification of dead/alive phenotypes first, then
+    estimation of epistatic coefficients between the alive phenotypes.
 
     Parameters
     ----------
-    order : int
-        Order of epistasis in model
-    threshold : float
-        value below which phenotypes are considered dead
-    model_type : str
-        type of epistasis model to use.
-    epistasis_model : epistasis.models object
-        Epistasis model to use.
-    epistasis_classifier : epistasis.models.classifier
-        Epistasis classifier to use.
-
-    Keyword Arguments
-    -----------------
-    Keyword arguments are interpreted as intial guesses for the nonlinear
-    function parameters. Must have the same name as parameters in the
-    nonlinear function.
+    Classifier : epistasis.models.classifiers object
+        Instance of an epistasis Cclassifier.
+    Model : epistasis.models object
+        Instance of an epistasis model.
     """
-
-    def __init__(self, order, threshold, model_type="global",
-                 epistasis_model=EpistasisPowerTransform,
-                 epistasis_classifier=EpistasisLogisticRegression,
-                 **p0):
-
-        # Set model specs.
-        self.order = order
-        self.threshold = threshold
-        self.model_type = model_type
-
+    def __init__(self, Classifier, Model):
         # Store model specs.
-        self.model_specs = dict(
-            order=self.order,
-            threshold=self.threshold,
-            model_type=self.model_type,
-            epistasis_model=EpistasisPowerTransform,
-            epistasis_classifier=EpistasisLogisticRegression,
-            **p0)
-
-        # Initialize the epistasis model
-        self.Model = epistasis_model(order=self.order,
-                                     model_type=self.model_type, **p0)
-
-        # Initialize the epistasis classifier
-        # Hardcode the classifier model as a first order model.
-        classifier_order = 1
-
-        self.Classifier = epistasis_classifier(
-            threshold=self.threshold,
-            order=classifier_order,
-            model_type=self.model_type)
+        self.model_specs = dict(Model=Model, Classifier=Classifier)
+        self.Model = Model
+        self.Classifier = Classifier
 
     def add_gpm(self, gpm):
         """ Attach a GenotypePhenotypeMap object to the epistasis model.
@@ -201,8 +162,8 @@ class EpistasisMixedRegression(BaseModel, BaseEstimator):
         yclasses = self.Classifier.predict(X=X)
 
         # Set any 0-class phenotypes to a value of 0
-        ypred[yclasses == 0] = self.threshold
-        ypred[ypred < self.threshold] = self.threshold
+        ypred[yclasses == 0] = self.Classifier.threshold
+        ypred[ypred < self.Classifier.threshold] = self.Classifier.threshold
         return ypred
 
     def score(self, X='obs', y='obs', sample_weight=None):
@@ -334,8 +295,8 @@ class EpistasisMixedRegression(BaseModel, BaseEstimator):
 
         # 2. Determine ymodel given the coefs.
         y = self.Model.hypothesis(X=X, thetas=thetas2)
-        y[classes == 0] = self.threshold
-        y[y < self.threshold] = self.threshold
+        y[classes == 0] = self.Classifier.threshold
+        y[y < self.Classifier.threshold] = self.Classifier.threshold
         return y
 
     def lnlike_of_data(self, X='obs', y='obs', yerr='obs',

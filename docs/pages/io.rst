@@ -1,5 +1,5 @@
-Read/Write
-==========
+Reading/Writing 
+===============
 
 All epistasis models/simulators store data in Pandas_ Series/DataFrames, so the data
 can be easily saved to disk in various formats. This page lists a few.
