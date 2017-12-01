@@ -205,7 +205,7 @@ class EpistasisLasso(_Lasso, _BaseModel):
         return super(self.__class__, self).predict(X)
 
     @X_fitter
-    def score(self, X='obs', y='obs'):
+    def score(self, X='obs', y='obs', sample_weight=None):
         X = _np.asfortranarray(X)
         return super(self.__class__, self).score(X, y)
 

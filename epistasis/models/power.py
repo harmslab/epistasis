@@ -6,13 +6,14 @@ from scipy.optimize import curve_fit
 
 from .utils import X_fitter
 from epistasis.stats import gmean
-from .linear import EpistasisLinearRegression
+from .linear import EpistasisLinearRegression, EpistasisLasso
 from .nonlinear import (EpistasisNonlinearRegression,
                         EpistasisNonlinearLasso,
                         Parameters)
 
 # Suppress an annoying error
 import warnings
+warnings.filterwarnings(action="ignore", category=RuntimeWarning)
 
 
 def power_transform(x, lmbda, A, B):
@@ -196,8 +197,7 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
         self.Linear.epistasis.values = self.Linear.coef_
 
 
-class EpistasisPowerTransformLasso(EpistasisPowerTransform,
-                                   EpistasisNonlinearLasso):
+class EpistasisPowerTransformLasso(EpistasisPowerTransform):
     """Use power-transform function, via nonlinear least-squares regression,
     and an epistasis lasso model to estimate epistatic coefficients and the
     nonlinear scale in a nonlinear genotype-phenotype map.
@@ -238,10 +238,69 @@ class EpistasisPowerTransformLasso(EpistasisPowerTransform,
     parameters : Parameters object
         Mapping object for nonlinear coefficients
     """
-    def __init__(self, order=1, model_type="global", **p0):
+    def __init__(self, order=1, model_type="global", alpha=1.0, **p0):
         super(EpistasisPowerTransformLasso, self).__init__(
             order=order, model_type=model_type, **p0)
 
         # Set lasso.
         self.Linear = EpistasisLasso(
-            order=self.order, model_type=self.model_type)
+            order=self.order, model_type=self.model_type, alpha=alpha)
+
+    def lnlike_of_data(self, X='obs', y='obs', yerr='obs',
+                       sample_weight=None, thetas=None):
+        """Calculate the log likelihoods of each data point, given a set of
+        model coefficients.
+
+        Parameters
+        ----------
+        X : 2d array
+            model matrix
+        y : array
+            data to calculate the likelihood
+        yerr: array
+            uncertainty in data
+        thetas : array
+            array of model coefficients
+
+        Returns
+        -------
+        lnlike : np.ndarray
+            log-likelihood of each data point given a model.
+        """
+        # ###### Prepare input #########
+        # If no model parameters are given, use the model fit.
+        if thetas is None:
+            thetas = self.thetas
+
+        # Handle y.
+        # Get pobs for nonlinear fit.
+        if type(y) is str and y in ["obs", "complete"]:
+            ydata = self.gpm.binary.phenotypes
+        # Else, numpy array or dataframe
+        elif type(y) == np.array or type(y) == pd.Series:
+            ydata = y
+        else:
+            raise FittingError("y is not valid. Must be one of the following:"
+                               "'obs', 'complete', numpy.array, pandas.Series."
+                               " Right now, its {}".format(type(y)))
+
+        # Handle yerr.
+        # Check if yerr is string
+        if type(yerr) is str and yerr in ["obs", "complete"]:
+            yerr = self.gpm.binary.std.upper
+
+        # Else, numpsy array or dataframe
+        elif type(y) != np.array and type(y) != pd.Series:
+            raise FittingError("yerr is not valid. Must be one of the "
+                               "following: 'obs', 'complete', numpy.array, "
+                               "pandas.Series. Right now, its "
+                               "{}".format(type(yerr)))
+
+        # ###### Calculate likelihood #########
+        # Calculate ymodel
+        ymodel = self.hypothesis(X=X, thetas=thetas)
+
+        # Likelihood of data given model
+        return (- 0.5 * np.log(2 * np.pi * yerr**2) -
+                (0.5 * ((ydata - ymodel)**2 / yerr**2)) -
+                (self.Linear.alpha * sum(abs(thetas))))

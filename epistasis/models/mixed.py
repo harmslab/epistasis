@@ -210,6 +210,8 @@ class EpistasisMixedRegression(BaseModel, BaseEstimator):
 
         Returns
         -------
+        r_classifier : float
+            score of classifier model.
         r_nonlinear : float
             squared pearson coefficient between phenotypes and nonlinear
             function.

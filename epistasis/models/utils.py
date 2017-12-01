@@ -68,7 +68,7 @@ def X_predictor(method):
 
         except (KeyError, TypeError):
 
-            if type(X) is str and X in ['obs', 'missing', 'complete']:
+            if type(X) is str and X in ['obs', 'missing', 'complete', 'fit']:
 
                 if hasattr(self, "gpm") is False:
                     raise XMatrixException("To build 'obs' or 'complete' X "
@@ -177,7 +177,7 @@ def X_fitter(method):
 
         except (KeyError, TypeError):
 
-            if type(X) is str and X in ['obs', 'complete']:
+            if type(X) is str and X in ['obs', 'complete', 'fit']:
 
                 if hasattr(self, "gpm") is False:
                     raise XMatrixException("To build 'obs' or 'complete' X "

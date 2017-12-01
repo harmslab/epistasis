@@ -63,7 +63,7 @@ class BaseModel(object):
         X_builts : numpy.ndarray
             newly built 2d array matrix
         """
-        if type(X) is str and X in ['obs', 'missing', 'complete']:
+        if type(X) is str and X in ['obs', 'missing', 'complete', 'fit']:
 
             if hasattr(self, "gpm") is False:
                 raise XMatrixException("To build 'obs', 'missing', or"

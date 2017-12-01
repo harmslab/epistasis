@@ -12,8 +12,8 @@ Table of contents
 * EpistasisMixedRegression
 
 
-Linear, high-order epistasis model
-----------------------------------
+EpistasisLinearRegression
+-------------------------
 
 A linear, high-order epistasis model is provided through the
 `EpistasisLinearRegression` class. This uses an ordinary least-squares 
@@ -38,8 +38,8 @@ genotype-phenotype map. Simple define the order of the model.
   model.fit()
 
 
-Nonlinear, high-order epistasis
--------------------------------
+EpistasisNonlinearRegression
+----------------------------
 
 A nonlinear, high-order epistasis model is provided through the
 `EpistasisNonlinearRegression` class. This uses nonlinear, least-squares 

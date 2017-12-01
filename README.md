@@ -11,7 +11,7 @@ A python API for estimating statistical, high-order epistasis in linear and nonl
 
 This package includes APIs for both linear and nonlinear epistasis models, described in this [paper](https://doi.org/10.1534/genetics.116.195214).
 
-If you'd like to see how we used the epistasis package in our recent Genetics paper (2017), run our Jupyter notebooks [here]()!
+If you'd like to see how we used the epistasis package in our recent Genetics paper (2017), run our Jupyter notebooks [here](https://mybinder.org/v2/gh/harmslab/epistasis-notebooks/master)!
 
 ## Examples
 
@@ -24,6 +24,7 @@ from epistasis.models import EpistasisLinearRegression
 # Read data from file and estimate epistasis
 model = EpistasisLinearRegression.read_json("dataset.json", order=3)
 
+# Fit the model
 model.fit()
 ```
 
