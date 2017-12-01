@@ -1,9 +1,9 @@
 """
-A library of models to decompose high-order epistasis in genotype-phenotype maps.
+A library of models to decompose high-order epistasis in genotype-phenotype
+maps.
 """
-from .linear import EpistasisLinearRegression
-from .lasso import EpistasisLasso
-from .power import EpistasisPowerTransform
-from .nonlinear import EpistasisNonlinearRegression
+from .linear import EpistasisLinearRegression, EpistasisLasso
+from .power import EpistasisPowerTransform, EpistasisPowerTransformLasso
+from .nonlinear import EpistasisNonlinearRegression, EpistasisNonlinearLasso
 from .classifiers import EpistasisLogisticRegression
 from .mixed import EpistasisMixedRegression
