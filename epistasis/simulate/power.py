@@ -5,28 +5,31 @@ from epistasis.models.nonlinear import Parameters
 from epistasis.models.power import power_transform
 from epistasis.model_matrix_ext import get_model_matrix
 
+
 class PowerScaleSimulation(BaseSimulation):
-    """Creates a GenotypePhenotype map that exhibits a nonlinear shape created by
-    a power transform function, and linear high-order epistasis that deviates from
-    that scale.
-    
+    """Creates a GenotypePhenotype map that exhibits a nonlinear shape created
+    by a power transform function, and linear high-order epistasis that
+    deviates from that scale.
+
     Parameters
     ----------
     wildtype:
     mutations:
     p0: list of floats
-        A list of power-scale parameters. the order must be correct --> (lmbda, A, B).
+        A list of power-scale parameters. the order must be correct -->
+        (lmbda, A, B).
     """
+
     def __init__(self, wildtype, mutations,
-        p0=[],
-        model_type='global',
-        **kwargs):
+                 p0=[],
+                 model_type='global',
+                 **kwargs):
 
         # Set parameters
         self.model_type = model_type
-        
-        # Set the parameters -- this logic is ugly, I know. Parameters object needs
-        # to be refactored and this will be cleaned up. low priority.
+
+        # Set the parameters -- this logic is ugly, I know. Parameters object
+        # needs to be refactored and this will be cleaned up. low priority.
         self.parameters = Parameters(["lmbda", "A", "B"])
         self.parameters._set_param("lmbda", p0[0])
         self.parameters._set_param("A", p0[1])
@@ -34,7 +37,7 @@ class PowerScaleSimulation(BaseSimulation):
 
         # Initialize base class.
         super(PowerScaleSimulation, self).__init__(wildtype, mutations,
-            **kwargs)
+                                                   **kwargs)
 
     @staticmethod
     def function(x, lmbda, A, B):
@@ -46,7 +49,7 @@ class PowerScaleSimulation(BaseSimulation):
         """Layer nonlinear model on top of existing linear model."""
         # Initialize the class
         self = cls(model.wildtype, model.mutations, function, p0=p0, **kwargs)
-        
+
         # Copy the epistasis map
         self.epistasis = model.epistasis
 
@@ -58,12 +61,13 @@ class PowerScaleSimulation(BaseSimulation):
         """ Build nonlinear map from epistasis and function.
         """
         self.epistasis.values[0] = self.parameters.B
-        
+
         # Construct an X for the linear epistasis model
         X = self.add_X()
-        
-        # Build linear phenotypes 
+
+        # Build linear phenotypes
         self.linear_phenotypes = np.dot(X, self.epistasis.values)
-        
+
         # Build nonlinear phenotypes
-        self.phenotypes = self.function(self.linear_phenotypes, *self.parameters.values)
+        self.phenotypes = self.function(
+            self.linear_phenotypes, *self.parameters.values)

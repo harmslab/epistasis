@@ -79,31 +79,37 @@ class EpistasisMixedRegression(BaseModel, BaseEstimator):
         self.Model.add_gpm(gpm)
         self.Classifier.add_gpm(gpm)
 
-    def fit(self, X='obs', y='obs', sample_weight=None, use_widgets=False, **kwargs):
+    def fit(self, X='obs', y='obs',
+            sample_weight=None,
+            use_widgets=False,
+            **kwargs):
         """Fit mixed model in two parts. 1. Use Classifier to predict the
         class of each phenotype (Dead/Alive). 2. Fit epistasis Model.
 
-        Do to the nature of the mixed model, the fit method is less flexible than 
-        models in this package. This model requires that a GenotypePhenotypeMap
-        object be attached.
+        Do to the nature of the mixed model, the fit method is less flexible
+        than models in this package. This model requires that a
+        GenotypePhenotypeMap object be attached.
 
         X must be:
 
-            - 'obs' : Uses `gpm.binary.genotypes` to construct X. If genotypes are missing
-                they will not be included in fit. At the end of fitting, an epistasis map attribute
-                is attached to the model class.
-            - 'complete' : Uses `gpm.binary.complete_genotypes` to construct X. All genotypes
-                missing from the data are included. Warning, will break in most fitting methods.
-                At the end of fitting, an epistasis map attribute is attached to the model class.
-            - 'fit' : a previously defined array/dataframe matrix. Prevents copying for efficiency.
+            - 'obs' : Uses `gpm.binary.genotypes` to construct X. If genotypes
+            are missing they will not be included in fit. At the end of
+            fitting, an epistasis map attribute is attached to the model class.
+            - 'complete' : Uses `gpm.binary.complete_genotypes` to construct X.
+            All genotypes missing from the data are included. Warning, will
+            break in most fitting methods. At the end of fitting, an epistasis
+            map attribute is attached to the model class.
+            - 'fit' : a previously defined array/dataframe matrix. Prevents
+            copying for efficiency.
 
         y must be:
-            - 'obs' : Uses `gpm.binary.phenotypes` to construct y. If phenotypes are missing
-                they will not be included in fit. 
-            - 'complete' : Uses `gpm.binary.complete_genotypes` to construct X. All genotypes
-                missing from the data are included. Warning, will break in most fitting methods.
-            - 'fit' : a previously defined array/dataframe matrix. Prevents copying for efficiency.
-
+            - 'obs' : Uses `gpm.binary.phenotypes` to construct y. If
+            phenotypes are missing they will not be included in fit.
+            - 'complete' : Uses `gpm.binary.complete_genotypes` to construct
+            X. All genotypes missing from the data are included. Warning, will
+            break in most fitting methods.
+            - 'fit' : a previously defined array/dataframe matrix. Prevents
+            copying for efficiency.
 
         Parameters
         ----------
@@ -121,13 +127,14 @@ class EpistasisMixedRegression(BaseModel, BaseEstimator):
 
         # Make sure X and y strings match
         if type(X) == str and type(y) == str and X != y:
-            raise FittingError("Any string passed to X must be the same as any string passed to y. "
+            raise FittingError("Any string passed to X must be the same as "
+                               "any string passed to y. "
                                "For example: X='obs', y='obs'.")
 
         # Else if both are arrays, check that X and y match dimensions.
         elif type(X) != str and type(y) != str and X.shape[0] != y.shape[0]:
-            raise FittingError("X dimensions {} and y dimensions {} don't match.".format(
-                X.shape[0], y.shape[0]))
+            raise FittingError("X dimensions {} and y dimensions {} "
+                               "don't match.".format(X.shape[0], y.shape[0]))
 
         # Handle y.
 
@@ -138,7 +145,8 @@ class EpistasisMixedRegression(BaseModel, BaseEstimator):
         elif type(y) == np.array or type(y) == pd.Series:
             pobs = y
         else:
-            raise FittingError("y is not valid. Must be one of the following: 'obs', 'complete', "
+            raise FittingError("y is not valid. Must be one of the following:"
+                               "'obs', 'complete', "
                                "numpy.array", "pandas.Series")
 
         # Handle X
@@ -150,19 +158,22 @@ class EpistasisMixedRegression(BaseModel, BaseEstimator):
         # Build an X matrix for the Epistasis model.
         x = self.Model.add_X(X="obs")
 
-        # Subset the data (and x matrix) to only include alive genotypes/phenotypes
+        # Subset the data (and x matrix) to only include alive
+        # genotypes/phenotypes
         y_subset = pobs[ypred == 1]
         y_subset = y_subset.reset_index(drop=True)
         x_subset = x[ypred == 1, :]
 
         # Fit model to the alive phenotype supset
-        out = self.Model.fit(
-            X=x_subset, y=y_subset, sample_weight=sample_weight, use_widgets=use_widgets, **kwargs)
+        out = self.Model.fit(X=x_subset, y=y_subset,
+                             sample_weight=sample_weight,
+                             use_widgets=use_widgets, **kwargs)
 
         return out
 
     def plot_fit(self):
-        """Plots the observed phenotypes against the additive model phenotypes"""
+        """Plots the observed phenotypes against the additive model
+        phenotypes"""
         padd = self.Additive.predict()
         pobs = self.gpm.phenotypes
         fig, ax = plt.subplots(figsize=(3, 3))
@@ -171,10 +182,10 @@ class EpistasisMixedRegression(BaseModel, BaseEstimator):
         return fig, ax
 
     def predict(self, X='complete'):
-        """Predict phenotypes given a model matrix. Constructs the predictions in
-        two steps. 1. Use X to predict quantitative phenotypes. 2. Predict phenotypes
-        classes using the Classifier. Xfit for the classifier is truncated to the
-        order given by self.Classifier.order
+        """Predict phenotypes given a model matrix. Constructs the predictions
+        in two steps. 1. Use X to predict quantitative phenotypes. 2. Predict
+        phenotypes classes using the Classifier. Xfit for the classifier is
+        truncated to the order given by self.Classifier.order
 
         Return
         ------
@@ -199,11 +210,14 @@ class EpistasisMixedRegression(BaseModel, BaseEstimator):
 
         Returns
         -------
+        r_classifier : float
+            score of classifier model.
         r_nonlinear : float
-            squared pearson coefficient between phenotypes and nonlinear function.
+            squared pearson coefficient between phenotypes and nonlinear
+            function.
         r_linear : float
-            squared pearson coefficient between linearized phenotypes and linear epistasis model
-            described by epistasis.values.
+            squared pearson coefficient between linearized phenotypes and
+            linear epistasis model described by epistasis.values.
         """
         # Sanity checks on input.
         if hasattr(self, "gpm") is False:
@@ -212,13 +226,15 @@ class EpistasisMixedRegression(BaseModel, BaseEstimator):
 
         # Make sure X and y strings match
         if type(X) == str and type(y) == str and X != y:
-            raise FittingError("Any string passed to X must be the same as any string passed to y. "
+            raise FittingError("Any string passed to X must be the same as any"
+                               "string passed to y. "
                                "For example: X='obs', y='obs'.")
 
         # Else if both are arrays, check that X and y match dimensions.
         elif type(X) != str and type(y) != str and X.shape[0] != y.shape[0]:
-            raise FittingError("X dimensions {} and y dimensions {} don't match.".format(
-                X.shape[0], y.shape[0]))
+            raise FittingError("X dimensions {} and y dimensions"
+                               "{} don't match.".format(X.shape[0],
+                                                        y.shape[0]))
 
         # Handle y.
 
@@ -229,13 +245,15 @@ class EpistasisMixedRegression(BaseModel, BaseEstimator):
         elif type(y) == np.array or type(y) == pd.Series:
             pobs = y
         else:
-            raise FittingError("y is not valid. Must be one of the following: 'obs', 'complete', "
+            raise FittingError("y is not valid. Must be one of the "
+                               "following: 'obs', 'complete', "
                                "numpy.array", "pandas.Series")
 
         # Use model to infer dead phenotypes
         ypred = self.Classifier.predict(X="fit")
 
-        # Subset the data (and x matrix) to only include alive genotypes/phenotypes
+        # Subset the data (and x matrix) to only include alive
+        # genotypes/phenotypes
         y_subset = pobs[ypred == 1]
         y_subset = y_subset.reset_index(drop=True)
 
@@ -244,11 +262,12 @@ class EpistasisMixedRegression(BaseModel, BaseEstimator):
         return (self.Classifier.score(X=X, y=y),) + scores
 
     def contributions(self, X='obs', y='obs'):
-        """Calculate the contributions from nonlinearity and epistasis to the variation in phenotype. 
+        """Calculate the contributions from nonlinearity and epistasis to
+        the variation in phenotype.
 
         Returns
         -------
-        contribs 
+        contribs
         """
         # Sanity checks on input.
         if hasattr(self, "gpm") is False:
@@ -257,13 +276,15 @@ class EpistasisMixedRegression(BaseModel, BaseEstimator):
 
         # Make sure X and y strings match
         if type(X) == str and type(y) == str and X != y:
-            raise FittingError("Any string passed to X must be the same as any string passed to y. "
+            raise FittingError("Any string passed to X must be the same as "
+                               "any string passed to y. "
                                "For example: X='obs', y='obs'.")
 
         # Else if both are arrays, check that X and y match dimensions.
         elif type(X) != str and type(y) != str and X.shape[0] != y.shape[0]:
-            raise FittingError("X dimensions {} and y dimensions {} don't match.".format(
-                X.shape[0], y.shape[0]))
+            raise FittingError("X dimensions {} and y dimensions "
+                               "{} don't match.".format(X.shape[0],
+                                                        y.shape[0]))
 
         # Handle y.
 
@@ -274,39 +295,25 @@ class EpistasisMixedRegression(BaseModel, BaseEstimator):
         elif type(y) == np.array or type(y) == pd.Series:
             pobs = y
         else:
-            raise FittingError("y is not valid. Must be one of the following: 'obs', 'complete', "
+            raise FittingError("y is not valid. Must be one of the "
+                               "following: 'obs', 'complete', "
                                "numpy.array", "pandas.Series")
 
         # Use model to infer dead phenotypes
         ypred = self.Classifier.predict(X="fit")
 
-        # Subset the data (and x matrix) to only include alive genotypes/phenotypes
+        # Subset the data (and x matrix) to only include alive
+        # genotypes/phenotypes
         y_subset = pobs[ypred == 1]
         y_subset = y_subset.reset_index(drop=True)
         return self.Model.contributions(X='fit', y=y_subset)
 
-        # scores = self.Model.score(X='fit', y=y_subset)
-        #
-        # # Calculate various pearson coeffs.
-        # add_score = self.Additive.score()
-        # scores = self.score(X=X, y=y)
-        #
-        # # Calculate the nonlinear contribution
-        # nonlinear_contrib = scores[0] - add_score
-        #
-        # # Calculate the contribution from epistasis
-        # epistasis_contrib = 1 - scores[0]
-        #
-        # # Build output dict.
-        # contrib = {'nonlinear': nonlinear_contrib, 'epistasis': epistasis_contrib}
-        # return contrib
-
     @property
     def thetas(self):
-        """1d array of all coefs in model. The classifier coefficients are first
-        in the array, then the model coefficients. See the thetas attributes of
-        the input classifier/epistasis models to determine what is included in this
-        combined array.
+        """1d array of all coefs in model. The classifier coefficients are
+        first in the array, then the model coefficients. See the thetas
+        attributes of the input classifier/epistasis models to determine
+        what is included in this combined array.
         """
         return np.concatenate((self.Classifier.thetas, self.Model.thetas))
 
@@ -331,7 +338,8 @@ class EpistasisMixedRegression(BaseModel, BaseEstimator):
         y[y < self.threshold] = self.threshold
         return y
 
-    def lnlike_of_data(self, X='obs', y='obs', yerr='obs', sample_weight=None, thetas=None):
+    def lnlike_of_data(self, X='obs', y='obs', yerr='obs',
+                       sample_weight=None, thetas=None):
         """Calculate the log likelihood of data, given a set of model coefficients.
 
         Parameters
