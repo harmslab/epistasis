@@ -37,9 +37,9 @@ places. We appreciate your patience as we try to catch up on docs.
 .. toctree::
    :maxdepth: 2
 
-   pages/install
+   pages/quick_guide
    pages/models
-   pages/model_matrix
+   pages/anatomy
    pages/estimating-uncertainty
    pages/simulate
    pages/visualize

@@ -89,8 +89,8 @@ This models has three steps:
   model.fit(A=1)
 
 
-EpistasisNonlinearRegression
-----------------------------
+EpistasisNonlinearLasso
+-----------------------
 
 A nonlinear, high-order epistasis model. This uses nonlinear, least-squares 
 regression (provided by scipy's `curve_fit`) to estimate high-order, epistatic 
