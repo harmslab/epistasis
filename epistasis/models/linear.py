@@ -159,11 +159,11 @@ class EpistasisLasso(_Lasso, _BaseModel):
         number generator; If RandomState instance, random_state is the random
         number generator; If None, the random number generator is the
         RandomState instance used by np.random. Used when
-        selection == ‘random’.
+        selection == 'random'.
     selection : str
-        If set to ‘random’, a random coefficient is updated every iteration
+        If set to 'random', a random coefficient is updated every iteration
         rather than looping over features sequentially by default. This
-        (setting to ‘random’) often leads to significantly faster convergence
+        (setting to 'random') often leads to significantly faster convergence
         especially when tol is higher than 1e-4.
     """
     def __init__(self, order=1, model_type="global", alpha=1.0,

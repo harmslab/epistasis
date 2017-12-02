@@ -28,8 +28,8 @@ else:
     try:
         import funcsigs as inspect
     except ImportError:
-        raise("Is `funcsigs` installed? Try `pip install funcsigs` before "
-              "running this package.")
+        raise ImportError("Is 'funcsigs' installed? Try 'pip install funcsigs'"
+                          "before running this package.")
 
 # Try to import ipython specific tools
 try:
