@@ -1,12 +1,12 @@
 
 from ..linear import *
 import numpy as np
-from nose import tools
+
 
 class TestLinearSimulation(object):
-    
+
     wildtype = "00"
-    mutations = {0:["0","1"], 1:["0","1"]}
+    mutations = {0: ["0", "1"], 1: ["0", "1"]}
 
     def test_init(self):
         sim = LinearSimulation(self.wildtype, self.mutations)
@@ -24,4 +24,3 @@ class TestLinearSimulation(object):
         assert hasattr(sim.epistasis, "_values")
         assert hasattr(sim.epistasis, "_sites")
         assert sim.epistasis.values == values
-        
