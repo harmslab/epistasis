@@ -157,7 +157,7 @@ def X_fitter(method):
             y = self.gpm.binary.phenotypes
 
         # Else, numpy array or dataframe
-        elif type(y) != np.array and type(y) != pd.Series:
+        elif type(y) != np.ndarray and type(y) != pd.Series:
 
             raise FittingError("y is not valid. Must be one of the following: "
                                "'obs', 'complete', numpy.array, pandas.Series."

@@ -177,6 +177,13 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         self.Linear = EpistasisLinearRegression(
             order=self.order, model_type=self.model_type)
 
+    @wraps(BaseModel.add_gpm)
+    def add_gpm(self, gpm):
+        super(EpistasisNonlinearRegression, self).add_gpm(gpm)
+        # Add gpm to other models.
+        self.Additive.add_gpm(gpm)
+        self.Linear.add_gpm(gpm)
+
     @property
     def thetas(self):
         """Get all parameters in the model as a single array. This concatenates
@@ -236,7 +243,6 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
                                " Right now, its {}".format(type(y)))
 
         # Fit with an additive model
-        self.Additive.add_gpm(self.gpm)
         self.Additive.add_epistasis()
 
         # Use a first order matrix only.
@@ -261,7 +267,6 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         # ----------------------------------------------------------------------
 
         # Prepare a high-order model
-        self.Linear.add_gpm(self.gpm)
         self.Linear.add_epistasis()
 
         # Call fit one time on nonlinear space to built X matrix
