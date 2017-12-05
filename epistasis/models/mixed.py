@@ -103,10 +103,10 @@ class EpistasisMixedRegression(BaseModel, BaseEstimator):
 
         # Get pobs for nonlinear fit.
         if type(y) is str and y in ["obs", "complete"]:
-            pobs = self.gpm.binary.phenotypes
+            y = self.gpm.binary.phenotypes
         # Else, numpy array or dataframe
         elif type(y) == np.array or type(y) == pd.Series:
-            pobs = y
+            pass
         else:
             raise FittingError("y is not valid. Must be one of the following:"
                                "'obs', 'complete', "
@@ -116,77 +116,34 @@ class EpistasisMixedRegression(BaseModel, BaseEstimator):
         self.Classifier.fit(X=X, y=y)
 
         # Use model to infer dead phenotypes
-        yclass = self.Classifier.predict(X=X)
+        ypred = self.Classifier.predict(X="fit")
+        yprob = self.Classifier.predict_proba(X="fit")
 
-        # Estimate the additive scale.
-        pobs = np.array(self.gpm.phenotypes)
+        # Build an X matrix for the Epistasis model.
+        x = self.Model.add_X(X="obs")
 
-        # Fit with an additive model
-        self.Model.Additive.fit(X=X, y=y)
+        # Subset the data (and x matrix) to only include alive
+        # genotypes/phenotypes
+        y_subset = y[ypred == 1]
+        y_subset = y_subset.reset_index(drop=True)
+        x_subset = x[ypred == 1, :]
+        p_subset = yprob[ypred == 1, 1]
 
-        # Predict additive
-        padd = self.Model.Additive.predict(X=X)
+        # Fit model to the alive phenotype subset
+        try:
+            # For fitting nonlinear models
+            self.Model._fit_additive(X=X, y=y, sample_weight=sample_weight)
+            self.Model._fit_nonlinear(X=x_subset, y=y_subset)
+            self.Model._fit_linear(X=x_subset, y=y_subset,
+                                   sample_weight=sample_weight)
 
-        # Prepare a high-order model
-        self.Model.Linear.add_epistasis()
-        # Call fit one time on nonlinear space to built X matrix
-        self.Model.Linear.add_X(X=X, key="obs")
+            # Otherwise fit linear model.
+        except AttributeError:
+            self.Model.fit(X=x_subset, y=y_subset, fit_gmean=True,
+                           sample_weight=sample_weight,
+                           use_widgets=use_widgets, **kwargs)
 
-        # Separate alive phenotypes and pass to nonlinear model to fit.
-        pobs = pobs[yclass == 1]
-        padd = padd[yclass == 1]
-        x = self.Model.Linear.Xbuilt['obs'][yclass == 1, :]
-        self.Model.Linear.add_X(X=x, key='fit')
-
-        # Fit the nonlinear model on the alive phenotypes only
-        self.Model._fit_(padd, pobs, sample_weight=sample_weight, **kwargs)
         return self
-        # # Prepare the high-order epistasis model.
-        # self.Model.Linear.add_gpm(self.gpm)
-        # self.Model.Linear.add_epistasis()
-        #
-        # # Build an X matrix for the Epistasis model.
-        # x = self.Model.add_X(X="obs")
-        #
-        # # Subset the data (and x matrix) to only include alive
-        # # genotypes/phenotypes
-        # y_subset = pobs[ypred == 1]
-        # y_subset = y_subset.reset_index(drop=True)
-        # x_subset = x[ypred == 1, :]
-        #
-        # self.Model._fit_(x, )
-        #
-        #
-        # # Call fit one time on nonlinear space to built X matrix
-        # x = self.Model.add_X(X='obs', key='obs')
-        # x[]
-        #
-        #
-        # self.Model.Linear.add_X(X=X, key="fit")
-        #
-        # # Fit nonlinear scale on subset of data.
-        # self.Model._fit_(X=X, y=y, sample_weight=sample_weight,
-        #                use_widgets=use_widgets, **kwargs)
-        #
-        # return self
-        #
-        # # Use model to infer dead phenotypes
-        # ypred = self.Classifier.predict(X="fit")
-        #
-        # # Build an X matrix for the Epistasis model.
-        # x = self.Model.add_X(X="obs")
-        #
-        # # Subset the data (and x matrix) to only include alive
-        # # genotypes/phenotypes
-        # y_subset = pobs[ypred == 1]
-        # y_subset = y_subset.reset_index(drop=True)
-        # x_subset = x[ypred == 1, :]
-        #
-        # # Fit model to the alive phenotype supset
-        # out = self.Model.fit(X=x_subset, y=y_subset,
-        #                      sample_weight=sample_weight,
-        #                      use_widgets=use_widgets, **kwargs)
-        # return out
 
     def plot_fit(self):
         """Plots the observed phenotypes against the additive model

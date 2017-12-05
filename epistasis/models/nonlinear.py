@@ -222,58 +222,32 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         turned into slider widgets for varying these guesses easily. The kwarg
         needs to match the name of the parameter in the nonlinear fit.
         """
-        if hasattr(self, 'gpm') is False:
-            raise Exception("This model will not work if a genotype-phenotype "
-                            "map is not attached to the model class. Use the "
-                            "`add_gpm` method")
-
-        # ----------------------------------------------------------------------
-        # Part 1: Estimate average, independent mutational effects and fit
-        #         nonlinear scale.
-        # ----------------------------------------------------------------------
         # Get pobs for nonlinear fit.
         if type(y) is str and y in ["obs", "complete"]:
-            pobs = self.gpm.binary.phenotypes
+            y = self.gpm.binary.phenotypes
         # Else, numpy array or dataframe
         elif type(y) == np.array or type(y) == pd.Series:
-            pobs = y
+            pass
         else:
             raise FittingError("y is not valid. Must be one of the following: "
                                "'obs', 'complete', numpy.array, pandas.Series."
                                " Right now, its {}".format(type(y)))
 
-        # Fit with an additive model
-        self.Additive.add_epistasis()
-
-        # Use a first order matrix only.
-        if type(X) == np.ndarray or type(X) == pd.DataFrame:
-            Xadd = X[:, :self.Additive.epistasis.n]
-        else:
-            Xadd = X
-
-        # Fit Additive model
-        self.Additive.fit(X=Xadd, y=pobs, sample_weight=sample_weight)
-        self.Additive.epistasis.values = self.Additive.coef_
-
-        # Linearize phenotypes
-        padd = self.Additive.predict(X=Xadd)
-
-        # If true, make a plot of the
-        # if plot_fit:
-        #    fig, ax = self.plot_fit()
-
-        # ----------------------------------------------------------------------
-        # Part 2: Estimate nonlinear function.
-        # ----------------------------------------------------------------------
-
-        # Prepare a high-order model
-        self.Linear.add_epistasis()
-
-        # Call fit one time on nonlinear space to built X matrix
-        self.Linear.add_X(X=X, key="fit")
+        # Fit linear portion
+        self._fit_additive(X=X, y=y, sample_weight=sample_weight)
 
         # Use widgets to guess the value?
-        if use_widgets:
+        if use_widgets is False:
+            # Step 2: fit nonlinear function
+            self._fit_nonlinear(X=X, y=y, sample_weight=sample_weight,
+                                **kwargs)
+
+            # Step 3: fit linear, high-order model.
+            self._fit_linear(X=X, y=y, sample_weight=sample_weight)
+            return self
+
+        # Don't use widgets to fit data
+        else:
             import matplotlib.pyplot as plt
             import epistasis.plot
 
@@ -281,7 +255,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
             def fitting(**parameters):
                 """Callable to be controlled by widgets."""
                 # Fit the nonlinear least squares fit
-                self._fit_(
+                self._fit_nonlinear(
                     padd, pobs, sample_weight=sample_weight, **parameters)
 
                 # Print score
@@ -299,14 +273,40 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
             widgetbox = ipywidgets.interactive(fitting, **kwargs)
             return widgetbox
 
-        # Don't use widgets to fit data
+    def _fit_additive(self, X='obs', y='obs', sample_weight=None, **kwargs):
+        """
+        """
+        if hasattr(self, 'gpm') is False:
+            raise Exception("This model will not work if a genotype-phenotype "
+                            "map is not attached to the model class. Use the "
+                            "`add_gpm` method")
+
+        # Fit with an additive model
+        self.Additive.add_epistasis()
+
+        # Use a first order matrix only.
+        if type(X) == np.ndarray or type(X) == pd.DataFrame:
+            Xadd = X[:, :self.Additive.epistasis.n]
         else:
-            self._fit_(padd, pobs, sample_weight=sample_weight, **kwargs)
+            Xadd = X
+
+        # Fit Additive model
+        self.Additive.fit(X=Xadd, y=y, sample_weight=sample_weight)
+        self.Additive.epistasis.values = self.Additive.coef_
+
         return self
 
-    def _fit_(self, x, y, sample_weight=None, **kwargs):
+    def _fit_nonlinear(self, X='obs', y='obs', sample_weight=None, **kwargs):
         """Estimate the scale of multiple mutations in a genotype-phenotype
         map."""
+        # Use a first order matrix only.
+        if type(X) == np.ndarray or type(X) == pd.DataFrame:
+            Xadd = X[:, :self.Additive.epistasis.n]
+        else:
+            Xadd = X
+
+        x = self.Additive.predict(X=Xadd)
+
         # Set up guesses for parameters
         self.p0.update(**kwargs)
         kwargs = self.p0
@@ -328,20 +328,21 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         for i in range(0, self.parameters.n):
             self.parameters._set_param(i, popt[i])
 
-        # ----------------------------------------------------------------------
-        # Part 3: Fit high-order, linear model.
-        # ----------------------------------------------------------------------
+    def _fit_linear(self, X='obs', y='obs', sample_weight=None):
+        """"""
+        # Prepare a high-order model
+        self.Linear.add_epistasis()
 
         # Construct a linear epistasis model.
         if self.order > 1:
-            Xlin = self.Linear.Xbuilt["fit"]
             ylin = self.reverse(y, *self.parameters.values)
             # Now fit with a linear epistasis model.
-            self.Linear.fit(X=Xlin, y=ylin)
+            self.Linear.fit(X=X, y=ylin)
         else:
             self.Linear = self.Additive
         # Map to epistasis.
         self.Linear.epistasis.values = self.Linear.coef_
+        return self
 
     def plot_fit(self):
         """Plots the observed phenotypes against the additive model
