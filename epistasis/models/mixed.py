@@ -125,7 +125,7 @@ class EpistasisMixedRegression(BaseModel, BaseEstimator):
         # Subset the data (and x matrix) to only include alive
         # genotypes/phenotypes
         y_subset = y[ypred == 1]
-        y_subset = y_subset.reset_index(drop=True)
+        # y_subset = y_subset.reset_index(drop=True)
         x_subset = x[ypred == 1, :]
         p_subset = yprob[ypred == 1, 1]
 
@@ -229,7 +229,7 @@ class EpistasisMixedRegression(BaseModel, BaseEstimator):
         # Subset the data (and x matrix) to only include alive
         # genotypes/phenotypes
         y_subset = pobs[ypred == 1]
-        y_subset = y_subset.reset_index(drop=True)
+        # y_subset = y_subset.reset_index(drop=True)
 
         scores = self.Model.score(
             X='fit', y=y_subset, sample_weight=sample_weight)
@@ -279,7 +279,7 @@ class EpistasisMixedRegression(BaseModel, BaseEstimator):
         # Subset the data (and x matrix) to only include alive
         # genotypes/phenotypes
         y_subset = pobs[ypred == 1]
-        y_subset = y_subset.reset_index(drop=True)
+        # y_subset = y_subset.reset_index(drop=True)
         return self.Model.contributions(X='fit', y=y_subset)
 
     @property

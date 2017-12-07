@@ -65,7 +65,7 @@ class EpistasisBaseClassifier(BaseModel):
     def _fit_(self, X='obs', y='obs', **kwargs):
         """"""
         # Fit the classifier
-        yclass = binarize(y.values.reshape(1, -1), self.threshold)[0]
+        yclass = binarize(y.reshape(1, -1), self.threshold)[0]
         self.classes = yclass
         super(self.__class__, self).fit(X=X, y=yclass, **kwargs)
         return self
@@ -84,7 +84,7 @@ class EpistasisBaseClassifier(BaseModel):
 
     @X_fitter
     def score(self, X='obs', y='obs', **kwargs):
-        yclass = binarize(y.values.reshape(1, -1), threshold=self.threshold)[0]
+        yclass = binarize(y.reshape(1, -1), threshold=self.threshold)[0]
         return super(self.__class__, self).score(X=X, y=yclass)
 
     @X_fitter
@@ -113,7 +113,7 @@ class EpistasisBaseClassifier(BaseModel):
             thetas = self.thetas
 
         # Calculate Y's
-        yclass = binarize(y.values.reshape(1, -1), threshold=self.threshold)[0]
+        yclass = binarize(y.reshape(1, -1), threshold=self.threshold)[0]
         ymodel = self.hypothesis(X=X, thetas=thetas)
 
         # log-likelihood of logit model
