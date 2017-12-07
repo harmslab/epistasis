@@ -2,6 +2,7 @@ import scipy
 import numpy as np
 import inspect
 import json
+import pandas as pd
 from scipy.optimize import curve_fit
 
 from .utils import X_fitter
@@ -13,7 +14,7 @@ from .nonlinear import (EpistasisNonlinearRegression,
 
 # Suppress an annoying error
 import warnings
-warnings.filterwarnings(action="ignore", category=RuntimeWarning)
+# warnings.filterwarnings(action="ignore", category=RuntimeWarning)
 
 
 def power_transform(x, lmbda, A, B):
@@ -95,7 +96,7 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
         """Power transformation function. Exposed to the user for transforming
         test data (not training data.)
         """
-        # Check for zeros
+        # Check for zero
         if lmbda == 0:
             return self.gmean * np.log(x + A)
         else:
@@ -151,10 +152,19 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
         # y[np.isnan(y)==True] = self.parameters.B
         return y
 
-    def _fit_(self, x, y, sample_weight=None, **kwargs):
+    def _fit_nonlinear(self, X='obs', y='obs', sample_weight=None,
+                       fit_gmean=True, **kwargs):
         """Estimate the scale of multiple mutations in a genotype-phenotype
         map.
         """
+        # Use a first order matrix only.
+        if type(X) == np.ndarray or type(X) == pd.DataFrame:
+            Xadd = X[:, :self.Additive.epistasis.n]
+        else:
+            Xadd = X
+
+        x = self.Additive.predict(X=Xadd)
+
         # Set up guesses
         self.p0.update(**kwargs)
         kwargs = self.p0
@@ -167,13 +177,22 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
         # Convert weights to variances on fit parameters.
         if sample_weight is None:
             sigma = None
-        elif sample_weight == 'relative':
+        elif type(sample_weight) == str and sample_weight == 'relative':
             sigma = 1 / sample_weight
         else:
             sigma = 1 / sample_weight
 
         # Fit with curve_fit, using
-        popt, pcov = curve_fit(self._function, x, y, p0=guesses, sigma=sigma,
+        if fit_gmean:
+            f = self._function
+        else:
+            try:
+                f = self.function
+            except AttributeError:
+                raise AttributeError("gmean needs to be calculated. Set "
+                                     "`fit_gmean` to True.")
+
+        popt, pcov = curve_fit(f, x, y, p0=guesses, sigma=sigma,
                                bounds=([-np.inf, -np.inf, -np.inf],
                                        [np.inf, np.inf,
                                         min(self.gpm.phenotypes)]))
@@ -181,20 +200,7 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
         for i in range(0, self.parameters.n):
             self.parameters._set_param(i, popt[i])
 
-        # ----------------------------------------------------------------------
-        # Part 3: Fit high-order, linear model.
-        # ----------------------------------------------------------------------
-
-        # Construct a linear epistasis model.
-        if self.order > 1:
-            Xlin = self.Linear.Xbuilt["fit"]
-            ylin = self.reverse(y, *self.parameters.values)
-            # Now fit with a linear epistasis model.
-            self.Linear.fit(X=Xlin, y=ylin, sample_weight=sample_weight)
-        else:
-            self.Linear = self.Additive
-        # Map to epistasis.
-        self.Linear.epistasis.values = self.Linear.coef_
+        return self
 
 
 class EpistasisPowerTransformLasso(EpistasisPowerTransform):

@@ -157,7 +157,7 @@ def X_fitter(method):
             y = self.gpm.binary.phenotypes
 
         # Else, numpy array or dataframe
-        elif type(y) != np.array and type(y) != pd.Series:
+        elif type(y) != np.ndarray and type(y) != pd.Series:
 
             raise FittingError("y is not valid. Must be one of the following: "
                                "'obs', 'complete', numpy.array, pandas.Series."
@@ -191,14 +191,7 @@ def X_fitter(method):
                 x = self.add_X(X=X)
 
                 # Store Xmatrix.
-                # (if the GenotypePhenotypeMap is complete (no missig
-                # genotypes), then the 'obs' X == 'complete' X)
-                if len(self.gpm.binary.missing_genotypes) == 0:
-                    self.Xbuilt["complete"] = x
-                    self.Xbuilt["obs"] = x
-
-                else:
-                    self.Xbuilt[X] = x
+                self.Xbuilt[X] = x
 
                 # Run fit.
                 model = method(self, X=x, y=y,

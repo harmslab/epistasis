@@ -45,7 +45,9 @@ class EpistasisMixedRegression(BaseModel, BaseEstimator):
             use_widgets=False,
             **kwargs):
         """Fit mixed model in two parts. 1. Use Classifier to predict the
-        class of each phenotype (Dead/Alive). 2. Fit epistasis Model.
+        class of each phenotype (Dead/Alive). 2. Estimate the additive
+        phenotypes on the full data set. 3. Fit scale and epistasis on the
+        alive subset.
 
         Do to the nature of the mixed model, the fit method is less flexible
         than models in this package. This model requires that a
@@ -101,10 +103,10 @@ class EpistasisMixedRegression(BaseModel, BaseEstimator):
 
         # Get pobs for nonlinear fit.
         if type(y) is str and y in ["obs", "complete"]:
-            pobs = self.gpm.binary.phenotypes
+            y = self.gpm.binary.phenotypes
         # Else, numpy array or dataframe
         elif type(y) == np.array or type(y) == pd.Series:
-            pobs = y
+            pass
         else:
             raise FittingError("y is not valid. Must be one of the following:"
                                "'obs', 'complete', "
@@ -115,22 +117,33 @@ class EpistasisMixedRegression(BaseModel, BaseEstimator):
 
         # Use model to infer dead phenotypes
         ypred = self.Classifier.predict(X="fit")
+        yprob = self.Classifier.predict_proba(X="fit")
 
         # Build an X matrix for the Epistasis model.
         x = self.Model.add_X(X="obs")
 
         # Subset the data (and x matrix) to only include alive
         # genotypes/phenotypes
-        y_subset = pobs[ypred == 1]
-        y_subset = y_subset.reset_index(drop=True)
+        y_subset = y[ypred == 1]
+        # y_subset = y_subset.reset_index(drop=True)
         x_subset = x[ypred == 1, :]
+        p_subset = yprob[ypred == 1, 1]
 
-        # Fit model to the alive phenotype supset
-        out = self.Model.fit(X=x_subset, y=y_subset,
-                             sample_weight=sample_weight,
-                             use_widgets=use_widgets, **kwargs)
+        # Fit model to the alive phenotype subset
+        try:
+            # For fitting nonlinear models
+            self.Model._fit_additive(X=X, y=y, sample_weight=sample_weight)
+            self.Model._fit_nonlinear(X=x_subset, y=y_subset)
+            self.Model._fit_linear(X=x_subset, y=y_subset,
+                                   sample_weight=sample_weight)
 
-        return out
+            # Otherwise fit linear model.
+        except AttributeError:
+            self.Model.fit(X=x_subset, y=y_subset, fit_gmean=True,
+                           sample_weight=sample_weight,
+                           use_widgets=use_widgets, **kwargs)
+
+        return self
 
     def plot_fit(self):
         """Plots the observed phenotypes against the additive model
@@ -216,7 +229,7 @@ class EpistasisMixedRegression(BaseModel, BaseEstimator):
         # Subset the data (and x matrix) to only include alive
         # genotypes/phenotypes
         y_subset = pobs[ypred == 1]
-        y_subset = y_subset.reset_index(drop=True)
+        # y_subset = y_subset.reset_index(drop=True)
 
         scores = self.Model.score(
             X='fit', y=y_subset, sample_weight=sample_weight)
@@ -266,7 +279,7 @@ class EpistasisMixedRegression(BaseModel, BaseEstimator):
         # Subset the data (and x matrix) to only include alive
         # genotypes/phenotypes
         y_subset = pobs[ypred == 1]
-        y_subset = y_subset.reset_index(drop=True)
+        # y_subset = y_subset.reset_index(drop=True)
         return self.Model.contributions(X='fit', y=y_subset)
 
     @property

@@ -77,4 +77,5 @@ class NonlinearSimulation(BaseSimulation):
         self.linear_phenotypes = np.dot(X, self.epistasis.values)
 
         # Build nonlinear phenotypes
-        self.phenotypes = self.function(_phenotypes, *self.parameters.values)
+        self.data['phenotypes'] = self.function(_phenotypes,
+                                                *self.parameters.values)
