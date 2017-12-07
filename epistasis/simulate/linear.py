@@ -57,4 +57,4 @@ class LinearSimulation(BaseSimulation):
         """ Build the phenotype map from epistatic interactions. """
         X = self.add_X()
         # Get model type:
-        self.phenotypes = np.dot(X, self.epistasis.values)
+        self.data['phenotypes'] = np.dot(X, self.epistasis.values)

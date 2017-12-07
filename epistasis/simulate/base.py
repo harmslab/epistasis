@@ -268,5 +268,5 @@ class BaseSimulation(GenotypePhenotypeMap):
             same length as phenotypes and will be assigned to each phenotype.
         """
         stdeviations = np.ones(len(self.phenotypes)) * sigma
-        self.stdeviations = stdeviations
+        self.data['stdeviations'] = stdeviations
         return self
