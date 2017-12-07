@@ -44,8 +44,7 @@ class LinearSimulation(BaseSimulation):
 
     def __init__(self, wildtype, mutations,
                  model_type='global',
-                 **kwargs
-                 ):
+                 **kwargs):
         # Construct epistasis mapping objects (empty)
         super(LinearSimulation, self).__init__(
             wildtype,

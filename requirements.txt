@@ -7,7 +7,5 @@ notebook
 ipython
 ipywidgets
 scikit-learn
-gpmap
+gpmap>=0.3.0
 emcee
-corner
-h5py
