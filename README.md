@@ -1,4 +1,4 @@
-# Python API for estimating statistical, high-order epistasis
+# Epistasis
 
 [![Join the chat at https://gitter.im/harmslab/epistasis](https://badges.gitter.im/harmslab/epistasis.svg)](https://gitter.im/harmslab/epistasis?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Binder](http://mybinder.org/badge.svg)](https://beta.mybinder.org/v2/gh/harmslab/epistasis-notebooks/master)
@@ -6,67 +6,44 @@
 [![Build Status](https://travis-ci.org/harmslab/epistasis.svg?branch=master)](https://travis-ci.org/harmslab/epistasis)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.242665.svg)](https://doi.org/10.5281/zenodo.242665)
 
+*Python API for estimating statistical, high-order epistasis in genotype-phenotype maps.*
 
-A python API for estimating statistical, high-order epistasis in linear and nonlinear genotype-phenotype maps. All models follow a *Scikit-learn* interface, making it easy to integrate `epistasis` models with other pipelines and software. It includes a plotting module built on matplotlib for visualizing high-order interactions and interactive widgets to simplify complex nonlinear fits.
+All models follow a *Scikit-learn* interface and thus seamlessly plug in to the PyData ecosystem. For more information about the type of models included in this package,
+read our [docs](http://epistasis.readthedocs.io/?badge=latest). You can also read more about the theory behind these models in our [paper](https://doi.org/10.1534/genetics.116.195214).
 
-This package includes APIs for both linear and nonlinear epistasis models, described in this [paper](https://doi.org/10.1534/genetics.116.195214).
-
-If you'd like to see how we used the epistasis package in our recent Genetics paper (2017), run our Jupyter notebooks [here](https://mybinder.org/v2/gh/harmslab/epistasis-notebooks/master)!
+Finally, if you'd like to test out this package without any installing, try these Jupyter notebooks [here](https://mybinder.org/v2/gh/harmslab/epistasis-notebooks/master) (thank you [Binder](https://mybinder.org/)!).
 
 ## Examples
 
-Read a list of genotypes and corresponding phenotypes from a csv.
+The Epistasis package works best in combinations with GPMap, an API for managing
+genotype-phenotype map data. Construct a GenotypePhenotypeMap object and pass it
+directly to an epistasis model.
 
 ```python
+# Import gpmap
+from gpmap import GenotypePhenotypeMap
+
 # Import epistasis model
 from epistasis.models import EpistasisLinearRegression
 
-# Read data from file and estimate epistasis
-model = EpistasisLinearRegression.read_json("dataset.json", order=3)
+# Load genotype-phenotype map data
+gpm = GenotypePhenotypeMap.read_json()
+
+# Initialize model and add data,
+model = EpistasisLinearRegression(order=3, model_type='global')
+model.add_gpm(gpm)
 
 # Fit the model
 model.fit()
 ```
 
-If analyzing a nonlinear genotype-phenotype map, use `NonlinearEpistasisModel`
-(nonlinear least squares regression) to estimate nonlinearity in map:
-```python
-# Import the nonlinear epistasis model
-from epistasis.models import NonlinearEpistasisRegression
-
-# Define a nonlinear function to fit the genotype-phenotype map.
-def boxcox(x, lmbda, lmbda2):
-    """Fit with a box-cox function to estimate nonlinearity."""
-    return ((x-lmbda2)**lmbda - 1 )/lmbda
-
-def reverse_boxcox(y, lmbda, lmbda2):
-    "inverse of the boxcox function."
-    return (lmbda*y + 1) ** (1/lmbda) + lmbda2
-
-# Read data from file and estimate nonlinearity in dataset.
-model = EpistasisNonlinearRegression.read_json("dataset.json",
-    function=boxbox,
-    reverse=reverse_boxcox,
-    order=1,
-)
-
-# Give initial guesses for parameters to aid in convergence (not required).
-model.fit(lmbda=1, lmbda2=1)
-```
-
-The nonlinear fit also includes Jupyter Notebook widgets to make nonlinear fitting
-easier.
-```python
-model.fit(lmbda=(-2,2,.1), lmbda2=(-2,2,.1), use_widgets=True)
-```
-
-More demos are available as [binder notebooks](http://mybinder.org/repo/harmslab/epistasis).
+More examples can be found in these [binder notebooks](https://mybinder.org/v2/gh/harmslab/epistasis-notebooks/master).
 
 ## Installation
 
-You must have Python 2.7+ or 3+ installed.
+Epistasis works in Python 3+ (we do not guarantee it will work in Python 2.)
 
-To install the most recent release of this package, run:
+To install the most recent release on PyPi:
 ```
 pip install epistasis
 ```
