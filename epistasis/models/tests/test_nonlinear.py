@@ -52,8 +52,8 @@ class TestEpistasisNonlinearRegression(object):
         parameters = m.parameters
 
         # Checks
-        assert hasattr(parameters, 'A') is True
-        assert hasattr(parameters, 'B') is True
+        assert 'A' in parameters
+        assert 'B' in parameters
 
     def test_fit(self, gpm):
 

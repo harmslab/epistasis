@@ -12,7 +12,7 @@ from functools import wraps
 import numpy as np
 import pandas as pd
 import lmfit
-from lmfit import Parameter
+from lmfit import Parameter, Parameters
 
 # Scikit learn imports
 from sklearn.base import BaseEstimator, RegressorMixin
@@ -22,16 +22,6 @@ from .base import BaseModel
 from .utils import (X_fitter, X_predictor, FittingError)
 from .linear import (EpistasisLinearRegression, EpistasisLasso)
 from ..stats import pearson
-
-
-#@wraps(lmfit.Parameters)
-class Parameters(lmfit.Parameters):
-
-    def get_values(self):
-        return list(self.valuesdict().values())
-
-    def get_keys(self):
-        return list(self.valuesdict().keys())
 
 
 class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
@@ -85,7 +75,6 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
                  reverse,
                  order=1,
                  model_type="global",
-                 parameters=None,
                  **p0):
 
         # Do some inspection to get the parameters from the nonlinear
@@ -143,7 +132,8 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         Nonlinear parameters are first in the array; linear coefficients are
         second.
         """
-        return np.concatenate((self.parameters.values, self.Linear.coef_))
+        return np.concatenate((list(self.parameters.values()),
+                               self.Linear.coef_))
 
     def fit(self, X='obs', y='obs',
             sample_weight=None,
@@ -214,7 +204,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
                 # Print score
                 # print("R-squared of fit: " + str(self.score(X=Xadd, y=padd)))
                 # Print parameters
-                for kw in self.parameters._mapping:
+                for kw in self.parameters.valuesdict():
                     print(kw + ": " + str(getattr(self.parameters, kw)))
 
                 # Plot the nonlinear fit!
@@ -261,6 +251,10 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         # Predict additive phenotypes.
         x = self.Additive.predict(X=Xadd)
 
+        # Set guesses
+        for key, value in kwargs.items():
+            self.parameters[key].set(value=value)
+
         # Residual function to minimize.
         def residual(params, func, x, y=None):
             parvals = list(params.values())
@@ -303,8 +297,8 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
 
     def predict(self, X='complete'):
         """Infer phenotypes from model coefficients and nonlinear function."""
-        x = self.Linear.predict(X)
-        y = self.function(x, *self.parameters.values)
+        x = self.Linear.predict(X=X)
+        y = self.function(x, *self.parameters.values())
         return y
 
     def score(self, X='obs', y='obs', sample_weight=None):
@@ -327,8 +321,8 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
             pobs = y
 
         xlin = self.Additive.predict(X=X)
-        ypred = self.function(xlin, *self.parameters.get_params())
-        yrev = self.reverse(pobs, *self.parameters.get_params())
+        ypred = self.function(xlin, *self.parameters.values())
+        yrev = self.reverse(pobs, *self.parameters.values())
         return (pearson(pobs, ypred)**2,
                 self.Linear.score(X=X, y=yrev, sample_weight=sample_weight))
 
@@ -368,7 +362,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         if thetas is None:
             thetas = self.thetas
 
-        i, j = self.parameters.n, self.Linear.epistasis.n
+        i, j = len(self.parameters.valuesdict()), self.Linear.epistasis.n
         parameters = thetas[:i]
         epistasis = thetas[i:i + j]
 

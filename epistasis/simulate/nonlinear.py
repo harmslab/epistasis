@@ -48,10 +48,9 @@ class NonlinearSimulation(BaseSimulation):
                 """First argument of the nonlinear function must be `x`.""")
 
         # Set parameters
-        self.parameters = Parameters(parameters[1:])
-
+        self.parameters = Parameters()
         for i in range(1, len(parameters)):
-            self.parameters._set_param(parameters[i], p0[i - 1])
+            self.parameters.add(parameters[i], p0[i - 1])
         return self
 
     @classmethod
@@ -78,4 +77,5 @@ class NonlinearSimulation(BaseSimulation):
 
         # Build nonlinear phenotypes
         self.data['phenotypes'] = self.function(_phenotypes,
-                                                *self.parameters.values)
+                                                *self.parameters.values(),
+                                                data=_phenotypes)
