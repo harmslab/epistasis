@@ -4,6 +4,9 @@ maps.
 """
 from .linear import EpistasisLinearRegression, EpistasisLasso
 from .power import EpistasisPowerTransform, EpistasisPowerTransformLasso
-from .nonlinear import EpistasisNonlinearRegression, EpistasisNonlinearLasso
+from .nonlinear import (EpistasisNonlinearRegression,
+                        EpistasisNonlinearLasso,
+                        Parameter,
+                        Parameters)
 from .classifiers import EpistasisLogisticRegression
 from .mixed import EpistasisMixedRegression

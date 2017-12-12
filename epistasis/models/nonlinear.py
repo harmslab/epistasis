@@ -2,92 +2,36 @@
 import warnings
 # warnings.filterwarnings(action="ignore", category=RuntimeWarning)
 
+# Standard library imports
 import sys
+import json
+import inspect
+from functools import wraps
+
+# Scipy stack imports
 import numpy as np
 import pandas as pd
-import json
-from functools import wraps
-from scipy.optimize import curve_fit
-import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
+import lmfit
+from lmfit import Parameter
+
+# Scikit learn imports
 from sklearn.base import BaseEstimator, RegressorMixin
 
-# Import epistasis modules.
+# Epistasis imports.
 from .base import BaseModel
-from .utils import X_fitter, X_predictor, FittingError
-from .linear import EpistasisLinearRegression, EpistasisLasso
-from epistasis.stats import pearson
-# decorators for catching errors
-from gpmap.utils import ipywidgets_missing
-
-# Dealing with python 2 imports
-if sys.version_info[0] == 3:
-    import inspect
-else:
-    # Try getting inspect working on python 2
-    try:
-        import funcsigs as inspect
-    except ImportError:
-        raise ImportError("Is 'funcsigs' installed? Try 'pip install funcsigs'"
-                          "before running this package.")
-
-# Try to import ipython specific tools
-try:
-    import ipywidgets
-except ImportError:
-    pass
+from .utils import (X_fitter, X_predictor, FittingError)
+from .linear import (EpistasisLinearRegression, EpistasisLasso)
+from ..stats import pearson
 
 
-class Parameters(object):
-    """A container object for parameters extracted from a nonlinear fit.
-    """
+#@wraps(lmfit.Parameters)
+class Parameters(lmfit.Parameters):
 
-    def __init__(self, params):
-        self._param_list = params
-        self.n = len(self._param_list)
-        self._mapping, self._mapping_ = {}, {}
-        for i in range(self.n):
-            setattr(self, self._param_list[i], 0)
-            self._mapping_[i] = self._param_list[i]
-            self._mapping[self._param_list[i]] = i
+    def get_values(self):
+        return list(self.valuesdict().values())
 
-    def to_json(self, filename):
-        """Write parameters to json
-        """
-        with open(filename, "w") as f:
-            json.dump(f, self())
-
-    def __call__(self):
-        """Return parameters if the instance is called."""
-        return dict(zip(self.keys, self.values))
-
-    @property
-    def keys(self):
-        """Get ordered list of params"""
-        return self._param_list
-
-    @property
-    def values(self):
-        """Get ordered list of params"""
-        vals = []
-        for p in self._param_list:
-            vals.append(getattr(self, p))
-        return vals
-
-    def _set_param(self, param, value):
-        """ Set Parameter value. Method is not exposed to user.
-        param can be either the name of the parameter or its index in this
-        object.
-        """
-        # If param is an index, get name from mappings
-        if type(param) == int or type(param) == float:
-            param = self._mapping_[param]
-        setattr(self, param, value)
-
-    def get_params(self):
-        """ Get an ordered list of the parameters."""
-        return [getattr(self, self._mapping_[i])
-                for i in range(len(self._mapping_))]
+    def get_keys(self):
+        return list(self.valuesdict().keys())
 
 
 class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
@@ -141,22 +85,33 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
                  reverse,
                  order=1,
                  model_type="global",
+                 parameters=None,
                  **p0):
 
-        # Do some inspection to
-        # Get the parameters from the nonlinear function argument list
-        function_sign = inspect.signature(function)
-        parameters = list(function_sign.parameters.keys())
-        if parameters[0] != "x":
-            raise Exception(
-                """ First argument of the nonlinear function must be `x`.""")
+        # Do some inspection to get the parameters from the nonlinear
+        # function argument list.
+        func_signature = inspect.signature(function)
+        func_params = list(func_signature.parameters.keys())
+
+        if func_params[0] != "x":
+            raise Exception("First argument of the nonlinear function must "
+                            "be `x`.")
+
+        # Construct lmfit parameters object
+        self.parameters = Parameters()
+        for p in func_params[1:]:
+            # Get starting value of parameter if given.
+            val = None
+            if p in p0:
+                val = p0[p]
+            # Add parameter.
+            self.parameters.add(name=p, value=val)
 
         # Set up the function for fitting.
         self.function = function
         self.reverse = reverse
 
         # Construct parameters object
-        self.parameters = Parameters(parameters[1:])
         self.set_params(order=order,
                         model_type=model_type)
 
@@ -167,9 +122,6 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
             order=self.order,
             model_type=self.model_type,
             **p0)
-
-        # Initial parameters guesses
-        self.p0 = p0
 
         # Set up additive and high-order linear model
         self.Additive = EpistasisLinearRegression(
@@ -250,6 +202,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         else:
             import matplotlib.pyplot as plt
             import epistasis.plot
+            import ipywidgets
 
             # Build fitting method to pass into widget box
             def fitting(**parameters):
@@ -305,28 +258,21 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         else:
             Xadd = X
 
+        # Predict additive phenotypes.
         x = self.Additive.predict(X=Xadd)
 
-        # Set up guesses for parameters
-        self.p0.update(**kwargs)
-        kwargs = self.p0
-        guesses = np.ones(self.parameters.n)
+        # Residual function to minimize.
+        def residual(params, func, x, y=None):
+            parvals = list(params.values())
+            ymodel = func(x, *parvals)
+            return y - ymodel
 
-        for kw in kwargs:
-            index = self.parameters._mapping[kw]
-            guesses[index] = kwargs[kw]
+        # Minimize the above residual function.
+        self.Nonlinear = lmfit.minimize(residual, self.parameters,
+                                        args=[self.function, x], kws={'y': y})
 
-        # Convert weights to variances on fit parameters.
-        if sample_weight is None:
-            sigma = None
-        else:
-            sigma = 1 / np.sqrt(sample_weight)
-
-        # Fit with curve_fit, using
-        popt, pcov = curve_fit(self.function, x, y,
-                               p0=guesses, sigma=sigma, method="trf")
-        for i in range(0, self.parameters.n):
-            self.parameters._set_param(i, popt[i])
+        # Point to nonlinear.
+        self.parameters = self.Nonlinear.params
 
     def _fit_linear(self, X='obs', y='obs', sample_weight=None):
         """"""
@@ -335,7 +281,8 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
 
         # Construct a linear epistasis model.
         if self.order > 1:
-            ylin = self.reverse(y, *self.parameters.values)
+            self.parameters
+            ylin = self.reverse(y, *self.parameters.values())
             # Now fit with a linear epistasis model.
             self.Linear.fit(X=X, y=ylin)
         else:
