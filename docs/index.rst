@@ -40,9 +40,9 @@ places. We appreciate your patience as we try to catch up on docs.
    pages/quick_guide
    pages/models
    pages/anatomy
-   pages/estimating-uncertainty
    pages/simulate
    pages/visualize
+   pages/advanced
    pages/io
    gallery/index.rst
    api/main.rst
