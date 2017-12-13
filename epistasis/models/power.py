@@ -9,7 +9,7 @@ import lmfit
 from lmfit import Parameter, Parameters
 
 from .utils import X_fitter, X_predictor
-from ..stats import gmean
+from ..stats import gmean, pearson
 from .linear import EpistasisLinearRegression, EpistasisLasso
 from .nonlinear import (EpistasisNonlinearRegression,
                         EpistasisNonlinearLasso,
