@@ -1,14 +1,8 @@
-from distutils.extension import Extension
-
-# Try using setuptools first, if it's installed
-try:
-    from setuptools import setup
-except ImportError:
-    from distutils.core import setup
+from setuptools import setup, Extension
 
 # Define extensions
-extension1 = Extension('epistasis.model_matrix_ext',
-                       ["epistasis/model_matrix_ext.c"])
+extension = Extension('epistasis.model_matrix_ext',
+                      ['epistasis/model_matrix_ext.c'])
 
 # define all packages for distribution
 packages = [
@@ -33,7 +27,7 @@ setup(name='epistasis',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
       ],
-      ext_modules=[extension1],
+      ext_modules=[extension],
       zip_safe=False,
       license='UNLICENSE',
       keywords='epistasis high-order genetics genotype-phenotype-maps')
