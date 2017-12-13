@@ -30,10 +30,10 @@ class PowerScaleSimulation(BaseSimulation):
 
         # Set the parameters -- this logic is ugly, I know. Parameters object
         # needs to be refactored and this will be cleaned up. low priority.
-        self.parameters = Parameters(["lmbda", "A", "B"])
-        self.parameters._set_param("lmbda", p0[0])
-        self.parameters._set_param("A", p0[1])
-        self.parameters._set_param("B", p0[2])
+        self.parameters = Parameters()
+        self.parameters.add(name="lmbda", value=p0[0])
+        self.parameters.add(name="A", value=p0[1])
+        self.parameters.add(name="B", value=p0[2])
 
         # Initialize base class.
         super(PowerScaleSimulation, self).__init__(wildtype, mutations,
@@ -60,7 +60,7 @@ class PowerScaleSimulation(BaseSimulation):
     def build(self, *args):
         """ Build nonlinear map from epistasis and function.
         """
-        self.epistasis.values[0] = self.parameters.B
+        self.epistasis.values[0] = self.parameters['B']
 
         # Construct an X for the linear epistasis model
         X = self.add_X()
@@ -70,4 +70,4 @@ class PowerScaleSimulation(BaseSimulation):
 
         # Build nonlinear phenotypes
         self.data['phenotypes'] = self.function(
-            self.linear_phenotypes, *self.parameters.values)
+            self.linear_phenotypes, *self.parameters.values())

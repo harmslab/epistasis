@@ -56,7 +56,7 @@ map must be on a linear scale.
 arbitrary genotype-phenotype map. Simply define the nonlinear relationship you'd expect,
 or use some reasonable function that evaluates the shape (i.e. a Box-Cox transform).
 The ``EpistasisNonlinearRegression`` will regress this relationship using a nonlinear
-least squares regression (using scipy's ``curve_fit`` function), effectivley minimizing
+least squares regression (provided by ``lmfit``), effectivley minimizing
 epistasis that might arise from the nonlinear relationship. It can, then, compute
 the linearized phenotypes.
 

@@ -2,6 +2,7 @@ numpy
 scipy
 matplotlib
 pandas
+lmfit
 jupyter
 notebook
 ipython

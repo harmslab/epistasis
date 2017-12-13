@@ -227,11 +227,8 @@ class EpistasisMap(BaseMap):
 
     @property
     def keys(self):
-        """ Get interactions as string-keys. """
-        if hasattr(self, '_keys'):
-            return self._keys
-        else:
-            return np.array([site_to_key(lab) for lab in self.sites])
+        """"""
+        pass
 
     @property
     def stdeviations(self):
@@ -261,11 +258,6 @@ class EpistasisMap(BaseMap):
     def values(self, values):
         """ Manually set keys. NEED TO do some quality control here. """
         self._values = pd.Series(values, index=self.index)
-
-    @keys.setter
-    def keys(self, keys):
-        """ Manually set keys. NEED TO do some quality control here. """
-        self._keys = pd.Series(keys, index=self.index)
 
     @stdeviations.setter
     def stdeviations(self, stdeviations):

@@ -6,48 +6,48 @@ This page provides short descriptions of each epistasis model available in this 
 EpistasisLinearRegression
 -------------------------
 
-A linear, high-order epistasis model. This uses an ordinary least-squares 
+A linear, high-order epistasis model. This uses an ordinary least-squares
 regression to estimate high-order, epistatic coefficients in an arbitrary
 genotype-phenotype map. Simple define the order of the model.
 
 .. code-block:: python
 
   from epistasis.models import EpistasisLinearRegression
-  
+
   wildtype = '00'
   genotypes = ['00', '01', '10', '11']
   phenotypes = ['']
-  
+
   # Initialize the data.
   model = EpistasisLinearRegression(order=3)
-  
+
   # Add Genotype-phenotype map data.
   model.add_data(wildtype, genotypes, phenotypes)
-  
+
   # Fit the model.
   model.fit()
 
 EpistasisLasso
 --------------
 
-A L1-norm epistasis model for estimating sparse epistatic coefficients. The 
+A L1-norm epistasis model for estimating sparse epistatic coefficients. The
 optimization function imposes a penalty on the number of coefficients and finds
 the model that maximally explains the data while using the fewest coefficients.
 
 .. code-block:: python
 
   from epistasis.models import EpistasisLasso
-  
+
   wildtype = '00'
   genotypes = ['00', '01', '10', '11']
   phenotypes = ['']
-  
+
   # Initialize the data.
   model = EpistasisLasso(order=3)
-  
+
   # Add Genotype-phenotype map data.
   model.add_data(wildtype, genotypes, phenotypes)
-  
+
   # Fit the model.
   model.fit()
 
@@ -55,9 +55,9 @@ the model that maximally explains the data while using the fewest coefficients.
 EpistasisNonlinearRegression
 ----------------------------
 
-A nonlinear, high-order epistasis model. This uses nonlinear, least-squares 
-regression (provided by scipy's `curve_fit`) to estimate high-order, epistatic 
-coefficients in an arbitrary genotype-phenotype map. 
+A nonlinear, high-order epistasis model. This uses nonlinear, least-squares
+regression (provided by ``lmfit``) to estimate high-order, epistatic
+coefficients in an arbitrary genotype-phenotype map.
 
 This models has three steps:
   1. Fit an additive, linear regression to approximate the average effect of individual mutations.
@@ -75,7 +75,7 @@ This models has three steps:
 
   def func(x, A):
       return np.exp(A * x)
-    
+
   def reverse(y, A):
       return np.log(x) / A
 
@@ -92,9 +92,9 @@ This models has three steps:
 EpistasisNonlinearLasso
 -----------------------
 
-A nonlinear, high-order epistasis model. This uses nonlinear, least-squares 
-regression (provided by scipy's `curve_fit`) to estimate high-order, epistatic 
-coefficients in an arbitrary genotype-phenotype map. 
+A nonlinear, high-order epistasis model. This uses nonlinear, least-squares
+regression (provided by ``lmfit``) to estimate high-order, epistatic
+coefficients in an arbitrary genotype-phenotype map.
 
 This models has three steps:
   1. Fit an additive, linear regression to approximate the average effect of individual mutations.
@@ -112,7 +112,7 @@ This models has three steps:
 
     def func(x, A):
         return np.exp(A * x)
-      
+
     def reverse(y, A):
         return np.log(x) / A
 
@@ -129,8 +129,8 @@ This models has three steps:
 EpistasisPowerTransform
 -----------------------
 
-Use power-transform function, via nonlinear least-squares regression, to 
-estimate epistatic coefficients and the nonlinear scale in a nonlinear 
+Use power-transform function, via nonlinear least-squares regression, to
+estimate epistatic coefficients and the nonlinear scale in a nonlinear
 genotype-phenotype map.
 
 Like the nonlinear model, this model has three steps:
@@ -139,7 +139,7 @@ Like the nonlinear model, this model has three steps:
   3. Transform the phenotypes to this linear scale and fit leftover variation with high-order epistasis model.
 
 Methods are described in the following publication:
-    
+
     Sailer, Z. R. & Harms, M. J. 'Detecting High-Order Epistasis in Nonlinear
     Genotype-Phenotype Maps'. Genetics 205, 1079-1088 (2017).
 
@@ -165,8 +165,8 @@ Methods are described in the following publication:
 EpistasisPowerLasso
 -------------------
 
-Use power-transform function, via nonlinear least-squares regression, to 
-estimate epistatic coefficients and the nonlinear scale in a nonlinear 
+Use power-transform function, via nonlinear least-squares regression, to
+estimate epistatic coefficients and the nonlinear scale in a nonlinear
 genotype-phenotype map.
 
 Like the nonlinear model, this model has three steps:
@@ -202,17 +202,17 @@ A high-order epistasis regression that classifies genotypes as viable/nonviable 
 .. code-block:: python
 
   from epistasis.models import EpistasisLogisticRegression
-  
+
   wildtype = '00'
   genotypes = ['00', '01', '10', '11']
   phenotypes = [0, .2, .1, 1]
-  
+
   # Initialize the data.
   model = EpistasisLogisticRegression(order=1, threshold=.1)
-  
+
   # Add Genotype-phenotype map data.
   model.add_data(wildtype, genotypes, phenotypes)
-  
+
   # Fit the model.
   model.fit()
 
@@ -220,7 +220,7 @@ A high-order epistasis regression that classifies genotypes as viable/nonviable 
 EpistasisMixedRegression
 ---------------------------
 
-A high-order epistasis regression that first classifies genotypes as viable/nonviable (given some threshold), then 
+A high-order epistasis regression that first classifies genotypes as viable/nonviable (given some threshold), then
 fits an epistasis model to estimate epistatic coefficients.
 
 
@@ -232,7 +232,7 @@ fits an epistasis model to estimate epistatic coefficients.
   from epistasis.models import (EpistasisMixedRegression,
                               EpistasisPowerTransform,
                               EpistasisLogisticRegression)
-                              
+
   # Load a genotype-phenotype map
   gpm = GenotypePhenotypeMap.read_json('data.json')
 
@@ -245,6 +245,6 @@ fits an epistasis model to estimate epistatic coefficients.
 
   # Add the genotype-phenotype map to the mixed model
   model.add_gpm(gpm)
-  
+
   # Fit the model.
   model.fit()

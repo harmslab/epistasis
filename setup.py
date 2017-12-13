@@ -1,14 +1,8 @@
-# Try using setuptools first, if it's installed
-try:
-    from setuptools import setup
-except:
-    from distutils.core import setup
-
-from distutils.extension import Extension
-
+from setuptools import setup, Extension
 
 # Define extensions
-extension1 = Extension('epistasis.model_matrix_ext', ["epistasis/model_matrix_ext.c"])
+extension = Extension('epistasis.model_matrix_ext',
+                      ['epistasis/model_matrix_ext.c'])
 
 # define all packages for distribution
 packages = [
@@ -20,8 +14,8 @@ packages = [
 ]
 
 setup(name='epistasis',
-      version='0.2.1',
-      description='High Order Epistasis Models/Regressions for Genotype-Phenotype Maps',
+      version='0.3.0',
+      description='High-order epistasis models for genotype-phenotype maps',
       author='Zach Sailer',
       author_email='zachsailer@gmail.com',
       url='https://github.com/harmslab/epistasis',
@@ -29,13 +23,11 @@ setup(name='epistasis',
       classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Science/Research',
-        'Topic :: Scientific/Engineering :: Bio-Informatics',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
       ],
-      ext_modules=[extension1],
+      ext_modules=[extension],
       zip_safe=False,
       license='UNLICENSE',
-      keywords='epistasis high-order genetics')
+      keywords='epistasis high-order genetics genotype-phenotype-maps')

@@ -3,8 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Epistasis documentation
-=======================
+Epistasis
+=========
 
 A Python API for modeling statistical, high-order epistasis in genotype-phenotype maps.
 This library provides modules to:
@@ -20,7 +20,7 @@ For more information about the epistasis models in this library, see our Genetic
 
 .. _`Sailer, Z. R., & Harms, M. J. (2017). "Detecting High-Order Epistasis in Nonlinear Genotype-Phenotype Maps." Genetics, 205(3), 1079-1088.`: http://www.genetics.org/content/205/3/1079
 
-This library is built on top of well known tools in the scientific Python stack. 
+This library is built on top of well known tools in the scientific Python stack.
 It uses packages like matplotlib, numpy, scipy, scikit-learn, and pandas. We strive
 to follow similar inferface designs present in this ecosytem. If you notice ways
 we can improve, please open an issue on Github! We'd love to hear your feedback.
@@ -40,9 +40,9 @@ places. We appreciate your patience as we try to catch up on docs.
    pages/quick_guide
    pages/models
    pages/anatomy
-   pages/estimating-uncertainty
    pages/simulate
    pages/visualize
+   pages/advanced
    pages/io
    gallery/index.rst
    api/main.rst
