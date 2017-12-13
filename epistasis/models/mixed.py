@@ -139,7 +139,7 @@ class EpistasisMixedRegression(BaseModel, BaseEstimator):
 
             # Otherwise fit linear model.
         except AttributeError:
-            self.Model.fit(X=x_subset, y=y_subset, fit_gmean=True,
+            self.Model.fit(X=x_subset, y=y_subset,
                            sample_weight=sample_weight,
                            use_widgets=use_widgets, **kwargs)
 

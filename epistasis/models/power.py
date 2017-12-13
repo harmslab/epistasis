@@ -154,30 +154,36 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
         else:
             Xadd = X
 
-        # Predict additive phenotypes.
+        # Predict additive phenotypes that passed the classifier.
         x = self.Additive.predict(X=Xadd)
+
+        # Get data used to approximate x_add
+        xadd = self.Additive.predict(X='fit')
 
         # Set guesses
         for key, value in kwargs.items():
             self.parameters[key].set(value=value)
 
+        # Set the lower bound on B.
+        self.parameters['A'].set(min=-min(x))
+
         # Residual function to minimize.
-        def residual(params, func, x, y=None):
+        def residual(params, func, x, y=None, data=None):
             parvals = list(params.values())
-            ymodel = func(x, *parvals)
+            ymodel = func(x, *parvals, data=data)
             return y - ymodel
 
         # Minimize the above residual function.
         self.Nonlinear = lmfit.minimize(residual, self.parameters,
                                         args=[self.function, x],
-                                        kws={'y': y})
+                                        kws={'y': y, 'data': xadd})
 
         # Point to nonlinear.
         self.parameters = self.Nonlinear.params
 
     def predict(self, X='complete'):
         """Infer phenotypes from model coefficients and nonlinear function."""
-        xadd = self.Additive.predict(X='obs')
+        xadd = self.Additive.predict(X='fit')
         x = self.Linear.predict(X=X)
         y = self.function(x, *self.parameters.values(), data=xadd)
         return y
@@ -201,7 +207,7 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
         elif type(y) == np.array or type(y) == pd.Series:
             pobs = y
 
-        xadd = self.Additive.predict(X='obs')
+        xadd = self.Additive.predict(X='fit')
         ypred = self.function(xadd, *self.parameters.values(), data=xadd)
         yrev = self.reverse(pobs, *self.parameters.values(), data=xadd)
         return (pearson(pobs, ypred)**2,
@@ -248,7 +254,7 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
         epistasis = thetas[i:i + j]
 
         # Get the data that was used to estimate the geometric mean.
-        xadd = self.Additive.predict(X='obs')
+        xadd = self.Additive.predict(X='fit')
 
         # Part 1: Linear portion
         ylin = np.dot(X, epistasis)
