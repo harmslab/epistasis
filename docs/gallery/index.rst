@@ -79,13 +79,13 @@ The following gallery contains various examples from the package.
 
   .. container:: sphx-glr-download
 
-    :download:`Download all examples in Python source code: gallery_python.zip <//Users/Zsailer/Documents/OneDrive - University Of Oregon/projects/pkgs/epistasis/docs/gallery/gallery_python.zip>`
+    :download:`Download all examples in Python source code: gallery_python.zip <//Users/zsailer/Documents/research/projects/pkgs/epistasis/docs/gallery/gallery_python.zip>`
 
 
 
   .. container:: sphx-glr-download
 
-    :download:`Download all examples in Jupyter notebooks: gallery_jupyter.zip <//Users/Zsailer/Documents/OneDrive - University Of Oregon/projects/pkgs/epistasis/docs/gallery/gallery_jupyter.zip>`
+    :download:`Download all examples in Jupyter notebooks: gallery_jupyter.zip <//Users/zsailer/Documents/research/projects/pkgs/epistasis/docs/gallery/gallery_jupyter.zip>`
 
 
 .. only:: html
