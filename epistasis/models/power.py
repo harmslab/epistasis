@@ -181,6 +181,23 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
         # Point to nonlinear.
         self.parameters = self.Nonlinear.params
 
+    def _fit_linear(self, X='obs', y='obs', sample_weight=None):
+        """"""
+        # Prepare a high-order model
+        self.Linear.add_epistasis()
+
+        # Construct a linear epistasis model.
+        if self.order > 1:
+            xadd = self.Additive.predict(X='obs')
+            ylin = self.reverse(y, *self.parameters.values(), data=xadd)
+            # Now fit with a linear epistasis model.
+            self.Linear.fit(X=X, y=ylin)
+        else:
+            self.Linear = self.Additive
+        # Map to epistasis.
+        self.Linear.epistasis.values = self.Linear.coef_
+        return self
+
     def predict(self, X='complete'):
         """Infer phenotypes from model coefficients and nonlinear function."""
         xadd = self.Additive.predict(X='fit')

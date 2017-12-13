@@ -275,8 +275,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
 
         # Construct a linear epistasis model.
         if self.order > 1:
-            xadd = self.Additive.predict(X='obs')
-            ylin = self.reverse(y, *self.parameters.values(), data=xadd)
+            ylin = self.reverse(y, *self.parameters.values())
             # Now fit with a linear epistasis model.
             self.Linear.fit(X=X, y=ylin)
         else:
