@@ -3,8 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Epistasis
-=========
+``epistasis``
+=============
 
 A Python API for modeling statistical, high-order epistasis in genotype-phenotype maps.
 This library provides modules to:
@@ -28,8 +28,8 @@ we can improve, please open an issue on Github! We'd love to hear your feedback.
 Currently, this package works only as an API. There is no command-line
 interface. Instead, we encourage you use this package inside `Jupyter notebooks`_ .
 
-Table of Contents
-=================
+Documentation
+-------------
 
 We are still working hard on the Docs! You may notice blank spots in various
 places. We appreciate your patience as we try to catch up on docs.
@@ -48,8 +48,8 @@ places. We appreciate your patience as we try to catch up on docs.
    api/main.rst
 
 Example Gallery
-===============
-s
+---------------
+
 The following gallery contains various examples from the package.
 
 
@@ -96,14 +96,11 @@ The following gallery contains various examples from the package.
     </div>
 
 
-   /gallery/plot_nonlinear_simulation
-.. raw:: html
 
-    <div style='clear:both'></div>
 
 
 Indices and tables
-==================
+------------------
 
 * :ref:`genindex`
 * :ref:`modindex`
