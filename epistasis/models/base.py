@@ -168,7 +168,12 @@ class BaseModel(object):
         instance_tree = (gpm.__class__,) + gpm.__class__.__bases__
         if GenotypePhenotypeMap in instance_tree is False:
             raise TypeError("gpm must be a GenotypePhenotypeMap object")
-        self.gpm = gpm
+        self._gpm = gpm
+
+    @property
+    def gpm(self):
+        """GenotypePhenotypeMap object"""
+        return self._gpm
 
     def fit(self, *args, **kwargs):
         raise Exception("Must be defined in a subclass.")

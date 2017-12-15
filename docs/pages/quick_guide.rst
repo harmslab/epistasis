@@ -4,8 +4,7 @@ Quick Guide
 Introduction
 ------------
 
-A Python API for modeling statistical, high-order epistasis in genotype-phenotype maps.
-This library provides modules to:
+``epistasis`` is a Python library that includes models to estimate statistical, high-order epistasis in genotype-phenotype maps. Using this library, you can
 
     1. Decompose genotype-phenotype maps into high-order epistatic interactions
     2. Find nonlinear scales in the genotype-phenotype map
@@ -16,54 +15,69 @@ For more information about the epistasis models in this library, see our Genetic
 
     `Sailer, Z. R., & Harms, M. J. (2017). "Detecting High-Order Epistasis in Nonlinear Genotype-Phenotype Maps." Genetics, 205(3), 1079-1088.`_
 
-.. _`Sailer, Z. R., & Harms, M. J. (2017). "Detecting High-Order Epistasis in Nonlinear Genotype-Phenotype Maps." Genetics, 205(3), 1079-1088.`: http://www.genetics.org/content/205/3/1079
 
+Simple Tutorial
+--------------
 
-Basic usage
------------
+Follow these five steps for all epistasis models in this library:
 
-Import a model from the ``epistasis.models`` module
+1. **Import a model.** There many models available in the ``epistasis.models`` module. See the full list in the next section.
 
 .. code-block:: python
-  
+
   from epistasis.models import EpistasisLinearRegression
-  
-Initialize the model, setting the order and type of model (see **Anatomy of the library** for more info).
+
+2. **Initialize a model**. Set the order, choose the type of model (see `Anatomy of an epistasis model`_ for more info), and set any other parameters in the model.
 
 .. code-block:: python
-  
+
   model = EpistasisLinearRegression(order=3, model_type='global')
 
-Add genotype-phenotype map data. Use the ``gpmap`` library to load such data.
+3. **Add some data**. There are three basic ways to do this. 1. Pass data directly to the epistasis model using the ``add_data`` method. 2. Read data from a separate file using one of the ``read_`` methods. 3. (The best option.) load data into a GenotypePhenotypeMap object from the GPMap library and add it to the epistasis model.
 
 .. code-block:: python
-  
-  import gpmap
-  
+
+  from gpmap import GenotypePhenotypeMap
+
   datafile = 'data.csv'
-  gpm = gpmap.GenotypePhenotypeMap.read_csv(datafile)
-  
+  gpm = GenotypePhenotypeMap.read_csv(datafile)
+
   # Add the data.
   model.add_gpm(gpm)
-  
-Fit the model.
+
+  # model now has a `gpm` attribute.
+
+4. **Fit the model.** Each model has a simple fit method. Call this to estimate epistatic coefficients. The results are stored the ``epistasis`` attribute.
 
 .. code-block:: python
-  
+
+  # Call fit method
   model.fit()
 
+  # model now has an ``epistasis`` attribute
 
-Overview of models
-------------------
+5. **Plot the results.** The epistasis library has a ``pyplot`` module (powered by matplotlib) with a few builtin plotting functions.
 
-* **EpistasisLinearRegression**: estimate epistatic coefficents in a linear genotype-phenotype map.
-* **EpistasisLasso**: estimate *sparse* epistatic coefficients in a linear genotype-phenotype map
-* **EpistasisNonlinearRegression**: estimates high-order epistatic coefficients in a nonlinear genotype-phenotype map.
-* **EpistasisNonlinearLasso**: estimate *sparse* epistatic coefficients in a nonlinear genotype-phenotype map.
-* **EpistasisPowerTransform**: use a power transform function to fit a nonlinear genotype-phenotype map and estimate epistasis.
-* **EpistasisPowerLasso**: use a power transform function to fit a nonlinear genotype-phenotype map and estimate *sparse* epistasis.
-* **EpistasisLogisticRegression**: use logistic regression to classify phenotypes as dead/alive.
-* **EpistasisMixedRegression**: classify a genotype-phenotype map first, then estimate epistatic coefficients in "alive" phenotypes.
+.. code-block:: python
+
+  from epistasis.pyplot import plot_coefs
+
+  fig, ax = plot_coefs(model.epistasis.sites, model.epistasis.values)
+
+.. image:: ../img/basic-example.png
+
+
+Overview of available models
+----------------------------
+
+* EpistasisLinearRegression_: estimate epistatic coefficents in a linear genotype-phenotype map.
+* EpistasisLasso_: estimate *sparse* epistatic coefficients in a linear genotype-phenotype map
+* EpistasisNonlinearRegression_: estimates high-order epistatic coefficients in a nonlinear genotype-phenotype map.
+* EpistasisNonlinearLasso_: estimate *sparse* epistatic coefficients in a nonlinear genotype-phenotype map.
+* EpistasisPowerTransform_: use a power transform function to fit a nonlinear genotype-phenotype map and estimate epistasis.
+* EpistasisPowerLasso_: use a power transform function to fit a nonlinear genotype-phenotype map and estimate *sparse* epistasis.
+* EpistasisLogisticRegression_: use logistic regression to classify phenotypes as dead/alive.
+* EpistasisMixedRegression_: classify a genotype-phenotype map first, then estimate epistatic coefficients in "alive" phenotypes.
 
 Installation and dependencies
 ------------------------------
@@ -109,7 +123,7 @@ the package.
 * `jupyter notebook`_: interactive notebook application for running python kernels interactively.
 * ipywidgets_: interactive widgets in python.
 
-.. _gpmap: https: //github.com/harmslab/gpmap
+.. _gpmap: https://github.com/harmslab/gpmap
 .. _Scikit-learn: http://scikit-learn.org/stable/
 .. _Numpy: http://www.numpy.org/
 .. _Scipy: http://www.scipy.org/
@@ -122,7 +136,7 @@ the package.
 Running tests
 -------------
 
-The epistasis package comes with a suite of tests. Running the tests require `pytest`, 
+The epistasis package comes with a suite of tests. Running the tests require `pytest`,
 so make sure it is installed.
 
 .. code-block:: bash
@@ -135,3 +149,16 @@ using the following command.
 .. code-block:: bash
 
     pytest
+
+.. Links for this page
+
+.. _`Sailer, Z. R., & Harms, M. J. (2017). "Detecting High-Order Epistasis in Nonlinear Genotype-Phenotype Maps." Genetics, 205(3), 1079-1088.`: http://www.genetics.org/content/205/3/1079
+.. _`Anatomy of an epistasis model`: anatomy.html
+.. _EpistasisLinearRegression: models.html#epistasislinearregression
+.. _EpistasisLasso: models.html#epistasislasso
+.. _EpistasisNonlinearRegression: models.html#epistasisnonlinearregression
+.. _EpistasisNonlinearLasso: models.html#epistasisnonlinearlasso
+.. _EpistasisPowerTransform: models.html#epistasispowertransform
+.. _EpistasisPowerLasso: models.html#epistasispowerlasso
+.. _EpistasisLogisticRegression: models.html#epistasislogisticregression
+.. _EpistasisMixedRegression: models.html#epistasismixedregression

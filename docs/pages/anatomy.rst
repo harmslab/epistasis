@@ -9,7 +9,7 @@ This matrix maps genotypes to epistatic coefficients. You can read about this ma
 in this paper_.
 
 There are two popular X matrices that exist in the epistasis literature, the
-``global`` (aka background-averaged) and ``local`` (aka biochemical) model.
+``global`` model (a.k.a. background-averaged model) and ``local`` model (a.k.a. biochemical model).
 All epistasis models in this API takes a ``model_type`` keyword argument
 that tells the model which matrix to use. Read the paper mentioned
 above for more information on which model to use.
@@ -23,11 +23,11 @@ This speeds up fitting algorithms that may need resample fitting many times.
 
 These keys include:
 
-  1. **obs** : model matrix for the observed genotypes in an attached genotype-phenotype map. These genotypes are returned by the ``genotypes`` attribute in the ``GenotypePhenotypeMap`` object.
-  2. **missing** : model matrix for missing genotypes in the genotype-phenotype map. These genotypes are returned by the ``missing_genotypes`` attribute in the ``GenotypePhenotypeMap`` object.
-  3. **complete** : model matrix for complete genotypes in the genotype-phenotype map.These genotypes are returned by the ``complete_genotypes`` attribute in the ``GenotypePhenotypeMap`` object.
-  4. **fit** : model matrix created/used by the last ``fit`` call.
-  5. **predict** : model matrix created/used by the last ``predict`` call.
+  1. ``"obs"`` : model matrix for the observed genotypes in an attached genotype-phenotype map. These genotypes are returned by the ``genotypes`` attribute in a GenotypePhenotypeMap object.
+  2. ``"missing"`` : model matrix for missing genotypes in the genotype-phenotype map. These genotypes are returned by the ``missing_genotypes`` attribute in a GenotypePhenotypeMap object.
+  3. ``"complete"`` : model matrix for complete genotypes in the genotype-phenotype map.These genotypes are returned by the ``complete_genotypes`` attribute in a GenotypePhenotypeMap object.
+  4. ``"fit"`` : model matrix created/used by the last ``fit`` call.
+  5. ``"predict"`` : model matrix created/used by the last ``predict`` call.
 
 .. References in this document
 

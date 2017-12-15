@@ -7,7 +7,7 @@
 =============
 
 A Python API for modeling statistical, high-order epistasis in genotype-phenotype maps.
-This library provides modules to:
+You can use this library to:
 
     1. Decompose genotype-phenotype maps into high-order epistatic interactions
     2. Find nonlinear scales in the genotype-phenotype map
@@ -27,6 +27,39 @@ we can improve, please open an issue on Github! We'd love to hear your feedback.
 
 Currently, this package works only as an API. There is no command-line
 interface. Instead, we encourage you use this package inside `Jupyter notebooks`_ .
+
+Basic Example
+-------------
+
+.. code-block:: python
+
+    # Import a model and the plotting module
+    from epistasis.models import EpistasisLinearRegression
+    from epistasis.pyplot import plot_coefs
+
+    # Genotype-phenotype map data.
+    wildtype = "AAA"
+    genotypes = ["ATT", "AAT", "ATA", "TAA", "ATT", "TAT", "TTA", "TTT"]
+    phenotypes = [0.1, 0.2, 0.4, 0.3, 0.3, 0.6, 0.8, 1.0]
+
+    # Inialize an epistasis model.
+    model = EpistasisLinearRegression(order=3)
+
+    # Add genotype-phenotype map
+    model.add_data(wildtype=wildtype,
+                    genotypes=genotypes,
+                    phenotypes=phenotypes)
+
+    # Fit the model.
+    model.fit()
+
+    # Plot coefficients (powered by matplotlib).
+    coef_sites = model.epistasis.sites
+    coef_values = model.epistasis.values
+
+    fig, axes = plot_coefs(coef_sites, coef_values, figsize=(2,4))
+
+.. image:: img/basic-example.png
 
 Documentation
 -------------

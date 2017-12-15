@@ -38,6 +38,58 @@ Access information about the minimizer results using the ``Nonlinear`` attribute
     model.Nonlinear.params.pretty_print()
 
 
+Large genotype-phenotype maps
+-----------------------------
+
+We have not tested the ``epistasis`` package on large genotype-phenotype maps (>5000 genotypes). In principle,
+it should be no problem as long as you have the resources (i.e. tons of RAM and time). However, it's possible there may be issues with convergence
+and numerical rounding for these large spaces. If you have a large dataset, please get in touch! We'd love to hear from you. Try it out
+and let us know if you have success.
+
+My nonlinear fit is slow and does not converge.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Try fitting the scale of your map using a fraction of your data. We've found that you can
+typically estimate the nonlinear scale of a genotype-phenotype map from a small
+fraction of the genotypes. Choose a random subset of your data and fit it using a
+first order nonlinear model. Then use that model to linearize all your phenotype
+
+.. code-block:: python
+
+    from gpmap import GenotypePhenotypeMap
+    from epistasis.models import (EpistasisPowerTransform,
+                                  EpistasisLinearRegression)
+
+    # Load data.
+    gpm = GenotypePhenotypeMap.read_csv('data.csv')
+
+    # Subset the data
+    data_subset = gpm.data.sample(frac=0.5)
+    gpm_subset = GenotypePhenotypeMap.read_dataframe(data_subset)
+
+    # Fit the subset
+    nonlinear = EpistasisPowerTransform(order=1, lmbda=1, A=0, B=0)
+    nonlinear.add_gpm(gpm_subset).fit()
+
+    # Linearize the original phenotypes to estimate epistasis.
+    #
+    # Note: power transform calculate the geometric mean of the additive
+    # phenotypes, so we need to pass those phenotypes to the reverse transform.
+    padd = nonlinear.Additive.predict(X='fit')
+    linear_phenotypes = nonlinear.reverse(gpm.phenotypes,
+                                          *nonlinear.parameters.values(),
+                                          data=padd)
+
+    # Change phenotypes (note this changes the original dataframe)
+    gpm.data.phenotypes = linear_phenotypes
+    model = EpistasisLinearRegression(order=10)
+    model.add_gpm(gpm)
+
+    # Fit the model
+    model.fit()
+
+
+
 Estimating model uncertainty
 ----------------------------
 
