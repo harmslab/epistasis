@@ -55,23 +55,31 @@ class EpistasisMixedRegression(BaseModel, BaseEstimator):
 
         X must be:
 
-            - 'obs' : Uses `gpm.binary` to construct X. If genotypes
+        - 'obs' :
+            Uses `gpm.binary` to construct X. If genotypes
             are missing they will not be included in fit. At the end of
-            fitting, an epistasis map attribute is attached to the model class.
-            - 'complete' : Uses `gpm.complete_binary` to construct X.
+            fitting, an epistasis map attribute is attached to the model
+            class.
+        - 'complete' :
+            Uses `gpm.complete_binary` to construct X.
             All genotypes missing from the data are included. Warning, will
-            break in most fitting methods. At the end of fitting, an epistasis
-            map attribute is attached to the model class.
-            - 'fit' : a previously defined array/dataframe matrix. Prevents
+            break in most fitting methods. At the end of fitting, an
+            epistasis map attribute is attached to the model class.
+        - 'fit' :
+            a previously defined array/dataframe matrix. Prevents
             copying for efficiency.
 
         y must be:
-            - 'obs' : Uses `gpm.binary` to construct y. If
+
+        - 'obs' :
+            Uses `gpm.binary` to construct y. If
             phenotypes are missing they will not be included in fit.
-            - 'complete' : Uses `gpm.complete_binary` to construct
+        - 'complete' :
+            Uses `gpm.complete_binary` to construct
             X. All genotypes missing from the data are included. Warning, will
             break in most fitting methods.
-            - 'fit' : a previously defined array/dataframe matrix. Prevents
+        - 'fit' :
+            a previously defined array/dataframe matrix. Prevents
             copying for efficiency.
 
         Parameters

@@ -36,22 +36,27 @@ class BaseModel(object):
     def add_X(self, X="complete", key=None):
         """Add X to Xbuilt
 
-        X must be:
+        Keyword arguments for X:
 
-            - 'obs' : Uses `gpm.binary` to construct X. If genotypes
-                are missing they will not be included in fit. At the end of
-                fitting, an epistasis map attribute is attached to the model
-                class.
-            - 'missing' : Uses `gpm.binary` to construct X.
-                All genotypes missing from the data are included. Warning,
-                will break in most fitting methods. At the end of fitting,
-                an epistasis map attribute is attached to the model class.
-            - 'complete' : Uses `gpm.binary` to construct X.
-                All genotypes missing from the data are included. Warning, will
-                break in most fitting methods. At the end of fitting, an
-                epistasis map attribute is attached to the model class.
-            - 'fit' : a previously defined array/dataframe matrix. Prevents
-                copying for efficiency.
+        - 'obs' :
+            Uses ``gpm.binary`` to construct X. If genotypes
+            are missing they will not be included in fit. At the end of
+            fitting, an epistasis map attribute is attached to the model
+            class.
+        - 'missing' :
+            Uses ``gpm.binary`` to construct X.
+            All genotypes missing from the data are included. Warning,
+            will break in most fitting methods. At the end of fitting,
+            an epistasis map attribute is attached to the model class.
+        - 'complete' :
+            Uses ``gpm.binary`` to construct X.
+            All genotypes missing from the data are included. Warning, will
+            break in most fitting methods. At the end of fitting, an
+            epistasis map attribute is attached to the model class.
+        - 'fit' :
+            a previously defined array/dataframe matrix. Prevents
+            copying for efficiency.
+
 
         Parameters
         ----------
@@ -62,7 +67,7 @@ class BaseModel(object):
 
         Returns
         -------
-        X_builts : numpy.ndarray
+        Xbuilt : numpy.ndarray
             newly built 2d array matrix
         """
         if type(X) is str and X in ['obs', 'missing', 'complete', 'fit']:
@@ -85,7 +90,7 @@ class BaseModel(object):
             elif X == "missing":
                 index = self.gpm.missing_binary
             else:
-                index = self.gpm.missing_binary
+                index = self.gpm.complete_binary
 
             # Build numpy array
             x = get_model_matrix(index, columns, model_type=self.model_type)
@@ -109,8 +114,8 @@ class BaseModel(object):
                                    "'complete', numpy.ndarray, or "
                                    "pandas.DataFrame.")
 
-        X_built = self.Xbuilt[key]
-        return X_built
+        Xbuilt = self.Xbuilt[key]
+        return Xbuilt
 
     @property
     def data(self):
