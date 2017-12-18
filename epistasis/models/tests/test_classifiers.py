@@ -24,17 +24,19 @@ class TestEpistasisLogisticRegression(object):
     threshold = 0.2
 
     def test_init(self, gpm):
-        model = EpistasisLogisticRegression.read_gpm(
-            gpm, threshold=self.threshold, order=self.order,
-            model_type="local")
+        model = EpistasisLogisticRegression(threshold=self.threshold,
+                                            order=self.order,
+                                            model_type="local")
+        model.add_gpm(gpm)
         # Tests
         assert model.order == self.order
         assert model.model_type == "local"
 
     def test_fit(self, gpm):
-        model = EpistasisLogisticRegression.read_gpm(
-            gpm, threshold=self.threshold, order=self.order,
-            model_type="local")
+        model = EpistasisLogisticRegression(threshold=self.threshold,
+                                            order=self.order,
+                                            model_type="local")
+        model.add_gpm(gpm)
         model.fit()
 
         assert "fit" in model.Xbuilt
@@ -44,9 +46,10 @@ class TestEpistasisLogisticRegression(object):
         assert hasattr(model, "coef_")
 
     def test_predict(self, gpm):
-        model = EpistasisLogisticRegression.read_gpm(
-            gpm, threshold=self.threshold, order=self.order,
-            model_type="local")
+        model = EpistasisLogisticRegression(threshold=self.threshold,
+                                            order=self.order,
+                                            model_type="local")
+        model.add_gpm(gpm)
         model.fit()
         ypred = model.predict()
 
@@ -55,9 +58,10 @@ class TestEpistasisLogisticRegression(object):
         assert len(ypred) == model.gpm.n
 
     def test_predict_proba(self, gpm):
-        model = EpistasisLogisticRegression.read_gpm(
-            gpm, threshold=self.threshold, order=self.order,
-            model_type="local")
+        model = EpistasisLogisticRegression(threshold=self.threshold,
+                                            order=self.order,
+                                            model_type="local")
+        model.add_gpm(gpm)
         model.fit()
         probs = model.predict_proba()
 
@@ -69,9 +73,10 @@ class TestEpistasisLogisticRegression(object):
         assert np.all(probs >= 0)
 
     def test_predict_log_proba(self, gpm):
-        model = EpistasisLogisticRegression.read_gpm(
-            gpm, threshold=self.threshold, order=self.order,
-            model_type="local")
+        model = EpistasisLogisticRegression(threshold=self.threshold,
+                                            order=self.order,
+                                            model_type="local")
+        model.add_gpm(gpm)
         model.fit()
         probs = model.predict_log_proba()
 
@@ -82,9 +87,10 @@ class TestEpistasisLogisticRegression(object):
         assert np.all(probs <= 0)
 
     def test_score(self, gpm):
-        model = EpistasisLogisticRegression.read_gpm(
-            gpm, threshold=self.threshold, order=self.order,
-            model_type="local")
+        model = EpistasisLogisticRegression(threshold=self.threshold,
+                                            order=self.order,
+                                            model_type="local")
+        model.add_gpm(gpm)
         model.fit()
         score = model.score()
 
@@ -92,18 +98,20 @@ class TestEpistasisLogisticRegression(object):
         assert 0 <= score <= 1
 
     def test_thetas(self, gpm):
-        model = EpistasisLogisticRegression.read_gpm(
-            gpm, threshold=self.threshold, order=self.order,
-            model_type="local")
+        model = EpistasisLogisticRegression(threshold=self.threshold,
+                                            order=self.order,
+                                            model_type="local")
+        model.add_gpm(gpm)
         model.fit()
 
         # Check thetas is the correct length
         assert len(model.thetas) == len(model.coef_[0])
 
     def test_hypothesis(self, gpm):
-        model = EpistasisLogisticRegression.read_gpm(
-            gpm, threshold=self.threshold, order=self.order,
-            model_type="local")
+        model = EpistasisLogisticRegression(threshold=self.threshold,
+                                            order=self.order,
+                                            model_type="local")
+        model.add_gpm(gpm)
         model.fit()
 
         # these should be equal if working properly
@@ -112,9 +120,10 @@ class TestEpistasisLogisticRegression(object):
         np.testing.assert_almost_equal(pred, hypo)
 
     def test_lnlikelihood(self, gpm):
-        model = EpistasisLogisticRegression.read_gpm(
-            gpm, threshold=self.threshold, order=self.order,
-            model_type="local")
+        model = EpistasisLogisticRegression(threshold=self.threshold,
+                                            order=self.order,
+                                            model_type="local")
+        model.add_gpm(gpm)
         model.fit()
         lnlike = model.lnlikelihood()
 

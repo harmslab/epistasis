@@ -23,6 +23,47 @@ class BaseModel(object):
     """
     Xbuilt = {}
 
+    def fit(self, *args, **kwargs):
+        raise Exception("Must be defined in a subclass.")
+
+    def predict(self, *args, **kwargs):
+        raise Exception("Must be defined in a subclass.")
+
+    def hypothesis(self, *args, **kwargs):
+        raise Exception("Must be defined in a subclass.")
+
+    def lnlike_of_data(self, *args, **kwargs):
+        raise Exception("Must be defined in a subclass.")
+
+    def lnlikelihood(self, X="obs", y="obs", yerr="obs",
+                     sample_weight=None, thetas=None):
+        """Calculate the log likelihood of y, given a set of model coefficients.
+
+        Parameters
+        ----------
+        X : 2d array
+            model matrix
+        y : array
+            data to calculate the likelihood
+        yerr: array
+            uncertainty in data
+        thetas : array
+            array of model coefficients
+
+        Returns
+        -------
+        lnlike : float
+            log-likelihood of data given a model.
+        """
+        lnlike = np.sum(self.lnlike_of_data(X=X, y=y, yerr=yerr,
+                                            sample_weight=sample_weight,
+                                            thetas=thetas))
+
+        # If log-likelihood is infinite, set to negative infinity.
+        if np.isinf(lnlike) or np.isnan(lnlike):
+            return -np.inf
+        return lnlike
+
     def add_epistasis(self):
         """Add an EpistasisMap to model.
         """
@@ -117,6 +158,20 @@ class BaseModel(object):
         Xbuilt = self.Xbuilt[key]
         return Xbuilt
 
+    def add_gpm(self, gpm):
+        """Add a GenotypePhenotypeMap object to the epistasis model.
+        """
+        # Hacky way to
+        instance_tree = (gpm.__class__,) + gpm.__class__.__bases__
+        if GenotypePhenotypeMap in instance_tree is False:
+            raise TypeError("gpm must be a GenotypePhenotypeMap object")
+        self._gpm = gpm
+
+    @property
+    def gpm(self):
+        """GenotypePhenotypeMap object"""
+        return self._gpm
+
     @property
     def data(self):
         """Model data."""
@@ -127,52 +182,6 @@ class BaseModel(object):
         # Merge dataframes.
         data = pd.concat((df1, df2), axis=1)
         return data
-
-    @property
-    def gpm(self):
-        """GenotypePhenotypeMap object"""
-        return self._gpm
-
-    def fit(self, *args, **kwargs):
-        raise Exception("Must be defined in a subclass.")
-
-    def predict(self, *args, **kwargs):
-        raise Exception("Must be defined in a subclass.")
-
-    def hypothesis(self, *args, **kwargs):
-        raise Exception("Must be defined in a subclass.")
-
-    def lnlike_of_data(self, *args, **kwargs):
-        raise Exception("Must be defined in a subclass.")
-
-    def lnlikelihood(self, X="obs", y="obs", yerr="obs",
-                     sample_weight=None, thetas=None):
-        """Calculate the log likelihood of y, given a set of model coefficients.
-
-        Parameters
-        ----------
-        X : 2d array
-            model matrix
-        y : array
-            data to calculate the likelihood
-        yerr: array
-            uncertainty in data
-        thetas : array
-            array of model coefficients
-
-        Returns
-        -------
-        lnlike : float
-            log-likelihood of data given a model.
-        """
-        lnlike = np.sum(self.lnlike_of_data(X=X, y=y, yerr=yerr,
-                                            sample_weight=sample_weight,
-                                            thetas=thetas))
-
-        # If log-likelihood is infinite, set to negative infinity.
-        if np.isinf(lnlike) or np.isnan(lnlike):
-            return -np.inf
-        return lnlike
 
     def add_dataframe(self, df, wildtype, mutations=None):
         """Takes a model dataframe, splits into genotype-phenotype map
@@ -191,26 +200,6 @@ class BaseModel(object):
         # Add data to map.
         self.add_gpm(gpm)
         self.epistasis = epistasis
-
-    def add_data(self, wildtype, genotypes, phenotypes, **kwargs):
-        """Add genotype and phenotype data to the model.
-        """
-        # Build a genotype-phenotype map object from data.
-        gpm = GenotypePhenotypeMap(wildtype, genotypes, phenotypes, **kwargs)
-        self.add_gpm(gpm)
-        return self
-
-    def add_gpm(self, gpm):
-        """Add a GenotypePhenotypeMap object to the epistasis model.
-
-        Also exposes APIs that are only accessible with a GenotypePhenotypeMap
-        attached to the model.
-        """
-        # Hacky way to
-        instance_tree = (gpm.__class__,) + gpm.__class__.__bases__
-        if GenotypePhenotypeMap in instance_tree is False:
-            raise TypeError("gpm must be a GenotypePhenotypeMap object")
-        self._gpm = gpm
 
     @classmethod
     def read_json(cls, filename, **kwargs):
@@ -253,37 +242,6 @@ class BaseModel(object):
         df = pd.read_csv(filename, index_col=0)
         self = cls(**kwargs)
         self.add_dataframe(df, wildtype, mutations=mutations)
-        return self
-
-    @classmethod
-    def read_data(cls, wildtype, genotypes, phenotypes, **kwargs):
-        """Read data into model.
-
-        Parameters
-        ----------
-        wildtype : str
-            reference genotype.
-        genotypes : array
-            array of genotypes
-        phenotypes : array
-            array of phenotypes
-
-        Keyword arguments
-        -----------------
-        Keyword arguments are passed to the GenotypePhenotypeMap.
-        """
-        self = cls(**kwargs)
-        gpm = GenotypePhenotypeMap(wildtype, genotypes, phenotypes, **kwargs)
-        self.add_gpm(gpm)
-        return self
-
-    @classmethod
-    def read_gpm(cls, gpm, **kwargs):
-        """ Initialize an epistasis model from a Genotype-phenotypeMap object
-        """
-        # Grab all properties from data-structure
-        self = cls(**kwargs)
-        self.add_gpm(gpm)
         return self
 
     def to_excel(self, filename):

@@ -72,7 +72,3 @@ class TestBaseModel():
         model = BaseModel()
         with pytest.raises(Exception):
             model.lnlikelihood()
-
-    def test_read_gpm(self, gpm):
-        model = BaseModel.read_gpm(gpm)
-        assert hasattr(model, "gpm") is True

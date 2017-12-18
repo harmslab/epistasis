@@ -25,8 +25,9 @@ class TestEpistasisLinearRegression(object):
     order = 3
 
     def test_init(self, gpm):
-        model = EpistasisLinearRegression.read_gpm(
-            gpm, order=self.order, model_type="local")
+        model = EpistasisLinearRegression(order=self.order, model_type="local")
+        model.add_gpm(gpm)
+
         # Checks
         check1 = model.order
         check2 = model.model_type
@@ -34,8 +35,8 @@ class TestEpistasisLinearRegression(object):
         assert check2 == "local"
 
     def test_fit(self, gpm):
-        model = EpistasisLinearRegression.read_gpm(
-            gpm, order=self.order, model_type="local")
+        model = EpistasisLinearRegression(order=self.order, model_type="local")
+        model.add_gpm(gpm)
         model.fit()
         # Checks
         check1 = hasattr(model, "Xbuilt")
@@ -50,13 +51,13 @@ class TestEpistasisLinearRegression(object):
         assert "fit" in model.Xbuilt
 
     def test_fit_sample_weight(self, gpm):
-        model = EpistasisLinearRegression.read_gpm(
-            gpm, order=self.order, model_type="local")
+        model = EpistasisLinearRegression(order=self.order, model_type="local")
+        model.add_gpm(gpm)
         model.fit(sample_weight='relative')
 
     def test_predict(self, gpm):
-        model = EpistasisLinearRegression.read_gpm(
-            gpm, order=self.order, model_type="local")
+        model = EpistasisLinearRegression(order=self.order, model_type="local")
+        model.add_gpm(gpm)
         model.fit()
         check1 = model.predict()
 
@@ -67,8 +68,8 @@ class TestEpistasisLinearRegression(object):
         assert "complete" in model.Xbuilt
 
     def test_score(self, gpm):
-        model = EpistasisLinearRegression.read_gpm(
-            gpm, order=self.order, model_type="local")
+        model = EpistasisLinearRegression(order=self.order, model_type="local")
+        model.add_gpm(gpm)
         model.fit()
         score = model.score()
         # Tests
@@ -76,8 +77,8 @@ class TestEpistasisLinearRegression(object):
         assert score <= 1
 
     def test_hypothesis(self, gpm):
-        model = EpistasisLinearRegression.read_gpm(
-            gpm, order=self.order, model_type="local")
+        model = EpistasisLinearRegression(order=self.order, model_type="local")
+        model.add_gpm(gpm)
         model.fit()
         # Checks
         check1 = model.hypothesis(thetas=model.coef_)
@@ -86,8 +87,8 @@ class TestEpistasisLinearRegression(object):
             sorted(check1), sorted(model.gpm.phenotypes))
 
     def test_lnlikelihood(self, gpm):
-        model = EpistasisLinearRegression.read_gpm(
-            gpm, order=self.order, model_type="local")
+        model = EpistasisLinearRegression(order=self.order, model_type="local")
+        model.add_gpm(gpm)
         model.fit()
 
         # Calculate lnlikelihood

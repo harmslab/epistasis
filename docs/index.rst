@@ -34,6 +34,7 @@ Basic Example
 .. code-block:: python
 
     # Import a model and the plotting module
+    from gpmap import GenotypePhenotypeMap
     from epistasis.models import EpistasisLinearRegression
     from epistasis.pyplot import plot_coefs
 
@@ -42,15 +43,18 @@ Basic Example
     genotypes = ["ATT", "AAT", "ATA", "TAA", "ATT", "TAT", "TTA", "TTT"]
     phenotypes = [0.1, 0.2, 0.4, 0.3, 0.3, 0.6, 0.8, 1.0]
 
+    # Create genotype-phenotype map object.
+    gpm = GenotypePhenotypeMap(wildtype=wildtype,
+                               genotypes=genotypes,
+                               phenotypes=phenotypes)
+
     # Inialize an epistasis model.
     model = EpistasisLinearRegression(order=3)
 
-    # Add genotype-phenotype map
-    model.add_data(wildtype=wildtype,
-                    genotypes=genotypes,
-                    phenotypes=phenotypes)
+    # Add the genotype phenotype map.
+    model.add_gpm(gpm)
 
-    # Fit the model.
+    # Fit model to given genotype-phenotype map.
     model.fit()
 
     # Plot coefficients (powered by matplotlib).
