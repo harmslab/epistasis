@@ -1,3 +1,5 @@
+
+import json
 import numpy as np
 import pandas as pd
 from functools import wraps
@@ -36,15 +38,15 @@ class BaseModel(object):
 
         X must be:
 
-            - 'obs' : Uses `gpm.binary.genotypes` to construct X. If genotypes
+            - 'obs' : Uses `gpm.binary` to construct X. If genotypes
                 are missing they will not be included in fit. At the end of
                 fitting, an epistasis map attribute is attached to the model
                 class.
-            - 'missing' : Uses `gpm.binary.missing_genotypes` to construct X.
+            - 'missing' : Uses `gpm.binary` to construct X.
                 All genotypes missing from the data are included. Warning,
                 will break in most fitting methods. At the end of fitting,
                 an epistasis map attribute is attached to the model class.
-            - 'complete' : Uses `gpm.binary.complete_genotypes` to construct X.
+            - 'complete' : Uses `gpm.binary` to construct X.
                 All genotypes missing from the data are included. Warning, will
                 break in most fitting methods. At the end of fitting, an
                 epistasis map attribute is attached to the model class.
@@ -79,11 +81,11 @@ class BaseModel(object):
 
             # Use desired set of genotypes for rows in X matrix.
             if X == "obs":
-                index = self.gpm.binary.genotypes
+                index = self.gpm.binary
             elif X == "missing":
-                index = self.gpm.binary.missing_genotypes
+                index = self.gpm.missing_binary
             else:
-                index = self.gpm.binary.complete_genotypes
+                index = self.gpm.missing_binary
 
             # Build numpy array
             x = get_model_matrix(index, columns, model_type=self.model_type)
@@ -110,65 +112,16 @@ class BaseModel(object):
         X_built = self.Xbuilt[key]
         return X_built
 
-    @classmethod
-    def read_json(cls, filename, **kwargs):
-        """Read genotype-phenotype data from a json file."""
-        self = cls(**kwargs)
-        self.add_gpm(GenotypePhenotypeMap.read_json(filename, **kwargs))
-        return self
+    @property
+    def data(self):
+        """Model data."""
+        # Get dataframes
+        df1 = self.gpm.complete_data
+        df2 = self.epistasis.data
 
-    @classmethod
-    def read_excel(cls, filename, **kwargs):
-        """Read genotype-phenotype data from a excel file."""
-        self = cls(**kwargs)
-        self.add_gpm(GenotypePhenotypeMap.read_excel(filename, **kwargs))
-        return self
-
-    @classmethod
-    def read_csv(cls, filename, **kwargs):
-        """Read genotype-phenotype data from a csv file."""
-        self = cls(**kwargs)
-        self.add_gpm(GenotypePhenotypeMap.read_csv(filename, **kwargs))
-        return self
-
-    @classmethod
-    def read_data(cls, wildtype, genotypes, phenotypes, **kwargs):
-        """ Uses a simple linear, least-squares regression to estimate epistatic
-        coefficients in a genotype-phenotype map. This assumes the map is
-        linear."""
-        self = cls(**kwargs)
-        gpm = GenotypePhenotypeMap(wildtype, genotypes, phenotypes, **kwargs)
-        self.add_gpm(gpm)
-        return self
-
-    @classmethod
-    def read_gpm(cls, gpm, **kwargs):
-        """ Initialize an epistasis model from a Genotype-phenotypeMap object
-        """
-        # Grab all properties from data-structure
-        self = cls(**kwargs)
-        self.add_gpm(gpm)
-        return self
-
-    def add_data(self, wildtype, genotypes, phenotypes, **kwargs):
-        """Add genotype and phenotype data to the model.
-        """
-        # Build a genotype-phenotype map object from data.
-        gpm = GenotypePhenotypeMap(wildtype, genotypes, phenotypes, **kwargs)
-        self.add_gpm(gpm)
-        return self
-
-    def add_gpm(self, gpm):
-        """Add a GenotypePhenotypeMap object to the epistasis model.
-
-        Also exposes APIs that are only accessible with a GenotypePhenotypeMap
-        attached to the model.
-        """
-        # Hacky way to
-        instance_tree = (gpm.__class__,) + gpm.__class__.__bases__
-        if GenotypePhenotypeMap in instance_tree is False:
-            raise TypeError("gpm must be a GenotypePhenotypeMap object")
-        self._gpm = gpm
+        # Merge dataframes.
+        data = pd.concat((df1, df2), axis=1)
+        return data
 
     @property
     def gpm(self):
@@ -215,3 +168,142 @@ class BaseModel(object):
         if np.isinf(lnlike) or np.isnan(lnlike):
             return -np.inf
         return lnlike
+
+    def add_dataframe(self, df, wildtype, mutations=None):
+        """Takes a model dataframe, splits into genotype-phenotype map
+        and epistasis map.
+        """
+        # Genotype Phenotype Map
+        df_gpm = df[['genotypes', 'phenotypes',
+                     'stdeviations', 'n_replicates']]
+        gpm = GenotypePhenotypeMap.read_dataframe(df_gpm, wildtype,
+                                                  mutations=mutations)
+
+        # Epistasis Map
+        df_epistasis = df[['sites', 'values']]
+        epistasis = EpistasisMap.read_dataframe(df_epistasis)
+
+        # Add data to map.
+        self.add_gpm(gpm)
+        self.epistasis = epistasis
+
+    def add_data(self, wildtype, genotypes, phenotypes, **kwargs):
+        """Add genotype and phenotype data to the model.
+        """
+        # Build a genotype-phenotype map object from data.
+        gpm = GenotypePhenotypeMap(wildtype, genotypes, phenotypes, **kwargs)
+        self.add_gpm(gpm)
+        return self
+
+    def add_gpm(self, gpm):
+        """Add a GenotypePhenotypeMap object to the epistasis model.
+
+        Also exposes APIs that are only accessible with a GenotypePhenotypeMap
+        attached to the model.
+        """
+        # Hacky way to
+        instance_tree = (gpm.__class__,) + gpm.__class__.__bases__
+        if GenotypePhenotypeMap in instance_tree is False:
+            raise TypeError("gpm must be a GenotypePhenotypeMap object")
+        self._gpm = gpm
+
+    @classmethod
+    def read_json(cls, filename, **kwargs):
+        """Read genotype-phenotype data from a json file."""
+        with open(filename, 'r') as f:
+            data = json.load(f)
+
+        gpm = GenotypePhenotypeMap(wildtype=data['wildtype'],
+                                   genotypes=data['genotypes'],
+                                   phenotypes=data['phenotypes'],
+                                   stdeviations=data['stdeviations'],
+                                   mutations=data['mutations'],
+                                   n_replicates=data['n_replicates'])
+
+        epistasis = EpistasisMap(sites=data['sites'],
+                                 values=data['values'],
+                                 model_type=model_type['model_type'])
+
+        # Initialize a model
+        self = cls(order=data['order'],
+                   model_type=data['model_type'],
+                   **kwargs)
+
+        self.add_gpm(gpm)
+        self.epistasis = epistasis
+        return self
+
+    @classmethod
+    def read_excel(cls, filename, wildtype, mutations=None, **kwargs):
+        """Read model data from a excel file."""
+        # Read Dataframe
+        df = pd.read_excel(filename, index_col=0)
+        self = cls(**kwargs)
+        self.add_dataframe(df, wildtype, mutations=mutations)
+        return self
+
+    @classmethod
+    def read_csv(cls, filename, wildtype, mutations=None, **kwargs):
+        """Read model data from a csv file."""
+        df = pd.read_csv(filename, index_col=0)
+        self = cls(**kwargs)
+        self.add_dataframe(df, wildtype, mutations=mutations)
+        return self
+
+    @classmethod
+    def read_data(cls, wildtype, genotypes, phenotypes, **kwargs):
+        """Read data into model.
+
+        Parameters
+        ----------
+        wildtype : str
+            reference genotype.
+        genotypes : array
+            array of genotypes
+        phenotypes : array
+            array of phenotypes
+
+        Keyword arguments
+        -----------------
+        Keyword arguments are passed to the GenotypePhenotypeMap.
+        """
+        self = cls(**kwargs)
+        gpm = GenotypePhenotypeMap(wildtype, genotypes, phenotypes, **kwargs)
+        self.add_gpm(gpm)
+        return self
+
+    @classmethod
+    def read_gpm(cls, gpm, **kwargs):
+        """ Initialize an epistasis model from a Genotype-phenotypeMap object
+        """
+        # Grab all properties from data-structure
+        self = cls(**kwargs)
+        self.add_gpm(gpm)
+        return self
+
+    def to_excel(self, filename):
+        """Write data to excel spreadsheet."""
+        self.data.to_excel(filename)
+
+    def to_csv(self, filename):
+        """Write data to excel spreadsheet."""
+        self.data.to_csv(filename)
+
+    def to_dict(self):
+        """Return model data as dictionary."""
+        # Get genotype-phenotype data
+        data = self.gpm.to_dict(complete=True)
+
+        # Update with epistasis model data
+        data.update(**self.epistasis.to_dict())
+
+        # Update with model data
+        data.update(model_type=self.model_type,
+                    order=self.order)
+        return data
+
+    def to_json(self, filename):
+        """Write to json file."""
+        data = self.to_dict()
+        with open(filename, 'w') as f:
+            json.dump(data, f)

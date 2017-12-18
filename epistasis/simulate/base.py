@@ -88,9 +88,9 @@ class BaseSimulation(GenotypePhenotypeMap):
 
             # Use desired set of genotypes for rows in X matrix.
             if X == "obs":
-                index = self.binary.genotypes
+                index = self.binary
             else:
-                index = self.binary.complete_genotypes
+                index = self.complete_binary
 
             # Build numpy array
             x = get_model_matrix(index, columns, model_type=self.model_type)

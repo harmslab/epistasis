@@ -166,7 +166,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         """
         # Get pobs for nonlinear fit.
         if type(y) is str and y in ["obs", "complete"]:
-            y = self.gpm.binary.phenotypes
+            y = self.gpm.phenotypes
         # Else, numpy array or dataframe
         elif type(y) == np.array or type(y) == pd.Series:
             pass
@@ -314,7 +314,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         """
         # Get pobs for nonlinear fit.
         if type(y) is str and y in ["obs", "complete"]:
-            pobs = self.gpm.binary.phenotypes
+            pobs = self.gpm.phenotypes
         # Else, numpy array or dataframe
         elif type(y) == np.array or type(y) == pd.Series:
             pobs = y
@@ -402,7 +402,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         # Handle y.
         # Get pobs for nonlinear fit.
         if type(y) is str and y in ["obs", "complete"]:
-            ydata = self.gpm.binary.phenotypes
+            ydata = self.gpm.phenotypes
         # Else, numpy array or dataframe
         elif type(y) == np.array or type(y) == pd.Series:
             ydata = y
@@ -414,7 +414,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         # Handle yerr.
         # Check if yerr is string
         if type(yerr) is str and yerr in ["obs", "complete"]:
-            yerr = self.gpm.binary.std.upper
+            yerr = self.gpm.std.upper
 
         # Else, numpsy array or dataframe
         elif type(y) != np.array and type(y) != pd.Series:
@@ -525,7 +525,7 @@ class EpistasisNonlinearLasso(EpistasisNonlinearRegression):
         # Handle y.
         # Get pobs for nonlinear fit.
         if type(y) is str and y in ["obs", "complete"]:
-            ydata = self.gpm.binary.phenotypes
+            ydata = self.gpm.phenotypes
         # Else, numpy array or dataframe
         elif type(y) == np.array or type(y) == pd.Series:
             ydata = y
@@ -537,7 +537,7 @@ class EpistasisNonlinearLasso(EpistasisNonlinearRegression):
         # Handle yerr.
         # Check if yerr is string
         if type(yerr) is str and yerr in ["obs", "complete"]:
-            yerr = self.gpm.binary.std.upper
+            yerr = self.gpm.std.upper
 
         # Else, numpsy array or dataframe
         elif type(y) != np.array and type(y) != pd.Series:

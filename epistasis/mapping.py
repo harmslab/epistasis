@@ -18,9 +18,7 @@ import pandas as pd
 # Local imports
 # ----------------------------------------------------------
 
-
 import gpmap
-from gpmap.mapping import BaseMap
 
 
 def assert_epistasis(method):
@@ -130,54 +128,42 @@ def mutations_to_sites(order, mutations, start_order=0):
     return sites
 
 
-class EpistasisMap(BaseMap):
-    """Memory-efficient object to store/map epistatic coefficients in
-    epistasis models.
+class EpistasisMap(object):
+    """DataFrame for epistatic interactions.
     """
-
-    def __init__(self, sites, order=1, model_type="global"):
-        self.sites = sites
+    def __init__(self, sites, order=1, values=None, model_type="global"):
         self.order = order
         self.model_type = model_type
-        self.stdeviations = None
+        data = {
+            'sites': sites,
+            'values': values,
+        }
+        self.data = pd.DataFrame(data)
 
-    def to_json(self, filename):
-        """Write epistasis map to json file."""
-        with open(filename, "w") as f:
-            data = {
-                "sites": list(self.sites),
-                "values": list(self.values),
-                "order": self.order,
-                "keys": list(self.keys),
-                "model_type": self.model_type
-            }
-            try:
-                data.update(stdeviations=self.stdeviations)
-            except AttributeError:
-                pass
-            json.dump(data, f)
-
-    def from_json(self, filename):
-        """Read epistatic coefs from json file.
-        """
-        with open(filename, "r") as f:
-            data = json.load(f)
-        # Values must be set last
-        vals = data.pop("values")
-        for key, val in data.items():
-            if type(val) == list:
-                val = np.array(val)
-            setattr(self, key, val)
-        # Now set values.
-        setattr(self, "values", vals)
+    def map(self, attr1, attr2):
+        """Dictionary that maps attr1 to attr2."""
+        return dict(zip(getattr(self, attr1), getattr(self, attr2)))
 
     @classmethod
-    def from_mutations(cls, mutations, order, model_type="global"):
-        """Build a mapping object for epistatic interactions."""
-        # construct the mutations mapping
-        sites = mutations_to_sites(order, mutations)
-        self = cls(sites, order=order, model_type=model_type)
+    def read_dataframe(cls, df, model_type="global"):
+        """Create an epistasis model from dataframe"""
+        sites = df['sites']
+        values = df['values']
+        order = max([len(site) for site in sites])
+        self = cls(sites, order=order, values=values, model_type=model_type)
         return self
+
+    def to_dict(self):
+        """Get data as dictionary."""
+        return self.data.to_dict('list')
+
+    def to_csv(self, filename):
+        """Write data to a csv file."""
+        self.data.to_csv(filename)
+
+    def to_excel(self, filename):
+        """Write data to excel file."""
+        self.data.to_excel(filename)
 
     @property
     def model_type(self):
@@ -185,16 +171,9 @@ class EpistasisMap(BaseMap):
         return self._model_type
 
     @property
-    def df(self):
-        """EpistasisMap DataFrame."""
-        data = {"sites": self.keys, "values": self.values,
-                "stdeviations": self.stdeviations}
-        return pd.DataFrame(data, columns=["sites", "values", "stdeviations"])
-
-    @property
     def n(self):
         """ Return the number of Interactions. """
-        return len(self.sites)
+        return len(self.data.sites)
 
     @property
     def order(self):
@@ -205,17 +184,17 @@ class EpistasisMap(BaseMap):
     def keys(self):
         """ Get the interaction keys. (type==list of str, see
         self._build_interaction_sites)"""
-        return self._keys
+        return self.data.keys.values
 
     @property
     def values(self):
         """ Get the values of the interaction in the system"""
-        return self._values
+        return self.data['values'].values
 
     @property
     def index(self):
         """ Get the interaction index in interaction matrix. """
-        return self.sites.index
+        return self.data.index
 
     @property
     def sites(self):
@@ -223,17 +202,7 @@ class EpistasisMap(BaseMap):
         interacting mutations in the genotypes. (type==list of lists,
         see self._build_interaction_sites)
         """
-        return self._sites
-
-    @property
-    def keys(self):
-        """"""
-        pass
-
-    @property
-    def stdeviations(self):
-        """Get standard deviations from model"""
-        return self._stdeviations
+        return self.data.sites.values
 
     def get_orders(self, *orders):
         """Get epistasis of a given order."""
@@ -248,23 +217,10 @@ class EpistasisMap(BaseMap):
         """"""
         self._order = order
 
-    @sites.setter
-    def sites(self, sites):
-        """ Manually set the interactions considered in the map. Useful
-        for building epistasis models manually. """
-        self._sites = pd.Series(sites)
-
     @values.setter
     def values(self, values):
         """ Manually set keys. NEED TO do some quality control here. """
-        self._values = pd.Series(values, index=self.index)
-
-    @stdeviations.setter
-    def stdeviations(self, stdeviations):
-        """Set the standard deviations of the epistatic coefficients."""
-        self._stdeviations = pd.Series(stdeviations, index=self.index)
-        self.std = gpmap.errors.StandardDeviationMap(self)
-        self.err = gpmap.errors.StandardErrorMap(self)
+        self.data.values = values
 
     @model_type.setter
     def model_type(self, model_type):
@@ -274,7 +230,7 @@ class EpistasisMap(BaseMap):
         self._model_type = model_type
 
 
-class Orders(BaseMap):
+class Orders(map):
     """An object that provides API for easily calling epistasis of a given order
     in an epistasis map.
     """
@@ -284,7 +240,7 @@ class Orders(BaseMap):
         self.orders = orders
 
     def __call__(self):
-        """return a dictioanry"""
+        """return a dictionary"""
         return dict(zip(self.keys, self.values))
 
     @property
@@ -326,9 +282,3 @@ class Orders(BaseMap):
         """Get keys of epistasis for this order."""
         return pd.Series([self._epistasismap.keys[int(i)]
                           for i in self.index], index=self.index)
-
-    @property
-    def stdeviations(self):
-        """Get stdeviations of epistasis for this order."""
-        return pd.Series(self._epistasismap.stdeviations[self.index],
-                         index=self.index)

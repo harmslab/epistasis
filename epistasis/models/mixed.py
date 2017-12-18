@@ -55,10 +55,10 @@ class EpistasisMixedRegression(BaseModel, BaseEstimator):
 
         X must be:
 
-            - 'obs' : Uses `gpm.binary.genotypes` to construct X. If genotypes
+            - 'obs' : Uses `gpm.binary` to construct X. If genotypes
             are missing they will not be included in fit. At the end of
             fitting, an epistasis map attribute is attached to the model class.
-            - 'complete' : Uses `gpm.binary.complete_genotypes` to construct X.
+            - 'complete' : Uses `gpm.complete_binary` to construct X.
             All genotypes missing from the data are included. Warning, will
             break in most fitting methods. At the end of fitting, an epistasis
             map attribute is attached to the model class.
@@ -66,9 +66,9 @@ class EpistasisMixedRegression(BaseModel, BaseEstimator):
             copying for efficiency.
 
         y must be:
-            - 'obs' : Uses `gpm.binary.phenotypes` to construct y. If
+            - 'obs' : Uses `gpm.binary` to construct y. If
             phenotypes are missing they will not be included in fit.
-            - 'complete' : Uses `gpm.binary.complete_genotypes` to construct
+            - 'complete' : Uses `gpm.complete_binary` to construct
             X. All genotypes missing from the data are included. Warning, will
             break in most fitting methods.
             - 'fit' : a previously defined array/dataframe matrix. Prevents
@@ -103,7 +103,7 @@ class EpistasisMixedRegression(BaseModel, BaseEstimator):
 
         # Get pobs for nonlinear fit.
         if type(y) is str and y in ["obs", "complete"]:
-            y = self.gpm.binary.phenotypes
+            y = self.gpm.phenotypes
         # Else, numpy array or dataframe
         elif type(y) == np.array or type(y) == pd.Series:
             pass
@@ -214,7 +214,7 @@ class EpistasisMixedRegression(BaseModel, BaseEstimator):
 
         # Get pobs for nonlinear fit.
         if type(y) is str and y in ["obs", "complete"]:
-            pobs = self.gpm.binary.phenotypes
+            pobs = self.gpm.phenotypes
         # Else, numpy array or dataframe
         elif type(y) == np.array or type(y) == pd.Series:
             pobs = y
@@ -264,7 +264,7 @@ class EpistasisMixedRegression(BaseModel, BaseEstimator):
 
         # Get pobs for nonlinear fit.
         if type(y) is str and y in ["obs", "complete"]:
-            pobs = self.gpm.binary.phenotypes
+            pobs = self.gpm.phenotypes
         # Else, numpy array or dataframe
         elif type(y) == np.array or type(y) == pd.Series:
             pobs = y

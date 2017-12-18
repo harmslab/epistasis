@@ -39,14 +39,14 @@ def X_predictor(method):
 
     X must be:
 
-        - 'obs' : Uses `gpm.binary.genotypes` to construct X. If genotypes
+        - 'obs' : Uses `gpm.binary` to construct X. If genotypes
         are missing they will not be included in fit. At the end of fitting,
         an epistasis map attribute is attached to the model class.
-        - 'missing' : Uses `gpm.binary.missing_genotypes` to construct X. All
+        - 'missing' : Uses `gpm.missing_binary` to construct X. All
         genotypes missing from the data are included. Warning, will break in
         most fitting methods. At the end of fitting, an epistasis map attribute
         is attached to the model class.
-        - 'complete' : Uses `gpm.binary.complete_genotypes` to construct X.
+        - 'complete' : Uses `gpm.complete_binary` to construct X.
         All genotypes missing from the data are included. Warning, will break
         in most fitting methods. At the end of fitting, an epistasis map
         attribute is attached to the model class.
@@ -107,10 +107,10 @@ def X_fitter(method):
 
     X must be:
 
-        - 'obs' : Uses `gpm.binary.genotypes` to construct X. If genotypes are
+        - 'obs' : Uses `gpm.binary` to construct X. If genotypes are
         missing they will not be included in fit. At the end of fitting, an
         epistasis map attribute is attached to the model class.
-        - 'complete' : Uses `gpm.binary.complete_genotypes` to construct X.
+        - 'complete' : Uses `gpm.complete_binary` to construct X.
         All genotypes missing from the data are included. Warning, will break
         in most fitting methods. At the end of fitting, an epistasis map
         attribute is attached to the model class.
@@ -121,9 +121,9 @@ def X_fitter(method):
 
 
     y must be:
-        - 'obs' : Uses `gpm.binary.phenotypes` to construct y. If phenotypes
+        - 'obs' : Uses `gpm.binary` to construct y. If phenotypes
         are missing they will not be included in fit.
-        - 'complete' : Uses `gpm.binary.complete_genotypes` to construct X.
+        - 'complete' : Uses `gpm.complete_binary` to construct X.
         All genotypes missing from the data are included. Warning, will break
         in most fitting methods.
         - 'fit' : a previously defined array/dataframe matrix. Prevents copying
@@ -154,7 +154,7 @@ def X_fitter(method):
         # Check if string.
         if type(y) is str and y in ["obs", "complete"]:
 
-            y = self.gpm.binary.phenotypes
+            y = self.gpm.phenotypes
 
         # Else, numpy array or dataframe
         elif type(y) != np.ndarray and type(y) != pd.Series:
