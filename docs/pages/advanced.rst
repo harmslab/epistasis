@@ -106,7 +106,8 @@ for each coefficient.
 Basic example
 ~~~~~~~~~~~~~
 
-Use the ``BayesianSampler`` object to sample your epistasis model. The smapler
+Use the ``BayesianSampler`` object to sample your epistasis model. The sampler
+stores an MCMC chain
 
 (The plot below was created using the ``corner`` package.)
 
