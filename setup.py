@@ -8,7 +8,7 @@ extension = Extension('epistasis.model_matrix_ext',
 packages = [
     'epistasis',
     'epistasis.models',
-    'epistasis.pyplot,
+    'epistasis.pyplot',
     'epistasis.sampling',
     'epistasis.simulate',
 ]
