@@ -8,13 +8,13 @@ extension = Extension('epistasis.model_matrix_ext',
 packages = [
     'epistasis',
     'epistasis.models',
-    'epistasis.plot',
+    'epistasis.pyplot',
     'epistasis.sampling',
     'epistasis.simulate',
 ]
 
 setup(name='epistasis',
-      version='0.3.0',
+      version='0.4.0',
       description='High-order epistasis models for genotype-phenotype maps',
       author='Zach Sailer',
       author_email='zachsailer@gmail.com',

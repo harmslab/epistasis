@@ -12,17 +12,21 @@ genotype-phenotype map. Simple define the order of the model.
 
 .. code-block:: python
 
+  from gpmap import GenotypePhenotypeMap
   from epistasis.models import EpistasisLinearRegression
 
-  wildtype = '00'
-  genotypes = ['00', '01', '10', '11']
-  phenotypes = ['']
+  wildtype = 'AA'
+  genotypes = ['AA', 'AT', 'TA', 'TT']
+  phenotypes = [0.1, 0.2, 0.7, 1.2]
+
+  # Read genotype-phenotype map.
+  gpm = GenotypePhenotypeMap(wildtype, genotypes, phenotypes)
 
   # Initialize the data.
-  model = EpistasisLinearRegression(order=3)
+  model = EpistasisLinearRegression(order=2)
 
   # Add Genotype-phenotype map data.
-  model.add_data(wildtype, genotypes, phenotypes)
+  model.add_gpm(gpm)
 
   # Fit the model.
   model.fit()
@@ -36,17 +40,21 @@ the model that maximally explains the data while using the fewest coefficients.
 
 .. code-block:: python
 
-  from epistasis.models import EpistasisLasso
+  from gpmap import GenotypePhenotypeMap
+  from epistasis.models import EpistasisLinearRegression
 
-  wildtype = '00'
-  genotypes = ['00', '01', '10', '11']
-  phenotypes = ['']
+  wildtype = 'AA'
+  genotypes = ['AA', 'AT', 'TA', 'TT']
+  phenotypes = [0.1, 0.2, 0.7, 1.2]
+
+  # Read genotype-phenotype map.
+  gpm = GenotypePhenotypeMap(wildtype, genotypes, phenotypes)
 
   # Initialize the data.
-  model = EpistasisLasso(order=3)
+  model = EpistasisLasso(order=2)
 
   # Add Genotype-phenotype map data.
-  model.add_data(wildtype, genotypes, phenotypes)
+  model.add_gpm(gpm)
 
   # Fit the model.
   model.fit()
@@ -66,12 +74,15 @@ This models has three steps:
 
 .. code-block:: python
 
-  import numpy as np
-  from epistasis.models import EpistasisNonlinearRegression
+  from gpmap import GenotypePhenotypeMap
+  from epistasis.models import EpistasisLinearRegression
 
-  wildtype = '00'
-  genotypes = ['00', '01', '10', '11']
-  phenotypes = ['']
+  wildtype = 'AA'
+  genotypes = ['AA', 'AT', 'TA', 'TT']
+  phenotypes = [0.1, 0.2, 0.7, 1.2]
+
+  # Read genotype-phenotype map.
+  gpm = GenotypePhenotypeMap(wildtype, genotypes, phenotypes)
 
   def func(x, A):
       return np.exp(A * x)
@@ -80,10 +91,10 @@ This models has three steps:
       return np.log(x) / A
 
   # Initialize the data.
-  model = EpistasisNonlinearRegression(order=3, function=func, reverse=reverse)
+  model = EpistasisNonlinearRegression(order=2, function=func, reverse=reverse)
 
   # Add Genotype-phenotype map data.
-  model.add_data(wildtype, genotypes, phenotypes)
+  model.add_gpm(gpm)
 
   # Fit the model.
   model.fit(A=1)
@@ -103,12 +114,15 @@ This models has three steps:
 
 .. code-block:: python
 
-    import numpy as np
-    from epistasis.models import EpistasisNonlinearLasso
+  from gpmap import GenotypePhenotypeMap
+  from epistasis.models import EpistasisLinearRegression
 
-    wildtype = '00'
-    genotypes = ['00', '01', '10', '11']
-    phenotypes = ['']
+  wildtype = 'AA'
+  genotypes = ['AA', 'AT', 'TA', 'TT']
+  phenotypes = [0.1, 0.2, 0.7, 1.2]
+
+  # Read genotype-phenotype map.
+  gpm = GenotypePhenotypeMap(wildtype, genotypes, phenotypes)
 
     def func(x, A):
         return np.exp(A * x)
@@ -120,7 +134,7 @@ This models has three steps:
     model = EpistasisNonlinearLasso(order=3, function=func, reverse=reverse)
 
     # Add Genotype-phenotype map data.
-    model.add_data(wildtype, genotypes, phenotypes)
+    model.add_gpm(gpm)
 
     # Fit the model.
     model.fit(A=1)
@@ -145,18 +159,21 @@ Methods are described in the following publication:
 
 .. code-block:: python
 
-    import numpy as np
-    from epistasis.models import EpistasisPowerTransform
+    from gpmap import GenotypePhenotypeMap
+    from epistasis.models import EpistasisLinearRegression
 
-    wildtype = '00'
-    genotypes = ['00', '01', '10', '11']
-    phenotypes = ['']
+    wildtype = 'AA'
+    genotypes = ['AA', 'AT', 'TA', 'TT']
+    phenotypes = [0.1, 0.2, 0.7, 1.2]
+
+    # Read genotype-phenotype map.
+    gpm = GenotypePhenotypeMap(wildtype, genotypes, phenotypes)
 
     # Initialize the data.
     model = EpistasisPowerTransform(order=3)
 
     # Add Genotype-phenotype map data.
-    model.add_data(wildtype, genotypes, phenotypes)
+    model.add_gpm(gpm)
 
     # Fit the model.
     model.fit(lmbda=1, A=1, B=1)
@@ -177,18 +194,21 @@ Like the nonlinear model, this model has three steps:
 
 .. code-block:: python
 
-    import numpy as np
-    from epistasis.models import EpistasisPowerTransformLasso
+    from gpmap import GenotypePhenotypeMap
+    from epistasis.models import EpistasisLinearRegression
 
-    wildtype = '00'
-    genotypes = ['00', '01', '10', '11']
-    phenotypes = ['']
+    wildtype = 'AA'
+    genotypes = ['AA', 'AT', 'TA', 'TT']
+    phenotypes = [0.1, 0.2, 0.7, 1.2]
+
+    # Read genotype-phenotype map.
+    gpm = GenotypePhenotypeMap(wildtype, genotypes, phenotypes)
 
     # Initialize the data.
     model = EpistasisPowerTransformLasso(order=3)
 
     # Add Genotype-phenotype map data.
-    model.add_data(wildtype, genotypes, phenotypes)
+    model.add_gpm(gpm)
 
     # Fit the model.
     model.fit(lmbda=1, A=1, B=1)
@@ -233,12 +253,16 @@ fits an epistasis model to estimate epistatic coefficients.
                               EpistasisPowerTransform,
                               EpistasisLogisticRegression)
 
-  # Load a genotype-phenotype map
-  gpm = GenotypePhenotypeMap.read_json('data.json')
+  wildtype = 'AA'
+  genotypes = ['AA', 'AT', 'TA', 'TT']
+  phenotypes = [0.1, 0.2, 0.7, 1.2]
+
+  # Read genotype-phenotype map.
+  gpm = GenotypePhenotypeMap(wildtype, genotypes, phenotypes)
 
   # Construct a classifier and an epistasis model
-  classifier = EpistasisLogisticRegression(order=1, threshold=5, model_type='global')
-  model = EpistasisPowerTransform(order=7, model_type='global', alpha=.1, lmbda=1, A=100,B=-1)
+  classifier = EpistasisLogisticRegression(order=1, threshold=.2, model_type='global')
+  model = EpistasisPowerTransform(order=2, model_type='global', alpha=.1, lmbda=1, A=100,B=-1)
 
   # Initialize a Mixed regression that links the classifier and epistasis model.
   model = EpistasisMixedRegression(classifier, model)

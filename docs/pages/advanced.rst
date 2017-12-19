@@ -38,44 +38,107 @@ Access information about the minimizer results using the ``Nonlinear`` attribute
     model.Nonlinear.params.pretty_print()
 
 
+Large genotype-phenotype maps
+-----------------------------
+
+We have not tested the ``epistasis`` package on large genotype-phenotype maps (>5000 genotypes). In principle,
+it should be no problem as long as you have the resources (i.e. tons of RAM and time). However, it's possible there may be issues with convergence
+and numerical rounding for these large spaces.
+
+Reach out!
+~~~~~~~~~~
+
+If you have a large dataset, please get in touch! We'd love to hear from you. Feel free to
+try cranking our models on your large dataset and let us know if you run into issues.
+
+My nonlinear fit is slow and does not converge.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Try fitting the scale of your map using a fraction of your data. We've found that you can
+typically estimate the nonlinear scale of a genotype-phenotype map from a small
+fraction of the genotypes. Choose a random subset of your data and fit it using a
+first order nonlinear model. Then use that model to linearize all your phenotype
+
+.. code-block:: python
+
+    from gpmap import GenotypePhenotypeMap
+    from epistasis.models import (EpistasisPowerTransform,
+                                  EpistasisLinearRegression)
+
+    # Load data.
+    gpm = GenotypePhenotypeMap.read_csv('data.csv')
+
+    # Subset the data
+    data_subset = gpm.data.sample(frac=0.5)
+    gpm_subset = GenotypePhenotypeMap.read_dataframe(data_subset)
+
+    # Fit the subset
+    nonlinear = EpistasisPowerTransform(order=1, lmbda=1, A=0, B=0)
+    nonlinear.add_gpm(gpm_subset).fit()
+
+    # Linearize the original phenotypes to estimate epistasis.
+    #
+    # Note: power transform calculate the geometric mean of the additive
+    # phenotypes, so we need to pass those phenotypes to the reverse transform.
+    padd = nonlinear.Additive.predict(X='fit')
+    linear_phenotypes = nonlinear.reverse(gpm.phenotypes,
+                                          *nonlinear.parameters.values(),
+                                          data=padd)
+
+    # Change phenotypes (note this changes the original dataframe)
+    gpm.data.phenotypes = linear_phenotypes
+    model = EpistasisLinearRegression(order=10)
+    model.add_gpm(gpm)
+
+    # Fit the model
+    model.fit()
+
+
+
 Estimating model uncertainty
 ----------------------------
 
 The epistasis package includes a ``sampling`` module for estimating uncertainty in
 all coefficients in (Non)linear epistasis models. It follows a Bayesian approach,
 and uses the `emcee` python package to approximate the posterior distributions
-for each coefficient. The plot below was created using the `corner` package.
+for each coefficient.
 
-Basic Example
+Basic example
 ~~~~~~~~~~~~~
+
+Use the ``BayesianSampler`` object to sample your epistasis model. The sampler
+stores an MCMC chain
+
+(The plot below was created using the ``corner`` package.)
 
 .. code-block:: python
 
-    # Imports
-    import matplotlib.pyplot as plt
-    import numpy as np
-    import corner
+  # Imports
+  import matplotlib.pyplot as plt
+  import numpy as np
+  import corner
 
-    from epistasis.simulate import LinearSimulation
-    from epistasis.models import EpistasisLinearRegression
-    from epistasis.sampling.bayesian import BayesianSampler
+  from epistasis.simulate import LinearSimulation
+  from epistasis.models import EpistasisLinearRegression
+  from epistasis.sampling.bayesian import BayesianSampler
 
-    # Create a simulated genotype-phenotype map with epistasis.
-    sim = LinearSimulation.from_length(4, model_type="local")
-    sim.set_coefs_order(4)
-    sim.set_coefs_random((-1,1))
-    sim.set_stdeviations([0.01])
+  # Create a simulated genotype-phenotype map with epistasis.
+  sim = LinearSimulation.from_length(3, model_type="local")
+  sim.set_coefs_order(3)
+  sim.set_coefs_random((-1,1))
+  sim.set_stdeviations([0.01])
 
-    # Initialize an epistasis model and fit a ML model.
-    model = EpistasisLinearRegression.from_gpm(sim, order=4, model_type="local")
-    model.fit()
+  # Initialize an epistasis model and fit a ML model.
+  model = EpistasisLinearRegression(order=3, model_type="local")
+  model.add_gpm(sim)
+  model.fit()
 
-    # Initialize a sampler.
-    fitter = BayesianSampler(model)
-    samples = fitter.sample(500)
+  # Initialize a sampler.
+  sampler = BayesianSampler(model)
+  samples, rstate = sampler.sample(500)
 
-    # Plot the Posterior
-    fig = corner.corner(samples, truths=sim.epistasis.values)
+  # Plot the Posterior
+  fig = corner.corner(samples, truths=sim.epistasis.values)
 
 
 .. image:: ../img/bayes-estimate-uncertainty.png

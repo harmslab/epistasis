@@ -3,11 +3,11 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Epistasis
-=========
+``epistasis``
+=============
 
 A Python API for modeling statistical, high-order epistasis in genotype-phenotype maps.
-This library provides modules to:
+You can use this library to:
 
     1. Decompose genotype-phenotype maps into high-order epistatic interactions
     2. Find nonlinear scales in the genotype-phenotype map
@@ -28,8 +28,45 @@ we can improve, please open an issue on Github! We'd love to hear your feedback.
 Currently, this package works only as an API. There is no command-line
 interface. Instead, we encourage you use this package inside `Jupyter notebooks`_ .
 
-Table of Contents
-=================
+Basic Example
+-------------
+
+.. code-block:: python
+
+    # Import a model and the plotting module
+    from gpmap import GenotypePhenotypeMap
+    from epistasis.models import EpistasisLinearRegression
+    from epistasis.pyplot import plot_coefs
+
+    # Genotype-phenotype map data.
+    wildtype = "AAA"
+    genotypes = ["ATT", "AAT", "ATA", "TAA", "ATT", "TAT", "TTA", "TTT"]
+    phenotypes = [0.1, 0.2, 0.4, 0.3, 0.3, 0.6, 0.8, 1.0]
+
+    # Create genotype-phenotype map object.
+    gpm = GenotypePhenotypeMap(wildtype=wildtype,
+                               genotypes=genotypes,
+                               phenotypes=phenotypes)
+
+    # Initialize an epistasis model.
+    model = EpistasisLinearRegression(order=3)
+
+    # Add the genotype phenotype map.
+    model.add_gpm(gpm)
+
+    # Fit model to given genotype-phenotype map.
+    model.fit()
+
+    # Plot coefficients (powered by matplotlib).
+    coef_sites = model.epistasis.sites
+    coef_values = model.epistasis.values
+
+    fig, axes = plot_coefs(coef_sites, coef_values, figsize=(2,4))
+
+.. image:: img/basic-example.png
+
+Documentation
+-------------
 
 We are still working hard on the Docs! You may notice blank spots in various
 places. We appreciate your patience as we try to catch up on docs.
@@ -48,8 +85,8 @@ places. We appreciate your patience as we try to catch up on docs.
    api/main.rst
 
 Example Gallery
-===============
-s
+---------------
+
 The following gallery contains various examples from the package.
 
 
@@ -96,14 +133,11 @@ The following gallery contains various examples from the package.
     </div>
 
 
-   /gallery/plot_nonlinear_simulation
-.. raw:: html
 
-    <div style='clear:both'></div>
 
 
 Indices and tables
-==================
+------------------
 
 * :ref:`genindex`
 * :ref:`modindex`

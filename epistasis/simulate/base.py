@@ -88,9 +88,9 @@ class BaseSimulation(GenotypePhenotypeMap):
 
             # Use desired set of genotypes for rows in X matrix.
             if X == "obs":
-                index = self.binary.genotypes
+                index = self.binary
             else:
-                index = self.binary.complete_genotypes
+                index = self.complete_binary
 
             # Build numpy array
             x = get_model_matrix(index, columns, model_type=self.model_type)
@@ -123,8 +123,8 @@ class BaseSimulation(GenotypePhenotypeMap):
         # Attach an epistasis model.
         self.order = order
         self.add_epistasis()
-        self.epistasis._values = np.zeros(self.epistasis.n)
-        self.epistasis._values[0] = 1
+        self.epistasis.data.values = np.zeros(self.epistasis.n)
+        self.epistasis.data.values[0] = 1
         return self
 
     def set_coefs_sites(self, sites):
@@ -145,21 +145,21 @@ class BaseSimulation(GenotypePhenotypeMap):
             list of floats representing to epistatic coefficients.
         """
         self.set_coefs_sites(sites)
-        self.epistasis._values = values
+        self.epistasis.data.values = values
         self.build()
         return self
 
     @assert_epistasis
     def set_wildtype_phenotype(self, value):
         """Set the wildtype phenotype."""
-        self.epistasis._values[0] = value
+        self.epistasis.data.values[0] = value
         self.build()
 
     @assert_epistasis
     def set_coefs_values(self, values):
         """Set coefficient values.
         """
-        self.epistasis._values = values
+        self.epistasis.data.values = values
         self.build()
         return self
 
@@ -174,7 +174,7 @@ class BaseSimulation(GenotypePhenotypeMap):
             low and high bounds for coeff values.
         """
         # Add values to epistatic interactions
-        self.epistasis._values = np.random.uniform(
+        self.epistasis.data.values = np.random.uniform(
             coef_range[0], coef_range[1], size=len(self.epistasis.sites))
         self.build()
         return self
@@ -196,7 +196,7 @@ class BaseSimulation(GenotypePhenotypeMap):
                                                     size=len(index))
 
             # Map to epistasis object.
-            self.epistasis._values[index[0]: index[-1] + 1] = vals
+            self.epistasis.data.values[index[0]: index[-1] + 1] = vals
         self.build()
         return self
 

@@ -1,112 +1,249 @@
-Reading/Writing 
+Reading/Writing
 ===============
 
 All epistasis models/simulators store data in Pandas_ Series/DataFrames, so the data
-can be easily saved to disk in various formats. This page lists a few.
+can be easily written to various file formats. This page lists a few.
 
 .. _Pandas: http://pandas.pydata.org/
 
+Saving an epistasis model
+-------------------------
 
-read_excel
-----------
-
-Excel files are supported through the ``read_excel`` method. This method requires
-``genotypes`` and ``phenotypes`` columns, and can include ``n_replicates`` and
-``stdeviations`` as optional columns. All other columns are ignored.
-
-**Example**: Excel spreadsheet file ("data.xlsx")
-
-.. raw:: html
-
-    <table border="1" class="dataframe">  <thead>    <tr style="text-align: center;">      <th></th>      <th>genotypes</th>      <th>phenotypes</th>      <th>stdeviations</th>      <th>n_replicates</th>    </tr>  </thead>  <tbody>    <tr>      <th>0</th>      <td>PTEE</td>      <td>0.243937</td>      <td>0.013269</td>      <td>1</td>    </tr>    <tr>      <th>1</th>      <td>PTEY</td>      <td>0.657831</td>      <td>0.055803</td>      <td>1</td>    </tr>    <tr>      <th>2</th>      <td>PTFE</td>      <td>0.104741</td>      <td>0.013471</td>      <td>1</td>    </tr>    <tr>      <th>3</th>      <td>PTFY</td>      <td>0.683304</td>      <td>0.081887</td>      <td>1</td>    </tr>    <tr>      <th>4</th>      <td>PIEE</td>      <td>0.774680</td>      <td>0.069631</td>      <td>1</td>    </tr>    <tr>      <th>5</th>      <td>PIEY</td>      <td>0.975995</td>      <td>0.059985</td>      <td>1</td>    </tr>    <tr>      <th>6</th>      <td>PIFE</td>      <td>0.500215</td>      <td>0.098893</td>      <td>1</td>    </tr>    <tr>      <th>7</th>      <td>PIFY</td>      <td>0.501697</td>      <td>0.025082</td>      <td>1</td>    </tr>    <tr>      <th>8</th>      <td>RTEE</td>      <td>0.233230</td>      <td>0.052265</td>      <td>1</td>    </tr>    <tr>      <th>9</th>      <td>RTEY</td>      <td>0.057961</td>      <td>0.036845</td>      <td>1</td>    </tr>    <tr>      <th>10</th>      <td>RTFE</td>      <td>0.365238</td>      <td>0.050948</td>      <td>1</td>    </tr>    <tr>      <th>11</th>      <td>RTFY</td>      <td>0.891505</td>      <td>0.033239</td>      <td>1</td>    </tr>    <tr>      <th>12</th>      <td>RIEE</td>      <td>0.156193</td>      <td>0.085638</td>      <td>1</td>    </tr>    <tr>      <th>13</th>      <td>RIEY</td>      <td>0.837269</td>      <td>0.070373</td>      <td>1</td>    </tr>    <tr>      <th>14</th>      <td>RIFE</td>      <td>0.599639</td>      <td>0.050125</td>      <td>1</td>    </tr>    <tr>      <th>15</th>      <td>RIFY</td>      <td>0.277137</td>      <td>0.072571</td>      <td>1</td>    </tr>  </tbody></table><br>
-
-
-Read the spreadsheet directly into an epistasis model.
+The simplest (recommended) way to save an epistasis model is to use Python's ``pickle`` library.
 
 .. code-block:: python
 
+  # Import pickle module
+  import pickle
+  from epistasis.models import EpistasisLinearRegression
 
-    from epistasis.models import EpistasisLinearRegression
+  # Simple model object
+  model = EpistasisLinearRegression(model=1)
 
-    model = EpistasisLinearRegression.read_excel(wildtype="PTEE", filename="data.xlsx")
+  # Save to disk to open later.
+  with open('model.pickle', 'wb') as f:
+      pickle.dump(f, model)
+
+To load the saved model,
+
+.. code-block:: python
+
+  # Import pickle module
+  import pickle
+
+  # Read from file.
+  with open('model.pickle', 'rb') as f:
+      model = pickle.load(f)
+
+.. warning::
+
+  Pickled models will only work with the same version of the ``epistasis``
+  package that created it. If you save a model and upgrade the library, you likely
+  won't be able to use the model anymore.
 
 
-read_csv
+Excel Spreadsheet
+-----------------
+
+Epistatic coefficients can be written to an excel file using the ``to_excel`` method
+
+.. code-block:: python
+
+  model.to_excel('data.xlsx')
+
+.. raw:: html
+
+
+  <table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>sites</th>
+      <th>values</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>[0]</td>
+      <td>0.501191</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>[1]</td>
+      <td>-0.600019</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>[2]</td>
+      <td>0.064983</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>[3]</td>
+      <td>0.609166</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>[4]</td>
+      <td>0.242095</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>[1, 2]</td>
+      <td>0.286914</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>[1, 3]</td>
+      <td>-0.264455</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>[1, 4]</td>
+      <td>-0.464212</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>[2, 3]</td>
+      <td>0.638260</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>[2, 4]</td>
+      <td>0.235989</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>[3, 4]</td>
+      <td>0.717954</td>
+    </tr>
+    <tr>
+      <th>11</th>
+      <td>[1, 2, 3]</td>
+      <td>-0.473122</td>
+    </tr>
+    <tr>
+      <th>12</th>
+      <td>[1, 2, 4]</td>
+      <td>-0.041919</td>
+    </tr>
+    <tr>
+      <th>13</th>
+      <td>[1, 3, 4]</td>
+      <td>-0.309124</td>
+    </tr>
+    <tr>
+      <th>14</th>
+      <td>[2, 3, 4]</td>
+      <td>0.606674</td>
+    </tr>
+    <tr>
+      <th>15</th>
+      <td>[1, 2, 3, 4]</td>
+      <td>-0.268982</td>
+    </tr>
+  </tbody>
+  </table>
+
+
+CSV File
 --------
 
-csv files are supported through the ``read_csv`` method. This method requires
-``genotypes`` and ``phenotypes`` columns, and can include ``n_replicates`` and
-``stdeviations`` as optional columns. All other columns are ignored.
-
-**Example**: CSV spreadsheet file ("data.csv")
-
-.. raw:: html
-
-    <table border="1" class="dataframe">  <thead>    <tr style="text-align: center;">      <th></th>      <th>genotypes</th>      <th>phenotypes</th>      <th>stdeviations</th>      <th>n_replicates</th>    </tr>  </thead>  <tbody>    <tr>      <th>0</th>      <td>PTEE</td>      <td>0.243937</td>      <td>0.013269</td>      <td>1</td>    </tr>    <tr>      <th>1</th>      <td>PTEY</td>      <td>0.657831</td>      <td>0.055803</td>      <td>1</td>    </tr>    <tr>      <th>2</th>      <td>PTFE</td>      <td>0.104741</td>      <td>0.013471</td>      <td>1</td>    </tr>    <tr>      <th>3</th>      <td>PTFY</td>      <td>0.683304</td>      <td>0.081887</td>      <td>1</td>    </tr>    <tr>      <th>4</th>      <td>PIEE</td>      <td>0.774680</td>      <td>0.069631</td>      <td>1</td>    </tr>    <tr>      <th>5</th>      <td>PIEY</td>      <td>0.975995</td>      <td>0.059985</td>      <td>1</td>    </tr>    <tr>      <th>6</th>      <td>PIFE</td>      <td>0.500215</td>      <td>0.098893</td>      <td>1</td>    </tr>    <tr>      <th>7</th>      <td>PIFY</td>      <td>0.501697</td>      <td>0.025082</td>      <td>1</td>    </tr>    <tr>      <th>8</th>      <td>RTEE</td>      <td>0.233230</td>      <td>0.052265</td>      <td>1</td>    </tr>    <tr>      <th>9</th>      <td>RTEY</td>      <td>0.057961</td>      <td>0.036845</td>      <td>1</td>    </tr>    <tr>      <th>10</th>      <td>RTFE</td>      <td>0.365238</td>      <td>0.050948</td>      <td>1</td>    </tr>    <tr>      <th>11</th>      <td>RTFY</td>      <td>0.891505</td>      <td>0.033239</td>      <td>1</td>    </tr>    <tr>      <th>12</th>      <td>RIEE</td>      <td>0.156193</td>      <td>0.085638</td>      <td>1</td>    </tr>    <tr>      <th>13</th>      <td>RIEY</td>      <td>0.837269</td>      <td>0.070373</td>      <td>1</td>    </tr>    <tr>      <th>14</th>      <td>RIFE</td>      <td>0.599639</td>      <td>0.050125</td>      <td>1</td>    </tr>    <tr>      <th>15</th>      <td>RIFY</td>      <td>0.277137</td>      <td>0.072571</td>      <td>1</td>    </tr>  </tbody></table><br>
-
-
-Read the csv directly into an epistasis model.
+Epistatic coefficients can be written to a csv file using the ``to_csv`` method
 
 .. code-block:: python
 
-    model = EpistasisLinearRegression.read_csv(wildtype="PTEE", filename="data.csv")
+  model.epistasis.to_csv('epistasis.csv')
 
 
-read_json
----------
+.. code-block:: none
 
-The only keys recognized by the json reader are:
+  ,sites,values
+  0,[0],0.5011910655025966
+  1,[1],-0.6000186681513706
+  2,[2],0.06498276930060931
+  3,[3],0.6091656756721153
+  4,[4],0.24209508436556937
+  5,"[1, 2]",0.2869142038187855
+  6,"[1, 3]",-0.26445514455225094
+  7,"[1, 4]",-0.4642116520437949
+  8,"[2, 3]",0.638260262428922
+  9,"[2, 4]",0.23598864236123118
+  10,"[3, 4]",0.7179538630349485
+  11,"[1, 2, 3]",-0.47312160287366267
+  12,"[1, 2, 4]",-0.04191888437610514
+  13,"[1, 3, 4]",-0.30912353449573415
+  14,"[2, 3, 4]",0.6066739725656609
+  15,"[1, 2, 3, 4]",-0.2689818206753505
 
-    1. `genotypes`
-    2. `phenotypes`
-    3. `stdeviations`
-    4. `mutations`
-    5. `n_replicates`
-    6. `log_transform`
 
-All other keys are ignored in the epistasis models. You can keep other metadata
-stored in the JSON, but it won't be appended to the epistasis model object.
+JSON Format
+-----------
+
+A model can be written to a JSON file using the ``to_json`` method.
+
+.. code-block:: python
+
+  model.to_json('model.json')
 
 .. code-block:: javascript
 
-    {
-        "genotypes" : [
-            '000',
-            '001',
-            '010',
-            '011',
-            '100',
-            '101',
-            '110',
-            '111'
-        ],
-        "phenotypes" : [
-            0.62344582,
-            0.87943151,
-            -0.11075798,
-            -0.59754471,
-            1.4314798,
-            1.12551439,
-            1.04859722,
-            -0.27145593
-        ],
-        "stdeviations" : [
-            0.01,
-            0.01,
-            0.01,
-            0.01,
-            0.01,
-            0.01,
-            0.01,
-            0.01,
-        ],
-        "mutations" : {
-            0 : ["0", "1"],
-            1 : ["0", "1"],
-            2 : ["0", "1"],
-        }
-        "n_replicates" : 12,
-        "log_transform" : false,
-        "title" : "my data",
-        "description" : "a really hard experiment"
-    }
+  {
+    "binary": [
+      "000",
+      "001",
+      "010",
+      "011",
+      "100",
+      "101",
+      "110",
+      "111"
+    ],
+    "genotypes": [
+      "AAA",
+      "AAT",
+      "ATA",
+      "ATT",
+      "TAA",
+      "TAT",
+      "TTA",
+      "TTT"
+    ],
+    "mutations": {"0":["A","T"],"1":["A","T"],"2":["A","T"]},
+    "n_replicates": [1,"NaN",1,1,1,1,1,1],
+    "phenotypes": [0.1,"NaN",0.4,0.3,0.3,0.6,0.8,1],
+    "wildtype": "AAA",
+    "sites": [
+      [0],
+      [1],
+      [2],
+      [3],
+      [1,2],
+      [1,3],
+      [2,3],
+      [1,2,3]
+    ],
+    "values": [
+      0.43749999999999983,
+      0.23749999999999996,
+      0.18749999999999997,
+      0.0375000000000001,
+      0.037500000000000006,
+      0.08750000000000006,
+      -0.012500000000000051,
+      -0.012499999999999874
+    ],
+    "stdeviations": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "order": 3,
+    "model_type": "global"
+  }
