@@ -17,14 +17,19 @@ from lmfit import Parameter, Parameters
 # Scikit learn imports
 from sklearn.base import BaseEstimator, RegressorMixin
 
+# GPMap import
+from gpmap import GenotypePhenotypeMap
+
 # Epistasis imports.
+from ..mapping import EpistasisMap
 from .base import BaseModel
 from .utils import (X_fitter, X_predictor, FittingError)
 from .linear import (EpistasisLinearRegression, EpistasisLasso)
 from ..stats import pearson
 
 
-class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
+class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator,
+                                   BaseModel):
     """Use nonlinear least-squares regression to estimate epistatic coefficients
     and nonlinear scale in a nonlinear genotype-phenotype map.
 
@@ -117,6 +122,32 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
             order=1, model_type=self.model_type)
         self.Linear = EpistasisLinearRegression(
             order=self.order, model_type=self.model_type)
+
+    @property
+    def data(self):
+        """Model data."""
+        # Get dataframes
+        df1 = self.gpm.complete_data
+        df2 = self.Linear.epistasis.data
+
+        # Merge dataframes.
+        data = pd.concat((df1, df2), axis=1)
+        return data
+
+    def to_dict(self):
+        """Return model data as dictionary."""
+        # Get genotype-phenotype data
+        data = self.gpm.to_dict(complete=True)
+
+        # Update with epistasis model data
+        data.update({'additive': self.Additive.epistasis.to_dict()})
+        data.update({'linear': self.Linear.epistasis.to_dict()})
+        data.update({'nonlinear': self.parameters.valuesdict()})
+
+        # Update with model data
+        data.update(model_type=self.model_type,
+                    order=self.order)
+        return data
 
     @wraps(BaseModel.add_gpm)
     def add_gpm(self, gpm):

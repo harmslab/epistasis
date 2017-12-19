@@ -120,6 +120,76 @@ class EpistasisBaseClassifier(BaseModel):
         # NOTE: This likelihood is not normalized -- not a simple problem.
         return yclass * np.log(1 - ymodel) + (1 - yclass) * np.log(ymodel)
 
+    @property
+    def data(self):
+        """Model data."""
+        # Get dataframes
+        df1 = self.gpm.complete_data
+        df2 = self.Linear.epistasis.data
+
+        # Merge dataframes.
+        data = pd.concat((df1, df2), axis=1)
+        return data
+
+    @classmethod
+    def read_json(cls, filename, **kwargs):
+        """Read genotype-phenotype data from a json file."""
+        with open(filename, 'r') as f:
+            data = json.load(f)
+
+        gpm = GenotypePhenotypeMap(wildtype=data['wildtype'],
+                                   genotypes=data['genotypes'],
+                                   phenotypes=data['phenotypes'],
+                                   stdeviations=data['stdeviations'],
+                                   mutations=data['mutations'],
+                                   n_replicates=data['n_replicates'])
+
+        linear_epistasis = EpistasisMap(sites=data['linear']['sites'],
+                                        values=data['linear']['values'],
+                                        model_type=model_type['model_type'])
+
+        additive_epistasis = EpistasisMap(sites=data['additive']['sites'],
+                                          values=data['additive']['values'],
+                                          model_type=model_type['model_type'])
+
+        # Initialize a model
+        self = cls(order=data['order'],
+                   model_type=data['model_type'],
+                   **kwargs)
+
+        self.add_gpm(gpm)
+        self.Additive.epistasis = epistasis
+        self.Linear.epistasis = epistasis
+        return self
+
+    def to_excel(self, filename):
+        """Write data to excel spreadsheet."""
+        self.data.to_excel(filename)
+
+    def to_csv(self, filename):
+        """Write data to excel spreadsheet."""
+        self.data.to_csv(filename)
+
+    def to_dict(self):
+        """Return model data as dictionary."""
+        # Get genotype-phenotype data
+        data = self.gpm.to_dict(complete=True)
+
+        # Update with epistasis model data
+        data.update({'additive': self.Additive.epistasis.to_dict()})
+        data.update({'linear': self.Linear.epistasis.to_dict()})
+
+        # Update with model data
+        data.update(model_type=self.model_type,
+                    order=self.order)
+        return data
+
+    def to_json(self, filename):
+        """Write to json file."""
+        data = self.to_dict()
+        with open(filename, 'w') as f:
+            json.dump(data, f)
+
 
 @sklearn_to_epistasis()
 class EpistasisLogisticRegression(LogisticRegression, EpistasisBaseClassifier):

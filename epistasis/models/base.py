@@ -183,75 +183,6 @@ class BaseModel(object):
         data = pd.concat((df1, df2), axis=1)
         return data
 
-    def add_dataframe(self, df, wildtype, mutations=None):
-        """Takes a model dataframe, splits into genotype-phenotype map
-        and epistasis map.
-        """
-        # Genotype Phenotype Map
-        df_gpm = df[['genotypes', 'phenotypes',
-                     'stdeviations', 'n_replicates']]
-        gpm = GenotypePhenotypeMap.read_dataframe(df_gpm, wildtype,
-                                                  mutations=mutations)
-
-        # Epistasis Map
-        df_epistasis = df[['sites', 'values']]
-        epistasis = EpistasisMap.read_dataframe(df_epistasis)
-
-        # Add data to map.
-        self.add_gpm(gpm)
-        self.epistasis = epistasis
-
-    @classmethod
-    def read_json(cls, filename, **kwargs):
-        """Read genotype-phenotype data from a json file."""
-        with open(filename, 'r') as f:
-            data = json.load(f)
-
-        gpm = GenotypePhenotypeMap(wildtype=data['wildtype'],
-                                   genotypes=data['genotypes'],
-                                   phenotypes=data['phenotypes'],
-                                   stdeviations=data['stdeviations'],
-                                   mutations=data['mutations'],
-                                   n_replicates=data['n_replicates'])
-
-        epistasis = EpistasisMap(sites=data['sites'],
-                                 values=data['values'],
-                                 model_type=model_type['model_type'])
-
-        # Initialize a model
-        self = cls(order=data['order'],
-                   model_type=data['model_type'],
-                   **kwargs)
-
-        self.add_gpm(gpm)
-        self.epistasis = epistasis
-        return self
-
-    @classmethod
-    def read_excel(cls, filename, wildtype, mutations=None, **kwargs):
-        """Read model data from a excel file."""
-        # Read Dataframe
-        df = pd.read_excel(filename, index_col=0)
-        self = cls(**kwargs)
-        self.add_dataframe(df, wildtype, mutations=mutations)
-        return self
-
-    @classmethod
-    def read_csv(cls, filename, wildtype, mutations=None, **kwargs):
-        """Read model data from a csv file."""
-        df = pd.read_csv(filename, index_col=0)
-        self = cls(**kwargs)
-        self.add_dataframe(df, wildtype, mutations=mutations)
-        return self
-
-    def to_excel(self, filename):
-        """Write data to excel spreadsheet."""
-        self.data.to_excel(filename)
-
-    def to_csv(self, filename):
-        """Write data to excel spreadsheet."""
-        self.data.to_csv(filename)
-
     def to_dict(self):
         """Return model data as dictionary."""
         # Get genotype-phenotype data
@@ -264,6 +195,14 @@ class BaseModel(object):
         data.update(model_type=self.model_type,
                     order=self.order)
         return data
+
+    def to_excel(self, filename):
+        """Write data to excel spreadsheet."""
+        self.data.to_excel(filename)
+
+    def to_csv(self, filename):
+        """Write data to excel spreadsheet."""
+        self.data.to_csv(filename)
 
     def to_json(self, filename):
         """Write to json file."""
