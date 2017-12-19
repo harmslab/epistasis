@@ -43,8 +43,13 @@ Large genotype-phenotype maps
 
 We have not tested the ``epistasis`` package on large genotype-phenotype maps (>5000 genotypes). In principle,
 it should be no problem as long as you have the resources (i.e. tons of RAM and time). However, it's possible there may be issues with convergence
-and numerical rounding for these large spaces. If you have a large dataset, please get in touch! We'd love to hear from you. Try it out
-and let us know if you have success.
+and numerical rounding for these large spaces.
+
+Reach out!
+~~~~~~~~~~
+
+If you have a large dataset, please get in touch! We'd love to hear from you. Feel free to
+try cranking our models on your large dataset and let us know if you run into issues.
 
 My nonlinear fit is slow and does not converge.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -96,38 +101,43 @@ Estimating model uncertainty
 The epistasis package includes a ``sampling`` module for estimating uncertainty in
 all coefficients in (Non)linear epistasis models. It follows a Bayesian approach,
 and uses the `emcee` python package to approximate the posterior distributions
-for each coefficient. The plot below was created using the `corner` package.
+for each coefficient.
 
-Basic Example
+Basic example
 ~~~~~~~~~~~~~
+
+Use the ``BayesianSampler`` object to sample your epistasis model. The smapler
+
+(The plot below was created using the ``corner`` package.)
 
 .. code-block:: python
 
-    # Imports
-    import matplotlib.pyplot as plt
-    import numpy as np
-    import corner
+  # Imports
+  import matplotlib.pyplot as plt
+  import numpy as np
+  import corner
 
-    from epistasis.simulate import LinearSimulation
-    from epistasis.models import EpistasisLinearRegression
-    from epistasis.sampling.bayesian import BayesianSampler
+  from epistasis.simulate import LinearSimulation
+  from epistasis.models import EpistasisLinearRegression
+  from epistasis.sampling.bayesian import BayesianSampler
 
-    # Create a simulated genotype-phenotype map with epistasis.
-    sim = LinearSimulation.from_length(4, model_type="local")
-    sim.set_coefs_order(4)
-    sim.set_coefs_random((-1,1))
-    sim.set_stdeviations([0.01])
+  # Create a simulated genotype-phenotype map with epistasis.
+  sim = LinearSimulation.from_length(3, model_type="local")
+  sim.set_coefs_order(3)
+  sim.set_coefs_random((-1,1))
+  sim.set_stdeviations([0.01])
 
-    # Initialize an epistasis model and fit a ML model.
-    model = EpistasisLinearRegression.from_gpm(sim, order=4, model_type="local")
-    model.fit()
+  # Initialize an epistasis model and fit a ML model.
+  model = EpistasisLinearRegression(order=3, model_type="local")
+  model.add_gpm(sim)
+  model.fit()
 
-    # Initialize a sampler.
-    fitter = BayesianSampler(model)
-    samples = fitter.sample(500)
+  # Initialize a sampler.
+  sampler = BayesianSampler(model)
+  samples, rstate = sampler.sample(500)
 
-    # Plot the Posterior
-    fig = corner.corner(samples, truths=sim.epistasis.values)
+  # Plot the Posterior
+  fig = corner.corner(samples, truths=sim.epistasis.values)
 
 
 .. image:: ../img/bayes-estimate-uncertainty.png

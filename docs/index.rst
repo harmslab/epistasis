@@ -48,7 +48,7 @@ Basic Example
                                genotypes=genotypes,
                                phenotypes=phenotypes)
 
-    # Inialize an epistasis model.
+    # Initialize an epistasis model.
     model = EpistasisLinearRegression(order=3)
 
     # Add the genotype phenotype map.

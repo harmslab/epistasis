@@ -142,7 +142,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator,
         # Update with epistasis model data
         data.update({'additive': self.Additive.epistasis.to_dict()})
         data.update({'linear': self.Linear.epistasis.to_dict()})
-        data.update({'nonlinear': self.parameters.valuesdict()})
+        data.update({'nonlinear': dict(self.parameters.valuesdict())})
 
         # Update with model data
         data.update(model_type=self.model_type,
