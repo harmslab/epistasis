@@ -348,28 +348,29 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator,
         return (pearson(pobs, ypred)**2,
                 self.Linear.score(X=X, y=yrev, sample_weight=sample_weight))
 
-    def contributions(self, X='fit', y='obs', sample_weight=None):
+    def contributions(self):
         """Calculate the contributions from nonlinearity and epistasis to
         the variation in phenotype.
 
-        Returns
-        -------
-        contribs
+        Returns a list of contribution ordered as additive, scale, and
+        epistasis.
         """
         # Calculate various pearson coeffs.
-        add_score = self.Additive.score(X=X, y=y, sample_weight=sample_weight)
-        scores = self.score(X=X, y=y, sample_weight=sample_weight)
+        x0 = self.gpm.phenotypes
+        x1 = self.Additive.predict(X='fit')
 
-        # Calculate the nonlinear contribution
-        nonlinear_contrib = scores[0] - add_score
+        # Scale contribution
+        x2 = self.Model.function(x1, **self.parameters)
 
-        # Calculate the contribution from epistasis
-        epistasis_contrib = 1 - scores[0]
+        # Epistasis contribution
+        x3 = self.Model.predict(X='fit')
 
-        # Build output dict.
-        contrib = {'nonlinear': nonlinear_contrib,
-                   'epistasis': epistasis_contrib}
-        return contrib
+        # Calculate contributions
+        additive = pearson(x0, x1)**2
+        scale = pearson(x0, x2)**2
+        epistasis = pearson(x0, x3)**2
+
+        return [additive, scale-additive, epistasis-scale]
 
     @X_predictor
     def hypothesis(self, X='complete', thetas=None):
