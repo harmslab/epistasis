@@ -23,10 +23,10 @@ import warnings
 def power_transform(x, lmbda, A, B, data=None):
     """Transform x according to a power transformation.
 
-    Note, the power transform calculates the geometric mean of x
-    to center the curve on that point. If you'd like to calculate
+    Note, this functions calculates the geometric mean of x
+    to center the power transform on the data. If you'd like to calculate
     the geometric mean on a different array than x (perhaps some
-    real data) pass that ohter array to the data keyword argument.
+    other data) pass that ohter array to the data keyword argument.
 
     .. math::
         y = \\frac{ x^{\\lambda} - 1 }{\\lambda [GM(x)]^{\\lambda - 1}}
@@ -223,6 +223,8 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
         # Else, numpy array or dataframe
         elif type(y) == np.array or type(y) == pd.Series:
             pobs = y
+        else:
+            raise Exception
 
         xadd = self.Additive.predict(X='fit')
         ypred = self.function(xadd, *self.parameters.values(), data=xadd)

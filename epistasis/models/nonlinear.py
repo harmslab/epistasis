@@ -222,7 +222,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator,
         # Don't use widgets to fit data
         else:
             import matplotlib.pyplot as plt
-            import epistasis.plot
+            import epistasis.pyplot
             import ipywidgets
 
             # Build fitting method to pass into widget box
@@ -230,18 +230,10 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator,
                 """Callable to be controlled by widgets."""
                 # Fit the nonlinear least squares fit
                 self._fit_nonlinear(
-                    padd, pobs, sample_weight=sample_weight, **parameters)
+                    X=X, y=y, sample_weight=sample_weight, **parameters)
 
-                # Print score
-                # print("R-squared of fit: " + str(self.score(X=Xadd, y=padd)))
-                # Print parameters
-                for kw in self.parameters.valuesdict():
-                    print(kw + ": " + str(getattr(self.parameters, kw)))
-
-                # Plot the nonlinear fit!
-                ylin = self.Additive.predict(X=Xadd)
-                # epistasis.plot.corr_resid(ylin, y, figsize=(3,5))
-                # plt.show()
+                # Print model parameters.
+                self.parameters.pretty_print()
 
             # Construct and return the widget box
             widgetbox = ipywidgets.interactive(fitting, **kwargs)
@@ -356,7 +348,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator,
         return (pearson(pobs, ypred)**2,
                 self.Linear.score(X=X, y=yrev, sample_weight=sample_weight))
 
-    def contributions(self, X='obs', y='obs', sample_weight=None):
+    def contributions(self, X='fit', y='obs', sample_weight=None):
         """Calculate the contributions from nonlinearity and epistasis to
         the variation in phenotype.
 
