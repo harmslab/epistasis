@@ -167,16 +167,37 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
         # Set the lower bound on B.
         self.parameters['A'].set(min=-min(x))
 
+        # Store residual steps in case fit fails.
+        last_residual_set = None
+
         # Residual function to minimize.
         def residual(params, func, x, y=None, data=None):
+            # Fit model
             parvals = list(params.values())
             ymodel = func(x, *parvals, data=data)
+
+            # Store items in case of error.
+            nonlocal last_residual_set
+            last_residual_set = (params, ymodel)
+
             return y - ymodel
 
         # Minimize the above residual function.
-        self.Nonlinear = lmfit.minimize(residual, self.parameters,
-                                        args=[self.function, x],
-                                        kws={'y': y, 'data': xadd})
+        try:
+            self.Nonlinear = lmfit.minimize(residual, self.parameters,
+                                            args=[self.function, x],
+                                            kws={'y': y, 'data': xadd})
+        # If fitting fails, print what happened
+        except Exception as e:
+            # if e is ValueError
+            print("ERROR! Some of the transformed phenotypes are invalid.")
+            print("\nParameters:")
+            print("----------")
+            print(last_residual_set[0].pretty_print())
+            print("\nTransformed phenotypes:")
+            print("----------------------")
+            print(last_residual_set[1])
+            raise
 
         # Point to nonlinear.
         self.parameters = self.Nonlinear.params
@@ -244,10 +265,10 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
         x1 = self.Additive.predict(X='fit')
 
         # Scale contribution
-        x2 = self.Model.function(x1, **self.parameters, data=x1)
+        x2 = self.function(x1, **self.parameters, data=x1)
 
         # Epistasis contribution
-        x3 = self.Model.predict(X='fit')
+        x3 = self.predict(X='fit')
 
         # Calculate contributions
         additive = pearson(x0, x1)**2
@@ -388,9 +409,15 @@ class EpistasisPowerTransformLasso(EpistasisPowerTransform):
         super(EpistasisPowerTransformLasso, self).__init__(
             order=order, model_type=model_type, **p0)
 
-        # Set lasso.
+        # Set up additive and high-order linear model
+        self.Additive = EpistasisLasso(
+            alpha=alpha,
+            order=1, model_type=self.model_type)
+
+        # Add lasso model for linear fit.
         self.Linear = EpistasisLasso(
-            order=self.order, model_type=self.model_type, alpha=alpha)
+            alpha=alpha,
+            order=self.order, model_type=self.model_type)
 
     def lnlike_of_data(self, X='obs', y='obs', yerr='obs',
                        sample_weight=None, thetas=None):

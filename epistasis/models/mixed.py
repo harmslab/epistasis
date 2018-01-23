@@ -40,9 +40,6 @@ class EpistasisMixedRegression(BaseModel, BaseEstimator):
     def epistasis(self):
         """High-order epistasis coefficients."""
         return self.Model.Linear.epistasis
-    #
-    # @property
-    # def
 
     def add_gpm(self, gpm):
         """ Attach a GenotypePhenotypeMap object to the epistasis model.
@@ -266,29 +263,27 @@ class EpistasisMixedRegression(BaseModel, BaseEstimator):
         class_contrib = len(zero) / len(self.gpm.complete_genotypes)
 
         # Calculate predicted phenotypes for each piece of model.
-
-        # Quantitative phenotypes
-        x0 = self.gpm.phenotypes[pclass == 1]
-
-        # Additive contribution.
-        x1 = self.Model.Additive.predict(X='fit')
-        x1 = x1[pclass == 1]
-
-        # Scale contribution
-        x2 = self.Model.function(x1, **self.parameters, data=x1)
-
-        # Epistasis contribution
-        x3 = self.Model.predict(X='fit')
-
-        # Calculate contributions
-        additive = pearson(x0, x1)**2
-        scale = pearson(x0, x2)**2
-        epistasis = pearson(x0, x3)**2
+        model_contrib = self.Model.contributions()
+        # # Quantitative phenotypes
+        # x0 = self.gpm.phenotypes[pclass == 1]
+        #
+        # # Additive contribution.
+        # x1 = self.Model.Additive.predict(X='fit')
+        # x1 = x1[pclass == 1]
+        #
+        # # Scale contribution
+        # x2 = self.Model.function(x1, **self.parameters, data=x1)
+        #
+        # # Epistasis contribution
+        # x3 = self.Model.predict(X='fit')
+        #
+        # # Calculate contributions
+        # additive = pearson(x0, x1)**2
+        # scale = pearson(x0, x2)**2
+        # epistasis = pearson(x0, x3)**2
 
         contributions = {'Classifier': class_contrib,
-                         'Model': [additive,
-                                   scale-additive,
-                                   epistasis-scale]}
+                         'Model': model_contrib}
 
         return contributions
 
