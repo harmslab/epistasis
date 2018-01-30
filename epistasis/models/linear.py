@@ -13,19 +13,28 @@ warnings.filterwarnings(action="ignore", module="scipy",
                         message="^internal gelsd")
 
 
-class Additive(object):
-    """Act similar to
+class Additive(_BaseModel):
+    """Object that behaves as additive version of an epistasis linear model.
     """
     def __init__(self, epistasis_linear_regression):
-        self.order = 1
+        # Inherited model
         self._ = epistasis_linear_regression
+
+        self.order = 1
+        self.model_type = self._.model_type
+        self.Xbuilt = {}
+
+    @property
+    def gpm(self):
+        return self._.gpm
 
     @property
     def epistasis(self):
         return self._.epistasis.get_orders(0, 1)
 
+    @X_predictor
     def predict(self, X='obs'):
-        Xadd = self._.Xbuilt[X][:, :len(self.epistasis.sites)]
+        Xadd = X[:, :len(self.epistasis.sites)]
         y = _np.dot(Xadd, self.epistasis.values)
         return y
 
@@ -89,6 +98,7 @@ class EpistasisLinearRegression(_LinearRegression, _BaseModel):
         # Calculate contributions
         additive = pearson(x0, x1)**2
         epistasis = pearson(x0, x2)**2
+
         return [additive, epistasis-additive]
 
     @property
@@ -241,7 +251,18 @@ class EpistasisLasso(_Lasso, _BaseModel):
         # Calculate contributions
         additive = pearson(x0, x1)**2
         epistasis = pearson(x0, x2)**2
+
         return [additive, epistasis-additive]
+
+    def compression_ratio(self):
+        """Compute the compression ratio for the Lasso regression
+        """
+        vals = self.epistasis.values
+        zeros = vals[vals == 0]
+
+        numer = len(zeros)
+        denom = len(vals)
+        return numer/denom
 
     @X_fitter
     def fit(self, X='obs', y='obs', sample_weight=None, **kwargs):
