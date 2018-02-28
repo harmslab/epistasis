@@ -56,6 +56,7 @@ def power_transform(x, lmbda, A, B, data=None):
     else:
         first = (x + A)**lmbda
         out = (first - 1.0) / (lmbda * gm**(lmbda - 1)) + B
+    #print(lmbda, A, B)
     return out
 
 
