@@ -78,6 +78,7 @@ Overview of available models
 * EpistasisPowerLasso_: use a power transform function to fit a nonlinear genotype-phenotype map and estimate *sparse* epistasis.
 * EpistasisLogisticRegression_: use logistic regression to classify phenotypes as dead/alive.
 * EpistasisMixedRegression_: classify a genotype-phenotype map first, then estimate epistatic coefficients in "alive" phenotypes.
+* EpistasisEnsembleRegression_: use a statistical ensemble of "states" to decompose variation in a genotype-phenotype map.
 
 Installation and dependencies
 ------------------------------
@@ -162,3 +163,4 @@ using the following command.
 .. _EpistasisPowerLasso: models.html#epistasispowerlasso
 .. _EpistasisLogisticRegression: models.html#epistasislogisticregression
 .. _EpistasisMixedRegression: models.html#epistasismixedregression
+.. _EpistasisEnsembleRegression: models.html#epistasisensembleregression

@@ -1,7 +1,7 @@
 Simulating epistasis in fitness landscapes
 ==========================================
 
-Simulate rough, epistatic genotype-phenotype maps using the ``simulate`` module. 
+Simulate rough, epistatic genotype-phenotype maps using the ``simulate`` module.
 
 LinearSimulation
 ----------------
@@ -52,7 +52,7 @@ see all options for initializing simulated genotype-phenotype maps.
 NonlinearSimulation
 -------------------
 
-Simulate a nonlinear, epistatic genotype-phenotype map using ``NonlinearSimulation``. 
+Simulate a nonlinear, epistatic genotype-phenotype map using ``NonlinearSimulation``.
 Simply define a function which transforms a linear genotype-phenotype map onto
 a nonlinear scale. Note, the function must have ``x`` as the first argument. This
 argument represents the linearized phenotypes to be transformed.

@@ -10,4 +10,4 @@ from .nonlinear import (EpistasisNonlinearRegression,
                         Parameters)
 from .classifiers import EpistasisLogisticRegression
 from .mixed import EpistasisMixedRegression
-from .ensemble import EpistasisEnsembleModel
+from .ensemble import EpistasisEnsembleRegression

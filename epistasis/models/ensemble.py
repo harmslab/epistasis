@@ -57,7 +57,7 @@ class State(EpistasisMap):
         return keys
 
 
-class EpistasisEnsembleModel(BaseModel):
+class EpistasisEnsembleRegression(BaseModel):
     """Ensemble epistasis model. It models variation in a genotype-phenotype map
     as a statistical ensemble of nstates contributing to each genotype's
     phenotype.
