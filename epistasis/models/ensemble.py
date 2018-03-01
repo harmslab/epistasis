@@ -69,6 +69,8 @@ class EpistasisEnsembleModel(BaseModel):
             # Add state.
             self.add_state(name)
 
+        return self
+
     def add_state(self, name):
         """ Add a state to the model."""
         sites = self.Xcolumns
@@ -81,6 +83,8 @@ class EpistasisEnsembleModel(BaseModel):
 
         # Set as attribute.
         setattr(self, name, state)
+
+        return self
 
     @property
     def parameters(self):
