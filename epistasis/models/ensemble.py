@@ -10,7 +10,28 @@ from .utils import X_fitter, X_predictor
 
 
 class State(EpistasisMap):
-    """State to model in an ensemble."""
+    """A state in an EpistasisEnsembleModel.
+
+    This represents/models an unknown excited state that is perturbed by
+    mutations in the genotype-phenotype map and contributes to the overall
+    phenotype.
+
+    Parameters
+    ----------
+    name : string
+        name of the state. Should have the form 'state_X' where X is a letter.
+
+    sites : list of lists
+        each element in list is a list of genotype site indexes. These sites
+        are additive/epistatic coefficients contributing to this state.
+
+    Attributes
+    ----------
+    See EpistasisMap for more details.
+
+    keys : list
+        list of lmfit.Parameter keys.
+    """
     def __init__(self, name, sites, *args, **kwargs):
         # Call super init.
         super(State, self).__init__(sites=sites, *args, **kwargs)
@@ -27,7 +48,7 @@ class State(EpistasisMap):
 
     @property
     def keys(self):
-        """State coefficient Parameter keys."""
+        """Coefficient Parameter keys."""
         keys = []
         for sites in self.sites:
             key = "".join([str(ch) for ch in sites])
@@ -37,10 +58,14 @@ class State(EpistasisMap):
 
 
 class EpistasisEnsembleModel(BaseModel):
-    """Ensemble model.
+    """Ensemble epistasis model. It models variation in a genotype-phenotype map
+    as a statistical ensemble of nstates contributing to each genotype's
+    phenotype.
 
     Attributes
     ----------
+    See BaseModel for more details.
+
     parameters : lmfit.Parameters
         Parameters resulting from fit.
 
@@ -195,8 +220,19 @@ class EpistasisEnsembleModel(BaseModel):
         Xbuilt = self.Xbuilt[key]
         return Xbuilt
 
-    def _ensemble_model(self, thetas, X=None):
-        """Ensemble model.
+    def functional_form(self, thetas, X=None):
+        """Ensemble function calculating phenotypes using a Boltzmann weighted
+        ensemble of states, where each state is constructed from linear
+        epistasis models.
+
+        Parameters
+        ----------
+        thetas : array
+            array of parameters values ordered alphabetically.
+
+        X : 2d-array (default None)
+            X matrix to use for linear portion of models. If None, uses the
+            matrix stored under the 'fit' key.
         """
         length = self.states['state_A'].n
         nstates = len(self.states)
@@ -227,7 +263,14 @@ class EpistasisEnsembleModel(BaseModel):
 
     @X_fitter
     def fit(self, X='obs', y='obs', **kwargs):
-        """Fit ensemble model.
+        """Fit ensemble model to data.
+
+        Parameters
+        ----------
+        X : 2-d array
+            independent data; samples.
+        y : array
+            dependent data; observations.
         """
         # X matrix.
         self.add_X(X=X, key='fit')
@@ -262,12 +305,13 @@ class EpistasisEnsembleModel(BaseModel):
 
     @X_predictor
     def predict(self, X='complete'):
-        """Predict model.
+        """Predict phenotypes using fitted model.
         """
         return self._ensemble_model(list(self.parameters.values()), X=X)
 
     @X_fitter
     def score(self, X='obs', y='obs', **kwargs):
-        """Score fit.
+        """Calculate the pearson coefficient between the models predictions and
+        a given y array.
         """
         return pearson(self.gpm.phenotypes, self.predict(X=X))**2
