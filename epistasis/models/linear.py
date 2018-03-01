@@ -3,8 +3,7 @@ from sklearn.linear_model import LinearRegression as _LinearRegression
 from sklearn.linear_model import Lasso as _Lasso
 
 from .base import BaseModel as _BaseModel
-from .utils import X_fitter as X_fitter
-from .utils import X_predictor as X_predictor
+from .utils import X_fitter, X_predictor, epistasis_fitter
 from ..stats import pearson
 
 # Suppress an annoying error from scikit-learn
@@ -71,6 +70,7 @@ class EpistasisLinearRegression(_LinearRegression, _BaseModel):
 
         self.Additive = Additive(self)
 
+    @epistasis_fitter
     @X_fitter
     def fit(self, X='obs', y='obs', sample_weight=None, **kwargs):
         return super(self.__class__, self).fit(X, y,
@@ -264,6 +264,7 @@ class EpistasisLasso(_Lasso, _BaseModel):
         denom = len(vals)
         return numer/denom
 
+    @epistasis_fitter
     @X_fitter
     def fit(self, X='obs', y='obs', sample_weight=None, **kwargs):
         # If a threshold exists in the data, pre-classify genotypes

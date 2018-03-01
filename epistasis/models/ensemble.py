@@ -4,7 +4,9 @@ import lmfit
 
 from epistasis.stats import pearson
 from ..mapping import EpistasisMap, mutations_to_sites
+from .base import BaseModel
 from epistasis.model_matrix_ext import get_model_matrix
+from .utils import X_fitter, X_predictor
 
 
 class State(EpistasisMap):
@@ -34,7 +36,7 @@ class State(EpistasisMap):
         return keys
 
 
-class EpistasisEnsembleModel(object):
+class EpistasisEnsembleModel(BaseModel):
     """Ensemble model.
 
     Attributes
@@ -57,7 +59,7 @@ class EpistasisEnsembleModel(object):
 
     def add_gpm(self, gpm):
         """Add genotype-phenotype map to model object."""
-        self.gpm = gpm
+        super(EpistasisEnsembleModel, self).add_gpm(gpm)
 
         # Add states to model.
         for i in range(self.nstates):
@@ -69,7 +71,7 @@ class EpistasisEnsembleModel(object):
 
     def add_state(self, name):
         """ Add a state to the model."""
-        sites = mutations_to_sites(self.order, self.gpm.mutations)
+        sites = self.Xcolumns
 
         # Create state.
         state = State(name, sites, model_type=self.model_type)
@@ -189,12 +191,14 @@ class EpistasisEnsembleModel(object):
         Xbuilt = self.Xbuilt[key]
         return Xbuilt
 
-    def _ensemble_model(self, thetas):
+    def _ensemble_model(self, thetas, X=None):
         """Ensemble model.
         """
         length = self.states['state_A'].n
         nstates = len(self.states)
-        X = self.Xbuilt['fit']
+
+        if X is None:
+            X = self.Xbuilt['fit']
 
         # Calculate a partition function
         Z = 0
@@ -217,7 +221,8 @@ class EpistasisEnsembleModel(object):
         y = np.log(Z)
         return y
 
-    def fit(self, X='obs', y='obs'): #, X=None, y=None, **kwargs):
+    @X_fitter
+    def fit(self, X='obs', y='obs', **kwargs):
         """Fit ensemble model.
         """
         # X matrix.
@@ -251,12 +256,14 @@ class EpistasisEnsembleModel(object):
 
         return self
 
-    def predict(self):
+    @X_predictor
+    def predict(self, X='complete'):
         """Predict model.
         """
-        return self._ensemble_model(list(self.parameters.values()))
+        return self._ensemble_model(list(self.parameters.values()), X=X)
 
-    def score(self):
+    @X_fitter
+    def score(self, X='obs', y='obs', **kwargs):
         """Score fit.
         """
-        return pearson(self.gpm.phenotypes, self.predict())**2
+        return pearson(self.gpm.phenotypes, self.predict(X=X))**2

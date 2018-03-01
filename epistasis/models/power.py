@@ -8,7 +8,7 @@ import pandas as pd
 import lmfit
 from lmfit import Parameter, Parameters
 
-from .utils import X_fitter, X_predictor
+from .utils import X_fitter, X_predictor, epistasis_fitter
 from ..stats import gmean, pearson
 from .linear import EpistasisLinearRegression, EpistasisLasso
 from .nonlinear import (EpistasisNonlinearRegression,
@@ -129,6 +129,7 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
         # Save functions
         self.function = power_transform
         self.reverse = reverse_power_transform
+        self.Xbuilt = {}
 
         # Construct parameters object
         self.set_params(order=order,

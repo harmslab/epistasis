@@ -193,46 +193,57 @@ def X_fitter(method):
 
         except (KeyError, TypeError):
 
-            if type(X) is str and X in ['obs', 'complete', 'fit']:
+            if hasattr(self, "gpm") is False:
+                raise XMatrixException(
+                    "To build 'obs' or 'complete' X "
+                    "matrix, a GenotypePhenotypeMap "
+                    "must be attached.")
 
-                if hasattr(self, "gpm") is False:
-                    raise XMatrixException("To build 'obs' or 'complete' X "
-                                           "matrix, a GenotypePhenotypeMap "
-                                           "must be attached.")
-
-                # Enforce that a new EpistasisMap is built.
-                self.add_epistasis()
-
-                # Construct an X for this model.
-                x = self.add_X(X=X)
-
-                # Store Xmatrix.
-                self.Xbuilt[X] = x
-
-                # Run fit.
-                model = method(self, X=x, y=y,
-                               sample_weight=sample_weight,
-                               *args, **kwargs)
+            # Turn X into matrix.
+            if type(X) is str:
+                # Get key
+                x = X
+                X = self.add_X(X=x)
 
                 # Store Xmatrix.
-                self.Xbuilt["fit"] = x
-                self.epistasis.values = np.reshape(self.coef_, (-1,))
+                self.Xbuilt[x] = X
 
-            elif type(X) == np.ndarray or type(X) == pd.DataFrame:
-                # Call method with X and y.
-                model = method(self, X=X, y=y,
-                               sample_weight=sample_weight,
-                               *args, **kwargs)
+            # Run fit.
+            model = method(self, X=X, y=y,
+                           sample_weight=sample_weight,
+                           *args, **kwargs)
 
-                # Store Xmatrix.
-                self.Xbuilt["fit"] = X
-
-            else:
-                raise XMatrixException("X must be one of the following: "
-                                       "'obs', 'missing', 'complete', "
-                                       "numpy.ndarray, or pandas.DataFrame.")
+            self.Xbuilt["fit"] = X
 
         # Return model
         return model
 
+    return inner
+
+
+def epistasis_fitter(fit_method):
+    """Connect an epistasis object to the model.
+    """
+    @wraps(fit_method)
+    def inner(self, X='obs', *args, **kwargs):
+        if type(X) is np.ndarray or type(X) is pd.DataFrame:
+            model = fit_method(self, X=X, *args, **kwargs)
+
+        elif X not in self.Xbuilt:
+            # Map those columns to epistastalis dataframe.
+            self.epistasis = EpistasisMap(
+                sites=self.Xcolumns,
+                order=self.order,
+                model_type=self.model_type)
+
+            # Execute fitting method
+            model = fit_method(self, X=X, *args, **kwargs)
+
+            # Link coefs to epistasis values.
+            self.epistasis.values = np.reshape(self.coef_, (-1,))
+
+        else:
+            model = fit_method(self, X=X, *args, **kwargs)
+
+        return model
     return inner
