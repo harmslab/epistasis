@@ -8,10 +8,12 @@ from sklearn.svm import SVC
 from sklearn.naive_bayes import BernoulliNB
 from sklearn.preprocessing import binarize
 
+from ..mapping import EpistasisMap
 from .base import BaseModel
 from .utils import (sklearn_to_epistasis,
                     XMatrixException,
                     X_fitter,
+                    epistasis_fitter,
                     X_predictor)
 
 from .linear import EpistasisLinearRegression
@@ -53,7 +55,13 @@ class EpistasisBaseClassifier(BaseModel):
         # Use Additive model to establish the phenotypic scale.
         # Prepare Additive model
         self.Additive.add_gpm(self.gpm)
-        self.Additive.add_epistasis()
+
+        # Prepare a high-order model
+        self.Additive.epistasis = EpistasisMap(
+            sites=self.Additive.Xcolumns,
+            order=self.Additive.order,
+            model_type=self.Additive.model_type
+        )
 
         # Fit the additive model and infer additive phenotypes
         self.Additive.fit(X=X, y=y)
@@ -61,6 +69,7 @@ class EpistasisBaseClassifier(BaseModel):
         self = self._fit_(X=X, y=y)
         return self
 
+    @epistasis_fitter
     @X_fitter
     def _fit_(self, X='obs', y='obs', **kwargs):
         """"""

@@ -23,19 +23,10 @@ class TestBaseModel():
 
     def test_add_gpm(self, gpm):
         model = BaseModel()
+        model.order = 1
         model.add_gpm(gpm)
 
         assert hasattr(model, "gpm")
-
-    def test_add_epistasis(self, gpm):
-        model = BaseModel()
-        model.order = 2
-        model.model_type = "local"
-        model.add_gpm(gpm)
-        model.add_epistasis()
-
-        assert hasattr(model, "epistasis")
-        assert type(model.epistasis) == EpistasisMap
 
     def test_add_X(self, gpm):
         model = BaseModel()
@@ -45,8 +36,8 @@ class TestBaseModel():
             model.add_X(X="obs")
 
         # Check that add_X works with each type of X
-        model.add_gpm(gpm)
         model.order = 3
+        model.add_gpm(gpm)
         model.model_type = "local"
         model.add_X(X="obs")
 

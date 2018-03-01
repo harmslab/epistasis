@@ -30,6 +30,7 @@ class EpistasisMixedRegression(BaseModel, BaseEstimator):
         self.model_specs = dict(Model=Model, Classifier=Classifier)
         self.Model = Model
         self.Classifier = Classifier
+        self.Xbuilt = {}
 
     @property
     def parameters(self):
@@ -47,7 +48,7 @@ class EpistasisMixedRegression(BaseModel, BaseEstimator):
         Also exposes APIs that are only accessible with a GenotypePhenotypeMap
         attached to the model.
         """
-        super(EpistasisMixedRegression, self).add_gpm(gpm)
+        self._gpm = gpm
         self.Model.add_gpm(gpm)
         self.Classifier.add_gpm(gpm)
 

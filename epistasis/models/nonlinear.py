@@ -23,7 +23,7 @@ from gpmap import GenotypePhenotypeMap
 # Epistasis imports.
 from ..mapping import EpistasisMap
 from .base import BaseModel
-from .utils import (X_fitter, X_predictor, FittingError)
+from .utils import (X_fitter, X_predictor, epistasis_fitter, FittingError)
 from .linear import (EpistasisLinearRegression, EpistasisLasso)
 from ..stats import pearson
 
@@ -113,6 +113,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator,
         # Set up the function for fitting.
         self.function = function
         self.reverse = reverse
+        self.Xbuilt = {}
 
         # Construct parameters object
         self.set_params(order=order,
@@ -257,7 +258,11 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator,
                             "`add_gpm` method")
 
         # Fit with an additive model
-        self.Additive.add_epistasis()
+        self.Additive.epistasis = EpistasisMap(
+            sites=self.Additive.Xcolumns,
+            order=self.Additive.order,
+            model_type=self.Additive.model_type
+        )
 
         # Use a first order matrix only.
         if type(X) == np.ndarray or type(X) == pd.DataFrame:
@@ -327,8 +332,12 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator,
     def _fit_linear(self, X='obs', y='obs', sample_weight=None):
         """"""
         # Prepare a high-order model
-        self.Linear.add_epistasis()
-
+        self.Linear.epistasis = EpistasisMap(
+            sites=self.Linear.Xcolumns,
+            order=self.Linear.order,
+            model_type=self.Linear.model_type
+        )
+        
         # Construct a linear epistasis model.
         if self.order > 1:
             ylin = self.reverse(y, *self.parameters.values())

@@ -21,7 +21,9 @@ class BaseModel(object):
     Manages attachment of GenotypePhenotypeMap and EpistasisMaps to the
     Epistasis models.
     """
-    Xbuilt = {}
+    def __init__(self, order=1, *args, **kwargs):
+        self.order=order
+        self.Xbuilt = {}
 
     def fit(self, *args, **kwargs):
         raise Exception("Must be defined in a subclass.")
@@ -63,16 +65,6 @@ class BaseModel(object):
         if np.isinf(lnlike) or np.isnan(lnlike):
             return -np.inf
         return lnlike
-
-    def add_epistasis(self):
-        """Add an EpistasisMap to model.
-        """
-        # Build epistasis interactions as columns in X matrix.
-        sites = mutations_to_sites(self.order, self.gpm.mutations)
-
-        # Map those columns to epistastalis dataframe.
-        self.epistasis = EpistasisMap(
-            sites, order=self.order, model_type=self.model_type)
 
     def add_X(self, X="complete", key=None):
         """Add X to Xbuilt
@@ -118,12 +110,8 @@ class BaseModel(object):
                                        "'complete' X matrix, a "
                                        "GenotypePhenotypeMap must be attached")
 
-            # Create a list of epistatic interaction for this model.
-            if hasattr(self, "epistasis"):
-                columns = self.epistasis.sites
-            else:
-                self.add_epistasis()
-                columns = self.epistasis.sites
+            # Get X columns
+            columns = self.Xcolumns
 
             # Use desired set of genotypes for rows in X matrix.
             if X == "obs":
@@ -166,6 +154,9 @@ class BaseModel(object):
         if GenotypePhenotypeMap in instance_tree is False:
             raise TypeError("gpm must be a GenotypePhenotypeMap object")
         self._gpm = gpm
+
+        # Construct columns for X matrix
+        self.Xcolumns = mutations_to_sites(self.order, self.gpm.mutations)
         return self
 
     @property
@@ -187,10 +178,7 @@ class BaseModel(object):
     def to_dict(self):
         """Return model data as dictionary."""
         # Get genotype-phenotype data
-        data = self.gpm.to_dict(complete=True)
-
-        # Update with epistasis model data
-        data.update(**self.epistasis.to_dict())
+        data = self.data.to_dict(complete=True)
 
         # Update with model data
         data.update(model_type=self.model_type,
