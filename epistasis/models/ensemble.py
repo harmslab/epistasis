@@ -7,24 +7,108 @@ from ..mapping import EpistasisMap, mutations_to_sites
 from epistasis.model_matrix_ext import get_model_matrix
 
 
-class Microstate(EpistasisMap):
-    """"""
-    def __init__(self, name, gpm, *args, **kwargs):
+class State(EpistasisMap):
+    """State to model in an ensemble."""
+    def __init__(self, name, sites, *args, **kwargs):
+        # Call super init.
+        super(State, self).__init__(sites=sites, *args, **kwargs)
+
+        # Set name.
         self.name = name
-        self.gpm = gpm
-        self.Xbuilt = {}
-        self.order = 1
-        sites = mutations_to_sites(self.order, self.gpm.mutations)
-        super(Microstate, self).__init__(sites=sites, *args, **kwargs)
+
+        # Construct parameters object
+        self.parameters = lmfit.Parameters()
+
+        # fill parameters .
+        for key in self.keys:
+            self.parameters.add(key, max=50, min=-50, value=0)
 
     @property
-    def lmfit_keys(self):
+    def keys(self):
+        """State coefficient Parameter keys."""
         keys = []
         for sites in self.sites:
             key = "".join([str(ch) for ch in sites])
             name = "{}_{}".format(self.name, key)
             keys.append(name)
         return keys
+
+
+class EpistasisEnsembleModel(object):
+    """Ensemble model.
+
+    Attributes
+    ----------
+    parameters : lmfit.Parameters
+        Parameters resulting from fit.
+
+
+    """
+
+    _ALPHABET = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J']
+
+    def __init__(self, order=1, nstates=2):
+        self.nstates = nstates
+        self.model_type = 'local'
+        self.order = order
+        self.states = {}
+        self.Xbuilt = {}
+        self.parameters = lmfit.Parameters()
+
+    def add_gpm(self, gpm):
+        """Add genotype-phenotype map to model object."""
+        self.gpm = gpm
+
+        # Add states to model.
+        for i in range(self.nstates):
+            # State name
+            name = "state_{}".format(self._ALPHABET[i])
+
+            # Add state.
+            self.add_state(name)
+
+    def add_state(self, name):
+        """ Add a state to the model."""
+        sites = mutations_to_sites(self.order, self.gpm.mutations)
+
+        # Create state.
+        state = State(name, sites, model_type=self.model_type)
+
+        # Store state.
+        self.states[name] = state
+
+        # Set as attribute.
+        setattr(self, name, state)
+
+    @property
+    def parameters(self):
+        """All parameters in the value."""
+        parameters = lmfit.Parameters()
+
+        # Get parameter data.
+        for state in self.states.values():
+            parameters.add_many(*state.parameters.values())
+
+        return parameters
+
+    @parameters.setter
+    def parameters(self, parameters):
+        """Set parameters for all states."""
+
+        # Add state parameters.
+        for state in self.states.values():
+            keys = state.keys
+            parameters_ = lmfit.Parameters()
+            values = []
+            for key in state.keys:
+                p = parameters[key]
+                parameters_.add_many(p)
+                values.append(p.value)
+
+            parameters_.add_many(*[parameters[key] for key in state.keys])
+            state.parameters = parameters_
+            state.values = values
+
 
     def add_X(self, X="complete", key=None):
         """Add X to Xbuilt
@@ -78,7 +162,7 @@ class Microstate(EpistasisMap):
             else:
                 index = self.gpm.complete_binary
 
-            columns = self.sites
+            columns = self.state_A.sites
 
             # Build numpy array
             x = get_model_matrix(index, columns, model_type=self.model_type)
@@ -105,38 +189,12 @@ class Microstate(EpistasisMap):
         Xbuilt = self.Xbuilt[key]
         return Xbuilt
 
-
-class EpistasisEnsembleModel(object):
-    """
-    """
-
-    _ALPHABET = ['A', 'B', 'C', 'D', 'E', 'F', 'G']
-
-    def __init__(self, gpm, nstates):
-        self.gpm = gpm
-        self.nstates = nstates
-        self.model_type = 'local'
-        #self.mutation_count = np.array([g.count('1') for g in self.gpm.binary], dtype=int)
-
-        self.states = {}
-        self.states_keys = ["state_{}".format(a) for a in self._ALPHABET[:self.nstates]]
-        for i in range(self.nstates):
-            name = "state_{}".format(self._ALPHABET[i])
-            self.states[name] = Microstate(name, self.gpm, model_type=self.model_type)
-
-        # Give each microstate an X.
-        self.parameters = lmfit.Parameters()
-        for key in self.states_keys:
-            microstate = self.states[key]
-            microstate.add_X(X='obs', key='fit')
-            for name in microstate.lmfit_keys:
-                self.parameters.add(name, value=0, max=50, min=-50)
-
     def _ensemble_model(self, thetas):
         """Ensemble model.
         """
         length = self.states['state_A'].n
         nstates = len(self.states)
+        X = self.Xbuilt['fit']
 
         # Calculate a partition function
         Z = 0
@@ -146,10 +204,8 @@ class EpistasisEnsembleModel(object):
             idx_stop = state_i * length + length
             dDG = thetas[idx_start:idx_stop]
 
-
             # Get state.
             state = self.states['state_{}'.format(self._ALPHABET[state_i])]
-            X = state.Xbuilt['fit']
 
             # Additive model.
             additive = X @ dDG
@@ -161,9 +217,12 @@ class EpistasisEnsembleModel(object):
         y = np.log(Z)
         return y
 
-    def fit(self):
+    def fit(self, X='obs', y='obs'): #, X=None, y=None, **kwargs):
         """Fit ensemble model.
         """
+        # X matrix.
+        self.add_X(X=X, key='fit')
+
         # Storing failed residuals
         last_residual_set = None
 
@@ -187,9 +246,8 @@ class EpistasisEnsembleModel(object):
             args=[self._ensemble_model],
             kws={'y': y})
 
+        # Set parameters fitted by model.
         self.parameters = self.results.params
-
-        for 
 
         return self
 
