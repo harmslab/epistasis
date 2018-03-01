@@ -84,7 +84,7 @@ class EpistasisEnsembleRegression(BaseModel):
 
     def add_gpm(self, gpm):
         """Add genotype-phenotype map to model object."""
-        super(EpistasisEnsembleModel, self).add_gpm(gpm)
+        super(EpistasisEnsembleRegression, self).add_gpm(gpm)
 
         # Add states to model.
         for i in range(self.nstates):
@@ -139,86 +139,6 @@ class EpistasisEnsembleRegression(BaseModel):
             parameters_.add_many(*[parameters[key] for key in state.keys])
             state.parameters = parameters_
             state.values = values
-
-
-    def add_X(self, X="complete", key=None):
-        """Add X to Xbuilt
-
-        Keyword arguments for X:
-
-        - 'obs' :
-            Uses ``gpm.binary`` to construct X. If genotypes
-            are missing they will not be included in fit. At the end of
-            fitting, an epistasis map attribute is attached to the model
-            class.
-        - 'missing' :
-            Uses ``gpm.binary`` to construct X.
-            All genotypes missing from the data are included. Warning,
-            will break in most fitting methods. At the end of fitting,
-            an epistasis map attribute is attached to the model class.
-        - 'complete' :
-            Uses ``gpm.binary`` to construct X.
-            All genotypes missing from the data are included. Warning, will
-            break in most fitting methods. At the end of fitting, an
-            epistasis map attribute is attached to the model class.
-        - 'fit' :
-            a previously defined array/dataframe matrix. Prevents
-            copying for efficiency.
-
-
-        Parameters
-        ----------
-        X :
-            see above for details.
-        key : str
-            name for storing the matrix.
-
-        Returns
-        -------
-        Xbuilt : numpy.ndarray
-            newly built 2d array matrix
-        """
-        if type(X) is str and X in ['obs', 'missing', 'complete', 'fit']:
-
-            if hasattr(self, "gpm") is False:
-                raise XMatrixException("To build 'obs', 'missing', or"
-                                       "'complete' X matrix, a "
-                                       "GenotypePhenotypeMap must be attached")
-
-            # Use desired set of genotypes for rows in X matrix.
-            if X == "obs":
-                index = self.gpm.binary
-            elif X == "missing":
-                index = self.gpm.missing_binary
-            else:
-                index = self.gpm.complete_binary
-
-            columns = self.state_A.sites
-
-            # Build numpy array
-            x = get_model_matrix(index, columns, model_type=self.model_type)
-
-            # Set matrix with given key.
-            if key is None:
-                key = X
-
-            self.Xbuilt[key] = x
-
-        elif type(X) == np.ndarray or type(X) == pd.DataFrame:
-            # Set key
-            if key is None:
-                raise Exception("A key must be given to store.")
-
-            # Store Xmatrix.
-            self.Xbuilt[key] = X
-
-        else:
-            raise XMatrixException("X must be one of the following: 'obs', "
-                                   "'complete', numpy.ndarray, or "
-                                   "pandas.DataFrame.")
-
-        Xbuilt = self.Xbuilt[key]
-        return Xbuilt
 
     def functional_form(self, thetas, X=None):
         """Ensemble function calculating phenotypes using a Boltzmann weighted
@@ -295,7 +215,7 @@ class EpistasisEnsembleRegression(BaseModel):
         # Minimize the above residual function.
         self.results = lmfit.minimize(
             residual, self.parameters,
-            args=[self._ensemble_model],
+            args=[self.functional_form],
             kws={'y': y})
 
         # Set parameters fitted by model.
@@ -307,7 +227,7 @@ class EpistasisEnsembleRegression(BaseModel):
     def predict(self, X='complete'):
         """Predict phenotypes using fitted model.
         """
-        return self._ensemble_model(list(self.parameters.values()), X=X)
+        return self.functional_form(list(self.parameters.values()), X=X)
 
     @X_fitter
     def score(self, X='obs', y='obs', **kwargs):
