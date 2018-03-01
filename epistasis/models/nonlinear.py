@@ -28,6 +28,15 @@ from .linear import (EpistasisLinearRegression, EpistasisLasso)
 from ..stats import pearson
 
 
+def grid_search(model, **parameters):
+    """"""
+
+    p_lists = [np.linspace() for p in parameters]
+
+    # Enumerate combinations of parameters
+    np.array(np.meshgrid([1, 2, 3], [4, 5], [6, 7])).T.reshape(-1,3)
+
+
 class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator,
                                    BaseModel):
     """Use nonlinear least-squares regression to estimate epistatic coefficients
@@ -222,7 +231,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator,
         # Don't use widgets to fit data
         else:
             import matplotlib.pyplot as plt
-            import epistasis.plot
+            import epistasis.pyplot
             import ipywidgets
 
             # Build fitting method to pass into widget box
@@ -230,18 +239,10 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator,
                 """Callable to be controlled by widgets."""
                 # Fit the nonlinear least squares fit
                 self._fit_nonlinear(
-                    padd, pobs, sample_weight=sample_weight, **parameters)
+                    X=X, y=y, sample_weight=sample_weight, **parameters)
 
-                # Print score
-                # print("R-squared of fit: " + str(self.score(X=Xadd, y=padd)))
-                # Print parameters
-                for kw in self.parameters.valuesdict():
-                    print(kw + ": " + str(getattr(self.parameters, kw)))
-
-                # Plot the nonlinear fit!
-                ylin = self.Additive.predict(X=Xadd)
-                # epistasis.plot.corr_resid(ylin, y, figsize=(3,5))
-                # plt.show()
+                # Print model parameters.
+                self.parameters.pretty_print()
 
             # Construct and return the widget box
             widgetbox = ipywidgets.interactive(fitting, **kwargs)
@@ -286,15 +287,39 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator,
         for key, value in kwargs.items():
             self.parameters[key].set(value=value)
 
+        # Store residual steps in case fit fails.
+        last_residual_set = None
+
         # Residual function to minimize.
         def residual(params, func, x, y=None):
+            # Fit model
             parvals = list(params.values())
             ymodel = func(x, *parvals)
+
+            # Store items in case of error.
+            nonlocal last_residual_set
+            last_residual_set = (params, ymodel)
+
             return y - ymodel
 
         # Minimize the above residual function.
-        self.Nonlinear = lmfit.minimize(residual, self.parameters,
-                                        args=[self.function, x], kws={'y': y})
+        try:
+            self.Nonlinear = lmfit.minimize(
+                residual, self.parameters,
+                args=[self.function, x],
+                kws={'y': y})
+
+        # If fitting fails, print what happened
+        except Exception as e:
+            # if e is ValueError
+            print("ERROR! Some of the transformed phenotypes are invalid.")
+            print("\nParameters:")
+            print("----------")
+            print(last_residual_set[0].pretty_print())
+            print("\nTransformed phenotypes:")
+            print("----------------------")
+            print(last_residual_set[1])
+            raise
 
         # Point to nonlinear.
         self.parameters = self.Nonlinear.params
@@ -356,28 +381,29 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator,
         return (pearson(pobs, ypred)**2,
                 self.Linear.score(X=X, y=yrev, sample_weight=sample_weight))
 
-    def contributions(self, X='obs', y='obs', sample_weight=None):
+    def contributions(self):
         """Calculate the contributions from nonlinearity and epistasis to
         the variation in phenotype.
 
-        Returns
-        -------
-        contribs
+        Returns a list of contribution ordered as additive, scale, and
+        epistasis.
         """
         # Calculate various pearson coeffs.
-        add_score = self.Additive.score(X=X, y=y, sample_weight=sample_weight)
-        scores = self.score(X=X, y=y, sample_weight=sample_weight)
+        x0 = self.gpm.phenotypes
+        x1 = self.Additive.predict(X='fit')
 
-        # Calculate the nonlinear contribution
-        nonlinear_contrib = scores[0] - add_score
+        # Scale contribution
+        x2 = self.function(x1, **self.parameters)
 
-        # Calculate the contribution from epistasis
-        epistasis_contrib = 1 - scores[0]
+        # Epistasis contribution
+        x3 = self.predict(X='fit')
 
-        # Build output dict.
-        contrib = {'nonlinear': nonlinear_contrib,
-                   'epistasis': epistasis_contrib}
-        return contrib
+        # Calculate contributions
+        additive = pearson(x0, x1)**2
+        scale = pearson(x0, x2)**2
+        epistasis = pearson(x0, x3)**2
+
+        return [additive, scale-additive, epistasis-scale]
 
     @X_predictor
     def hypothesis(self, X='complete', thetas=None):
@@ -523,8 +549,14 @@ class EpistasisNonlinearLasso(EpistasisNonlinearRegression):
                                                       order=order,
                                                       model_type=model_type)
 
+        # Set up additive and high-order linear model
+        self.Additive = EpistasisLasso(
+            alpha=alpha,
+            order=1, model_type=self.model_type)
+
         # Add lasso model for linear fit.
         self.Linear = EpistasisLasso(
+            alpha=alpha,
             order=self.order, model_type=self.model_type)
 
     def lnlike_of_data(self, X='obs', y='obs', yerr='obs',

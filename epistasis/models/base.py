@@ -166,6 +166,7 @@ class BaseModel(object):
         if GenotypePhenotypeMap in instance_tree is False:
             raise TypeError("gpm must be a GenotypePhenotypeMap object")
         self._gpm = gpm
+        return self
 
     @property
     def gpm(self):

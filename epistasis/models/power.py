@@ -23,10 +23,10 @@ import warnings
 def power_transform(x, lmbda, A, B, data=None):
     """Transform x according to a power transformation.
 
-    Note, the power transform calculates the geometric mean of x
-    to center the curve on that point. If you'd like to calculate
+    Note, this functions calculates the geometric mean of x
+    to center the power transform on the data. If you'd like to calculate
     the geometric mean on a different array than x (perhaps some
-    real data) pass that ohter array to the data keyword argument.
+    other data) pass that ohter array to the data keyword argument.
 
     .. math::
         y = \\frac{ x^{\\lambda} - 1 }{\\lambda [GM(x)]^{\\lambda - 1}}
@@ -167,16 +167,37 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
         # Set the lower bound on B.
         self.parameters['A'].set(min=-min(x))
 
+        # Store residual steps in case fit fails.
+        last_residual_set = None
+
         # Residual function to minimize.
         def residual(params, func, x, y=None, data=None):
+            # Fit model
             parvals = list(params.values())
             ymodel = func(x, *parvals, data=data)
+
+            # Store items in case of error.
+            nonlocal last_residual_set
+            last_residual_set = (params, ymodel)
+
             return y - ymodel
 
         # Minimize the above residual function.
-        self.Nonlinear = lmfit.minimize(residual, self.parameters,
-                                        args=[self.function, x],
-                                        kws={'y': y, 'data': xadd})
+        try:
+            self.Nonlinear = lmfit.minimize(residual, self.parameters,
+                                            args=[self.function, x],
+                                            kws={'y': y, 'data': xadd})
+        # If fitting fails, print what happened
+        except Exception as e:
+            # if e is ValueError
+            print("ERROR! Some of the transformed phenotypes are invalid.")
+            print("\nParameters:")
+            print("----------")
+            print(last_residual_set[0].pretty_print())
+            print("\nTransformed phenotypes:")
+            print("----------------------")
+            print(last_residual_set[1])
+            raise
 
         # Point to nonlinear.
         self.parameters = self.Nonlinear.params
@@ -223,6 +244,8 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
         # Else, numpy array or dataframe
         elif type(y) == np.array or type(y) == pd.Series:
             pobs = y
+        else:
+            raise Exception
 
         xadd = self.Additive.predict(X='fit')
         ypred = self.function(xadd, *self.parameters.values(), data=xadd)
@@ -230,28 +253,29 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
         return (pearson(pobs, ypred)**2,
                 self.Linear.score(X=X, y=yrev, sample_weight=sample_weight))
 
-    def contributions(self, X='obs', y='obs', sample_weight=None):
+    def contributions(self):
         """Calculate the contributions from nonlinearity and epistasis to
         the variation in phenotype.
 
-        Returns
-        -------
-        contribs
+        Returns a list of contribution ordered as additive, scale, and
+        epistasis.
         """
         # Calculate various pearson coeffs.
-        add_score = self.Additive.score(X=X, y=y, sample_weight=sample_weight)
-        scores = self.score(X=X, y=y, sample_weight=sample_weight)
+        x0 = self.gpm.phenotypes
+        x1 = self.Additive.predict(X='fit')
 
-        # Calculate the nonlinear contribution
-        nonlinear_contrib = scores[0] - add_score
+        # Scale contribution
+        x2 = self.function(x1, **self.parameters, data=x1)
 
-        # Calculate the contribution from epistasis
-        epistasis_contrib = 1 - scores[0]
+        # Epistasis contribution
+        x3 = self.predict(X='fit')
 
-        # Build output dict.
-        contrib = {'nonlinear': nonlinear_contrib,
-                   'epistasis': epistasis_contrib}
-        return contrib
+        # Calculate contributions
+        additive = pearson(x0, x1)**2
+        scale = pearson(x0, x2)**2
+        epistasis = pearson(x0, x3)**2
+
+        return [additive, scale-additive, epistasis-scale]
 
     @X_predictor
     def hypothesis(self, X='complete', thetas=None):
@@ -385,9 +409,15 @@ class EpistasisPowerTransformLasso(EpistasisPowerTransform):
         super(EpistasisPowerTransformLasso, self).__init__(
             order=order, model_type=model_type, **p0)
 
-        # Set lasso.
+        # Set up additive and high-order linear model
+        self.Additive = EpistasisLasso(
+            alpha=alpha,
+            order=1, model_type=self.model_type)
+
+        # Add lasso model for linear fit.
         self.Linear = EpistasisLasso(
-            order=self.order, model_type=self.model_type, alpha=alpha)
+            alpha=alpha,
+            order=self.order, model_type=self.model_type)
 
     def lnlike_of_data(self, X='obs', y='obs', yerr='obs',
                        sample_weight=None, thetas=None):

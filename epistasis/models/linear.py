@@ -5,12 +5,38 @@ from sklearn.linear_model import Lasso as _Lasso
 from .base import BaseModel as _BaseModel
 from .utils import X_fitter as X_fitter
 from .utils import X_predictor as X_predictor
+from ..stats import pearson
 
 # Suppress an annoying error from scikit-learn
 import warnings
 warnings.filterwarnings(action="ignore", module="scipy",
                         message="^internal gelsd")
 
+
+class Additive(_BaseModel):
+    """Object that behaves as additive version of an epistasis linear model.
+    """
+    def __init__(self, epistasis_linear_regression):
+        # Inherited model
+        self._ = epistasis_linear_regression
+
+        self.order = 1
+        self.model_type = self._.model_type
+        self.Xbuilt = {}
+
+    @property
+    def gpm(self):
+        return self._.gpm
+
+    @property
+    def epistasis(self):
+        return self._.epistasis.get_orders(0, 1)
+
+    @X_predictor
+    def predict(self, X='obs'):
+        Xadd = X[:, :len(self.epistasis.sites)]
+        y = _np.dot(Xadd, self.epistasis.values)
+        return y
 
 class EpistasisLinearRegression(_LinearRegression, _BaseModel):
     """Ordinary least-squares regression for estimating high-order, epistatic
@@ -43,9 +69,10 @@ class EpistasisLinearRegression(_LinearRegression, _BaseModel):
             model_type=self.model_type,
             **kwargs)
 
+        self.Additive = Additive(self)
+
     @X_fitter
     def fit(self, X='obs', y='obs', sample_weight=None, **kwargs):
-        # If a threshold exists in the data, pre-classify genotypes
         return super(self.__class__, self).fit(X, y,
                                                sample_weight=sample_weight)
 
@@ -57,6 +84,22 @@ class EpistasisLinearRegression(_LinearRegression, _BaseModel):
     def score(self, X='obs', y='obs', sample_weight=None):
         return super(self.__class__, self).score(X, y,
                                                  sample_weight=sample_weight)
+
+    def contributions(self):
+        """Calculate the contributions from additive ceofs and epistasis to
+        the variation in phenotype.
+        """
+        x0 = self.gpm.phenotypes
+
+        # Predict from additive coefficients.
+        x1 = self.Additive.predict(X='fit')
+        x2 = self.predict(X='fit')
+
+        # Calculate contributions
+        additive = pearson(x0, x1)**2
+        epistasis = pearson(x0, x2)**2
+
+        return [additive, epistasis-additive]
 
     @property
     def thetas(self):
@@ -192,6 +235,34 @@ class EpistasisLasso(_Lasso, _BaseModel):
             order=self.order,
             model_type=self.model_type,
             **kwargs)
+
+        self.Additive = Additive(self)
+
+    def contributions(self):
+        """Calculate the contributions from additive ceofs and epistasis to
+        the variation in phenotype.
+        """
+        x0 = self.gpm.phenotypes
+
+        # Predict from additive coefficients.
+        x1 = self.Additive.predict(X='fit')
+        x2 = self.predict(X='fit')
+
+        # Calculate contributions
+        additive = pearson(x0, x1)**2
+        epistasis = pearson(x0, x2)**2
+
+        return [additive, epistasis-additive]
+
+    def compression_ratio(self):
+        """Compute the compression ratio for the Lasso regression
+        """
+        vals = self.epistasis.values
+        zeros = vals[vals == 0]
+
+        numer = len(zeros)
+        denom = len(vals)
+        return numer/denom
 
     @X_fitter
     def fit(self, X='obs', y='obs', sample_weight=None, **kwargs):
