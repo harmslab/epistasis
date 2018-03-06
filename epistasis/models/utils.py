@@ -4,7 +4,7 @@ from functools import wraps
 from epistasis.model_matrix_ext import get_model_matrix
 from epistasis.mapping import EpistasisMap, mutations_to_sites
 
-from epistasis.utils import genotypes_to_binary, mutations_to_sites
+from gpmap.utils import genotypes_to_binary
 
 import warnings
 # Suppresse the future warnings given by X_fitter function.
@@ -85,10 +85,14 @@ def X_predictor(method):
 
             # If X contains genotypes (type==str), build X.
             elif type(X[0]) == str:
-                # Binary representation
-                binary = genotypes_to_binary(self.wildtype,
+                # X must be genotypes
+                genotypes = X
+
+                # Genotypes to binary
+                binary = genotypes_to_binary(
+                    self.gpm.wildtype,
                     genotypes,
-                    self.mutations
+                    self.gpm.mutations
                 )
 
                 # Build list of sites from genotypes.
@@ -105,9 +109,7 @@ def X_predictor(method):
                 prediction = method(self, X=X, *args, **kwargs)
 
             else:
-                raise XMatrixException("X must be one of the following: 'obs',"
-                                       "'complete', numpy.ndarray, or "
-                                       "pandas.DataFrame.")
+                raise XMatrixException("Bad input for X. Check X.")
 
         return prediction
 
@@ -167,7 +169,7 @@ def X_fitter(method):
         # Handle y.
 
         # Check if string.
-        if type(y) is str and y in ["obs"]:
+        if type(y) is str and y in ["obs", "fit"]:
 
             y = self.gpm.phenotypes
 
@@ -175,7 +177,7 @@ def X_fitter(method):
         elif type(y) != np.ndarray and type(y) != pd.Series:
 
             raise FittingError("y is not valid. Must be one of the following: "
-                               "'obs', 'complete', numpy.array, pandas.Series."
+                               "'obs', numpy.array, pandas.Series."
                                " Right now, its {}".format(type(y)))
 
         # Handle sample weights

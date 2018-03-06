@@ -88,7 +88,7 @@ class TestEpistasisNonlinearRegression(object):
         m.add_gpm(gpm)
 
         m.fit(A=1, B=0)
-        y = m.predict()
+        y = m.predict(X='obs')
 
         # Tests
         np.testing.assert_almost_equal(

@@ -72,7 +72,7 @@ class BaseModel(object):
             return -np.inf
         return lnlike
 
-    def add_X(self, X="complete", key=None):
+    def add_X(self, X="obs", key=None):
         """Add X to Xbuilt
 
         Keyword arguments for X:
@@ -109,7 +109,7 @@ class BaseModel(object):
         Xbuilt : numpy.ndarray
             newly built 2d array matrix
         """
-        if type(X) is str and X in ['obs', 'missing', 'complete', 'fit']:
+        if type(X) is str and X in ['obs',  'fit']:
 
             if hasattr(self, "gpm") is False:
                 raise XMatrixException("To build 'obs', 'missing', or"

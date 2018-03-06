@@ -77,7 +77,7 @@ class EpistasisLinearRegression(_LinearRegression, _BaseModel):
                                                sample_weight=sample_weight)
 
     @X_predictor
-    def predict(self, X='complete'):
+    def predict(self, X='obs'):
         return super(self.__class__, self).predict(X)
 
     @X_fitter
@@ -106,7 +106,7 @@ class EpistasisLinearRegression(_LinearRegression, _BaseModel):
         return self.coef_
 
     @X_predictor
-    def hypothesis(self, X='complete', thetas=None):
+    def hypothesis(self, X='obs', thetas=None):
         """Given a set of parameters, compute a set of phenotypes. This is method
         can be used to test a set of parameters (Useful for bayesian sampling).
         """
@@ -272,7 +272,7 @@ class EpistasisLasso(_Lasso, _BaseModel):
         return super(self.__class__, self).fit(X, y, sample_weight)
 
     @X_predictor
-    def predict(self, X='complete'):
+    def predict(self, X='obs'):
         X = _np.asfortranarray(X)
         return super(self.__class__, self).predict(X)
 
@@ -286,7 +286,7 @@ class EpistasisLasso(_Lasso, _BaseModel):
         return self.coef_
 
     @X_predictor
-    def hypothesis(self, X='complete', thetas=None):
+    def hypothesis(self, X='obs', thetas=None):
         """Given a set of parameters, compute a set of phenotypes. This is method
         can be used to test a set of parameters (Useful for bayesian sampling).
         """

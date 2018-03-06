@@ -59,13 +59,12 @@ class TestEpistasisLinearRegression(object):
         model = EpistasisLinearRegression(order=self.order, model_type="local")
         model.add_gpm(gpm)
         model.fit()
-        check1 = model.predict()
+        check1 = model.predict(X='obs')
 
         # Tests
         np.testing.assert_almost_equal(
             sorted(check1), sorted(model.gpm.phenotypes))
         assert "predict" in model.Xbuilt
-        assert "complete" in model.Xbuilt
 
     def test_score(self, gpm):
         model = EpistasisLinearRegression(order=self.order, model_type="local")

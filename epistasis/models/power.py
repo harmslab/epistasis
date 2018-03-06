@@ -221,7 +221,7 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
         self.Linear.epistasis.values = self.Linear.coef_
         return self
 
-    def predict(self, X='complete'):
+    def predict(self, X='obs'):
         """Infer phenotypes from model coefficients and nonlinear function."""
         xadd = self.Additive.predict(X='fit')
         x = self.Linear.predict(X=X)
@@ -241,7 +241,7 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
             linear epistasis model described by epistasis.values.
         """
         # Get pobs for nonlinear fit.
-        if type(y) is str and y in ["obs", "complete"]:
+        if type(y) is str and y in ["obs"]:
             pobs = self.gpm.phenotypes
         # Else, numpy array or dataframe
         elif type(y) == np.array or type(y) == pd.Series:
@@ -280,7 +280,7 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
         return [additive, scale-additive, epistasis-scale]
 
     @X_predictor
-    def hypothesis(self, X='complete', thetas=None):
+    def hypothesis(self, X='obs', thetas=None):
         """Given a set of parameters, compute a set of phenotypes. Does not
         predict. This is method can be used to test a set of parameters
         (Useful for bayesian sampling).
@@ -335,7 +335,7 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
 
         # Handle y.
         # Get pobs for nonlinear fit.
-        if type(y) is str and y in ["obs", "complete"]:
+        if type(y) is str and y in ["obs",]:
             ydata = self.gpm.phenotypes
         # Else, numpy array or dataframe
         elif type(y) == np.array or type(y) == pd.Series:
@@ -347,7 +347,7 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
 
         # Handle yerr.
         # Check if yerr is string
-        if type(yerr) is str and yerr in ["obs", "complete"]:
+        if type(yerr) is str and yerr in ["obs"]:
             yerr = self.gpm.std.upper
 
         # Else, numpsy array or dataframe

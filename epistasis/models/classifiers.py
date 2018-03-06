@@ -99,11 +99,11 @@ class EpistasisBaseClassifier(BaseModel):
         return self
 
     @X_predictor
-    def predict(self, X='complete'):
+    def predict(self, X='obs'):
         return super(self.__class__, self).predict(X)
 
     @X_predictor
-    def predict_transform(self, X='complete', x=None):
+    def predict_transform(self, X='obs', x=None):
         ypred = self.predict(X=X)
 
         if x is None:
@@ -112,11 +112,11 @@ class EpistasisBaseClassifier(BaseModel):
             return x * ypred
 
     @X_predictor
-    def predict_log_proba(self, X='complete'):
+    def predict_log_proba(self, X='obs'):
         return super(self.__class__, self).predict_log_proba(X)
 
     @X_predictor
-    def predict_proba(self, X='complete'):
+    def predict_proba(self, X='obs'):
         return super(self.__class__, self).predict_proba(X)
 
     @X_fitter

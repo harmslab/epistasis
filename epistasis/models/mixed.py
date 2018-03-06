@@ -175,7 +175,7 @@ class EpistasisMixedRegression(BaseModel, BaseEstimator):
         plt.show()
         return fig, ax
 
-    def predict(self, X='complete'):
+    def predict(self, X='obs'):
         """Predict phenotypes given a model matrix. Constructs the predictions
         in two steps. 1. Use X to predict quantitative phenotypes. 2. Predict
         phenotypes classes using the Classifier. Xfit for the classifier is

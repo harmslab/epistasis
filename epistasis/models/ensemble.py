@@ -224,7 +224,7 @@ class EpistasisEnsembleRegression(BaseModel):
         return self
 
     @X_predictor
-    def predict(self, X='complete'):
+    def predict(self, X='obs'):
         """Predict phenotypes using fitted model.
         """
         return self.functional_form(list(self.parameters.values()), X=X)

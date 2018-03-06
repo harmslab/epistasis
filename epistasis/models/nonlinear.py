@@ -337,7 +337,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator,
             order=self.Linear.order,
             model_type=self.Linear.model_type
         )
-        
+
         # Construct a linear epistasis model.
         if self.order > 1:
             ylin = self.reverse(y, *self.parameters.values())
@@ -359,7 +359,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator,
         plt.show()
         return fig, ax
 
-    def predict(self, X='complete'):
+    def predict(self, X='obs'):
         """Infer phenotypes from model coefficients and nonlinear function."""
         x = self.Linear.predict(X=X)
         y = self.function(x, *self.parameters.values())
@@ -415,7 +415,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator,
         return [additive, scale-additive, epistasis-scale]
 
     @X_predictor
-    def hypothesis(self, X='complete', thetas=None):
+    def hypothesis(self, X='obs', thetas=None):
         """Given a set of parameters, compute a set of phenotypes. Does not
         predict. This is method can be used to test a set of parameters
         (Useful for bayesian sampling).
@@ -467,7 +467,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator,
 
         # Handle y.
         # Get pobs for nonlinear fit.
-        if type(y) is str and y in ["obs", "complete"]:
+        if type(y) is str and y in ["obs"]:
             ydata = self.gpm.phenotypes
         # Else, numpy array or dataframe
         elif type(y) == np.array or type(y) == pd.Series:
@@ -479,7 +479,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator,
 
         # Handle yerr.
         # Check if yerr is string
-        if type(yerr) is str and yerr in ["obs", "complete"]:
+        if type(yerr) is str and yerr in ["obs"]:
             yerr = self.gpm.std.upper
 
         # Else, numpsy array or dataframe
@@ -596,7 +596,7 @@ class EpistasisNonlinearLasso(EpistasisNonlinearRegression):
 
         # Handle y.
         # Get pobs for nonlinear fit.
-        if type(y) is str and y in ["obs", "complete"]:
+        if type(y) is str and y in ["obs"]:
             ydata = self.gpm.phenotypes
         # Else, numpy array or dataframe
         elif type(y) == np.array or type(y) == pd.Series:

@@ -51,10 +51,9 @@ class TestEpistasisLogisticRegression(object):
                                             model_type="local")
         model.add_gpm(gpm)
         model.fit()
-        ypred = model.predict()
+        ypred = model.predict(X='obs')
 
         assert "predict" in model.Xbuilt
-        assert "complete" in model.Xbuilt
         assert len(ypred) == model.gpm.n
 
     def test_predict_proba(self, gpm):
