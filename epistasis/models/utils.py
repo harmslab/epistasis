@@ -4,6 +4,8 @@ from functools import wraps
 from epistasis.model_matrix_ext import get_model_matrix
 from epistasis.mapping import EpistasisMap, mutations_to_sites
 
+from epistasis.utils import genotypes_to_binary, mutations_to_sites
+
 import warnings
 # Suppresse the future warnings given by X_fitter function.
 # warnings.simplefilter(action='ignore', category=FutureWarning)
@@ -43,17 +45,8 @@ def X_predictor(method):
         Uses `gpm.binary` to construct X. If genotypes
         are missing they will not be included in fit. At the end of
         fitting, an epistasis map attribute is attached to the model class.
-    - 'missing' :
-        Uses `gpm.missing_binary` to construct X. All
-        genotypes missing from the data are included. Warning, will break
-        in most fitting methods. At the end of fitting, an epistasis map
-        attribute
-        is attached to the model class.
-    - 'complete' :
-        Uses `gpm.complete_binary` to construct X. All genotypes missing
-        from the data are included. Warning, will break in most fitting
-        methods. At the end of fitting, an epistasis map attribute is
-        attached to the model class.
+    - 'fit':
+        Predict using matrix from last fit call.
     - numpy.ndarray :
         2d array. Columns are epistatic coefficients, rows
         are genotypes.
@@ -63,7 +56,7 @@ def X_predictor(method):
 
     """
     @wraps(method)
-    def inner(self, X='complete', *args, **kwargs):
+    def inner(self, X='obs', *args, **kwargs):
 
         # Handle X
         try:
@@ -74,7 +67,7 @@ def X_predictor(method):
 
         except (KeyError, TypeError):
 
-            if type(X) is str and X in ['obs', 'missing', 'complete', 'fit']:
+            if type(X) is str and X in ['obs', 'fit']:
 
                 if hasattr(self, "gpm") is False:
                     raise XMatrixException("To build 'obs' or 'complete' X "
@@ -89,6 +82,21 @@ def X_predictor(method):
                 self.Xbuilt["predict"] = x
                 # Run fit.
                 prediction = method(self, X=x, *args, **kwargs)
+
+            # If X contains genotypes (type==str), build X.
+            elif type(X[0]) == str:
+                # Binary representation
+                binary = genotypes_to_binary(self.wildtype,
+                    genotypes,
+                    self.mutations
+                )
+
+                # Build list of sites from genotypes.
+                site = mutations_to_sites(order, mutations)
+
+                # X matrix
+                X = get_model_matrix(binary, sites, model_type=model_type)
+                prediction = method(self, X=X, *args, **kwargs)
 
             elif type(X) == np.ndarray or type(X) == pd.DataFrame:
 
@@ -117,11 +125,6 @@ def X_fitter(method):
         Uses `gpm.binary` to construct X. If genotypes are
         missing they will not be included in fit. At the end of fitting, an
         epistasis map attribute is attached to the model class.
-    - 'complete' :
-        Uses `gpm.complete_binary` to construct X.
-        All genotypes missing from the data are included. Warning, will break
-        in most fitting methods. At the end of fitting, an epistasis map
-        attribute is attached to the model class.
     - numpy.ndarray :
         2d array. Columns are epistatic coefficients, rows
         are genotypes.
@@ -135,10 +138,6 @@ def X_fitter(method):
     - 'obs' :
         Uses `gpm.binary` to construct y. If phenotypes
         are missing they will not be included in fit.
-    - 'complete' :
-        Uses `gpm.complete_binary` to construct X.
-        All genotypes missing from the data are included. Warning, will break
-        in most fitting methods.
     - 'fit' :
         a previously defined array/dataframe matrix. Prevents copying
         for efficiency.
@@ -168,7 +167,7 @@ def X_fitter(method):
         # Handle y.
 
         # Check if string.
-        if type(y) is str and y in ["obs", "complete"]:
+        if type(y) is str and y in ["obs"]:
 
             y = self.gpm.phenotypes
 

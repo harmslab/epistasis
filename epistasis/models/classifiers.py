@@ -69,6 +69,25 @@ class EpistasisBaseClassifier(BaseModel):
         self = self._fit_(X=X, y=y)
         return self
 
+    def fit_transform(self, X='obs', y='obs', **kwargs):
+        """Fit and transform data for an Epistasis Pipeline.
+
+        Returns
+        -------
+        gpm : GenotypePhenotypeMap
+            data with phenotypes transformed according to model.
+        """
+        self.fit(X=X, y=y, **kwargs)
+        ypred = self.predict(X='fit')
+        yprob = self.predict_proba(X='fit')
+
+        # Transform map.
+        gpm = GenotypePhenotypeMap.read_dataframe(
+            dataframe=self.gpm.data[ypred==1],
+            wildtype=self.gpm.wildtype
+        )
+        return gpm
+
     @epistasis_fitter
     @X_fitter
     def _fit_(self, X='obs', y='obs', **kwargs):
@@ -82,6 +101,15 @@ class EpistasisBaseClassifier(BaseModel):
     @X_predictor
     def predict(self, X='complete'):
         return super(self.__class__, self).predict(X)
+
+    @X_predictor
+    def predict_transform(self, X='complete', x=None):
+        ypred = self.predict(X=X)
+
+        if x is None:
+            return ypred
+        else:
+            return x * ypred
 
     @X_predictor
     def predict_log_proba(self, X='complete'):

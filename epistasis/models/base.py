@@ -28,7 +28,13 @@ class BaseModel(object):
     def fit(self, *args, **kwargs):
         raise Exception("Must be defined in a subclass.")
 
+    def fit_transform(self, *args, **kwargs):
+        raise Exception("Must be defined in a subclass.")
+
     def predict(self, *args, **kwargs):
+        raise Exception("Must be defined in a subclass.")
+
+    def predict_transform(self, *args, **kwargs):
         raise Exception("Must be defined in a subclass.")
 
     def hypothesis(self, *args, **kwargs):
