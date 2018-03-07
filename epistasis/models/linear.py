@@ -287,7 +287,9 @@ class EpistasisLasso(_Lasso, _BaseModel):
     def num_of_params(self):
         """Return number of parameters in model."""
         n = 0
-        n += self.epistasis.n
+        vals = self.epistasis.values
+        vals = vals[vals > 0]
+        n += len(vals)
         return n
 
     @epistasis_fitter
