@@ -82,19 +82,6 @@ class BaseModel(object):
             are missing they will not be included in fit. At the end of
             fitting, an epistasis map attribute is attached to the model
             class.
-        - 'missing' :
-            Uses ``gpm.binary`` to construct X.
-            All genotypes missing from the data are included. Warning,
-            will break in most fitting methods. At the end of fitting,
-            an epistasis map attribute is attached to the model class.
-        - 'complete' :
-            Uses ``gpm.binary`` to construct X.
-            All genotypes missing from the data are included. Warning, will
-            break in most fitting methods. At the end of fitting, an
-            epistasis map attribute is attached to the model class.
-        - 'fit' :
-            a previously defined array/dataframe matrix. Prevents
-            copying for efficiency.
 
 
         Parameters
@@ -109,7 +96,7 @@ class BaseModel(object):
         Xbuilt : numpy.ndarray
             newly built 2d array matrix
         """
-        if type(X) is str and X in ['obs',  'fit']:
+        if isinstance(X, str) and X == 'obs':
 
             if hasattr(self, "gpm") is False:
                 raise XMatrixException("To build 'obs', 'missing', or"
@@ -120,12 +107,7 @@ class BaseModel(object):
             columns = self.Xcolumns
 
             # Use desired set of genotypes for rows in X matrix.
-            if X == "obs":
-                index = self.gpm.binary
-            elif X == "missing":
-                index = self.gpm.missing_binary
-            else:
-                index = self.gpm.complete_binary
+            index = self.gpm.binary
 
             # Build numpy array
             x = get_model_matrix(index, columns, model_type=self.model_type)

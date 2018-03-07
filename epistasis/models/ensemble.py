@@ -223,11 +223,20 @@ class EpistasisEnsembleRegression(BaseModel):
 
         return self
 
+    def fit_transform(self, X='obs', y='obs', **kwargs):
+        """Same as calling fit in ensemble model.
+        """
+        self.fit(X=X, y=y, **kwargs)
+
     @X_predictor
     def predict(self, X='obs'):
         """Predict phenotypes using fitted model.
         """
         return self.functional_form(list(self.parameters.values()), X=X)
+
+    def predict_transform(self, X='obs', y='obs'):
+        """Same as calling predict."""
+        return self.predict(X=X)
 
     @X_fitter
     def score(self, X='obs', y='obs', **kwargs):

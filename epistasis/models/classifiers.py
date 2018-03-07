@@ -18,6 +18,8 @@ from .utils import (sklearn_to_epistasis,
 
 from .linear import EpistasisLinearRegression
 
+from gpmap import GenotypePhenotypeMap
+
 # Suppress Deprecation warning
 import warnings
 warnings.filterwarnings(action="ignore", module="sklearn",
@@ -84,14 +86,15 @@ class EpistasisBaseClassifier(BaseModel):
         # Transform map.
         gpm = GenotypePhenotypeMap.read_dataframe(
             dataframe=self.gpm.data[ypred==1],
-            wildtype=self.gpm.wildtype
+            wildtype=self.gpm.wildtype,
+            mutations=self.gpm.mutations
         )
         return gpm
 
     @epistasis_fitter
     @X_fitter
     def _fit_(self, X='obs', y='obs', **kwargs):
-        """"""
+        """Fit classifier."""
         # Fit the classifier
         yclass = binarize(y.reshape(1, -1), self.threshold)[0]
         self.classes = yclass
@@ -100,16 +103,19 @@ class EpistasisBaseClassifier(BaseModel):
 
     @X_predictor
     def predict(self, X='obs'):
+        """Predict classes."""
         return super(self.__class__, self).predict(X)
 
-    @X_predictor
-    def predict_transform(self, X='obs', x=None):
-        ypred = self.predict(X=X)
+    def predict_transform(self, X='obs', y='obs'):
+        """Predict classes and apply to phenotypes. Used mostly in Pipeline
+        object.
+        """
+        x = self.predict(X=X)
 
-        if x is None:
-            return ypred
+        if y is 'obs':
+            return x * self.gpm.phenotypes
         else:
-            return x * ypred
+            return x * y
 
     @X_predictor
     def predict_log_proba(self, X='obs'):
@@ -181,10 +187,6 @@ class EpistasisBaseClassifier(BaseModel):
                                    mutations=data['mutations'],
                                    n_replicates=data['n_replicates'])
 
-        linear_epistasis = EpistasisMap(sites=data['linear']['sites'],
-                                        values=data['linear']['values'],
-                                        model_type=model_type['model_type'])
-
         additive_epistasis = EpistasisMap(sites=data['additive']['sites'],
                                           values=data['additive']['values'],
                                           model_type=model_type['model_type'])
@@ -196,7 +198,6 @@ class EpistasisBaseClassifier(BaseModel):
 
         self.add_gpm(gpm)
         self.Additive.epistasis = epistasis
-        self.Linear.epistasis = epistasis
         return self
 
     def to_excel(self, filename):
@@ -214,7 +215,6 @@ class EpistasisBaseClassifier(BaseModel):
 
         # Update with epistasis model data
         data.update({'additive': self.Additive.epistasis.to_dict()})
-        data.update({'linear': self.Linear.epistasis.to_dict()})
 
         # Update with model data
         data.update(model_type=self.model_type,

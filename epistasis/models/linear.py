@@ -6,6 +6,8 @@ from .base import BaseModel as _BaseModel
 from .utils import X_fitter, X_predictor, epistasis_fitter
 from ..stats import pearson
 
+from gpmap import GenotypePhenotypeMap
+
 # Suppress an annoying error from scikit-learn
 import warnings
 warnings.filterwarnings(action="ignore", module="scipy",
@@ -76,9 +78,19 @@ class EpistasisLinearRegression(_LinearRegression, _BaseModel):
         return super(self.__class__, self).fit(X, y,
                                                sample_weight=sample_weight)
 
+    def fit_transform(self, X='obs', y='obs', **kwargs):
+        """Same as calling fit in a  linear model.
+        """
+        return self.fit(X=X, y=y, **kwargs)
+
     @X_predictor
     def predict(self, X='obs'):
         return super(self.__class__, self).predict(X)
+
+
+    def predict_transform(self, X='obs', y='obs'):
+        """Same as calling predict in linear model."""
+        return self.predict(X=X)
 
     @X_fitter
     def score(self, X='obs', y='obs', sample_weight=None):
@@ -267,14 +279,25 @@ class EpistasisLasso(_Lasso, _BaseModel):
     @epistasis_fitter
     @X_fitter
     def fit(self, X='obs', y='obs', sample_weight=None, **kwargs):
+        """Fit a linear (high-order) epistasis model to data."""
         # If a threshold exists in the data, pre-classify genotypes
         X = _np.asfortranarray(X)
         return super(self.__class__, self).fit(X, y, sample_weight)
 
+    def fit_transform(self, X='obs', y='obs', **kwargs):
+        """Same as calling fit in linear model.
+        """
+        return self.fit(X=X, y=y, **kwargs)
+
     @X_predictor
     def predict(self, X='obs'):
+        """Predict phenotypes using the fitted model."""
         X = _np.asfortranarray(X)
         return super(self.__class__, self).predict(X)
+
+    def predict_transform(self, X='obs', y='obs'):
+        """Predict X from model. Used mostly in Pipeline object."""
+        return self.predict(X=X)
 
     @X_fitter
     def score(self, X='obs', y='obs', sample_weight=None):
