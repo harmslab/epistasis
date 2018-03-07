@@ -113,6 +113,13 @@ class EpistasisEnsembleRegression(BaseEstimator, BaseModel):
         return self
 
     @property
+    def num_of_params(self):
+        """Return number of parameters in model."""
+        n = 0
+        n += len(self.parameters)
+        return n
+
+    @property
     def parameters(self):
         """All parameters in the value."""
         parameters = lmfit.Parameters()

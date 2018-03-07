@@ -72,6 +72,13 @@ class EpistasisLinearRegression(_LinearRegression, _BaseModel):
 
         self.Additive = Additive(self)
 
+    @property
+    def num_of_params(self):
+        """Return number of parameters in model."""
+        n = 0
+        n += self.epistasis.n
+        return n
+
     @epistasis_fitter
     @X_fitter
     def fit(self, X='obs', y='obs', sample_weight=None, **kwargs):
@@ -275,6 +282,13 @@ class EpistasisLasso(_Lasso, _BaseModel):
         numer = len(zeros)
         denom = len(vals)
         return numer/denom
+
+    @property
+    def num_of_params(self):
+        """Return number of parameters in model."""
+        n = 0
+        n += self.epistasis.n
+        return n
 
     @epistasis_fitter
     @X_fitter

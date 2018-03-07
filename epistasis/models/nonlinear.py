@@ -157,6 +157,14 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator,
         return np.concatenate((list(self.parameters.values()),
                                self.Additive.coef_))
 
+    @property
+    def num_of_params(self):
+        """Return number of parameters in model."""
+        n = 0
+        n += self.Additive.epistasis.n
+        n += len(self.parameters)
+        return n
+
     def fit(self, X='obs', y='obs',
             sample_weight=None,
             use_widgets=False,

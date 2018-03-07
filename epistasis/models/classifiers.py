@@ -91,6 +91,13 @@ class EpistasisBaseClassifier(BaseModel):
         )
         return gpm
 
+    @property
+    def num_of_params(self):
+        """Return number of parameters in model."""
+        n = 0
+        n += self.Additive.epistasis.n
+        return n
+
     @epistasis_fitter
     @X_fitter
     def _fit_(self, X='obs', y='obs', **kwargs):
@@ -113,9 +120,10 @@ class EpistasisBaseClassifier(BaseModel):
         x = self.predict(X=X)
 
         if y is 'obs':
-            return x * self.gpm.phenotypes
-        else:
-            return x * y
+            y = self.gpm.phenotypes
+
+        y[x == 0] = 0
+        return y
 
     @X_predictor
     def predict_log_proba(self, X='obs'):

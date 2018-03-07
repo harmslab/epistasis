@@ -1,5 +1,6 @@
 """Epistasis Pipeline module."""
 
+import numpy as np
 from .stats import pearson
 
 class EpistasisPipeline(list):
@@ -13,6 +14,14 @@ class EpistasisPipeline(list):
     one at a time. This method returns as transformed GenotypePhenotypeMap
     object and adds it to the next Epistasis model in the list.
     """
+    @property
+    def num_of_params(self):
+        """"""
+        n = 0
+        for m in self:
+            n += m.num_of_params
+        return n
+
     def add_gpm(self, gpm):
         self._gpm = gpm
         self[0].add_gpm(gpm)
@@ -73,3 +82,64 @@ class EpistasisPipeline(list):
             y = self.gpm.phenotypes
         ypred = self.predict(X=X)
         return pearson(y, ypred)**2
+
+    @property
+    def thetas(self):
+        """"""
+        pass
+
+    def lnlike_of_data(
+            self,
+            X="obs",
+            y="obs",
+            yerr="obs",
+            thetas=None
+        ):
+        """"""
+        if thetas is None:
+            ymodel = self.predict(X=X)
+
+        if isinstance(y, str) and y == 'obs':
+            y = self.gpm.phenotypes
+
+            # Have to assume identical error, so we average errors.
+            # May need to return to this,...
+            yerr = np.mean(self.gpm.stdeviations)
+
+        L = - 0.5 * np.log(2 * np.pi * yerr**2) - (0.5 * ((y - ymodel)**2 / yerr**2))
+        return L
+
+
+    def lnlikelihood(
+            self,
+            X="obs",
+            y="obs",
+            yerr="obs",
+            thetas=None
+        ):
+        """Calculate the log likelihood of y, given a set of model coefficients.
+
+        Parameters
+        ----------
+        X : 2d array
+            model matrix
+        y : array
+            data to calculate the likelihood
+        yerr: array
+            uncertainty in data
+        thetas : array
+            array of model coefficients
+
+        Returns
+        -------
+        lnlike : float
+            log-likelihood of data given a model.
+        """
+
+        lnlike = np.sum(self.lnlike_of_data(X=X, y=y, yerr=yerr,
+                                            thetas=thetas))
+
+        # If log-likelihood is infinite, set to negative infinity.
+        if np.isinf(lnlike) or np.isnan(lnlike):
+            return -np.inf
+        return lnlike

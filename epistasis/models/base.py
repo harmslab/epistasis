@@ -25,6 +25,9 @@ class BaseModel(object):
         self.order=order
         self.Xbuilt = {}
 
+    def num_of_params(self):
+        raise Exception("Must be defined in a subclass.")
+
     def fit(self, *args, **kwargs):
         raise Exception("Must be defined in a subclass.")
 
