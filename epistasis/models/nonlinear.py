@@ -28,15 +28,6 @@ from .linear import (EpistasisLinearRegression, EpistasisLasso)
 from ..stats import pearson
 
 
-def grid_search(model, **parameters):
-    """"""
-
-    p_lists = [np.linspace() for p in parameters]
-
-    # Enumerate combinations of parameters
-    np.array(np.meshgrid([1, 2, 3], [4, 5], [6, 7])).T.reshape(-1,3)
-
-
 class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator,
                                    BaseModel):
     """Use nonlinear least-squares regression to estimate epistatic coefficients

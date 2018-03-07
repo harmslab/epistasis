@@ -2,29 +2,20 @@
 
 from .stats import pearson
 
-class EpistasisPipeline(object):
+class EpistasisPipeline(list):
     """Construct a pipeline of epistasis models to run in series.
+
+    This object is a subclass of a Python list. This means, all objects are
+    changed in-place. This also means, you can append, prepend, remove,
+    and rearrage Pipelines as you would a list.
 
     The models fit in order. A `fit_transform` method is called on each model
     one at a time. This method returns as transformed GenotypePhenotypeMap
     object and adds it to the next Epistasis model in the list.
     """
-    def __init__(self, *models):
-        self.models = models
-
-    def __str__(self):
-        s = "EpistasisPipeline(\n"
-        for model in self.models:
-            s += "    {},\n".format(model.__repr__())
-        s += ")"
-        return s
-
-    def __repr__(self):
-        return self.__str__()
-
     def add_gpm(self, gpm):
         self._gpm = gpm
-        self.models[0].add_gpm(gpm)
+        self[0].add_gpm(gpm)
         return self
 
     @property
@@ -38,10 +29,10 @@ class EpistasisPipeline(object):
     def fit(self, X='obs', y='obs'):
         """Fit pipeline."""
         # Fit the first model
-        model = self.models[0]
+        model = self[0]
         gpm = model.fit_transform(X=X, y=y)
 
-        for model in self.models[1:]:
+        for model in self[1:]:
             # Get transformed genotype from modeli.
             model.add_gpm(gpm)
 
@@ -62,10 +53,10 @@ class EpistasisPipeline(object):
         if isinstance(X, str):
             X = self.gpm.genotypes
 
-        model = self.models[-1]
+        model = self[-1]
         ypred = model.predict_transform(X=X)
 
-        for model in self.models[-2::-1]:
+        for model in self[-2::-1]:
             ypred = model.predict_transform(X=X, y=ypred)
 
         return ypred

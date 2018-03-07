@@ -47,7 +47,7 @@ class State(EpistasisMap):
 
         # fill parameters .
         for key in self.keys:
-            self.parameters.add(key, max=50, min=-50, value=0)
+            self.parameters.add(key, value=0)
 
     @property
     def keys(self):
@@ -71,8 +71,6 @@ class EpistasisEnsembleRegression(BaseEstimator, BaseModel):
 
     parameters : lmfit.Parameters
         Parameters resulting from fit.
-
-
     """
 
     _ALPHABET = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J']
