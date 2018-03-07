@@ -87,7 +87,7 @@ def X_predictor(method):
                 prediction = method(self, X=x, *args, **kwargs)
 
             # else if a numpy array, prepare it.
-            elif isinstance(X, np.ndarray):
+            elif isinstance(X, np.ndarray) or isinstance(X, list):
 
                 # If first element in X is string, it must be a genotype.
                 if isinstance(X[0], str):

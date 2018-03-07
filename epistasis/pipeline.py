@@ -39,7 +39,7 @@ class EpistasisPipeline(object):
 
     def predict(self, X='obs'):
         """Predict using pipeline."""
-        if X == 'obs':
+        if isinstance(X, str):
             X = self.gpm.genotypes
 
         model = self.models[-1]
@@ -60,6 +60,5 @@ class EpistasisPipeline(object):
         """
         if isinstance(y, str) and y == 'obs':
             y = self.gpm.phenotypes
-            
         ypred = self.predict(X=X)
         return pearson(y, ypred)**2
