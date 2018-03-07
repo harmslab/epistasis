@@ -19,6 +19,9 @@ For more information about the epistasis models in this library, see our Genetic
 Simple Tutorial
 --------------
 
+Basic epistasis model
+=====================
+
 Follow these five steps for all epistasis models in this library:
 
 1. **Import a model.** There many models available in the ``epistasis.models`` module. See the full list in the next section.
@@ -66,6 +69,42 @@ Follow these five steps for all epistasis models in this library:
 
 .. image:: ../img/basic-example.png
 
+Epistasis Pipeline
+==================
+
+The ``EpistasisPipeline`` object allows you to link a few different epistasis models in series.
+Simply define each model's parameters and pass them to the pipeline. When ``fit`` is called,
+this object runs as cascade of fits and transforms.
+
+.. code-block:: python
+
+  from epistasis import EpistasisPipeline
+  from epistasis.models import (EpistasisLogisticRegression,
+                                EpistasisPowerTransform,
+                                EpistasisLinearRegression)
+
+  # Define genotype-phenotype map.
+  gpm = GenotypePhenotyeMap(
+    wildtype='AA'
+    genotypes=['AA', 'AV','VV'],  # Note that we're missing the 'VA' genotype
+    phenotypes=[0, .5, 1]
+  )
+
+  # Construct pipeline.
+  model = EpistasisPipeline(
+    EpistasisLogisticRegression(threshold=.2),
+    EpistasisPowerTransform(lmbda=1, A=0, B=0),
+    EpistasisLinearRegression(order=2)
+  )
+
+  # Fit pipeline.
+  model.fit()
+
+  # Predict missing phenotype of missing genotype.
+  model.predict(['VA'])
+
+
+
 
 Overview of available models
 ----------------------------
@@ -77,7 +116,6 @@ Overview of available models
 * EpistasisPowerTransform_: use a power transform function to fit a nonlinear genotype-phenotype map and estimate epistasis.
 * EpistasisPowerLasso_: use a power transform function to fit a nonlinear genotype-phenotype map and estimate *sparse* epistasis.
 * EpistasisLogisticRegression_: use logistic regression to classify phenotypes as dead/alive.
-* EpistasisMixedRegression_: classify a genotype-phenotype map first, then estimate epistatic coefficients in "alive" phenotypes.
 * EpistasisEnsembleRegression_: use a statistical ensemble of "states" to decompose variation in a genotype-phenotype map.
 
 Installation and dependencies

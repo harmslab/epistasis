@@ -237,43 +237,6 @@ A high-order epistasis regression that classifies genotypes as viable/nonviable 
   model.fit()
 
 
-EpistasisMixedRegression
-------------------------
-
-A high-order epistasis regression that first classifies genotypes as viable/nonviable (given some threshold), then
-fits an epistasis model to estimate epistatic coefficients.
-
-
-.. code-block:: python
-
-
-  from gpmap import GenotypePhenotypeMap
-
-  from epistasis.models import (EpistasisMixedRegression,
-                              EpistasisPowerTransform,
-                              EpistasisLogisticRegression)
-
-  wildtype = 'AA'
-  genotypes = ['AA', 'AT', 'TA', 'TT']
-  phenotypes = [0.1, 0.2, 0.7, 1.2]
-
-  # Read genotype-phenotype map.
-  gpm = GenotypePhenotypeMap(wildtype, genotypes, phenotypes)
-
-  # Construct a classifier and an epistasis model
-  classifier = EpistasisLogisticRegression(order=1, threshold=.2, model_type='global')
-  model = EpistasisPowerTransform(order=2, model_type='global', alpha=.1, lmbda=1, A=100,B=-1)
-
-  # Initialize a Mixed regression that links the classifier and epistasis model.
-  model = EpistasisMixedRegression(classifier, model)
-
-  # Add the genotype-phenotype map to the mixed model
-  model.add_gpm(gpm)
-
-  # Fit the model.
-  model.fit()
-
-
 EpistasisEnsembleRegression
 ---------------------------
 A regression object that models phenotypes as a statistical (Boltmann-weighted)

@@ -24,10 +24,8 @@ This speeds up fitting algorithms that may need resample fitting many times.
 These keys include:
 
   1. ``"obs"`` : model matrix for the observed genotypes in an attached genotype-phenotype map. These genotypes are returned by the ``genotypes`` attribute in a GenotypePhenotypeMap object.
-  2. ``"missing"`` : model matrix for missing genotypes in the genotype-phenotype map. These genotypes are returned by the ``missing_genotypes`` attribute in a GenotypePhenotypeMap object.
-  3. ``"complete"`` : model matrix for complete genotypes in the genotype-phenotype map.These genotypes are returned by the ``complete_genotypes`` attribute in a GenotypePhenotypeMap object.
-  4. ``"fit"`` : model matrix created/used by the last ``fit`` call.
-  5. ``"predict"`` : model matrix created/used by the last ``predict`` call.
+  2. ``"fit"`` : model matrix created/used by the last ``fit`` call.
+  3. ``"predict"`` : model matrix created/used by the last ``predict`` call.
 
 .. References in this document
 
@@ -53,4 +51,3 @@ The extra attributes below are attached to **nonlinear** epistasis models.
 
   * **Additive** : a first-order EpistasisLinearRegression used to approximate the additive effects of mutations
   * **Nonlinear** : a ``lmfit.MinizerResults`` object returned by the ``lmfit.minimize`` function for estimating the nonlinear scale in a genotype-phenotype map.
-  * **Linear** : a high-order EpistasisLinearRegression used to approximate the epistatic interactions in a nonlinear genotype-phenotype map.
