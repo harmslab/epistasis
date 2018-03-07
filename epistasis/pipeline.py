@@ -12,9 +12,20 @@ class EpistasisPipeline(object):
     def __init__(self, *models):
         self.models = models
 
+    def __str__(self):
+        s = "EpistasisPipeline(\n"
+        for model in self.models:
+            s += "    {},\n".format(model.__repr__())
+        s += ")"
+        return s
+
+    def __repr__(self):
+        return self.__str__()
+
     def add_gpm(self, gpm):
         self._gpm = gpm
         self.models[0].add_gpm(gpm)
+        return self
 
     @property
     def gpm(self):
@@ -35,7 +46,16 @@ class EpistasisPipeline(object):
             model.add_gpm(gpm)
 
             # Fit model.
-            gpm = model.fit_transform(X=X, y=y)
+            try:
+                gpm = model.fit_transform(X=X, y=y)
+            except Exception as e:
+                print("Failed with {}".format(model))
+                print("Input was :")
+                print("X : {}".format(X),
+                print("y : {}".format(y)))
+                raise e
+
+        return self
 
     def predict(self, X='obs'):
         """Predict using pipeline."""
