@@ -326,7 +326,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator,
         if isinstance(y, str) and y == 'obs':
             y = self.gpm.phenotypes
 
-        linear_phenotypes = self.reverse(y, *self.parameters.values(), self.parameters)
+        linear_phenotypes = self.reverse(y, *self.parameters.values())
 
         # Transform map.
         gpm = GenotypePhenotypeMap.read_dataframe(
