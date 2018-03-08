@@ -264,6 +264,12 @@ def chi_squared(y_obs, y_pred):
     """ Calculate the chi squared between observed and predicted y. """
     return sum((y_obs - y_pred)**2 / y_pred)
 
+def aic(model):
+    """Given a model, calculates an AIC score."""
+    k = model.num_of_params
+    L = model.lnlikelihood()
+    return 2*(k-L)
+
 # -----------------------------------------------------------------------
 # Model error statistics
 # -----------------------------------------------------------------------

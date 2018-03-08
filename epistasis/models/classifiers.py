@@ -91,6 +91,10 @@ class EpistasisBaseClassifier(BaseModel):
         )
         return gpm
 
+    def transform(self, X='obs', y='obs', **kwargs):
+        """"""
+        return self.predict(X=X, y=y)
+
     @property
     def num_of_params(self):
         """Return number of parameters in model."""
