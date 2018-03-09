@@ -19,22 +19,60 @@ The Epistasis package works best in combinations with GPMap, an API for managing
 genotype-phenotype map data. Construct a GenotypePhenotypeMap object and pass it
 directly to an epistasis model.
 
+
 ```python
-# Import gpmap
+# Import a model and the plotting module
 from gpmap import GenotypePhenotypeMap
-
-# Import epistasis model
 from epistasis.models import EpistasisLinearRegression
+from epistasis.pyplot import plot_coefs
 
-# Load genotype-phenotype map data
-gpm = GenotypePhenotypeMap.read_json()
+# Genotype-phenotype map data.
+wildtype = "AAA"
+genotypes = ["ATT", "AAT", "ATA", "TAA", "ATT", "TAT", "TTA", "TTT"]
+phenotypes = [0.1, 0.2, 0.4, 0.3, 0.3, 0.6, 0.8, 1.0]
 
-# Initialize model and add data,
-model = EpistasisLinearRegression(order=3, model_type='global')
+# Create genotype-phenotype map object.
+gpm = GenotypePhenotypeMap(wildtype=wildtype,
+                           genotypes=genotypes,
+                           phenotypes=phenotypes)
+
+# Initialize an epistasis model.
+model = EpistasisLinearRegression(order=3)
+
+# Add the genotype phenotype map.
 model.add_gpm(gpm)
 
-# Fit the model
+# Fit model to given genotype-phenotype map.
 model.fit()
+
+# Plot coefficients (powered by matplotlib).
+coef_sites = model.epistasis.sites
+coef_values = model.epistasis.values
+
+```
+
+Or, fit a chain of global *and* local epistasis models.
+
+```python
+from epistasis import EpistasisPipeline
+from epistasis.models import (EpistasisLinearRegression,
+                              EpistasisPowerTransform)
+
+# Construct a pipeline
+pipeline = EpistasisPipeline([
+    EpistasisPowerTransform(lmbda=1, A=0, B=0),
+    EpistasisLinearRegression(order=3)
+])
+
+# Add the genotype phenotype map to pipeline.
+pipeline.add_gpm(gpm)
+
+# Fit pipeline to given genotype-phenotype map.
+pipeline.fit()
+
+# Plot coefficients (powered by matplotlib).
+coef_sites = pipeline[1].epistasis.sites
+coef_values = pipeline[1].epistasis.values
 ```
 
 More examples can be found in these [binder notebooks](https://mybinder.org/v2/gh/harmslab/epistasis-notebooks/master).
