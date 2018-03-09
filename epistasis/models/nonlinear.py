@@ -350,7 +350,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator,
         if isinstance(y, str) and y == 'obs':
             y = self.gpm.phenotypes
 
-        return self.function(y, **self.parameter.values())
+        return self.function(y, *self.parameters.values())
 
     def score(self, X='obs', y='obs', sample_weight=None):
         """Calculates the squared-pearson coefficient for the nonlinear fit.
