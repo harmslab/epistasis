@@ -237,38 +237,37 @@ A high-order epistasis regression that classifies genotypes as viable/nonviable 
   model.fit()
 
 
-EpistasisMixedRegression
+EpistasisEnsembleRegression
 ---------------------------
+A regression object that models phenotypes as a statistical (Boltmann-weighted)
+average of "states". Mutations are modeled as having different effects in each
+state.
 
-A high-order epistasis regression that first classifies genotypes as viable/nonviable (given some threshold), then
-fits an epistasis model to estimate epistatic coefficients.
+.. math::
 
+    P = \text{ln} ( \sum_{x=\{\text{A,B,...}\}} - \text{exp}(\beta_{0; x} + \beta_{1; x} + ... + \beta_{1,2; x}+ ...) )
 
 .. code-block:: python
 
 
-  from gpmap import GenotypePhenotypeMap
+    from gpmap import GenotypePhenotypeMap
+    from epistasis.models import EpistasisEnsembleRegression
 
-  from epistasis.models import (EpistasisMixedRegression,
-                              EpistasisPowerTransform,
-                              EpistasisLogisticRegression)
+    wildtype = 'AA'
+    genotypes = ['AA', 'AT', 'TA', 'TT']
+    phenotypes = [0.1, 0.2, 0.7, 1.2]
 
-  wildtype = 'AA'
-  genotypes = ['AA', 'AT', 'TA', 'TT']
-  phenotypes = [0.1, 0.2, 0.7, 1.2]
+    # Read genotype-phenotype map.
+    gpm = GenotypePhenotypeMap(wildtype, genotypes, phenotypes)
 
-  # Read genotype-phenotype map.
-  gpm = GenotypePhenotypeMap(wildtype, genotypes, phenotypes)
+    # Initialize the data.
+    model = EpistasisEnsembleRegression(order=1, nstates=1)
 
-  # Construct a classifier and an epistasis model
-  classifier = EpistasisLogisticRegression(order=1, threshold=.2, model_type='global')
-  model = EpistasisPowerTransform(order=2, model_type='global', alpha=.1, lmbda=1, A=100,B=-1)
+    # Add Genotype-phenotype map data.
+    model.add_gpm(gpm)
 
-  # Initialize a Mixed regression that links the classifier and epistasis model.
-  model = EpistasisMixedRegression(classifier, model)
+    # Fit the model.
+    model.fit()
 
-  # Add the genotype-phenotype map to the mixed model
-  model.add_gpm(gpm)
-
-  # Fit the model.
-  model.fit()
+    # Print effects in state A.
+    print(model.state_A.epistasis.values)

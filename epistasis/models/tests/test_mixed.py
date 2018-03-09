@@ -68,7 +68,7 @@ class TestEpistasisMixedRegression(object):
         model = EpistasisMixedRegression(classifier, epi)
         model.add_gpm(gpm)
         model.fit()
-        predicted = model.predict(X="complete")
+        predicted = model.predict(X="obs")
         assert "predict" in model.Model.Xbuilt
         assert len(predicted) == gpm.n
 

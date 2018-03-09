@@ -4,6 +4,8 @@ from functools import wraps
 from epistasis.model_matrix_ext import get_model_matrix
 from epistasis.mapping import EpistasisMap, mutations_to_sites
 
+from gpmap.utils import genotypes_to_binary
+
 import warnings
 # Suppresse the future warnings given by X_fitter function.
 # warnings.simplefilter(action='ignore', category=FutureWarning)
@@ -43,38 +45,32 @@ def X_predictor(method):
         Uses `gpm.binary` to construct X. If genotypes
         are missing they will not be included in fit. At the end of
         fitting, an epistasis map attribute is attached to the model class.
-    - 'missing' :
-        Uses `gpm.missing_binary` to construct X. All
-        genotypes missing from the data are included. Warning, will break
-        in most fitting methods. At the end of fitting, an epistasis map
-        attribute
-        is attached to the model class.
-    - 'complete' :
-        Uses `gpm.complete_binary` to construct X. All genotypes missing
-        from the data are included. Warning, will break in most fitting
-        methods. At the end of fitting, an epistasis map attribute is
-        attached to the model class.
+    - 'fit':
+        Predict using matrix from last fit call.
     - numpy.ndarray :
         2d array. Columns are epistatic coefficients, rows
         are genotypes.
-    - pandas.DataFrame :
-        Dataframe with columns labelled as epistatic
-        coefficients, and rows labelled by genotypes.
-
     """
     @wraps(method)
-    def inner(self, X='complete', *args, **kwargs):
+    def inner(self, X='obs', *args, **kwargs):
 
-        # Handle X
+        # ------- Process the X argument --------
+        # First, check if X is stored in model.
         try:
+            # Try to get X from Xbuilt.
             x = self.Xbuilt[X]
+
+            # If stored, set the predict key to this matrix.
             self.Xbuilt["predict"] = x
+
             # Run fit.
             return method(self, X=x, *args, **kwargs)
 
+        # If X is not in Xbuilt, create X.
         except (KeyError, TypeError):
 
-            if type(X) is str and X in ['obs', 'missing', 'complete', 'fit']:
+            # If X is a string, it better be 'obs'
+            if isinstance(X, str):
 
                 if hasattr(self, "gpm") is False:
                     raise XMatrixException("To build 'obs' or 'complete' X "
@@ -90,16 +86,38 @@ def X_predictor(method):
                 # Run fit.
                 prediction = method(self, X=x, *args, **kwargs)
 
-            elif type(X) == np.ndarray or type(X) == pd.DataFrame:
+            # else if a numpy array, prepare it.
+            elif isinstance(X, np.ndarray) or isinstance(X, list):
 
-                # Store Xmatrix.
-                self.Xbuilt["predict"] = X
+                # If first element in X is string, it must be a genotype.
+                if isinstance(X[0], str):
+                    # X must be genotypes
+                    genotypes = X
+
+                    # Genotypes to binary
+                    binary = genotypes_to_binary(
+                        self.gpm.wildtype,
+                        genotypes,
+                        self.gpm.mutations
+                    )
+
+                    # Build list of sites from genotypes.
+                    sites = mutations_to_sites(self.order, self.gpm.mutations)
+
+                    # X matrix
+                    X = get_model_matrix(binary, sites,
+                        model_type=self.model_type
+                    )
+
+                # Add X to Xbuilt
+                self.Xbuilt['predict'] = X
+
+                # Run prediction method
                 prediction = method(self, X=X, *args, **kwargs)
 
+            # Else, raise exception.
             else:
-                raise XMatrixException("X must be one of the following: 'obs',"
-                                       "'complete', numpy.ndarray, or "
-                                       "pandas.DataFrame.")
+                raise XMatrixException("Bad input for X. Check X.")
 
         return prediction
 
@@ -117,37 +135,21 @@ def X_fitter(method):
         Uses `gpm.binary` to construct X. If genotypes are
         missing they will not be included in fit. At the end of fitting, an
         epistasis map attribute is attached to the model class.
-    - 'complete' :
-        Uses `gpm.complete_binary` to construct X.
-        All genotypes missing from the data are included. Warning, will break
-        in most fitting methods. At the end of fitting, an epistasis map
-        attribute is attached to the model class.
     - numpy.ndarray :
         2d array. Columns are epistatic coefficients, rows
         are genotypes.
-    - pandas.DataFrame :
-        Dataframe with columns labelled as epistatic
-        coefficients, and rows labelled by genotypes.
-
 
     y must be:
 
     - 'obs' :
         Uses `gpm.binary` to construct y. If phenotypes
         are missing they will not be included in fit.
-    - 'complete' :
-        Uses `gpm.complete_binary` to construct X.
-        All genotypes missing from the data are included. Warning, will break
-        in most fitting methods.
     - 'fit' :
         a previously defined array/dataframe matrix. Prevents copying
         for efficiency.
     - numpy.array :
         1 array. List of phenotypes. Must match number of rows
         in X.
-    - pandas.DataFrame :
-        Dataframe with columns labelled as epistatic
-        coefficients, and rows labelled by genotypes.
     """
     @wraps(method)
     def inner(self, X='obs', y='obs', sample_weight=None, *args, **kwargs):
@@ -165,10 +167,10 @@ def X_fitter(method):
             raise FittingError("X dimensions {} and y dimensions {} don't"
                                " match.".format(X.shape[0], y.shape[0]))
 
-        # Handle y.
+        # ------- Process the y argument --------
 
         # Check if string.
-        if type(y) is str and y in ["obs", "complete"]:
+        if type(y) is str and y in ["obs", "fit"]:
 
             y = self.gpm.phenotypes
 
@@ -176,63 +178,103 @@ def X_fitter(method):
         elif type(y) != np.ndarray and type(y) != pd.Series:
 
             raise FittingError("y is not valid. Must be one of the following: "
-                               "'obs', 'complete', numpy.array, pandas.Series."
+                               "'obs', numpy.array, pandas.Series."
                                " Right now, its {}".format(type(y)))
 
         # Handle sample weights
         if sample_weight == 'relative':
             sample_weight = 1 / abs(y**2)
 
-        # Handle X
+        # ------- Process the X argument --------
+        # First, check if X is stored in model.
         try:
+            # Does X exist in Xbuilt?
             x = self.Xbuilt[X]
-            # Run fit.
+
+            # Yes? then run fit.
             model = method(
                 self, X=x, y=y, sample_weight=sample_weight, *args, **kwargs)
+
+            # Store X at fit key.
             self.Xbuilt["fit"] = x
 
+        # If not in Xbuilt, process X.
         except (KeyError, TypeError):
 
-            if type(X) is str and X in ['obs', 'complete', 'fit']:
+            if hasattr(self, "gpm") is False:
+                raise XMatrixException(
+                    "To build 'obs' or 'complete' X "
+                    "matrix, a GenotypePhenotypeMap "
+                    "must be attached.")
 
-                if hasattr(self, "gpm") is False:
-                    raise XMatrixException("To build 'obs' or 'complete' X "
-                                           "matrix, a GenotypePhenotypeMap "
-                                           "must be attached.")
-
-                # Enforce that a new EpistasisMap is built.
-                self.add_epistasis()
-
-                # Construct an X for this model.
-                x = self.add_X(X=X)
-
-                # Store Xmatrix.
-                self.Xbuilt[X] = x
-
-                # Run fit.
-                model = method(self, X=x, y=y,
-                               sample_weight=sample_weight,
-                               *args, **kwargs)
+            # Turn X into matrix.
+            if isinstance(X, str):
+                # Get key
+                x = X
+                X = self.add_X(X=x)
 
                 # Store Xmatrix.
-                self.Xbuilt["fit"] = x
-                self.epistasis.values = np.reshape(self.coef_, (-1,))
+                self.Xbuilt[x] = X
 
-            elif type(X) == np.ndarray or type(X) == pd.DataFrame:
-                # Call method with X and y.
-                model = method(self, X=X, y=y,
-                               sample_weight=sample_weight,
-                               *args, **kwargs)
+            elif isinstance(X, np.ndarray):
 
-                # Store Xmatrix.
-                self.Xbuilt["fit"] = X
+                # If first argument is a string, must be a genotype.
+                if isinstance(X[0], str):
+                    # X must be genotypes
+                    genotypes = X
+
+                    # Genotypes to binary
+                    binary = genotypes_to_binary(
+                        self.gpm.wildtype,
+                        genotypes,
+                        self.gpm.mutations
+                    )
+
+                    # Build list of sites from genotypes.
+                    sites = mutations_to_sites(self.order, self.gpm.mutations)
+
+                    # X matrix
+                    X = get_model_matrix(binary, sites, model_type=self.model_type)
 
             else:
-                raise XMatrixException("X must be one of the following: "
-                                       "'obs', 'missing', 'complete', "
-                                       "numpy.ndarray, or pandas.DataFrame.")
+                raise XMatrixException('X is an invalid type. Check your X input.')
+
+            # Run fit method with X.
+            model = method(self, X=X, y=y,
+                           sample_weight=sample_weight,
+                           *args, **kwargs)
+
+            self.Xbuilt["fit"] = X
 
         # Return model
         return model
 
+    return inner
+
+
+def epistasis_fitter(fit_method):
+    """Connect an epistasis object to the model.
+    """
+    @wraps(fit_method)
+    def inner(self, X='obs', *args, **kwargs):
+        if type(X) is np.ndarray or type(X) is pd.DataFrame:
+            model = fit_method(self, X=X, *args, **kwargs)
+
+        elif X not in self.Xbuilt:
+            # Map those columns to epistastalis dataframe.
+            self.epistasis = EpistasisMap(
+                sites=self.Xcolumns,
+                order=self.order,
+                model_type=self.model_type)
+
+            # Execute fitting method
+            model = fit_method(self, X=X, *args, **kwargs)
+
+            # Link coefs to epistasis values.
+            self.epistasis.values = np.reshape(self.coef_, (-1,))
+
+        else:
+            model = fit_method(self, X=X, *args, **kwargs)
+
+        return model
     return inner

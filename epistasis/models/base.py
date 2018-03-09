@@ -21,12 +21,23 @@ class BaseModel(object):
     Manages attachment of GenotypePhenotypeMap and EpistasisMaps to the
     Epistasis models.
     """
-    Xbuilt = {}
+    def __init__(self, order=1, *args, **kwargs):
+        self.order=order
+        self.Xbuilt = {}
+
+    def num_of_params(self):
+        raise Exception("Must be defined in a subclass.")
 
     def fit(self, *args, **kwargs):
         raise Exception("Must be defined in a subclass.")
 
+    def fit_transform(self, *args, **kwargs):
+        raise Exception("Must be defined in a subclass.")
+
     def predict(self, *args, **kwargs):
+        raise Exception("Must be defined in a subclass.")
+
+    def predict_transform(self, *args, **kwargs):
         raise Exception("Must be defined in a subclass.")
 
     def hypothesis(self, *args, **kwargs):
@@ -64,17 +75,7 @@ class BaseModel(object):
             return -np.inf
         return lnlike
 
-    def add_epistasis(self):
-        """Add an EpistasisMap to model.
-        """
-        # Build epistasis interactions as columns in X matrix.
-        sites = mutations_to_sites(self.order, self.gpm.mutations)
-
-        # Map those columns to epistastalis dataframe.
-        self.epistasis = EpistasisMap(
-            sites, order=self.order, model_type=self.model_type)
-
-    def add_X(self, X="complete", key=None):
+    def add_X(self, X="obs", key=None):
         """Add X to Xbuilt
 
         Keyword arguments for X:
@@ -84,19 +85,6 @@ class BaseModel(object):
             are missing they will not be included in fit. At the end of
             fitting, an epistasis map attribute is attached to the model
             class.
-        - 'missing' :
-            Uses ``gpm.binary`` to construct X.
-            All genotypes missing from the data are included. Warning,
-            will break in most fitting methods. At the end of fitting,
-            an epistasis map attribute is attached to the model class.
-        - 'complete' :
-            Uses ``gpm.binary`` to construct X.
-            All genotypes missing from the data are included. Warning, will
-            break in most fitting methods. At the end of fitting, an
-            epistasis map attribute is attached to the model class.
-        - 'fit' :
-            a previously defined array/dataframe matrix. Prevents
-            copying for efficiency.
 
 
         Parameters
@@ -111,27 +99,18 @@ class BaseModel(object):
         Xbuilt : numpy.ndarray
             newly built 2d array matrix
         """
-        if type(X) is str and X in ['obs', 'missing', 'complete', 'fit']:
+        if isinstance(X, str) and X == 'obs':
 
             if hasattr(self, "gpm") is False:
                 raise XMatrixException("To build 'obs', 'missing', or"
                                        "'complete' X matrix, a "
                                        "GenotypePhenotypeMap must be attached")
 
-            # Create a list of epistatic interaction for this model.
-            if hasattr(self, "epistasis"):
-                columns = self.epistasis.sites
-            else:
-                self.add_epistasis()
-                columns = self.epistasis.sites
+            # Get X columns
+            columns = self.Xcolumns
 
             # Use desired set of genotypes for rows in X matrix.
-            if X == "obs":
-                index = self.gpm.binary
-            elif X == "missing":
-                index = self.gpm.missing_binary
-            else:
-                index = self.gpm.complete_binary
+            index = self.gpm.binary
 
             # Build numpy array
             x = get_model_matrix(index, columns, model_type=self.model_type)
@@ -166,6 +145,9 @@ class BaseModel(object):
         if GenotypePhenotypeMap in instance_tree is False:
             raise TypeError("gpm must be a GenotypePhenotypeMap object")
         self._gpm = gpm
+
+        # Construct columns for X matrix
+        self.Xcolumns = mutations_to_sites(self.order, self.gpm.mutations)
         return self
 
     @property
@@ -187,10 +169,7 @@ class BaseModel(object):
     def to_dict(self):
         """Return model data as dictionary."""
         # Get genotype-phenotype data
-        data = self.gpm.to_dict(complete=True)
-
-        # Update with epistasis model data
-        data.update(**self.epistasis.to_dict())
+        data = self.data.to_dict(complete=True)
 
         # Update with model data
         data.update(model_type=self.model_type,

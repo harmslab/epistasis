@@ -10,6 +10,9 @@ from scipy.misc import comb
 from sklearn.metrics import mean_squared_error
 from collections import OrderedDict
 
+from gpmap.utils import genotypes_to_binary
+
+from .model_matrix_ext import get_model_matrix
 # -------------------------------------------------------
 # Custom exceptions
 # -------------------------------------------------------
@@ -21,6 +24,21 @@ class SubclassException(Exception):
 # -------------------------------------------------------
 # Useful methods
 # -------------------------------------------------------
+
+def genotypes_to_X(wildtype, genotypes,
+    order=1,
+    mutations=None,
+    model_type='global'):
+    """Build an X matrix for a list of genotypes."""
+    # Binary representation
+    binary = genotypes_to_binary(wildtype, genotypes, mutations)
+
+    # Build list of sites from genotypes.
+    site = mutations_to_sites(order, mutations)
+
+    # X matrix
+    X = get_model_matrix(binary, sites, model_type=model_type)
+    return X
 
 
 class Bunch:

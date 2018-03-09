@@ -3,9 +3,10 @@ from sklearn.linear_model import LinearRegression as _LinearRegression
 from sklearn.linear_model import Lasso as _Lasso
 
 from .base import BaseModel as _BaseModel
-from .utils import X_fitter as X_fitter
-from .utils import X_predictor as X_predictor
+from .utils import X_fitter, X_predictor, epistasis_fitter
 from ..stats import pearson
+
+from gpmap import GenotypePhenotypeMap
 
 # Suppress an annoying error from scikit-learn
 import warnings
@@ -71,14 +72,32 @@ class EpistasisLinearRegression(_LinearRegression, _BaseModel):
 
         self.Additive = Additive(self)
 
+    @property
+    def num_of_params(self):
+        """Return number of parameters in model."""
+        n = 0
+        n += self.epistasis.n
+        return n
+
+    @epistasis_fitter
     @X_fitter
     def fit(self, X='obs', y='obs', sample_weight=None, **kwargs):
         return super(self.__class__, self).fit(X, y,
                                                sample_weight=sample_weight)
 
+    def fit_transform(self, X='obs', y='obs', **kwargs):
+        """Same as calling fit in a  linear model.
+        """
+        return self.fit(X=X, y=y, **kwargs)
+
     @X_predictor
-    def predict(self, X='complete'):
+    def predict(self, X='obs'):
         return super(self.__class__, self).predict(X)
+
+
+    def predict_transform(self, X='obs', y='obs'):
+        """Same as calling predict in linear model."""
+        return self.predict(X=X)
 
     @X_fitter
     def score(self, X='obs', y='obs', sample_weight=None):
@@ -106,7 +125,7 @@ class EpistasisLinearRegression(_LinearRegression, _BaseModel):
         return self.coef_
 
     @X_predictor
-    def hypothesis(self, X='complete', thetas=None):
+    def hypothesis(self, X='obs', thetas=None):
         """Given a set of parameters, compute a set of phenotypes. This is method
         can be used to test a set of parameters (Useful for bayesian sampling).
         """
@@ -264,16 +283,37 @@ class EpistasisLasso(_Lasso, _BaseModel):
         denom = len(vals)
         return numer/denom
 
+    @property
+    def num_of_params(self):
+        """Return number of parameters in model."""
+        n = 0
+        vals = self.epistasis.values
+        vals = vals[vals > 0]
+        n += len(vals)
+        return n
+
+    @epistasis_fitter
     @X_fitter
     def fit(self, X='obs', y='obs', sample_weight=None, **kwargs):
+        """Fit a linear (high-order) epistasis model to data."""
         # If a threshold exists in the data, pre-classify genotypes
         X = _np.asfortranarray(X)
         return super(self.__class__, self).fit(X, y, sample_weight)
 
+    def fit_transform(self, X='obs', y='obs', **kwargs):
+        """Same as calling fit in linear model.
+        """
+        return self.fit(X=X, y=y, **kwargs)
+
     @X_predictor
-    def predict(self, X='complete'):
+    def predict(self, X='obs'):
+        """Predict phenotypes using the fitted model."""
         X = _np.asfortranarray(X)
         return super(self.__class__, self).predict(X)
+
+    def predict_transform(self, X='obs', y='obs'):
+        """Predict X from model. Used mostly in Pipeline object."""
+        return self.predict(X=X)
 
     @X_fitter
     def score(self, X='obs', y='obs', sample_weight=None):
@@ -285,7 +325,7 @@ class EpistasisLasso(_Lasso, _BaseModel):
         return self.coef_
 
     @X_predictor
-    def hypothesis(self, X='complete', thetas=None):
+    def hypothesis(self, X='obs', thetas=None):
         """Given a set of parameters, compute a set of phenotypes. This is method
         can be used to test a set of parameters (Useful for bayesian sampling).
         """

@@ -8,12 +8,14 @@ import pandas as pd
 import lmfit
 from lmfit import Parameter, Parameters
 
-from .utils import X_fitter, X_predictor
+from .utils import X_fitter, X_predictor, epistasis_fitter
 from ..stats import gmean, pearson
 from .linear import EpistasisLinearRegression, EpistasisLasso
 from .nonlinear import (EpistasisNonlinearRegression,
                         EpistasisNonlinearLasso,
                         Parameters)
+
+from gpmap import GenotypePhenotypeMap
 
 # Suppress an annoying error
 import warnings
@@ -56,10 +58,11 @@ def power_transform(x, lmbda, A, B, data=None):
     else:
         first = (x + A)**lmbda
         out = (first - 1.0) / (lmbda * gm**(lmbda - 1)) + B
+    #print(lmbda, A, B)
     return out
 
 
-def reverse_power_transform(y, lmbda, A, B, data):
+def reverse_power_transform(y, lmbda, A, B, data=None):
     """The reverse of ``power_transform``.
 
     Note, the power transform calculates the geometric mean of x
@@ -77,13 +80,11 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
     to estimate epistatic coefficients and the nonlinear scale in a nonlinear
     genotype-phenotype map.
 
-    This models has three steps:
+    This models has two steps:
         1. Fit an additive, linear regression to approximate the average effect
         of individual mutations.
         2. Fit the nonlinear function to the observed phenotypes vs. the
         additive phenotypes estimated in step 1.
-        3. Transform the phenotypes to this linear scale and fit leftover
-        variation with high-order epistasis model.
 
     Methods are described in the following publication:
         Sailer, Z. R. & Harms, M. J. 'Detecting High-Order Epistasis in
@@ -91,8 +92,6 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
 
     Parameters
     ----------
-    order : int
-        order of epistasis to fit.
     model_type : str (default: global)
         type of epistasis model to use. See paper above for more information.
 
@@ -114,7 +113,7 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
         Mapping object for nonlinear coefficients
     """
 
-    def __init__(self, order=1, model_type="global", **p0):
+    def __init__(self, model_type="global", **p0):
         # Construct parameters object
         self.parameters = Parameters()
         for p in ['lmbda', 'A', 'B']:
@@ -128,22 +127,20 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
         # Save functions
         self.function = power_transform
         self.reverse = reverse_power_transform
+        self.order = 1
+        self.Xbuilt = {}
 
         # Construct parameters object
-        self.set_params(order=order,
-                        model_type=model_type)
+        self.set_params(model_type=model_type)
 
         # Store model specs.
         self.model_specs = dict(
-            order=self.order,
             model_type=self.model_type,
             **p0)
 
         # Set up additive and high-order linear model
         self.Additive = EpistasisLinearRegression(
             order=1, model_type=self.model_type)
-        self.Linear = EpistasisLinearRegression(
-            order=self.order, model_type=self.model_type)
 
     def _fit_nonlinear(self, X='obs', y='obs', sample_weight=None, **kwargs):
         """Estimate the scale of multiple mutations in a genotype-phenotype
@@ -202,29 +199,45 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
         # Point to nonlinear.
         self.parameters = self.Nonlinear.params
 
-    def _fit_linear(self, X='obs', y='obs', sample_weight=None):
-        """"""
-        # Prepare a high-order model
-        self.Linear.add_epistasis()
+    def fit_transform(self, X='obs', y='obs', **kwargs):
+        """Fit and transform data for an Epistasis Pipeline.
 
-        # Construct a linear epistasis model.
-        if self.order > 1:
-            xadd = self.Additive.predict(X='obs')
-            ylin = self.reverse(y, *self.parameters.values(), data=xadd)
-            # Now fit with a linear epistasis model.
-            self.Linear.fit(X=X, y=ylin)
-        else:
-            self.Linear = self.Additive
-        # Map to epistasis.
-        self.Linear.epistasis.values = self.Linear.coef_
-        return self
+        Returns
+        -------
+        gpm : GenotypePhenotypeMap
+            data with phenotypes transformed according to model.
+        """
+        self.fit(X=X, y=y, **kwargs)
 
-    def predict(self, X='complete'):
+        if isinstance(y, str) and y == 'obs':
+            y = self.gpm.phenotypes
+
+        xdata = self.Additive.predict(X='fit')
+
+        linear_phenotypes = self.reverse(y, *self.parameters.values(), data=xdata)
+
+        # Transform map.
+        gpm = GenotypePhenotypeMap.read_dataframe(
+            dataframe=self.gpm.data,
+            wildtype=self.gpm.wildtype,
+            mutations=self.gpm.mutations
+        )
+        gpm.data['phenotypes'] = linear_phenotypes
+        return gpm
+
+    def predict(self, X='obs'):
         """Infer phenotypes from model coefficients and nonlinear function."""
+        x = self.Additive.predict(X=X)
         xadd = self.Additive.predict(X='fit')
-        x = self.Linear.predict(X=X)
         y = self.function(x, *self.parameters.values(), data=xadd)
         return y
+
+    def predict_transform(self, X='obs', y='obs'):
+        """Predict classes and apply to phenotypes. Used mostly in Pipeline
+        object.
+        """
+        xdata = self.Additive.predict(X='fit')
+        return self.function(y, *self.parameters.values(), data=xdata)
 
     def score(self, X='obs', y='obs', sample_weight=None):
         """Calculates the squared-pearson coefficient for the nonlinear fit.
@@ -239,7 +252,7 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
             linear epistasis model described by epistasis.values.
         """
         # Get pobs for nonlinear fit.
-        if type(y) is str and y in ["obs", "complete"]:
+        if type(y) is str and y in ["obs"]:
             pobs = self.gpm.phenotypes
         # Else, numpy array or dataframe
         elif type(y) == np.array or type(y) == pd.Series:
@@ -249,9 +262,7 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
 
         xadd = self.Additive.predict(X='fit')
         ypred = self.function(xadd, *self.parameters.values(), data=xadd)
-        yrev = self.reverse(pobs, *self.parameters.values(), data=xadd)
-        return (pearson(pobs, ypred)**2,
-                self.Linear.score(X=X, y=yrev, sample_weight=sample_weight))
+        return pearson(pobs, ypred)**2
 
     def contributions(self):
         """Calculate the contributions from nonlinearity and epistasis to
@@ -278,7 +289,7 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
         return [additive, scale-additive, epistasis-scale]
 
     @X_predictor
-    def hypothesis(self, X='complete', thetas=None):
+    def hypothesis(self, X='obs', thetas=None):
         """Given a set of parameters, compute a set of phenotypes. Does not
         predict. This is method can be used to test a set of parameters
         (Useful for bayesian sampling).
@@ -290,7 +301,7 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
         if thetas is None:
             thetas = self.thetas
 
-        i, j = len(self.parameters.valuesdict()), self.Linear.epistasis.n
+        i, j = len(self.parameters.valuesdict()), self.Additive.epistasis.n
         parameters = thetas[:i]
         epistasis = thetas[i:i + j]
 
@@ -333,7 +344,7 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
 
         # Handle y.
         # Get pobs for nonlinear fit.
-        if type(y) is str and y in ["obs", "complete"]:
+        if type(y) is str and y in ["obs",]:
             ydata = self.gpm.phenotypes
         # Else, numpy array or dataframe
         elif type(y) == np.array or type(y) == pd.Series:
@@ -345,7 +356,7 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
 
         # Handle yerr.
         # Check if yerr is string
-        if type(yerr) is str and yerr in ["obs", "complete"]:
+        if type(yerr) is str and yerr in ["obs"]:
             yerr = self.gpm.std.upper
 
         # Else, numpsy array or dataframe
@@ -369,13 +380,11 @@ class EpistasisPowerTransformLasso(EpistasisPowerTransform):
     and an epistasis lasso model to estimate epistatic coefficients and the
     nonlinear scale in a nonlinear genotype-phenotype map.
 
-    This models has three steps:
+    This models has two steps:
         1. Fit an additive, linear regression to approximate the average effect
         of individual mutations.
         2. Fit the nonlinear function to the observed phenotypes vs. the
         additive phenotypes estimated in step 1.
-        3. Transform the phenotypes to this linear scale and fit leftover
-        variation with high-order epistasis model.
 
     Methods are described in the following publication:
         Sailer, Z. R. & Harms, M. J. 'Detecting High-Order Epistasis in
@@ -383,8 +392,6 @@ class EpistasisPowerTransformLasso(EpistasisPowerTransform):
 
     Parameters
     ----------
-    order : int
-        order of epistasis to fit.
     model_type : str (default: global)
         type of epistasis model to use. See paper above for more information.
 
@@ -405,19 +412,14 @@ class EpistasisPowerTransformLasso(EpistasisPowerTransform):
     parameters : Parameters object
         Mapping object for nonlinear coefficients
     """
-    def __init__(self, order=1, model_type="global", alpha=1.0, **p0):
+    def __init__(self, model_type="global", alpha=1.0, **p0):
         super(EpistasisPowerTransformLasso, self).__init__(
-            order=order, model_type=model_type, **p0)
+            model_type=model_type, **p0)
 
         # Set up additive and high-order linear model
         self.Additive = EpistasisLasso(
             alpha=alpha,
             order=1, model_type=self.model_type)
-
-        # Add lasso model for linear fit.
-        self.Linear = EpistasisLasso(
-            alpha=alpha,
-            order=self.order, model_type=self.model_type)
 
     def lnlike_of_data(self, X='obs', y='obs', yerr='obs',
                        sample_weight=None, thetas=None):

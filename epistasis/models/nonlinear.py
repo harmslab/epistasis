@@ -23,18 +23,9 @@ from gpmap import GenotypePhenotypeMap
 # Epistasis imports.
 from ..mapping import EpistasisMap
 from .base import BaseModel
-from .utils import (X_fitter, X_predictor, FittingError)
+from .utils import (X_fitter, X_predictor, epistasis_fitter, FittingError)
 from .linear import (EpistasisLinearRegression, EpistasisLasso)
 from ..stats import pearson
-
-
-def grid_search(model, **parameters):
-    """"""
-
-    p_lists = [np.linspace() for p in parameters]
-
-    # Enumerate combinations of parameters
-    np.array(np.meshgrid([1, 2, 3], [4, 5], [6, 7])).T.reshape(-1,3)
 
 
 class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator,
@@ -42,13 +33,11 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator,
     """Use nonlinear least-squares regression to estimate epistatic coefficients
     and nonlinear scale in a nonlinear genotype-phenotype map.
 
-    This models has three steps:
+    This models has two steps:
         1. Fit an additive, linear regression to approximate the average effect
         of individual mutations.
         2. Fit the nonlinear function to the observed phenotypes vs. the
         additive phenotypes estimated in step 1.
-        3. Transform the phenotypes to this linear scale and fit leftover
-        variation with high-order epistasis model.
 
     Methods are described in the following publication:
         Sailer, Z. R. & Harms, M. J. 'Detecting High-Order Epistasis in
@@ -61,8 +50,6 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator,
     reverse : callable
         The inverse of the nonlinear function used to back transform from
         nonlinear phenotypic scale to linear scale.
-    order : int
-        order of epistasis to fit.
     model_type : str (default: global)
         type of epistasis model to use. See paper above for more information.
 
@@ -87,7 +74,6 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator,
     def __init__(self,
                  function,
                  reverse,
-                 order=1,
                  model_type="global",
                  **p0):
 
@@ -113,24 +99,22 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator,
         # Set up the function for fitting.
         self.function = function
         self.reverse = reverse
+        self.order = 1
+        self.Xbuilt = {}
 
         # Construct parameters object
-        self.set_params(order=order,
-                        model_type=model_type)
+        self.set_params(model_type=model_type)
 
         # Store model specs.
         self.model_specs = dict(
             function=function,
             reverse=reverse,
-            order=self.order,
             model_type=self.model_type,
             **p0)
 
         # Set up additive and high-order linear model
         self.Additive = EpistasisLinearRegression(
             order=1, model_type=self.model_type)
-        self.Linear = EpistasisLinearRegression(
-            order=self.order, model_type=self.model_type)
 
     @property
     def data(self):
@@ -151,11 +135,9 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator,
         # Update with epistasis model data
         data.update({'additive': self.Additive.epistasis.to_dict()})
         data.update({'linear': self.Linear.epistasis.to_dict()})
-        data.update({'nonlinear': dict(self.parameters.valuesdict())})
 
         # Update with model data
-        data.update(model_type=self.model_type,
-                    order=self.order)
+        data.update(model_type=self.model_type)
         return data
 
     @wraps(BaseModel.add_gpm)
@@ -163,7 +145,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator,
         super(EpistasisNonlinearRegression, self).add_gpm(gpm)
         # Add gpm to other models.
         self.Additive.add_gpm(gpm)
-        self.Linear.add_gpm(gpm)
+        return self
 
     @property
     def thetas(self):
@@ -173,7 +155,14 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator,
         second.
         """
         return np.concatenate((list(self.parameters.values()),
-                               self.Linear.coef_))
+                               self.Additive.coef_))
+
+    @property
+    def num_of_params(self):
+        """Return number of parameters in model."""
+        n = 0
+        n += len(self.parameters)
+        return n
 
     def fit(self, X='obs', y='obs',
             sample_weight=None,
@@ -205,7 +194,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator,
         needs to match the name of the parameter in the nonlinear fit.
         """
         # Get pobs for nonlinear fit.
-        if type(y) is str and y in ["obs", "complete"]:
+        if type(y) is str and y in ["obs"]:
             y = self.gpm.phenotypes
         # Else, numpy array or dataframe
         elif type(y) == np.array or type(y) == pd.Series:
@@ -223,10 +212,6 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator,
             # Step 2: fit nonlinear function
             self._fit_nonlinear(X=X, y=y, sample_weight=sample_weight,
                                 **kwargs)
-
-            # Step 3: fit linear, high-order model.
-            self._fit_linear(X=X, y=y, sample_weight=sample_weight)
-            return self
 
         # Don't use widgets to fit data
         else:
@@ -257,7 +242,11 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator,
                             "`add_gpm` method")
 
         # Fit with an additive model
-        self.Additive.add_epistasis()
+        self.Additive.epistasis = EpistasisMap(
+            sites=self.Additive.Xcolumns,
+            order=self.Additive.order,
+            model_type=self.Additive.model_type
+        )
 
         # Use a first order matrix only.
         if type(X) == np.ndarray or type(X) == pd.DataFrame:
@@ -324,37 +313,44 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator,
         # Point to nonlinear.
         self.parameters = self.Nonlinear.params
 
-    def _fit_linear(self, X='obs', y='obs', sample_weight=None):
-        """"""
-        # Prepare a high-order model
-        self.Linear.add_epistasis()
+    def fit_transform(self, X='obs', y='obs', **kwargs):
+        """Fit and transform data for an Epistasis Pipeline.
 
-        # Construct a linear epistasis model.
-        if self.order > 1:
-            ylin = self.reverse(y, *self.parameters.values())
-            # Now fit with a linear epistasis model.
-            self.Linear.fit(X=X, y=ylin)
-        else:
-            self.Linear = self.Additive
-        # Map to epistasis.
-        self.Linear.epistasis.values = self.Linear.coef_
-        return self
+        Returns
+        -------
+        gpm : GenotypePhenotypeMap
+            data with phenotypes transformed according to model.
+        """
+        self.fit(X=X, y=y, **kwargs)
 
-    def plot_fit(self):
-        """Plots the observed phenotypes against the additive model
-        phenotypes"""
-        padd = self.Additive.predict()
-        pobs = self.gpm.phenotypes
-        fig, ax = plt.subplots(figsize=(3, 3))
-        ax.plot(padd, pobs, '.b')
-        plt.show()
-        return fig, ax
+        if isinstance(y, str) and y == 'obs':
+            y = self.gpm.phenotypes
 
-    def predict(self, X='complete'):
+        linear_phenotypes = self.reverse(y, *self.parameters.values())
+
+        # Transform map.
+        gpm = GenotypePhenotypeMap.read_dataframe(
+            dataframe=self.gpm.data,
+            wildtype=self.gpm.wildtype,
+            mutations=self.gpm.mutations
+        )
+        gpm.data['phenotypes'] = linear_phenotypes
+        return gpm
+
+    def predict(self, X='obs'):
         """Infer phenotypes from model coefficients and nonlinear function."""
-        x = self.Linear.predict(X=X)
+        x = self.Additive.predict(X=X)
         y = self.function(x, *self.parameters.values())
         return y
+
+    def predict_transform(self, X='obs', y='obs'):
+        """Predict classes and apply to phenotypes. Used mostly in Pipeline
+        object.
+        """
+        if isinstance(y, str) and y == 'obs':
+            y = self.gpm.phenotypes
+
+        return self.function(y, *self.parameters.values())
 
     def score(self, X='obs', y='obs', sample_weight=None):
         """Calculates the squared-pearson coefficient for the nonlinear fit.
@@ -364,12 +360,9 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator,
         r_nonlinear : float
             squared pearson coefficient between phenotypes and nonlinear
             function.
-        r_linear : float
-            squared pearson coefficient between linearized phenotypes and
-            linear epistasis model described by epistasis.values.
         """
         # Get pobs for nonlinear fit.
-        if type(y) is str and y in ["obs", "complete"]:
+        if type(y) is str and y in ["obs"]:
             pobs = self.gpm.phenotypes
         # Else, numpy array or dataframe
         elif type(y) == np.array or type(y) == pd.Series:
@@ -377,9 +370,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator,
 
         xlin = self.Additive.predict(X=X)
         ypred = self.function(xlin, *self.parameters.values())
-        yrev = self.reverse(pobs, *self.parameters.values())
-        return (pearson(pobs, ypred)**2,
-                self.Linear.score(X=X, y=yrev, sample_weight=sample_weight))
+        return pearson(pobs, ypred)**2
 
     def contributions(self):
         """Calculate the contributions from nonlinearity and epistasis to
@@ -406,7 +397,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator,
         return [additive, scale-additive, epistasis-scale]
 
     @X_predictor
-    def hypothesis(self, X='complete', thetas=None):
+    def hypothesis(self, X='obs', thetas=None):
         """Given a set of parameters, compute a set of phenotypes. Does not
         predict. This is method can be used to test a set of parameters
         (Useful for bayesian sampling).
@@ -418,7 +409,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator,
         if thetas is None:
             thetas = self.thetas
 
-        i, j = len(self.parameters.valuesdict()), self.Linear.epistasis.n
+        i, j = len(self.parameters.valuesdict()), self.Additive.epistasis.n
         parameters = thetas[:i]
         epistasis = thetas[i:i + j]
 
@@ -458,7 +449,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator,
 
         # Handle y.
         # Get pobs for nonlinear fit.
-        if type(y) is str and y in ["obs", "complete"]:
+        if type(y) is str and y in ["obs"]:
             ydata = self.gpm.phenotypes
         # Else, numpy array or dataframe
         elif type(y) == np.array or type(y) == pd.Series:
@@ -470,7 +461,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator,
 
         # Handle yerr.
         # Check if yerr is string
-        if type(yerr) is str and yerr in ["obs", "complete"]:
+        if type(yerr) is str and yerr in ["obs"]:
             yerr = self.gpm.std.upper
 
         # Else, numpsy array or dataframe
@@ -494,13 +485,11 @@ class EpistasisNonlinearLasso(EpistasisNonlinearRegression):
     to estimate epistatic coefficients and nonlinear scale in a nonlinear
     genotype-phenotype map.
 
-    This models has three steps:
+    This models has two steps:
         1. Fit an additive, linear regression to approximate the average effect
         of individual mutations.
         2. Fit the nonlinear function to the observed phenotypes vs. the
         additive phenotypes estimated in step 1.
-        3. Transform the phenotypes to this linear scale and fit leftover
-        variation with EpistasisLasso.
 
     Methods are described in the following publication:
         1. Sailer, Z. R. & Harms, M. J. 'Detecting High-Order Epistasis in
@@ -516,8 +505,6 @@ class EpistasisNonlinearLasso(EpistasisNonlinearRegression):
     reverse : callable
         The inverse of the nonlinear function used to back transform from
         nonlinear phenotypic scale to linear scale.
-    order : int
-        order of epistasis to fit.
     model_type : str (default: global)
         type of epistasis model to use. See paper above for more information.
 
@@ -540,24 +527,17 @@ class EpistasisNonlinearLasso(EpistasisNonlinearRegression):
     """
     def __init__(function,
                  reverse,
-                 order=1,
                  model_type="global",
                  alpha=1.0,
                  **p0):
         # initialize model
         super(EpistasisNonlinearLasso, self).__init__(function, reverse,
-                                                      order=order,
                                                       model_type=model_type)
 
         # Set up additive and high-order linear model
         self.Additive = EpistasisLasso(
             alpha=alpha,
             order=1, model_type=self.model_type)
-
-        # Add lasso model for linear fit.
-        self.Linear = EpistasisLasso(
-            alpha=alpha,
-            order=self.order, model_type=self.model_type)
 
     def lnlike_of_data(self, X='obs', y='obs', yerr='obs',
                        sample_weight=None, thetas=None):
@@ -587,7 +567,7 @@ class EpistasisNonlinearLasso(EpistasisNonlinearRegression):
 
         # Handle y.
         # Get pobs for nonlinear fit.
-        if type(y) is str and y in ["obs", "complete"]:
+        if type(y) is str and y in ["obs"]:
             ydata = self.gpm.phenotypes
         # Else, numpy array or dataframe
         elif type(y) == np.array or type(y) == pd.Series:

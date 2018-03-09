@@ -31,6 +31,8 @@ interface. Instead, we encourage you use this package inside `Jupyter notebooks`
 Basic Example
 -------------
 
+Fit an epistasis model to genotype-phenotype map data.
+
 .. code-block:: python
 
     # Import a model and the plotting module
@@ -64,6 +66,34 @@ Basic Example
     fig, axes = plot_coefs(coef_sites, coef_values, figsize=(2,4))
 
 .. image:: img/basic-example.png
+
+
+Or, fit a chain of global *and* local epistasis models.
+
+.. code-block:: python
+
+    from epistasis import EpistasisPipeline
+    from epistasis.models import (EpistasisLinearRegression,
+                                  EpistasisPowerTransform)
+
+    # Construct a pipeline
+    pipeline = EpistasisPipeline([
+        EpistasisPowerTransform(lmbda=1, A=0, B=0),
+        EpistasisLinearRegression(order=3)
+    ])
+
+    # Add the genotype phenotype map to pipeline.
+    pipeline.add_gpm(gpm)
+
+    # Fit pipeline to given genotype-phenotype map.
+    pipeline.fit()
+
+    # Plot coefficients (powered by matplotlib).
+    coef_sites = pipeline[1].epistasis.sites
+    coef_values = pipeline[1].epistasis.values
+
+    fig, axes = plot_coefs(coef_sites, coef_values, figsize=(2,4))
+
 
 Documentation
 -------------

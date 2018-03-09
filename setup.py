@@ -14,7 +14,7 @@ packages = [
 ]
 
 setup(name='epistasis',
-      version='0.4.0',
+      version='0.5.0',
       description='High-order epistasis models for genotype-phenotype maps',
       author='Zach Sailer',
       author_email='zachsailer@gmail.com',

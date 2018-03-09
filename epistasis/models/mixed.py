@@ -30,6 +30,7 @@ class EpistasisMixedRegression(BaseModel, BaseEstimator):
         self.model_specs = dict(Model=Model, Classifier=Classifier)
         self.Model = Model
         self.Classifier = Classifier
+        self.Xbuilt = {}
 
     @property
     def parameters(self):
@@ -47,7 +48,7 @@ class EpistasisMixedRegression(BaseModel, BaseEstimator):
         Also exposes APIs that are only accessible with a GenotypePhenotypeMap
         attached to the model.
         """
-        super(EpistasisMixedRegression, self).add_gpm(gpm)
+        self._gpm = gpm
         self.Model.add_gpm(gpm)
         self.Classifier.add_gpm(gpm)
 
@@ -174,7 +175,7 @@ class EpistasisMixedRegression(BaseModel, BaseEstimator):
         plt.show()
         return fig, ax
 
-    def predict(self, X='complete'):
+    def predict(self, X='obs'):
         """Predict phenotypes given a model matrix. Constructs the predictions
         in two steps. 1. Use X to predict quantitative phenotypes. 2. Predict
         phenotypes classes using the Classifier. Xfit for the classifier is
