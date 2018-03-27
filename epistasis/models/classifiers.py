@@ -33,17 +33,16 @@ class EpistasisBaseClassifier(BaseModel):
     (second).
     """
 
-    def __init__(self, threshold, order=1, model_type="global", **kwargs):
+    def __init__(self, threshold, model_type="global", **kwargs):
         super(self.__class__, self).__init__(**kwargs)
         self.threshold = threshold
-        self.order = order
         self.model_type = model_type
         self.fit_intercept = False
+        self.order = 1
         self.Xbuilt = {}
 
         # Store model specs.
         self.model_specs = dict(
-            order=self.order,
             threshold=self.threshold,
             model_type=self.model_type,
             **kwargs)
@@ -95,7 +94,7 @@ class EpistasisBaseClassifier(BaseModel):
     def num_of_params(self):
         """Return number of parameters in model."""
         n = 0
-        n += self.Additive.epistasis.n
+        n += self.epistasis.n
         return n
 
     @epistasis_fitter
@@ -245,8 +244,10 @@ class EpistasisLogisticRegression(LogisticRegression, EpistasisBaseClassifier):
     ----------
     threshold : float
         value below which phenotypes are considered nonviable.
+
     order : int
         order of epistasis model
+
     model_type : str (default="global")
         type of model matrix to use. "global" defines epistasis with respect to
         a background-averaged "genotype-phenotype". "local" defines epistasis
@@ -255,10 +256,23 @@ class EpistasisLogisticRegression(LogisticRegression, EpistasisBaseClassifier):
     @X_predictor
     def hypothesis(self, X='obs', thetas=None):
         """Returns the probability of the data given the model."""
+        # Given thetas, estimate probability of class.
         if thetas is None:
             thetas = self.thetas
+
+        # Calculate probability of each class
         logit_p1 = 1 / (1 + np.exp(np.dot(X, thetas)))
-        return logit_p1
+
+        # Determine class from probability
+        classes = np.ones(len(logit_p1))
+        classes[logit_p1 > 0.5] = 0
+
+        # Return class
+        return classes
+
+    def hypothesis_transform(self, X='obs', y='obs'):
+        """"""
+        
 
     @property
     def thetas(self):
@@ -267,8 +281,7 @@ class EpistasisLogisticRegression(LogisticRegression, EpistasisBaseClassifier):
 
 @sklearn_to_epistasis()
 class EpistasisBernoulliNB(BernoulliNB, EpistasisBaseClassifier):
-    """"""
-
+    """Naive Bayes Bernoulli Classifier."""
 
 @sklearn_to_epistasis()
 class EpistasisSVC(SVC, EpistasisBaseClassifier):

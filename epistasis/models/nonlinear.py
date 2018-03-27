@@ -161,7 +161,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator,
     def num_of_params(self):
         """Return number of parameters in model."""
         n = 0
-        n += len(self.parameters)
+        n += len(self.parameters) + len(self.Additive.coef_)
         return n
 
     def fit(self, X='obs', y='obs',
@@ -197,7 +197,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator,
         if type(y) is str and y in ["obs"]:
             y = self.gpm.phenotypes
         # Else, numpy array or dataframe
-        elif type(y) == np.array or type(y) == pd.Series:
+        elif type(y) == np.ndarray or type(y) == pd.Series:
             pass
         else:
             raise FittingError("y is not valid. Must be one of the following: "
@@ -352,6 +352,44 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator,
 
         return self.function(y, *self.parameters.values())
 
+    @X_predictor
+    def hypothesis(self, X='obs', thetas=None):
+        """Given a set of parameters, compute a set of phenotypes. Does not
+        predict. This is method can be used to test a set of parameters
+        (Useful for bayesian sampling).
+        """
+        # ----------------------------------------------------------------------
+        # Part 0: Break up thetas
+        # ----------------------------------------------------------------------
+        # Get thetas from model.
+        if thetas is None:
+            thetas = self.thetas
+
+        i, j = len(self.parameters.valuesdict()), self.Additive.epistasis.n
+        parameters = thetas[:i]
+        epistasis = thetas[i:i + j]
+
+        # Part 1: Linear portion
+        ylin = np.dot(X, epistasis)
+
+        # Part 2: Nonlinear portion
+        ynonlin = self.function(ylin, *parameters)
+
+        return ynonlin
+
+    def hypothesis_transform(self, X='obs', y='obs', thetas=None):
+        """"""
+        # Get thetas from model.
+        if thetas is None:
+            thetas = self.thetas
+
+        i, j = len(self.parameters.valuesdict()), self.Additive.epistasis.n
+        parameters = thetas[:i]
+        epistasis = thetas[i:i + j]
+
+        # Part 2: Nonlinear portion
+        return self.function(y, *parameters)
+
     def score(self, X='obs', y='obs', sample_weight=None):
         """Calculates the squared-pearson coefficient for the nonlinear fit.
 
@@ -396,30 +434,6 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator,
 
         return [additive, scale-additive, epistasis-scale]
 
-    @X_predictor
-    def hypothesis(self, X='obs', thetas=None):
-        """Given a set of parameters, compute a set of phenotypes. Does not
-        predict. This is method can be used to test a set of parameters
-        (Useful for bayesian sampling).
-        """
-        # ----------------------------------------------------------------------
-        # Part 0: Break up thetas
-        # ----------------------------------------------------------------------
-        # Get thetas from model.
-        if thetas is None:
-            thetas = self.thetas
-
-        i, j = len(self.parameters.valuesdict()), self.Additive.epistasis.n
-        parameters = thetas[:i]
-        epistasis = thetas[i:i + j]
-
-        # Part 1: Linear portion
-        ylin = np.dot(X, epistasis)
-
-        # Part 2: Nonlinear portion
-        ynonlin = self.function(ylin, *parameters)
-
-        return ynonlin
 
     def lnlike_of_data(self, X='obs', y='obs', yerr='obs',
                        sample_weight=None, thetas=None):

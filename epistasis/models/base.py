@@ -43,6 +43,9 @@ class BaseModel(object):
     def hypothesis(self, *args, **kwargs):
         raise Exception("Must be defined in a subclass.")
 
+    def hypothesis_transform(self, *args, **kwargs):
+        raise Exception("Must be defined in a subclass.")
+
     def lnlike_of_data(self, *args, **kwargs):
         raise Exception("Must be defined in a subclass.")
 
@@ -145,6 +148,7 @@ class BaseModel(object):
         if GenotypePhenotypeMap in instance_tree is False:
             raise TypeError("gpm must be a GenotypePhenotypeMap object")
         self._gpm = gpm
+        self.Xbuilt = {}
 
         # Construct columns for X matrix
         self.Xcolumns = mutations_to_sites(self.order, self.gpm.mutations)

@@ -126,19 +126,32 @@ class EpistasisLinearRegression(_LinearRegression, _BaseModel):
 
     @X_predictor
     def hypothesis(self, X='obs', thetas=None):
-        """Given a set of parameters, compute a set of phenotypes. This is method
-        can be used to test a set of parameters (Useful for bayesian sampling).
+        """Given thetas, compute phenotypes.
+
+        Parameters
+        ----------
+
         """
         if thetas is None:
             thetas = self.thetas
         return _np.dot(X, thetas)
 
+    def hypothesis_transform(self, X='obs', y='obs', thetas=None):
+        """Given thetas, compute phenotypes. If given phenotypes, transform
+        phenotypes.
+
+
+        """
+        return self.hypothesis(X=X, thetas=thetas)
+
     @X_fitter
-    def lnlike_of_data(self,
-                       X="obs", y="obs",
-                       yerr="obs",
-                       sample_weight=None,
-                       thetas=None):
+    def lnlike_of_data(
+        self,
+        X="obs", y="obs",
+        yerr="obs",
+        sample_weight=None,
+        thetas=None
+        ):
         """Calculate the log likelihoods of each data point, given a set of
         model coefficients.
 
@@ -146,8 +159,10 @@ class EpistasisLinearRegression(_LinearRegression, _BaseModel):
         ----------
         X : 2d array
             model matrix
+
         y : array
             data to calculate the likelihood
+
         yerr: array
             uncertainty in data
         thetas : array

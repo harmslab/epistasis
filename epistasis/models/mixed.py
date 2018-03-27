@@ -49,6 +49,7 @@ class EpistasisMixedRegression(BaseModel, BaseEstimator):
         attached to the model.
         """
         self._gpm = gpm
+        self.Xbuilt = {}
         self.Model.add_gpm(gpm)
         self.Classifier.add_gpm(gpm)
 

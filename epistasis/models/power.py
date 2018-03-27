@@ -236,6 +236,9 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
         """Predict classes and apply to phenotypes. Used mostly in Pipeline
         object.
         """
+        if y == 'obs':
+            y = self.gpm.phenotypes
+
         xdata = self.Additive.predict(X='fit')
         return self.function(y, *self.parameters.values(), data=xdata)
 

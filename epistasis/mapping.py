@@ -181,12 +181,6 @@ class EpistasisMap(object):
         return self._order
 
     @property
-    def keys(self):
-        """ Get the interaction keys. (type==list of str, see
-        self._build_interaction_sites)"""
-        return self.data.keys.values
-
-    @property
     def values(self):
         """ Get the values of the interaction in the system"""
         return self.data['values'].values
@@ -275,10 +269,4 @@ class Orders(map):
     def values(self):
         """Get values of epistasis for this order."""
         return pd.Series([self._epistasismap.values[int(i)]
-                          for i in self.index], index=self.index)
-
-    @property
-    def keys(self):
-        """Get keys of epistasis for this order."""
-        return pd.Series([self._epistasismap.keys[int(i)]
                           for i in self.index], index=self.index)

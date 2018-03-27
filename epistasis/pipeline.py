@@ -17,10 +17,7 @@ class EpistasisPipeline(list):
     @property
     def num_of_params(self):
         """"""
-        n = 0
-        for m in self:
-            n += m.num_of_params
-        return n
+        return sum([self.num_of_params for m in self])
 
     def add_gpm(self, gpm):
         self._gpm = gpm
@@ -61,14 +58,30 @@ class EpistasisPipeline(list):
         """Predict using pipeline."""
         if isinstance(X, str):
             X = self.gpm.genotypes
+            y = self.gpm.phenotypes
 
         model = self[-1]
-        ypred = model.predict_transform(X=X)
+        ypred = model.predict_transform(X=X, y=y)
 
         for model in self[-2::-1]:
             ypred = model.predict_transform(X=X, y=ypred)
 
         return ypred
+
+    def hypothesis(self, X='obs', y='obs', thetas=None):
+        """"""
+        if thetas is None:
+            thetas = self.thetas
+
+
+
+
+
+    def lnlike_of_data(self, ):
+        """"""
+
+    def lnlikelihood(self, ):
+        """"""
 
     def score(self, X='obs', y='obs'):
         """Calculate pearson coefficient for between model and data.
@@ -85,8 +98,9 @@ class EpistasisPipeline(list):
 
     @property
     def thetas(self):
-        """"""
-        pass
+        """All parameters across all models in order of the models."""
+        thetas = [m.thetas for m in self]
+        return np.concatenate(thetas)
 
     def lnlike_of_data(
             self,
@@ -108,7 +122,6 @@ class EpistasisPipeline(list):
 
         L = - 0.5 * np.log(2 * np.pi * yerr**2) - (0.5 * ((y - ymodel)**2 / yerr**2))
         return L
-
 
     def lnlikelihood(
             self,

@@ -1,4 +1,4 @@
-__doc__ = """Submodule with various classes for generating/simulating
+s__doc__ = """Submodule with various classes for generating/simulating
 genotype-phenotype maps."""
 
 # ------------------------------------------------------------

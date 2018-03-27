@@ -87,10 +87,7 @@ class BaseSimulation(GenotypePhenotypeMap):
                 columns = self.epistasis.sites
 
             # Use desired set of genotypes for rows in X matrix.
-            if X == "obs":
-                index = self.binary
-            else:
-                index = self.complete_binary
+            index = self.binary
 
             # Build numpy array
             x = get_model_matrix(index, columns, model_type=self.model_type)
