@@ -1,8 +1,8 @@
 import numpy as _np
-from sklearn.linear_model import LinearRegression as _LinearRegression
-from sklearn.linear_model import Lasso as _Lasso
+from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import Lasso
 
-from .base import BaseModel as _BaseModel
+from .base import BaseModel, sklearn_mixin
 from .utils import X_fitter, X_predictor, epistasis_fitter
 from ..stats import pearson
 
@@ -14,32 +14,8 @@ warnings.filterwarnings(action="ignore", module="scipy",
                         message="^internal gelsd")
 
 
-class Additive(_BaseModel):
-    """Object that behaves as additive version of an epistasis linear model.
-    """
-    def __init__(self, epistasis_linear_regression):
-        # Inherited model
-        self._ = epistasis_linear_regression
-
-        self.order = 1
-        self.model_type = self._.model_type
-        self.Xbuilt = {}
-
-    @property
-    def gpm(self):
-        return self._.gpm
-
-    @property
-    def epistasis(self):
-        return self._.epistasis.get_orders(0, 1)
-
-    @X_predictor
-    def predict(self, X='obs'):
-        Xadd = X[:, :len(self.epistasis.sites)]
-        y = _np.dot(Xadd, self.epistasis.values)
-        return y
-
-class EpistasisLinearRegression(_LinearRegression, _BaseModel):
+@sklearn_mixin(LinearRegression)
+class EpistasisLinearRegression(BaseModel):
     """Ordinary least-squares regression for estimating high-order, epistatic
     interactions in a genotype-phenotype map.
 
@@ -51,10 +27,10 @@ class EpistasisLinearRegression(_LinearRegression, _BaseModel):
     ----------
     order : int
         order of epistasis
+
     model_type : str (default="global")
         model matrix type. See publication above for more information
     """
-
     def __init__(self, order=1, model_type="global", n_jobs=1, **kwargs):
         # Set Linear Regression settings.
         self.fit_intercept = False
@@ -70,24 +46,18 @@ class EpistasisLinearRegression(_LinearRegression, _BaseModel):
             model_type=self.model_type,
             **kwargs)
 
-        self.Additive = Additive(self)
-
     @property
     def num_of_params(self):
-        """Return number of parameters in model."""
         n = 0
         n += self.epistasis.n
         return n
 
     @epistasis_fitter
     @X_fitter
-    def fit(self, X='obs', y='obs', sample_weight=None, **kwargs):
-        return super(self.__class__, self).fit(X, y,
-                                               sample_weight=sample_weight)
+    def fit(self, X='obs', y='obs', **kwargs):
+        return super(self.__class__, self).fit(X, y)
 
     def fit_transform(self, X='obs', y='obs', **kwargs):
-        """Same as calling fit in a  linear model.
-        """
         return self.fit(X=X, y=y, **kwargs)
 
     @X_predictor
@@ -96,29 +66,11 @@ class EpistasisLinearRegression(_LinearRegression, _BaseModel):
 
 
     def predict_transform(self, X='obs', y='obs'):
-        """Same as calling predict in linear model."""
         return self.predict(X=X)
 
     @X_fitter
-    def score(self, X='obs', y='obs', sample_weight=None):
-        return super(self.__class__, self).score(X, y,
-                                                 sample_weight=sample_weight)
-
-    def contributions(self):
-        """Calculate the contributions from additive ceofs and epistasis to
-        the variation in phenotype.
-        """
-        x0 = self.gpm.phenotypes
-
-        # Predict from additive coefficients.
-        x1 = self.Additive.predict(X='fit')
-        x2 = self.predict(X='fit')
-
-        # Calculate contributions
-        additive = pearson(x0, x1)**2
-        epistasis = pearson(x0, x2)**2
-
-        return [additive, epistasis-additive]
+    def score(self, X='obs', y='obs'):
+        return super(self.__class__, self).score(X, y)
 
     @property
     def thetas(self):
@@ -126,53 +78,19 @@ class EpistasisLinearRegression(_LinearRegression, _BaseModel):
 
     @X_predictor
     def hypothesis(self, X='obs', thetas=None):
-        """Given thetas, compute phenotypes.
-
-        Parameters
-        ----------
-
-        """
         if thetas is None:
             thetas = self.thetas
         return _np.dot(X, thetas)
 
     def hypothesis_transform(self, X='obs', y='obs', thetas=None):
-        """Given thetas, compute phenotypes. If given phenotypes, transform
-        phenotypes.
-
-
-        """
         return self.hypothesis(X=X, thetas=thetas)
 
     @X_fitter
     def lnlike_of_data(
-        self,
-        X="obs", y="obs",
-        yerr="obs",
-        sample_weight=None,
-        thetas=None
-        ):
-        """Calculate the log likelihoods of each data point, given a set of
-        model coefficients.
-
-        Parameters
-        ----------
-        X : 2d array
-            model matrix
-
-        y : array
-            data to calculate the likelihood
-
-        yerr: array
-            uncertainty in data
-        thetas : array
-            array of model coefficients
-
-        Returns
-        -------
-        lnlike : np.ndarray
-            log-likelihood of each data point given a model.
-        """
+            self,
+            X="obs", y="obs",
+            yerr="obs",
+            thetas=None):
         # If thetas are not explicitly named, get them from the model
         if thetas is None:
             thetas = self.thetas
@@ -194,8 +112,8 @@ class EpistasisLinearRegression(_LinearRegression, _BaseModel):
         return (- 0.5 * _np.log(2 * _np.pi * yerr**2) -
                 (0.5 * ((y - ymodel)**2 / yerr**2)))
 
-
-class EpistasisLasso(_Lasso, _BaseModel):
+@sklearn_mixin(Lasso)
+class EpistasisLasso(BaseModel):
     """A scikit-learn Lasso Regression class for discovering sparse
     epistatic coefficients.
 
@@ -208,28 +126,36 @@ class EpistasisLasso(_Lasso, _BaseModel):
     ----------
     order : int
         order of epistasis
+
     model_type : str (default="global")
         model matrix type. See publication above for more information
+
     alpha : float
         Constant that multiplies the L1 term. Defaults to 1.0. alpha = 0 is
         equivalent to an ordinary least square, solved by the
         EpistasisLinearRegression object.
+
     precompute :
         Whether to use a precomputed Gram matrix to speed up calculations.
         If set to 'auto' let us decide. The Gram matrix can also be passed
         as argument. For sparse input this option is always True to preserve
         sparsity.
+
     max_iter : int
         The maximum number of iterations.
+
     tol : float
         The tolerance for the optimization: if the updates are smaller than
         tol, the optimization code checks the dual gap for optimality and
         continues until it is smaller than tol.
+
     warm_start : bool
         When set to True, reuse the solution of the previous call to fit as
         initialization, otherwise, just erase the previous solution.
+
     positive : bool
         When set to True, forces the coefficients to be positive.
+
     random_state : int
         The seed of the pseudo random number generator that selects a random
         feature to update. If int, random_state is the seed used by the random
@@ -237,16 +163,26 @@ class EpistasisLasso(_Lasso, _BaseModel):
         number generator; If None, the random number generator is the
         RandomState instance used by np.random. Used when
         selection == 'random'.
+
     selection : str
         If set to 'random', a random coefficient is updated every iteration
         rather than looping over features sequentially by default. This
         (setting to 'random') often leads to significantly faster convergence
         especially when tol is higher than 1e-4.
     """
-    def __init__(self, order=1, model_type="global", alpha=1.0,
-                 precompute=False, max_iter=1000, tol=0.0001,
-                 warm_start=False, positive=False, random_state=None,
-                 selection='cyclic', **kwargs):
+    def __init__(
+            self,
+            order=1,
+            model_type="global",
+            alpha=1.0,
+            precompute=False,
+            max_iter=1000,
+            tol=0.0001,
+            warm_start=False,
+            positive=False,
+            random_state=None,
+            selection='cyclic',
+            **kwargs):
         # Set Linear Regression settings.
         self.fit_intercept = False
         self.normalize = False
@@ -270,24 +206,6 @@ class EpistasisLasso(_Lasso, _BaseModel):
             model_type=self.model_type,
             **kwargs)
 
-        self.Additive = Additive(self)
-
-    def contributions(self):
-        """Calculate the contributions from additive ceofs and epistasis to
-        the variation in phenotype.
-        """
-        x0 = self.gpm.phenotypes
-
-        # Predict from additive coefficients.
-        x1 = self.Additive.predict(X='fit')
-        x2 = self.predict(X='fit')
-
-        # Calculate contributions
-        additive = pearson(x0, x1)**2
-        epistasis = pearson(x0, x2)**2
-
-        return [additive, epistasis-additive]
-
     def compression_ratio(self):
         """Compute the compression ratio for the Lasso regression
         """
@@ -300,7 +218,6 @@ class EpistasisLasso(_Lasso, _BaseModel):
 
     @property
     def num_of_params(self):
-        """Return number of parameters in model."""
         n = 0
         vals = self.epistasis.values
         vals = vals[vals > 0]
@@ -309,29 +226,24 @@ class EpistasisLasso(_Lasso, _BaseModel):
 
     @epistasis_fitter
     @X_fitter
-    def fit(self, X='obs', y='obs', sample_weight=None, **kwargs):
-        """Fit a linear (high-order) epistasis model to data."""
+    def fit(self, X='obs', y='obs', **kwargs):
         # If a threshold exists in the data, pre-classify genotypes
         X = _np.asfortranarray(X)
-        return super(self.__class__, self).fit(X, y, sample_weight)
+        return super(self.__class__, self).fit(X, y)
 
     def fit_transform(self, X='obs', y='obs', **kwargs):
-        """Same as calling fit in linear model.
-        """
         return self.fit(X=X, y=y, **kwargs)
 
     @X_predictor
     def predict(self, X='obs'):
-        """Predict phenotypes using the fitted model."""
         X = _np.asfortranarray(X)
         return super(self.__class__, self).predict(X)
 
     def predict_transform(self, X='obs', y='obs'):
-        """Predict X from model. Used mostly in Pipeline object."""
         return self.predict(X=X)
 
     @X_fitter
-    def score(self, X='obs', y='obs', sample_weight=None):
+    def score(self, X='obs', y='obs'):
         X = _np.asfortranarray(X)
         return super(self.__class__, self).score(X, y)
 
@@ -341,38 +253,16 @@ class EpistasisLasso(_Lasso, _BaseModel):
 
     @X_predictor
     def hypothesis(self, X='obs', thetas=None):
-        """Given a set of parameters, compute a set of phenotypes. This is method
-        can be used to test a set of parameters (Useful for bayesian sampling).
-        """
         if thetas is None:
             thetas = self.thetas
         return _np.dot(X, thetas)
 
     @X_fitter
-    def lnlike_of_data(self,
-                       X="obs", y="obs",
-                       yerr="obs",
-                       sample_weight=None,
-                       thetas=None):
-        """Calculate the log likelihoods of each data point, given a set of
-        model coefficients.
-
-        Parameters
-        ----------
-        X : 2d array
-            model matrix
-        y : array
-            data to calculate the likelihood
-        yerr: array
-            uncertainty in data
-        thetas : array
-            array of model coefficients
-
-        Returns
-        -------
-        lnlike : np.ndarray
-            log-likelihood of each data point given a model.
-        """
+    def lnlike_of_data(
+            self,
+            X="obs", y="obs",
+            yerr="obs",
+            thetas=None):
         # If thetas are not explicitly named, get them from the model
         if thetas is None:
             thetas = self.thetas

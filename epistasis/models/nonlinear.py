@@ -28,8 +28,7 @@ from .linear import (EpistasisLinearRegression, EpistasisLasso)
 from ..stats import pearson
 
 
-class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator,
-                                   BaseModel):
+class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
     """Use nonlinear least-squares regression to estimate epistatic coefficients
     and nonlinear scale in a nonlinear genotype-phenotype map.
 
@@ -47,9 +46,11 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator,
     ----------
     function : callable
         Nonlinear function between Pobs and Padd
+
     reverse : callable
         The inverse of the nonlinear function used to back transform from
         nonlinear phenotypic scale to linear scale.
+
     model_type : str (default: global)
         type of epistasis model to use. See paper above for more information.
 
@@ -63,10 +64,13 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator,
     ----------
     epistasis : EpistasisMap
         Mapping object containing high-order epistatic coefficients
+
     Linear : EpistasisLinearRegression
         Linear regression object for fitting high-order epistasis model
+
     Additive : EpistasisLinearRegression
         Linear regression object for fitting additive model
+
     parameters : Parameters object
         Mapping object for nonlinear coefficients
     """
@@ -116,30 +120,6 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator,
         self.Additive = EpistasisLinearRegression(
             order=1, model_type=self.model_type)
 
-    @property
-    def data(self):
-        """Model data."""
-        # Get dataframes
-        df1 = self.gpm.complete_data
-        df2 = self.Linear.epistasis.data
-
-        # Merge dataframes.
-        data = pd.concat((df1, df2), axis=1)
-        return data
-
-    def to_dict(self):
-        """Return model data as dictionary."""
-        # Get genotype-phenotype data
-        data = self.gpm.to_dict(complete=True)
-
-        # Update with epistasis model data
-        data.update({'additive': self.Additive.epistasis.to_dict()})
-        data.update({'linear': self.Linear.epistasis.to_dict()})
-
-        # Update with model data
-        data.update(model_type=self.model_type)
-        return data
-
     @wraps(BaseModel.add_gpm)
     def add_gpm(self, gpm):
         super(EpistasisNonlinearRegression, self).add_gpm(gpm)
@@ -149,50 +129,21 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator,
 
     @property
     def thetas(self):
-        """Get all parameters in the model as a single array. This concatenates
-        the nonlinear parameters and high-order epistatic coefficients.
-        Nonlinear parameters are first in the array; linear coefficients are
-        second.
-        """
         return np.concatenate((list(self.parameters.values()),
                                self.Additive.coef_))
 
     @property
     def num_of_params(self):
-        """Return number of parameters in model."""
         n = 0
         n += len(self.parameters) + len(self.Additive.coef_)
         return n
 
-    def fit(self, X='obs', y='obs',
-            sample_weight=None,
+    def fit(self,
+            X='obs',
+            y='obs',
             use_widgets=False,
             plot_fit=True,
             **kwargs):
-        """Fit nonlinearity in genotype-phenotype map.
-
-        Parameters
-        ----------
-        X : 2-d array
-            independent data; samples.
-        y : array
-            dependent data; observations.
-        sample_weight : array (default: None, assumed even weight)
-            weights for fit.
-
-        Notes
-        -----
-        Also, will create IPython widgets to sweep through initial parameters
-        guesses.
-
-        This works by, first, fitting the coefficients using a linear epistasis
-        model as initial guesses (along with user defined kwargs) for the
-        nonlinear model.
-
-        kwargs should be ranges of guess values for each parameter. They are
-        turned into slider widgets for varying these guesses easily. The kwarg
-        needs to match the name of the parameter in the nonlinear fit.
-        """
         # Get pobs for nonlinear fit.
         if type(y) is str and y in ["obs"]:
             y = self.gpm.phenotypes
@@ -234,8 +185,8 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator,
             return widgetbox
 
     def _fit_additive(self, X='obs', y='obs', sample_weight=None, **kwargs):
-        """
-        """
+
+
         if hasattr(self, 'gpm') is False:
             raise Exception("This model will not work if a genotype-phenotype "
                             "map is not attached to the model class. Use the "
@@ -314,13 +265,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator,
         self.parameters = self.Nonlinear.params
 
     def fit_transform(self, X='obs', y='obs', **kwargs):
-        """Fit and transform data for an Epistasis Pipeline.
 
-        Returns
-        -------
-        gpm : GenotypePhenotypeMap
-            data with phenotypes transformed according to model.
-        """
         self.fit(X=X, y=y, **kwargs)
 
         if isinstance(y, str) and y == 'obs':
@@ -338,15 +283,13 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator,
         return gpm
 
     def predict(self, X='obs'):
-        """Infer phenotypes from model coefficients and nonlinear function."""
+
         x = self.Additive.predict(X=X)
         y = self.function(x, *self.parameters.values())
         return y
 
     def predict_transform(self, X='obs', y='obs'):
-        """Predict classes and apply to phenotypes. Used mostly in Pipeline
-        object.
-        """
+
         if isinstance(y, str) and y == 'obs':
             y = self.gpm.phenotypes
 
@@ -354,10 +297,6 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator,
 
     @X_predictor
     def hypothesis(self, X='obs', thetas=None):
-        """Given a set of parameters, compute a set of phenotypes. Does not
-        predict. This is method can be used to test a set of parameters
-        (Useful for bayesian sampling).
-        """
         # ----------------------------------------------------------------------
         # Part 0: Break up thetas
         # ----------------------------------------------------------------------
@@ -378,7 +317,6 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator,
         return ynonlin
 
     def hypothesis_transform(self, X='obs', y='obs', thetas=None):
-        """"""
         # Get thetas from model.
         if thetas is None:
             thetas = self.thetas
@@ -391,14 +329,6 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator,
         return self.function(y, *parameters)
 
     def score(self, X='obs', y='obs', sample_weight=None):
-        """Calculates the squared-pearson coefficient for the nonlinear fit.
-
-        Returns
-        -------
-        r_nonlinear : float
-            squared pearson coefficient between phenotypes and nonlinear
-            function.
-        """
         # Get pobs for nonlinear fit.
         if type(y) is str and y in ["obs"]:
             pobs = self.gpm.phenotypes
@@ -410,52 +340,9 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator,
         ypred = self.function(xlin, *self.parameters.values())
         return pearson(pobs, ypred)**2
 
-    def contributions(self):
-        """Calculate the contributions from nonlinearity and epistasis to
-        the variation in phenotype.
-
-        Returns a list of contribution ordered as additive, scale, and
-        epistasis.
-        """
-        # Calculate various pearson coeffs.
-        x0 = self.gpm.phenotypes
-        x1 = self.Additive.predict(X='fit')
-
-        # Scale contribution
-        x2 = self.function(x1, **self.parameters)
-
-        # Epistasis contribution
-        x3 = self.predict(X='fit')
-
-        # Calculate contributions
-        additive = pearson(x0, x1)**2
-        scale = pearson(x0, x2)**2
-        epistasis = pearson(x0, x3)**2
-
-        return [additive, scale-additive, epistasis-scale]
-
 
     def lnlike_of_data(self, X='obs', y='obs', yerr='obs',
                        sample_weight=None, thetas=None):
-        """Calculate the log likelihoods of each data point, given a set of
-        model coefficients.
-
-        Parameters
-        ----------
-        X : 2d array
-            model matrix
-        y : array
-            data to calculate the likelihood
-        yerr: array
-            uncertainty in data
-        thetas : array
-            array of model coefficients
-
-        Returns
-        -------
-        lnlike : np.ndarray
-            log-likelihood of each data point given a model.
-        """
         # ###### Prepare input #########
         # If no model parameters are given, use the model fit.
         if thetas is None:
@@ -516,9 +403,11 @@ class EpistasisNonlinearLasso(EpistasisNonlinearRegression):
     ----------
     function : callable
         Nonlinear function between Pobs and Padd
+
     reverse : callable
         The inverse of the nonlinear function used to back transform from
         nonlinear phenotypic scale to linear scale.
+
     model_type : str (default: global)
         type of epistasis model to use. See paper above for more information.
 
@@ -532,10 +421,13 @@ class EpistasisNonlinearLasso(EpistasisNonlinearRegression):
     ----------
     epistasis : EpistasisMap
         Mapping object containing high-order epistatic coefficients
+
     Linear : EpistasisLinearRegression
         Linear regression object for fitting high-order epistasis model
+
     Additive : EpistasisLinearRegression
         Linear regression object for fitting additive model
+
     parameters : Parameters object
         Mapping object for nonlinear coefficients
     """
@@ -555,25 +447,6 @@ class EpistasisNonlinearLasso(EpistasisNonlinearRegression):
 
     def lnlike_of_data(self, X='obs', y='obs', yerr='obs',
                        sample_weight=None, thetas=None):
-        """Calculate the log likelihoods of each data point, given a set of
-        model coefficients.
-
-        Parameters
-        ----------
-        X : 2d array
-            model matrix
-        y : array
-            data to calculate the likelihood
-        yerr: array
-            uncertainty in data
-        thetas : array
-            array of model coefficients
-
-        Returns
-        -------
-        lnlike : np.ndarray
-            log-likelihood of each data point given a model.
-        """
         # ###### Prepare input #########
         # If no model parameters are given, use the model fit.
         if thetas is None:

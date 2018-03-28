@@ -1,5 +1,6 @@
-
+import abc
 import json
+import inspect
 import numpy as np
 import pandas as pd
 from functools import wraps
@@ -11,63 +12,281 @@ from gpmap.gpm import GenotypePhenotypeMap
 # Local imports
 from epistasis.mapping import EpistasisMap, mutations_to_sites
 from epistasis.model_matrix_ext import get_model_matrix
-from epistasis.utils import extract_mutations_from_genotypes
+from epistasis.utils import extract_mutations_from_genotypes, DocstringMeta
 from .utils import XMatrixException
+from sklearn.base import RegressorMixin, BaseEstimator
 
+def sklearn_mixin(sklearn_class):
+    """Mixing a Scikit learn model."""
+    def mixer(cls):
+        # Meta program the class
+        name = cls.__name__
+        methods = cls.__dict__
+        parents = cls.__bases__
 
-class BaseModel(object):
-    """Base class for all models.
+        # Put Sklearn first in line of parent classes
+        parents = (sklearn_class,) + parents
 
-    Manages attachment of GenotypePhenotypeMap and EpistasisMaps to the
-    Epistasis models.
+        # Rebuild class with Mixed in scikit learn.
+        cls = type(name, parents, dict(methods))
+        return cls
+    return mixer
+
+class BaseModel(abc.ABC, BaseEstimator, RegressorMixin):
+    """Abstract Base Class for all epistasis models.
     """
-    def __init__(self, order=1, *args, **kwargs):
-        self.order=order
-        self.Xbuilt = {}
+    def __new__(self, *args, **kwargs):
+        """Replace the docstrings of a subclass with docstrings in
+        this base class.
+        """
+        # Get all attributes in the inherited class
+        names = list(self.__dict__.keys())
 
+        for name in names:
+            item = getattr(self, name)
+
+            # If this attr
+            if not getattr(item, '__doc__'):
+                try:
+                    base_item = getattr(BaseModel, name)
+                    item.__doc__ = base_item.__doc__
+                except AttributeError:
+                    pass
+
+        return super(BaseModel, self).__new__(self, *args, **kwargs)
+
+
+    # --------------------------------------------------------------
+    # Abstract Properties
+    # --------------------------------------------------------------
+
+    @property
+    @abc.abstractmethod
     def num_of_params(self):
-        raise Exception("Must be defined in a subclass.")
+        """Number of parameters in model.
+        """
+        pass
 
-    def fit(self, *args, **kwargs):
-        raise Exception("Must be defined in a subclass.")
+    # --------------------------------------------------------------
+    # Abstract Methods
+    # --------------------------------------------------------------
 
-    def fit_transform(self, *args, **kwargs):
-        raise Exception("Must be defined in a subclass.")
-
-    def predict(self, *args, **kwargs):
-        raise Exception("Must be defined in a subclass.")
-
-    def predict_transform(self, *args, **kwargs):
-        raise Exception("Must be defined in a subclass.")
-
-    def hypothesis(self, *args, **kwargs):
-        raise Exception("Must be defined in a subclass.")
-
-    def hypothesis_transform(self, *args, **kwargs):
-        raise Exception("Must be defined in a subclass.")
-
-    def lnlike_of_data(self, *args, **kwargs):
-        raise Exception("Must be defined in a subclass.")
-
-    def lnlikelihood(self, X="obs", y="obs", yerr="obs",
-                     sample_weight=None, thetas=None):
-        """Calculate the log likelihood of y, given a set of model coefficients.
+    @abc.abstractmethod
+    def fit(self, X='obs', y='obs', **kwargs):
+        """Fit model to data.
 
         Parameters
         ----------
-        X : 2d array
-            model matrix
-        y : array
-            data to calculate the likelihood
-        yerr: array
-            uncertainty in data
-        thetas : array
-            array of model coefficients
+        X : 'obs', ndarray, or list of genotypes. (default='obs')
+            data used to construct X matrix that maps genotypes to
+            model coefficients. If 'obs', the model uses genotypes in the
+            attached genotype-phenotype map. If a list of strings,
+            the strings are genotypes that will be converted to an X matrix.
+            If ndarray, the function assumes X is the X matrix used by the
+            epistasis model.
+
+        y : 'obs' or ndarray (default='obs')
+            array of phenotypes. If 'obs', the phenotypes in the attached
+            genotype-phenotype map is used.
+
+
+        Returns
+        -------
+        self :
+            The model is returned. Allows chaining methods.
+        """
+        pass
+
+    @abc.abstractmethod
+    def fit_transform(self, X='obs', y='obs', **kwargs):
+        """Fit model to data.
+
+        Parameters
+        ----------
+        X : 'obs', ndarray, or list of genotypes. (default='obs')
+            data used to construct X matrix that maps genotypes to
+            model coefficients. If 'obs', the model uses genotypes in the
+            attached genotype-phenotype map. If a list of strings,
+            the strings are genotypes that will be converted to an X matrix.
+            If ndarray, the function assumes X is the X matrix used by the
+            epistasis model.
+
+        y : 'obs' or ndarray (default='obs')
+            array of phenotypes. If 'obs', the phenotypes in the attached
+            genotype-phenotype map is used.
+
+        Returns
+        -------
+        gpm : GenotypePhenotypeMap
+            The genotype-phenotype map object with transformed genotypes.
+        """
+        pass
+
+    @abc.abstractmethod
+    def predict(self, X='obs'):
+        """Use model to predict phenotypes for a given list of genotypes.
+
+        Parameters
+        ----------
+        X : 'obs', ndarray, or list of genotypes. (default='obs')
+            data used to construct X matrix that maps genotypes to
+            model coefficients. If 'obs', the model uses genotypes in the
+            attached genotype-phenotype map. If a list of strings,
+            the strings are genotypes that will be converted to an X matrix.
+            If ndarray, the function assumes X is the X matrix used by the
+            epistasis model.
+
+        Returns
+        -------
+        y : ndarray
+            array of phenotypes.
+        """
+        pass
+
+    @abc.abstractmethod
+    def predict_transform(self, X='obs', y='obs', **kwargs):
+        """Transform a set of phenotypes according to the model.
+
+        Parameters
+        ----------
+        X : 'obs', ndarray, or list of genotypes. (default='obs')
+            data used to construct X matrix that maps genotypes to
+            model coefficients. If 'obs', the model uses genotypes in the
+            attached genotype-phenotype map. If a list of strings,
+            the strings are genotypes that will be converted to an X matrix.
+            If ndarray, the function assumes X is the X matrix used by the
+            epistasis model.
+
+        y : ndarray
+            An array of phenotypes to transform.
+
+        Returns
+        -------
+        y_transform : ndarray
+            array of phenotypes.
+        """
+        pass
+
+    @abc.abstractmethod
+    def hypothesis(self, X='obs', thetas=None):
+        """Compute phenotypes from given model parameters.
+
+        Parameters
+        ----------
+        X : 'obs', ndarray, or list of genotypes. (default='obs')
+            data used to construct X matrix that maps genotypes to
+            model coefficients. If 'obs', the model uses genotypes in the
+            attached genotype-phenotype map. If a list of strings,
+            the strings are genotypes that will be converted to an X matrix.
+            If ndarray, the function assumes X is the X matrix used by the
+            epistasis model.
+
+        thetas : ndarray
+            array of model parameters. See thetas property for specifics.
+
+        Returns
+        -------
+        y : ndarray
+            array of phenotypes predicted by model parameters.
+        """
+        pass
+
+    @abc.abstractmethod
+    def hypothesis_transform(self, X='obs', y='obs', thetas=None):
+        """Transform phenotypes with given model parameters.
+
+        Parameterss
+        ----------
+        X : 'obs', ndarray, or list of genotypes. (default='obs')
+            data used to construct X matrix that maps genotypes to
+            model coefficients. If 'obs', the model uses genotypes in the
+            attached genotype-phenotype map. If a list of strings,
+            the strings are genotypes that will be converted to an X matrix.
+            If ndarray, the function assumes X is the X matrix used by the
+            epistasis model.
+
+        y : ndarray
+            An array of phenotypes to transform.
+
+        thetas : ndarray
+            array of model parameters. See thetas property for specifics.
+
+        Returns
+        -------
+        y : ndarray
+            array of phenotypes predicted by model parameters.
+        """
+        pass
+
+    @abc.abstractmethod
+    def lnlike_of_data(
+           self,
+           X='obs',
+           y='obs',
+           yerr='obs',
+           thetas=None):
+        """Compute the individUal log-likelihoods for each datapoint from a set
+        of model parameters.
+
+        Parameters
+        ----------
+        X : 'obs', ndarray, or list of genotypes. (default='obs')
+            data used to construct X matrix that maps genotypes to
+            model coefficients. If 'obs', the model uses genotypes in the
+            attached genotype-phenotype map. If a list of strings,
+            the strings are genotypes that will be converted to an X matrix.
+            If ndarray, the function assumes X is the X matrix used by the
+            epistasis model.
+
+        y : ndarray
+            An array of phenotypes to transform.
+
+        yerr : ndarray
+            An array of the measured phenotypes standard deviations.
+
+        thetas : ndarray
+            array of model parameters. See thetas property for specifics.
+
+        Returns
+        -------
+        y : ndarray
+            array of phenotypes predicted by model parameters.
+        """
+        pass
+
+
+    def lnlikelihood(
+            self,
+            X="obs",
+            y="obs",
+            yerr="obs",
+            thetas=None):
+        """Compute the individal log-likelihoods for each datapoint from a set
+        of model parameters.
+
+        Parameters
+        ----------
+        X : 'obs', ndarray, or list of genotypes. (default='obs')
+            data used to construct X matrix that maps genotypes to
+            model coefficients. If 'obs', the model uses genotypes in the
+            attached genotype-phenotype map. If a list of strings,
+            the strings are genotypes that will be converted to an X matrix.
+            If ndarray, the function assumes X is the X matrix used by the
+            epistasis model.
+
+        y : ndarray
+            An array of phenotypes to transform.
+
+        yerr : ndarray
+            An array of the measured phenotypes standard deviations.
+
+        thetas : ndarray
+            array of model parameters. See thetas property for specifics.
 
         Returns
         -------
         lnlike : float
-            log-likelihood of data given a model.
+            log-likelihood of the model parameters.
         """
         lnlike = np.sum(self.lnlike_of_data(X=X, y=y, yerr=yerr,
                                             sample_weight=sample_weight,
@@ -143,11 +362,9 @@ class BaseModel(object):
     def add_gpm(self, gpm):
         """Add a GenotypePhenotypeMap object to the epistasis model.
         """
-        # Hacky way to
-        instance_tree = (gpm.__class__,) + gpm.__class__.__bases__
-        if GenotypePhenotypeMap in instance_tree is False:
-            raise TypeError("gpm must be a GenotypePhenotypeMap object")
         self._gpm = gpm
+
+        # Reset Xbuilt.
         self.Xbuilt = {}
 
         # Construct columns for X matrix
@@ -156,40 +373,5 @@ class BaseModel(object):
 
     @property
     def gpm(self):
-        """GenotypePhenotypeMap object"""
+        """Data stored in a GenotypePhenotypeMap object."""
         return self._gpm
-
-    @property
-    def data(self):
-        """Model data."""
-        # Get dataframes
-        df1 = self.gpm.complete_data
-        df2 = self.epistasis.data
-
-        # Merge dataframes.
-        data = pd.concat((df1, df2), axis=1)
-        return data
-
-    def to_dict(self):
-        """Return model data as dictionary."""
-        # Get genotype-phenotype data
-        data = self.data.to_dict(complete=True)
-
-        # Update with model data
-        data.update(model_type=self.model_type,
-                    order=self.order)
-        return data
-
-    def to_excel(self, filename):
-        """Write data to excel spreadsheet."""
-        self.data.to_excel(filename)
-
-    def to_csv(self, filename):
-        """Write data to excel spreadsheet."""
-        self.data.to_csv(filename)
-
-    def to_json(self, filename):
-        """Write to json file."""
-        data = self.to_dict()
-        with open(filename, 'w') as f:
-            json.dump(data, f)

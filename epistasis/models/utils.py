@@ -6,33 +6,12 @@ from epistasis.mapping import EpistasisMap, mutations_to_sites
 
 from gpmap.utils import genotypes_to_binary
 
-import warnings
-# Suppresse the future warnings given by X_fitter function.
-# warnings.simplefilter(action='ignore', category=FutureWarning)
-
-
 class XMatrixException(Exception):
     """Exception Subclass for X matrix errors."""
 
 
 class FittingError(Exception):
     """Exception Subclass for X matrix errors."""
-
-
-def sklearn_to_epistasis():
-    """Decorate a scikit learn class with this function and automagically
-    convert it into a epistasis sklearn model class.
-    """
-    def inner(cls):
-        base_model = cls.__bases__[-1]
-        for attr in base_model.__dict__:
-            method = getattr(base_model, attr)
-            try:
-                setattr(cls, attr, getattr(base_model, attr))
-            except AttributeError:
-                pass
-        return cls
-    return inner
 
 
 def X_predictor(method):

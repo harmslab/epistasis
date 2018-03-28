@@ -200,13 +200,7 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
         self.parameters = self.Nonlinear.params
 
     def fit_transform(self, X='obs', y='obs', **kwargs):
-        """Fit and transform data for an Epistasis Pipeline.
-
-        Returns
-        -------
-        gpm : GenotypePhenotypeMap
-            data with phenotypes transformed according to model.
-        """
+        # Fit method.
         self.fit(X=X, y=y, **kwargs)
 
         if isinstance(y, str) and y == 'obs':
@@ -226,16 +220,12 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
         return gpm
 
     def predict(self, X='obs'):
-        """Infer phenotypes from model coefficients and nonlinear function."""
         x = self.Additive.predict(X=X)
         xadd = self.Additive.predict(X='fit')
         y = self.function(x, *self.parameters.values(), data=xadd)
         return y
 
     def predict_transform(self, X='obs', y='obs'):
-        """Predict classes and apply to phenotypes. Used mostly in Pipeline
-        object.
-        """
         if y == 'obs':
             y = self.gpm.phenotypes
 
@@ -267,36 +257,8 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
         ypred = self.function(xadd, *self.parameters.values(), data=xadd)
         return pearson(pobs, ypred)**2
 
-    def contributions(self):
-        """Calculate the contributions from nonlinearity and epistasis to
-        the variation in phenotype.
-
-        Returns a list of contribution ordered as additive, scale, and
-        epistasis.
-        """
-        # Calculate various pearson coeffs.
-        x0 = self.gpm.phenotypes
-        x1 = self.Additive.predict(X='fit')
-
-        # Scale contribution
-        x2 = self.function(x1, **self.parameters, data=x1)
-
-        # Epistasis contribution
-        x3 = self.predict(X='fit')
-
-        # Calculate contributions
-        additive = pearson(x0, x1)**2
-        scale = pearson(x0, x2)**2
-        epistasis = pearson(x0, x3)**2
-
-        return [additive, scale-additive, epistasis-scale]
-
     @X_predictor
     def hypothesis(self, X='obs', thetas=None):
-        """Given a set of parameters, compute a set of phenotypes. Does not
-        predict. This is method can be used to test a set of parameters
-        (Useful for bayesian sampling).
-        """
         # ----------------------------------------------------------------------
         # Part 0: Break up thetas
         # ----------------------------------------------------------------------
@@ -321,25 +283,6 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
 
     def lnlike_of_data(self, X='obs', y='obs', yerr='obs',
                        sample_weight=None, thetas=None):
-        """Calculate the log likelihoods of each data point, given a set of
-        model coefficients.
-
-        Parameters
-        ----------
-        X : 2d array
-            model matrix
-        y : array
-            data to calculate the likelihood
-        yerr: array
-            uncertainty in data
-        thetas : array
-            array of model coefficients
-
-        Returns
-        -------
-        lnlike : np.ndarray
-            log-likelihood of each data point given a model.
-        """
         # ###### Prepare input #########
         # If no model parameters are given, use the model fit.
         if thetas is None:

@@ -1,9 +1,10 @@
-__doc__ = """Submodule with handy utilities for constructing epistasis models.
+__doc__ = """Submodule with handy utilities used throughout the package.
 """
 # -------------------------------------------------------
 # Miscellaneous Python functions for random task
 # -------------------------------------------------------
 
+import abc
 import itertools as it
 import numpy as np
 from scipy.misc import comb
@@ -13,10 +14,11 @@ from collections import OrderedDict
 from gpmap.utils import genotypes_to_binary
 
 from .model_matrix_ext import get_model_matrix
+
+
 # -------------------------------------------------------
 # Custom exceptions
 # -------------------------------------------------------
-
 
 class SubclassException(Exception):
     """ For methods that must be implemented in a subclass. """
@@ -39,6 +41,36 @@ def genotypes_to_X(wildtype, genotypes,
     # X matrix
     X = get_model_matrix(binary, sites, model_type=model_type)
     return X
+
+# -------------------------------------------------------
+# Useful Classes
+# -------------------------------------------------------
+
+class DocstringMeta(abc.ABCMeta):
+    """Metaclass that allows docstring 'inheritance'
+
+    Idea taken from this thread:
+    https://github.com/sphinx-doc/sphinx/issues/3140
+    """
+    def __new__(mcls, classname, bases, cls_dict):
+        # Create a new class as expected.
+        cls = abc.ABCMeta.__new__(mcls, classname, bases, cls_dict)
+
+        # Get order of inheritance
+        mro = cls.__mro__[1:]
+
+        # Iterate through items in class.
+        for name, member in cls_dict.iteritems():
+
+            # If the item does not have a docstring, add the base class docstring.
+            if not getattr(member, '__doc__'):
+                for base in mro:
+                    try:
+                        member.__doc__ = getattr(base, name).__doc__
+                        break
+                    except AttributeError:
+                        pass
+        return cls
 
 
 class Bunch:
