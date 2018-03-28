@@ -1,10 +1,10 @@
-import abc
 import json
 import inspect
 import numpy as np
 import pandas as pd
-from functools import wraps
 from sklearn.preprocessing import binarize
+
+from abc import abstractmethod, ABC
 
 # imports from gpmap dependency
 from gpmap.gpm import GenotypePhenotypeMap
@@ -36,7 +36,7 @@ def sklearn_mixin(sklearn_class):
 
     return mixer
 
-class BaseModel(abc.ABC, BaseEstimator, RegressorMixin):
+class BaseModel(ABC, BaseEstimator, RegressorMixin):
     """Abstract Base Class for all epistasis models.
 
     This class sets all docstrings not given in subclasses.
@@ -58,14 +58,14 @@ class BaseModel(abc.ABC, BaseEstimator, RegressorMixin):
             except AttributeError:
                 pass
 
-        return super(BaseModel, self).__new__(self, *args, **kwargs)
+        return super(BaseModel, self).__new__(self)
 
     # --------------------------------------------------------------
     # Abstract Properties
     # --------------------------------------------------------------
 
     @property
-    @abc.abstractmethod
+    @abstractmethod
     def num_of_params(self):
         """Number of parameters in model.
         """
@@ -75,7 +75,7 @@ class BaseModel(abc.ABC, BaseEstimator, RegressorMixin):
     # Abstract Methods
     # --------------------------------------------------------------
 
-    @abc.abstractmethod
+    @abstractmethod
     def fit(self, X='obs', y='obs', **kwargs):
         """Fit model to data.
 
@@ -101,7 +101,7 @@ class BaseModel(abc.ABC, BaseEstimator, RegressorMixin):
         """
         pass
 
-    @abc.abstractmethod
+    @abstractmethod
     def fit_transform(self, X='obs', y='obs', **kwargs):
         """Fit model to data and transform output according to model.
 
@@ -126,7 +126,7 @@ class BaseModel(abc.ABC, BaseEstimator, RegressorMixin):
         """
         pass
 
-    @abc.abstractmethod
+    @abstractmethod
     def predict(self, X='obs'):
         """Use model to predict phenotypes for a given list of genotypes.
 
@@ -147,7 +147,7 @@ class BaseModel(abc.ABC, BaseEstimator, RegressorMixin):
         """
         pass
 
-    @abc.abstractmethod
+    @abstractmethod
     def predict_transform(self, X='obs', y='obs', **kwargs):
         """Transform a set of phenotypes according to the model.
 
@@ -171,7 +171,7 @@ class BaseModel(abc.ABC, BaseEstimator, RegressorMixin):
         """
         pass
 
-    @abc.abstractmethod
+    @abstractmethod
     def hypothesis(self, X='obs', thetas=None):
         """Compute phenotypes from given model parameters.
 
@@ -195,7 +195,7 @@ class BaseModel(abc.ABC, BaseEstimator, RegressorMixin):
         """
         pass
 
-    @abc.abstractmethod
+    @abstractmethod
     def hypothesis_transform(self, X='obs', y='obs', thetas=None):
         """Transform phenotypes with given model parameters.
 
@@ -222,7 +222,7 @@ class BaseModel(abc.ABC, BaseEstimator, RegressorMixin):
         """
         pass
 
-    @abc.abstractmethod
+    @abstractmethod
     def lnlike_of_data(
            self,
            X='obs',

@@ -1,5 +1,3 @@
-import abc
-from functools import wraps
 import numpy as np
 import pandas as pd
 
@@ -26,12 +24,25 @@ warnings.filterwarnings(action="ignore", module="sklearn",
                         category=DeprecationWarning)
 
 
-class ClassifierMixin(BaseModel):
-    """Base class for implementing epistasis classification using scikit-learn
-    models. To write your own epistasis classifier, write a subclass class,
-    inherit whatever scikit-learn classifer class you'd like and this class
-    (second).
+@sklearn_mixin(LogisticRegression)
+class EpistasisLogisticRegression(BaseModel):
+    """Logistic regression for estimating epistatic interactions that lead to
+    nonviable phenotypes. Useful for predicting viable/nonviable phenotypes.
+
+    Parameters
+    ----------
+    threshold : float
+        value below which phenotypes are considered nonviable.
+
+    order : int
+        order of epistasis model
+
+    model_type : str (default="global")
+        type of model matrix to use. "global" defines epistasis with respect to
+        a background-averaged "genotype-phenotype". "local" defines epistasis
+        with respect to the wildtype genotype.
     """
+
     def __init__(self, threshold, model_type="global", **kwargs):
         super(self.__class__, self).__init__(**kwargs)
         self.threshold = threshold
@@ -122,8 +133,7 @@ class ClassifierMixin(BaseModel):
         return super(self.__class__, self).score(X=X, y=yclass)
 
     @X_fitter
-    def lnlike_of_data(self, X='obs', y='obs', yerr='obs',
-                       sample_weight=None, thetas=None):
+    def lnlike_of_data(self, X='obs', y='obs', yerr='obs', thetas=None):
         if thetas is None:
             thetas = self.thetas
 
@@ -135,25 +145,6 @@ class ClassifierMixin(BaseModel):
         # NOTE: This likelihood is not normalized -- not a simple problem.
         return yclass * np.log(1 - ymodel) + (1 - yclass) * np.log(ymodel)
 
-
-@sklearn_mixin(LogisticRegression)
-class EpistasisLogisticRegression(ClassifierMixin):
-    """Logistic regression for estimating epistatic interactions that lead to
-    nonviable phenotypes. Useful for predicting viable/nonviable phenotypes.
-
-    Parameters
-    ----------
-    threshold : float
-        value below which phenotypes are considered nonviable.
-
-    order : int
-        order of epistasis model
-
-    model_type : str (default="global")
-        type of model matrix to use. "global" defines epistasis with respect to
-        a background-averaged "genotype-phenotype". "local" defines epistasis
-        with respect to the wildtype genotype.
-    """
     @X_predictor
     def hypothesis(self, X='obs', thetas=None):
         # Given thetas, estimate probability of class.
@@ -176,12 +167,3 @@ class EpistasisLogisticRegression(ClassifierMixin):
     @property
     def thetas(self):
         return self.epistasis.values
-
-#
-# @sklearn_mixin(BernoulliNB)
-# class EpistasisBernoulliNB(ClassifierMixin):
-#     """Naive Bayes Bernoulli Classifier."""
-#
-# @sklearn_mixin(SVC)
-# class EpistasisSVC(ClassifierMixin):
-#     """Support Vector Machine Classifier"""

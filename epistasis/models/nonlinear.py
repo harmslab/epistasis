@@ -6,7 +6,6 @@ import warnings
 import sys
 import json
 import inspect
-from functools import wraps
 
 # Scipy stack imports
 import numpy as np
@@ -28,7 +27,7 @@ from .linear import (EpistasisLinearRegression, EpistasisLasso)
 from ..stats import pearson
 
 
-class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
+class EpistasisNonlinearRegression(BaseModel):
     """Use nonlinear least-squares regression to estimate epistatic coefficients
     and nonlinear scale in a nonlinear genotype-phenotype map.
 
@@ -120,7 +119,6 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         self.Additive = EpistasisLinearRegression(
             order=1, model_type=self.model_type)
 
-    @wraps(BaseModel.add_gpm)
     def add_gpm(self, gpm):
         super(EpistasisNonlinearRegression, self).add_gpm(gpm)
         # Add gpm to other models.
@@ -156,13 +154,12 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
                                " Right now, its {}".format(type(y)))
 
         # Fit linear portion
-        self._fit_additive(X=X, y=y, sample_weight=sample_weight)
+        self._fit_additive(X=X, y=y)
 
         # Use widgets to guess the value?
         if use_widgets is False:
             # Step 2: fit nonlinear function
-            self._fit_nonlinear(X=X, y=y, sample_weight=sample_weight,
-                                **kwargs)
+            self._fit_nonlinear(X=X, y=y, **kwargs)
 
         # Don't use widgets to fit data
         else:
@@ -174,8 +171,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
             def fitting(**parameters):
                 """Callable to be controlled by widgets."""
                 # Fit the nonlinear least squares fit
-                self._fit_nonlinear(
-                    X=X, y=y, sample_weight=sample_weight, **parameters)
+                self._fit_nonlinear(X=X, y=y, **parameters)
 
                 # Print model parameters.
                 self.parameters.pretty_print()
@@ -184,7 +180,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
             widgetbox = ipywidgets.interactive(fitting, **kwargs)
             return widgetbox
 
-    def _fit_additive(self, X='obs', y='obs', sample_weight=None, **kwargs):
+    def _fit_additive(self, X='obs', y='obs', **kwargs):
 
 
         if hasattr(self, 'gpm') is False:
@@ -206,12 +202,12 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
             Xadd = X
 
         # Fit Additive model
-        self.Additive.fit(X=Xadd, y=y, sample_weight=sample_weight)
+        self.Additive.fit(X=Xadd, y=y)
         self.Additive.epistasis.values = self.Additive.coef_
 
         return self
 
-    def _fit_nonlinear(self, X='obs', y='obs', sample_weight=None, **kwargs):
+    def _fit_nonlinear(self, X='obs', y='obs', **kwargs):
         """Estimate the scale of multiple mutations in a genotype-phenotype
         map."""
         # Use a first order matrix only.
@@ -328,7 +324,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         # Part 2: Nonlinear portion
         return self.function(y, *parameters)
 
-    def score(self, X='obs', y='obs', sample_weight=None):
+    def score(self, X='obs', y='obs'):
         # Get pobs for nonlinear fit.
         if type(y) is str and y in ["obs"]:
             pobs = self.gpm.phenotypes
@@ -341,8 +337,7 @@ class EpistasisNonlinearRegression(RegressorMixin, BaseEstimator, BaseModel):
         return pearson(pobs, ypred)**2
 
 
-    def lnlike_of_data(self, X='obs', y='obs', yerr='obs',
-                       sample_weight=None, thetas=None):
+    def lnlike_of_data(self, X='obs', y='obs', yerr='obs', thetas=None):
         # ###### Prepare input #########
         # If no model parameters are given, use the model fit.
         if thetas is None:
@@ -445,8 +440,7 @@ class EpistasisNonlinearLasso(EpistasisNonlinearRegression):
             alpha=alpha,
             order=1, model_type=self.model_type)
 
-    def lnlike_of_data(self, X='obs', y='obs', yerr='obs',
-                       sample_weight=None, thetas=None):
+    def lnlike_of_data(self, X='obs', y='obs', yerr='obs', thetas=None):
         # ###### Prepare input #########
         # If no model parameters are given, use the model fit.
         if thetas is None:

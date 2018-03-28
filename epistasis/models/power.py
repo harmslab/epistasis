@@ -233,17 +233,6 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
         return self.function(y, *self.parameters.values(), data=xdata)
 
     def score(self, X='obs', y='obs', sample_weight=None):
-        """Calculates the squared-pearson coefficient for the nonlinear fit.
-
-        Returns
-        -------
-        r_nonlinear : float
-            squared pearson coefficient between phenotypes and nonlinear
-            function.
-        r_linear : float
-            squared pearson coefficient between linearized phenotypes and
-            linear epistasis model described by epistasis.values.
-        """
         # Get pobs for nonlinear fit.
         if type(y) is str and y in ["obs"]:
             pobs = self.gpm.phenotypes
@@ -351,10 +340,13 @@ class EpistasisPowerTransformLasso(EpistasisPowerTransform):
     ----------
     epistasis : EpistasisMap
         Mapping object containing high-order epistatic coefficients
+
     Linear : EpistasisLasso
         Linear regression object for fitting high-order epistasis model
+
     Additive : EpistasisLinearRegression
         Linear regression object for fitting additive model
+
     parameters : Parameters object
         Mapping object for nonlinear coefficients
     """
