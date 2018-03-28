@@ -17,44 +17,48 @@ from .utils import XMatrixException
 from sklearn.base import RegressorMixin, BaseEstimator
 
 def sklearn_mixin(sklearn_class):
-    """Mixing a Scikit learn model."""
+    """Mixing a Scikit learn model.
+
+    Update docstrings to BaseModel.
+    """
     def mixer(cls):
         # Meta program the class
         name = cls.__name__
-        methods = cls.__dict__
+        methods = dict(cls.__dict__)
         parents = cls.__bases__
 
         # Put Sklearn first in line of parent classes
         parents = (sklearn_class,) + parents
 
         # Rebuild class with Mixed in scikit learn.
-        cls = type(name, parents, dict(methods))
+        cls = type(name, parents, methods)
         return cls
+
     return mixer
 
 class BaseModel(abc.ABC, BaseEstimator, RegressorMixin):
     """Abstract Base Class for all epistasis models.
+
+    This class sets all docstrings not given in subclasses.
     """
     def __new__(self, *args, **kwargs):
         """Replace the docstrings of a subclass with docstrings in
         this base class.
         """
-        # Get all attributes in the inherited class
-        names = list(self.__dict__.keys())
+        # Get items in BaseModel.
+        for name, member in inspect.getmembers(BaseModel):
+            # Get the docstring for this item
+            doc = getattr(member, '__doc__')
 
-        for name in names:
-            item = getattr(self, name)
+            # Replace the docstring in self with basemodel docstring.
+            try:
+                member = getattr(self, name)
+                member.__doc__ = doc
 
-            # If this attr
-            if not getattr(item, '__doc__'):
-                try:
-                    base_item = getattr(BaseModel, name)
-                    item.__doc__ = base_item.__doc__
-                except AttributeError:
-                    pass
+            except AttributeError:
+                pass
 
         return super(BaseModel, self).__new__(self, *args, **kwargs)
-
 
     # --------------------------------------------------------------
     # Abstract Properties
@@ -99,7 +103,7 @@ class BaseModel(abc.ABC, BaseEstimator, RegressorMixin):
 
     @abc.abstractmethod
     def fit_transform(self, X='obs', y='obs', **kwargs):
-        """Fit model to data.
+        """Fit model to data and transform output according to model.
 
         Parameters
         ----------

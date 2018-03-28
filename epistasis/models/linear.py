@@ -112,6 +112,7 @@ class EpistasisLinearRegression(BaseModel):
         return (- 0.5 * _np.log(2 * _np.pi * yerr**2) -
                 (0.5 * ((y - ymodel)**2 / yerr**2)))
 
+
 @sklearn_mixin(Lasso)
 class EpistasisLasso(BaseModel):
     """A scikit-learn Lasso Regression class for discovering sparse
@@ -256,6 +257,9 @@ class EpistasisLasso(BaseModel):
         if thetas is None:
             thetas = self.thetas
         return _np.dot(X, thetas)
+
+    def hypothesis_transform(self, X='obs', thetas=None):
+        pass
 
     @X_fitter
     def lnlike_of_data(

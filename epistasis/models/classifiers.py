@@ -1,3 +1,4 @@
+import abc
 from functools import wraps
 import numpy as np
 import pandas as pd
@@ -9,10 +10,8 @@ from sklearn.naive_bayes import BernoulliNB
 from sklearn.preprocessing import binarize
 
 from ..mapping import EpistasisMap
-from .base import BaseModel
-from .utils import (
-                    #sklearn_to_epistasis,
-                    XMatrixException,
+from .base import BaseModel, sklearn_mixin
+from .utils import (XMatrixException,
                     X_fitter,
                     epistasis_fitter,
                     X_predictor)
@@ -27,7 +26,7 @@ warnings.filterwarnings(action="ignore", module="sklearn",
                         category=DeprecationWarning)
 
 
-class EpistasisClassifier(BaseModel):
+class ClassifierMixin(BaseModel):
     """Base class for implementing epistasis classification using scikit-learn
     models. To write your own epistasis classifier, write a subclass class,
     inherit whatever scikit-learn classifer class you'd like and this class
@@ -137,8 +136,8 @@ class EpistasisClassifier(BaseModel):
         return yclass * np.log(1 - ymodel) + (1 - yclass) * np.log(ymodel)
 
 
-#@sklearn_to_epistasis()
-class EpistasisLogisticRegression(LogisticRegression, EpistasisBaseClassifier):
+@sklearn_mixin(LogisticRegression)
+class EpistasisLogisticRegression(ClassifierMixin):
     """Logistic regression for estimating epistatic interactions that lead to
     nonviable phenotypes. Useful for predicting viable/nonviable phenotypes.
 
@@ -178,12 +177,11 @@ class EpistasisLogisticRegression(LogisticRegression, EpistasisBaseClassifier):
     def thetas(self):
         return self.epistasis.values
 
-
-#@sklearn_to_epistasis()
-class EpistasisBernoulliNB(BernoulliNB, EpistasisBaseClassifier):
-    """Naive Bayes Bernoulli Classifier."""
-
-#@sklearn_to_epistasis()
-class EpistasisSVC(SVC, EpistasisBaseClassifier):
-    """Logistic Regression used to categorize phenotypes as either alive
-    or dead."""
+#
+# @sklearn_mixin(BernoulliNB)
+# class EpistasisBernoulliNB(ClassifierMixin):
+#     """Naive Bayes Bernoulli Classifier."""
+#
+# @sklearn_mixin(SVC)
+# class EpistasisSVC(ClassifierMixin):
+#     """Support Vector Machine Classifier"""
