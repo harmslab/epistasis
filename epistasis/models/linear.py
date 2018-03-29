@@ -3,7 +3,7 @@ from sklearn.linear_model import LinearRegression
 from sklearn.linear_model import Lasso
 
 from .base import BaseModel, sklearn_mixin
-from .utils import epistasis_fitter, arghandler
+from .utils import arghandler
 from ..stats import pearson
 
 from gpmap import GenotypePhenotypeMap
@@ -49,13 +49,17 @@ class EpistasisLinearRegression(BaseModel):
     @property
     def num_of_params(self):
         n = 0
-        n += self.epistasis.n
+        n += self.coef_
         return n
 
     #@epistasis_fitter
     @arghandler
     def fit(self, X=None, y=None, **kwargs):
-        return super(self.__class__, self).fit(X, y)
+        self = super(self.__class__, self).fit(X, y)
+
+        # Link coefs to epistasis values.
+        self.epistasis.values = _np.reshape(self.coef_, (-1,))
+        return self
 
     def fit_transform(self, X=None, y=None, **kwargs):
         return self.fit(X=X, y=y, **kwargs)
@@ -224,12 +228,14 @@ class EpistasisLasso(BaseModel):
         n += len(vals)
         return n
 
-    @epistasis_fitter
     @arghandler
     def fit(self, X=None, y=None, **kwargs):
         # If a threshold exists in the data, pre-classify genotypes
         X = _np.asfortranarray(X)
-        return super(self.__class__, self).fit(X, y)
+        self = super(self.__class__, self).fit(X, y)
+        # Link coefs to epistasis values.
+        self.epistasis.values = _np.reshape(self.coef_, (-1,))
+        return self
 
     def fit_transform(self, X=None, y=None, **kwargs):
         return self.fit(X=X, y=y, **kwargs)

@@ -374,6 +374,12 @@ class BaseModel(ABC, BaseEstimator, RegressorMixin):
 
         # Construct columns for X matrix
         self.Xcolumns = mutations_to_sites(self.order, self.gpm.mutations)
+
+        # Map those columns to epistastalis dataframe.
+        self.epistasis = EpistasisMap(
+            sites=self.Xcolumns,
+            order=self.order,
+            model_type=self.model_type)
         return self
 
     @property

@@ -15,7 +15,8 @@ class FittingError(Exception):
     """Exception Subclass for X matrix errors."""
 
 def arghandler(method):
-    """Handle arguments."""
+    """Handle X, y, yerr, theta arguments in Epistasis models.
+    """
     @wraps(method)
     def inner(self, **kwargs):
         # Get method name
@@ -41,30 +42,47 @@ def arghandler(method):
 
         return method(self, **kws)
     return inner
-
-def epistasis_fitter(fit_method):
-    """Connect an epistasis object to the model.
-    """
-    @wraps(fit_method)
-    def inner(self, X=None, *args, **kwargs):
-        if type(X) is np.ndarray or type(X) is pd.DataFrame:
-            model = fit_method(self, X=X, *args, **kwargs)
-
-        elif X not in self.Xbuilt:
-            # Map those columns to epistastalis dataframe.
-            self.epistasis = EpistasisMap(
-                sites=self.Xcolumns,
-                order=self.order,
-                model_type=self.model_type)
-
-            # Execute fitting method
-            model = fit_method(self, X=X, *args, **kwargs)
-
-            # Link coefs to epistasis values.
-            self.epistasis.values = np.reshape(self.coef_, (-1,))
-
-        else:
-            model = fit_method(self, X=X, *args, **kwargs)
-
-        return model
-    return inner
+#
+# def epistasis_map(method):
+#     """Connect an epistasis map to the model.
+#     """
+#     @wraps(method)
+#     def inner(self, X=None, *args, **kwargs):
+#
+#         if not isinstance(X, np.ndarray):
+#
+#             # Map those columns to epistastalis dataframe.
+#             self.epistasis = EpistasisMap(
+#                 sites=self.Xcolumns,
+#                 order=self.order,
+#                 model_type=self.model_type)
+#
+#             # Execute fitting method
+#             model = method(self, X=X, *args, **kwargs)
+#
+#             # Link coefs to epistasis values.
+#             self.epistasis.values = np.reshape(self.coef_, (-1,))
+#
+#         return model
+#
+#         if type(X) is np.ndarray or type(X) is pd.DataFrame:
+#             model = method(self, X=X, *args, **kwargs)
+#
+#         elif X not in self.Xbuilt:
+#             # Map those columns to epistastalis dataframe.
+#             self.epistasis = EpistasisMap(
+#                 sites=self.Xcolumns,
+#                 order=self.order,
+#                 model_type=self.model_type)
+#
+#             # Execute fitting method
+#             model = method(self, X=X, *args, **kwargs)
+#
+#             # Link coefs to epistasis values.
+#             self.epistasis.values = np.reshape(self.coef_, (-1,))
+#
+#         else:
+#             model = method(self, X=X, *args, **kwargs)
+#
+#         return model
+#     return inner
