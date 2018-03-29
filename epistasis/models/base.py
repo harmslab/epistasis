@@ -12,7 +12,8 @@ from gpmap.gpm import GenotypePhenotypeMap
 # Local imports
 from epistasis.mapping import EpistasisMap, mutations_to_sites
 from epistasis.model_matrix_ext import get_model_matrix
-from epistasis.utils import extract_mutations_from_genotypes, DocstringMeta
+from epistasis.utils import (extract_mutations_from_genotypes,
+                             genotypes_to_X)
 from .utils import XMatrixException
 from sklearn.base import RegressorMixin, BaseEstimator
 
@@ -76,21 +77,21 @@ class BaseModel(ABC, BaseEstimator, RegressorMixin):
     # --------------------------------------------------------------
 
     @abstractmethod
-    def fit(self, X='obs', y='obs', **kwargs):
+    def fit(self, X=None, y=None, **kwargs):
         """Fit model to data.
 
         Parameters
         ----------
-        X : 'obs', ndarray, or list of genotypes. (default='obs')
+        X : None, ndarray, or list of genotypes. (default=None)
             data used to construct X matrix that maps genotypes to
-            model coefficients. If 'obs', the model uses genotypes in the
+            model coefficients. If None, the model uses genotypes in the
             attached genotype-phenotype map. If a list of strings,
             the strings are genotypes that will be converted to an X matrix.
             If ndarray, the function assumes X is the X matrix used by the
             epistasis model.
 
-        y : 'obs' or ndarray (default='obs')
-            array of phenotypes. If 'obs', the phenotypes in the attached
+        y : None or ndarray (default=None)
+            array of phenotypes. If None, the phenotypes in the attached
             genotype-phenotype map is used.
 
 
@@ -102,21 +103,21 @@ class BaseModel(ABC, BaseEstimator, RegressorMixin):
         pass
 
     @abstractmethod
-    def fit_transform(self, X='obs', y='obs', **kwargs):
+    def fit_transform(self, X=None, y=None, **kwargs):
         """Fit model to data and transform output according to model.
 
         Parameters
         ----------
-        X : 'obs', ndarray, or list of genotypes. (default='obs')
+        X : None, ndarray, or list of genotypes. (default=None)
             data used to construct X matrix that maps genotypes to
-            model coefficients. If 'obs', the model uses genotypes in the
+            model coefficients. If None, the model uses genotypes in the
             attached genotype-phenotype map. If a list of strings,
             the strings are genotypes that will be converted to an X matrix.
             If ndarray, the function assumes X is the X matrix used by the
             epistasis model.
 
-        y : 'obs' or ndarray (default='obs')
-            array of phenotypes. If 'obs', the phenotypes in the attached
+        y : None or ndarray (default=None)
+            array of phenotypes. If None, the phenotypes in the attached
             genotype-phenotype map is used.
 
         Returns
@@ -127,14 +128,14 @@ class BaseModel(ABC, BaseEstimator, RegressorMixin):
         pass
 
     @abstractmethod
-    def predict(self, X='obs'):
+    def predict(self, X=None):
         """Use model to predict phenotypes for a given list of genotypes.
 
         Parameters
         ----------
-        X : 'obs', ndarray, or list of genotypes. (default='obs')
+        X : None, ndarray, or list of genotypes. (default=None)
             data used to construct X matrix that maps genotypes to
-            model coefficients. If 'obs', the model uses genotypes in the
+            model coefficients. If None, the model uses genotypes in the
             attached genotype-phenotype map. If a list of strings,
             the strings are genotypes that will be converted to an X matrix.
             If ndarray, the function assumes X is the X matrix used by the
@@ -148,14 +149,14 @@ class BaseModel(ABC, BaseEstimator, RegressorMixin):
         pass
 
     @abstractmethod
-    def predict_transform(self, X='obs', y='obs', **kwargs):
+    def predict_transform(self, X=None, y=None, **kwargs):
         """Transform a set of phenotypes according to the model.
 
         Parameters
         ----------
-        X : 'obs', ndarray, or list of genotypes. (default='obs')
+        X : None, ndarray, or list of genotypes. (default=None)
             data used to construct X matrix that maps genotypes to
-            model coefficients. If 'obs', the model uses genotypes in the
+            model coefficients. If None, the model uses genotypes in the
             attached genotype-phenotype map. If a list of strings,
             the strings are genotypes that will be converted to an X matrix.
             If ndarray, the function assumes X is the X matrix used by the
@@ -172,14 +173,14 @@ class BaseModel(ABC, BaseEstimator, RegressorMixin):
         pass
 
     @abstractmethod
-    def hypothesis(self, X='obs', thetas=None):
+    def hypothesis(self, X=None, thetas=None):
         """Compute phenotypes from given model parameters.
 
         Parameters
         ----------
-        X : 'obs', ndarray, or list of genotypes. (default='obs')
+        X : None, ndarray, or list of genotypes. (default=None)
             data used to construct X matrix that maps genotypes to
-            model coefficients. If 'obs', the model uses genotypes in the
+            model coefficients. If None, the model uses genotypes in the
             attached genotype-phenotype map. If a list of strings,
             the strings are genotypes that will be converted to an X matrix.
             If ndarray, the function assumes X is the X matrix used by the
@@ -196,14 +197,14 @@ class BaseModel(ABC, BaseEstimator, RegressorMixin):
         pass
 
     @abstractmethod
-    def hypothesis_transform(self, X='obs', y='obs', thetas=None):
+    def hypothesis_transform(self, X=None, y=None, thetas=None):
         """Transform phenotypes with given model parameters.
 
         Parameterss
         ----------
-        X : 'obs', ndarray, or list of genotypes. (default='obs')
+        X : None, ndarray, or list of genotypes. (default=None)
             data used to construct X matrix that maps genotypes to
-            model coefficients. If 'obs', the model uses genotypes in the
+            model coefficients. If None, the model uses genotypes in the
             attached genotype-phenotype map. If a list of strings,
             the strings are genotypes that will be converted to an X matrix.
             If ndarray, the function assumes X is the X matrix used by the
@@ -225,18 +226,18 @@ class BaseModel(ABC, BaseEstimator, RegressorMixin):
     @abstractmethod
     def lnlike_of_data(
            self,
-           X='obs',
-           y='obs',
-           yerr='obs',
+           X=None,
+           y=None,
+           yerr=None,
            thetas=None):
         """Compute the individUal log-likelihoods for each datapoint from a set
         of model parameters.
 
         Parameters
         ----------
-        X : 'obs', ndarray, or list of genotypes. (default='obs')
+        X : None, ndarray, or list of genotypes. (default=None)
             data used to construct X matrix that maps genotypes to
-            model coefficients. If 'obs', the model uses genotypes in the
+            model coefficients. If None, the model uses genotypes in the
             attached genotype-phenotype map. If a list of strings,
             the strings are genotypes that will be converted to an X matrix.
             If ndarray, the function assumes X is the X matrix used by the
@@ -261,18 +262,18 @@ class BaseModel(ABC, BaseEstimator, RegressorMixin):
 
     def lnlikelihood(
             self,
-            X="obs",
-            y="obs",
-            yerr="obs",
+            X=None,
+            y=None,
+            yerr=None,
             thetas=None):
         """Compute the individal log-likelihoods for each datapoint from a set
         of model parameters.
 
         Parameters
         ----------
-        X : 'obs', ndarray, or list of genotypes. (default='obs')
+        X : None, ndarray, or list of genotypes. (default=None)
             data used to construct X matrix that maps genotypes to
-            model coefficients. If 'obs', the model uses genotypes in the
+            model coefficients. If None, the model uses genotypes in the
             attached genotype-phenotype map. If a list of strings,
             the strings are genotypes that will be converted to an X matrix.
             If ndarray, the function assumes X is the X matrix used by the
@@ -301,12 +302,12 @@ class BaseModel(ABC, BaseEstimator, RegressorMixin):
             return -np.inf
         return lnlike
 
-    def add_X(self, X="obs", key=None):
+    def add_X(self, X=None, key=None):
         """Add X to Xbuilt
 
         Keyword arguments for X:
 
-        - 'obs' :
+        - None :
             Uses ``gpm.binary`` to construct X. If genotypes
             are missing they will not be included in fit. At the end of
             fitting, an epistasis map attribute is attached to the model
@@ -325,10 +326,10 @@ class BaseModel(ABC, BaseEstimator, RegressorMixin):
         Xbuilt : numpy.ndarray
             newly built 2d array matrix
         """
-        if isinstance(X, str) and X == 'obs':
+        if isinstance(X, str) and X == None:
 
             if hasattr(self, "gpm") is False:
-                raise XMatrixException("To build 'obs', 'missing', or"
+                raise XMatrixException("To build None, 'missing', or"
                                        "'complete' X matrix, a "
                                        "GenotypePhenotypeMap must be attached")
 
@@ -356,7 +357,7 @@ class BaseModel(ABC, BaseEstimator, RegressorMixin):
             self.Xbuilt[key] = X
 
         else:
-            raise XMatrixException("X must be one of the following: 'obs', "
+            raise XMatrixException("X must be one of the following: None, "
                                    "'complete', numpy.ndarray, or "
                                    "pandas.DataFrame.")
 
@@ -379,3 +380,89 @@ class BaseModel(ABC, BaseEstimator, RegressorMixin):
     def gpm(self):
         """Data stored in a GenotypePhenotypeMap object."""
         return self._gpm
+
+
+    def _X(self, data=None, method=None):
+        """Handle the X argument in this model."""
+        X = data
+        # If X is None, see if we saved an array.
+        if X is None:
+            # Has an X been constructed before?
+            if method in self.Xbuilt:
+                X = self.Xbuilt[method]
+
+            # If not, use the observed genotypes
+            else:
+                # Get X from genotypes
+                X = genotypes_to_X(
+                    self.gpm.wildtype,
+                    self.gpm.genotypes,
+                    order=self.order,
+                    mutations=self.gpm.mutations,
+                    model_type=self.model_type
+                )
+
+        elif isinstance(X, str) and X in self.gpm.genotypes:
+            # Get X from genotypes
+            X = genotypes_to_X(
+                self.gpm.wildtype,
+                [X],
+                order=self.order,
+                mutations=self.gpm.mutations,
+                model_type=self.model_type
+            )
+
+        # If 2-d array, keep as so.
+        elif isinstance(X, np.ndarray) and X.shape == 2:
+            pass
+
+        # If list of genotypes.
+        elif isinstance(X, list) or isinstance(X, np.ndarray):
+            # Get X from genotypes
+            X = genotypes_to_X(
+                self.gpm.wildtype,
+                X,
+                order=self.order,
+                mutations=self.gpm.mutations,
+                model_type=self.model_type
+            )
+        else:
+            raise Exception
+
+        # Save X
+        self.Xbuilt[method] = X
+        return X
+
+    def _y(self, data=None, method=None):
+        """Handle y arguments in this model."""
+        y = data
+        if y is None:
+            return self.gpm.phenotypes
+
+        elif isinstance(y, np.ndarray) or isinstance(y, list):
+            return y
+
+        else:
+            raise Exception("y is invalid.")
+
+    def _yerr(self, data=None, method=None):
+        """Handle yerr argument in this model."""
+        yerr = data
+        if yerr is None:
+            return self.gpm.std.upper
+
+        elif isinstance(yerr, np.ndarray) or isinstance(yerr, list):
+            return yerr
+        else:
+            raise Exception("yerr is invalid.")
+
+    def _thetas(self, data=None, method=None):
+        """Handle yerr argument in this model."""
+        thetas = data
+        if thetas is None:
+            return self.thetas
+
+        elif isinstance(thetas, np.ndarray) or isinstance(thetas, list):
+            return thetas
+        else:
+            raise Exception("thetas is invalid.")

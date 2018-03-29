@@ -12,6 +12,7 @@ from sklearn.metrics import mean_squared_error
 from collections import OrderedDict
 
 from gpmap.utils import genotypes_to_binary
+from .mapping import mutations_to_sites
 
 from .model_matrix_ext import get_model_matrix
 
@@ -36,7 +37,7 @@ def genotypes_to_X(wildtype, genotypes,
     binary = genotypes_to_binary(wildtype, genotypes, mutations)
 
     # Build list of sites from genotypes.
-    site = mutations_to_sites(order, mutations)
+    sites = mutations_to_sites(order, mutations)
 
     # X matrix
     X = get_model_matrix(binary, sites, model_type=model_type)

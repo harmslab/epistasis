@@ -3,7 +3,7 @@ from sklearn.linear_model import LinearRegression
 from sklearn.linear_model import Lasso
 
 from .base import BaseModel, sklearn_mixin
-from .utils import X_fitter, X_predictor, epistasis_fitter
+from .utils import epistasis_fitter, arghandler
 from ..stats import pearson
 
 from gpmap import GenotypePhenotypeMap
@@ -52,44 +52,43 @@ class EpistasisLinearRegression(BaseModel):
         n += self.epistasis.n
         return n
 
-    @epistasis_fitter
-    @X_fitter
-    def fit(self, X='obs', y='obs', **kwargs):
+    #@epistasis_fitter
+    @arghandler
+    def fit(self, X=None, y=None, **kwargs):
         return super(self.__class__, self).fit(X, y)
 
-    def fit_transform(self, X='obs', y='obs', **kwargs):
+    def fit_transform(self, X=None, y=None, **kwargs):
         return self.fit(X=X, y=y, **kwargs)
 
-    @X_predictor
-    def predict(self, X='obs'):
+    @arghandler
+    def predict(self, X=None):
         return super(self.__class__, self).predict(X)
 
-
-    def predict_transform(self, X='obs', y='obs'):
+    def predict_transform(self, X=None, y=None):
         return self.predict(X=X)
 
-    @X_fitter
-    def score(self, X='obs', y='obs'):
+    @arghandler
+    def score(self, X=None, y=None):
         return super(self.__class__, self).score(X, y)
 
     @property
     def thetas(self):
         return self.coef_
 
-    @X_predictor
-    def hypothesis(self, X='obs', thetas=None):
+    @arghandler
+    def hypothesis(self, X=None, thetas=None):
         if thetas is None:
             thetas = self.thetas
         return _np.dot(X, thetas)
 
-    def hypothesis_transform(self, X='obs', y='obs', thetas=None):
+    def hypothesis_transform(self, X=None, y=None, thetas=None):
         return self.hypothesis(X=X, thetas=thetas)
 
-    @X_fitter
+    @arghandler
     def lnlike_of_data(
             self,
-            X="obs", y="obs",
-            yerr="obs",
+            X=None, y=None,
+            yerr=None,
             thetas=None):
         # If thetas are not explicitly named, get them from the model
         if thetas is None:
@@ -97,13 +96,13 @@ class EpistasisLinearRegression(BaseModel):
 
         # Handle yerr.
         # Check if yerr is string
-        if type(yerr) is str and yerr in ["obs", "complete"]:
+        if type(yerr) is str and yerr in [None, "complete"]:
             yerr = self.gpm.std.upper
 
         # Else, numpy array or dataframe
         elif type(y) != np.array and type(y) != pd.Series:
             raise FittingError("yerr is not valid. Must be one of the "
-                               "following: 'obs', 'complete', "
+                               "following: None, 'complete', "
                                "numpy.array, pandas.Series. Right now, "
                                "its {}".format(type(yerr)))
 
@@ -226,25 +225,25 @@ class EpistasisLasso(BaseModel):
         return n
 
     @epistasis_fitter
-    @X_fitter
-    def fit(self, X='obs', y='obs', **kwargs):
+    @arghandler
+    def fit(self, X=None, y=None, **kwargs):
         # If a threshold exists in the data, pre-classify genotypes
         X = _np.asfortranarray(X)
         return super(self.__class__, self).fit(X, y)
 
-    def fit_transform(self, X='obs', y='obs', **kwargs):
+    def fit_transform(self, X=None, y=None, **kwargs):
         return self.fit(X=X, y=y, **kwargs)
 
-    @X_predictor
-    def predict(self, X='obs'):
+    @arghandler
+    def predict(self, X=None):
         X = _np.asfortranarray(X)
         return super(self.__class__, self).predict(X)
 
-    def predict_transform(self, X='obs', y='obs'):
+    def predict_transform(self, X=None, y=None):
         return self.predict(X=X)
 
-    @X_fitter
-    def score(self, X='obs', y='obs'):
+    @arghandler
+    def score(self, X=None, y=None):
         X = _np.asfortranarray(X)
         return super(self.__class__, self).score(X, y)
 
@@ -252,20 +251,20 @@ class EpistasisLasso(BaseModel):
     def thetas(self):
         return self.coef_
 
-    @X_predictor
-    def hypothesis(self, X='obs', thetas=None):
+    @arghandler
+    def hypothesis(self, X=None, thetas=None):
         if thetas is None:
             thetas = self.thetas
         return _np.dot(X, thetas)
 
-    def hypothesis_transform(self, X='obs', thetas=None):
+    def hypothesis_transform(self, X=None, thetas=None):
         pass
 
-    @X_fitter
+    @arghandler
     def lnlike_of_data(
             self,
-            X="obs", y="obs",
-            yerr="obs",
+            X=None, y=None,
+            yerr=None,
             thetas=None):
         # If thetas are not explicitly named, get them from the model
         if thetas is None:
@@ -273,13 +272,13 @@ class EpistasisLasso(BaseModel):
 
         # Handle yerr.
         # Check if yerr is string
-        if type(yerr) is str and yerr in ["obs", "complete"]:
+        if type(yerr) is str and yerr in [None, "complete"]:
             yerr = self.gpm.std.upper
 
         # Else, numpy array or dataframe
         elif type(y) != np.array and type(y) != pd.Series:
             raise FittingError("yerr is not valid. Must be one of the "
-                               "following: 'obs', 'complete', "
+                               "following: None, 'complete', "
                                "numpy.array, pandas.Series. Right now, "
                                "its {}".format(type(yerr)))
 
