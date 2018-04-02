@@ -418,6 +418,10 @@ class BaseModel(ABC, BaseEstimator, RegressorMixin):
                 model_type=self.model_type
             )
 
+        # If X is a keyword in Xbuilt, use it.
+        elif isinstance(X, str) and X in self.Xbuilt:
+            X = self.Xbuilt[X]
+
         # If 2-d array, keep as so.
         elif isinstance(X, np.ndarray) and X.shape == 2:
             pass

@@ -9,10 +9,7 @@ from sklearn.preprocessing import binarize
 
 from ..mapping import EpistasisMap
 from .base import BaseModel, sklearn_mixin
-from .utils import (XMatrixException,
-                    X_fitter,
-                    epistasis_fitter,
-                    X_predictor)
+from .utils import (XMatrixException, arghandler)
 
 from .linear import EpistasisLinearRegression
 
@@ -61,7 +58,7 @@ class EpistasisLogisticRegression(BaseModel):
         self.Additive = EpistasisLinearRegression(
             order=1, model_type=self.model_type)
 
-    def fit(self, X='obs', y='obs', **kwargs):
+    def fit(self, X=None, y=None, **kwargs):
         # Use Additive model to establish the phenotypic scale.
         # Prepare Additive model
         self.Additive.add_gpm(self.gpm)
@@ -79,7 +76,7 @@ class EpistasisLogisticRegression(BaseModel):
         self = self._fit_(X=X, y=y)
         return self
 
-    def fit_transform(self, X='obs', y='obs', **kwargs):
+    def fit_transform(self, X=None, y=None, **kwargs):
         self.fit(X=X, y=y, **kwargs)
         ypred = self.predict(X='fit')
 
@@ -97,43 +94,42 @@ class EpistasisLogisticRegression(BaseModel):
         n += self.epistasis.n
         return n
 
-    @epistasis_fitter
-    @X_fitter
-    def _fit_(self, X='obs', y='obs', **kwargs):
+    @arghandler
+    def _fit_(self, X=None, y=None, **kwargs):
         # Fit the classifier
         yclass = binarize(y.reshape(1, -1), self.threshold)[0]
         self.classes = yclass
         super(self.__class__, self).fit(X=X, y=yclass, **kwargs)
         return self
 
-    @X_predictor
-    def predict(self, X='obs'):
+    @arghandler
+    def predict(self, X=None):
         return super(self.__class__, self).predict(X)
 
-    def predict_transform(self, X='obs', y='obs'):
+    def predict_transform(self, X=None, y=None):
         x = self.predict(X=X)
 
-        if y is 'obs':
+        if y is None:
             y = self.gpm.phenotypes
 
         y[x == 0] = 0
         return y
 
-    @X_predictor
-    def predict_log_proba(self, X='obs'):
+    @arghandler
+    def predict_log_proba(self, X=None):
         return super(self.__class__, self).predict_log_proba(X)
 
-    @X_predictor
-    def predict_proba(self, X='obs'):
+    @arghandler
+    def predict_proba(self, X=None):
         return super(self.__class__, self).predict_proba(X)
 
-    @X_fitter
-    def score(self, X='obs', y='obs', **kwargs):
+    @arghandler
+    def score(self, X=None, y=None, **kwargs):
         yclass = binarize(y.reshape(1, -1), threshold=self.threshold)[0]
         return super(self.__class__, self).score(X=X, y=yclass)
 
-    @X_fitter
-    def lnlike_of_data(self, X='obs', y='obs', yerr='obs', thetas=None):
+    @arghandler
+    def lnlike_of_data(self, X=None, y=None, yerr=None, thetas=None):
         if thetas is None:
             thetas = self.thetas
 
@@ -145,8 +141,8 @@ class EpistasisLogisticRegression(BaseModel):
         # NOTE: This likelihood is not normalized -- not a simple problem.
         return yclass * np.log(1 - ymodel) + (1 - yclass) * np.log(ymodel)
 
-    @X_predictor
-    def hypothesis(self, X='obs', thetas=None):
+    @arghandler
+    def hypothesis(self, X=None, thetas=None):
         # Given thetas, estimate probability of class.
         if thetas is None:
             thetas = self.thetas
@@ -161,7 +157,7 @@ class EpistasisLogisticRegression(BaseModel):
         # Return class
         return classes
 
-    def hypothesis_transform(self, X='obs', y='obs'):
+    def hypothesis_transform(self, X=None, y=None):
         pass
 
     @property

@@ -22,7 +22,7 @@ from gpmap import GenotypePhenotypeMap
 # Epistasis imports.
 from ..mapping import EpistasisMap
 from .base import BaseModel
-from .utils import (X_fitter, X_predictor, epistasis_fitter, FittingError)
+from .utils import (arghandler, FittingError)
 from .linear import (EpistasisLinearRegression, EpistasisLasso)
 from ..stats import pearson
 
@@ -137,13 +137,13 @@ class EpistasisNonlinearRegression(BaseModel):
         return n
 
     def fit(self,
-            X='obs',
-            y='obs',
+            X=None,
+            y=None,
             use_widgets=False,
             plot_fit=True,
             **kwargs):
         # Get pobs for nonlinear fit.
-        if type(y) is str and y in ["obs"]:
+        if y is None:
             y = self.gpm.phenotypes
         # Else, numpy array or dataframe
         elif type(y) == np.ndarray or type(y) == pd.Series:
@@ -160,6 +160,7 @@ class EpistasisNonlinearRegression(BaseModel):
         if use_widgets is False:
             # Step 2: fit nonlinear function
             self._fit_nonlinear(X=X, y=y, **kwargs)
+            return self
 
         # Don't use widgets to fit data
         else:
@@ -180,7 +181,7 @@ class EpistasisNonlinearRegression(BaseModel):
             widgetbox = ipywidgets.interactive(fitting, **kwargs)
             return widgetbox
 
-    def _fit_additive(self, X='obs', y='obs', **kwargs):
+    def _fit_additive(self, X=None, y=None, **kwargs):
 
 
         if hasattr(self, 'gpm') is False:
@@ -207,7 +208,7 @@ class EpistasisNonlinearRegression(BaseModel):
 
         return self
 
-    def _fit_nonlinear(self, X='obs', y='obs', **kwargs):
+    def _fit_nonlinear(self, X=None, y=None, **kwargs):
         """Estimate the scale of multiple mutations in a genotype-phenotype
         map."""
         # Use a first order matrix only.
@@ -260,11 +261,11 @@ class EpistasisNonlinearRegression(BaseModel):
         # Point to nonlinear.
         self.parameters = self.Nonlinear.params
 
-    def fit_transform(self, X='obs', y='obs', **kwargs):
+    def fit_transform(self, X=None, y=None, **kwargs):
 
         self.fit(X=X, y=y, **kwargs)
 
-        if isinstance(y, str) and y == 'obs':
+        if y is None:
             y = self.gpm.phenotypes
 
         linear_phenotypes = self.reverse(y, *self.parameters.values())
@@ -278,21 +279,21 @@ class EpistasisNonlinearRegression(BaseModel):
         gpm.data['phenotypes'] = linear_phenotypes
         return gpm
 
-    def predict(self, X='obs'):
+    def predict(self, X=None):
 
         x = self.Additive.predict(X=X)
         y = self.function(x, *self.parameters.values())
         return y
 
-    def predict_transform(self, X='obs', y='obs'):
+    def predict_transform(self, X=None, y=None):
 
-        if isinstance(y, str) and y == 'obs':
+        if y is None:
             y = self.gpm.phenotypes
 
         return self.function(y, *self.parameters.values())
 
-    @X_predictor
-    def hypothesis(self, X='obs', thetas=None):
+    @arghandler
+    def hypothesis(self, X=None, thetas=None):
         # ----------------------------------------------------------------------
         # Part 0: Break up thetas
         # ----------------------------------------------------------------------
@@ -312,7 +313,7 @@ class EpistasisNonlinearRegression(BaseModel):
 
         return ynonlin
 
-    def hypothesis_transform(self, X='obs', y='obs', thetas=None):
+    def hypothesis_transform(self, X=None, y=None, thetas=None):
         # Get thetas from model.
         if thetas is None:
             thetas = self.thetas
@@ -324,9 +325,9 @@ class EpistasisNonlinearRegression(BaseModel):
         # Part 2: Nonlinear portion
         return self.function(y, *parameters)
 
-    def score(self, X='obs', y='obs'):
+    def score(self, X=None, y=None):
         # Get pobs for nonlinear fit.
-        if type(y) is str and y in ["obs"]:
+        if y is None:
             pobs = self.gpm.phenotypes
         # Else, numpy array or dataframe
         elif type(y) == np.array or type(y) == pd.Series:
@@ -337,7 +338,7 @@ class EpistasisNonlinearRegression(BaseModel):
         return pearson(pobs, ypred)**2
 
 
-    def lnlike_of_data(self, X='obs', y='obs', yerr='obs', thetas=None):
+    def lnlike_of_data(self, X=None, y=None, yerr=None, thetas=None):
         # ###### Prepare input #########
         # If no model parameters are given, use the model fit.
         if thetas is None:
@@ -345,7 +346,7 @@ class EpistasisNonlinearRegression(BaseModel):
 
         # Handle y.
         # Get pobs for nonlinear fit.
-        if type(y) is str and y in ["obs"]:
+        if y is None:
             ydata = self.gpm.phenotypes
         # Else, numpy array or dataframe
         elif type(y) == np.array or type(y) == pd.Series:
@@ -357,7 +358,7 @@ class EpistasisNonlinearRegression(BaseModel):
 
         # Handle yerr.
         # Check if yerr is string
-        if type(yerr) is str and yerr in ["obs"]:
+        if yerr is None:
             yerr = self.gpm.std.upper
 
         # Else, numpsy array or dataframe
@@ -440,7 +441,7 @@ class EpistasisNonlinearLasso(EpistasisNonlinearRegression):
             alpha=alpha,
             order=1, model_type=self.model_type)
 
-    def lnlike_of_data(self, X='obs', y='obs', yerr='obs', thetas=None):
+    def lnlike_of_data(self, X=None, y=None, yerr=None, thetas=None):
         # ###### Prepare input #########
         # If no model parameters are given, use the model fit.
         if thetas is None:
@@ -448,7 +449,7 @@ class EpistasisNonlinearLasso(EpistasisNonlinearRegression):
 
         # Handle y.
         # Get pobs for nonlinear fit.
-        if type(y) is str and y in ["obs"]:
+        if y is None:
             ydata = self.gpm.phenotypes
         # Else, numpy array or dataframe
         elif type(y) == np.array or type(y) == pd.Series:
@@ -460,7 +461,7 @@ class EpistasisNonlinearLasso(EpistasisNonlinearRegression):
 
         # Handle yerr.
         # Check if yerr is string
-        if type(yerr) is str and yerr in ["obs", "complete"]:
+        if yerr is None:
             yerr = self.gpm.std.upper
 
         # Else, numpsy array or dataframe

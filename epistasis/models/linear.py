@@ -233,6 +233,7 @@ class EpistasisLasso(BaseModel):
         # If a threshold exists in the data, pre-classify genotypes
         X = _np.asfortranarray(X)
         self = super(self.__class__, self).fit(X, y)
+
         # Link coefs to epistasis values.
         self.epistasis.values = _np.reshape(self.coef_, (-1,))
         return self

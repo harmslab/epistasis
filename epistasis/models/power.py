@@ -8,7 +8,7 @@ import pandas as pd
 import lmfit
 from lmfit import Parameter, Parameters
 
-from .utils import X_fitter, X_predictor, epistasis_fitter
+from .utils import arghandler
 from ..stats import gmean, pearson
 from .linear import EpistasisLinearRegression, EpistasisLasso
 from .nonlinear import (EpistasisNonlinearRegression,
@@ -105,14 +105,16 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
     ----------
     epistasis : EpistasisMap
         Mapping object containing high-order epistatic coefficients
+
     Linear : EpistasisLinearRegression
         Linear regression object for fitting high-order epistasis model
+
     Additive : EpistasisLinearRegression
         Linear regression object for fitting additive model
+
     parameters : Parameters object
         Mapping object for nonlinear coefficients
     """
-
     def __init__(self, model_type="global", **p0):
         # Construct parameters object
         self.parameters = Parameters()
@@ -142,7 +144,7 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
         self.Additive = EpistasisLinearRegression(
             order=1, model_type=self.model_type)
 
-    def _fit_nonlinear(self, X='obs', y='obs', sample_weight=None, **kwargs):
+    def _fit_nonlinear(self, X=None, y=None, **kwargs):
         """Estimate the scale of multiple mutations in a genotype-phenotype
         map."""
         # Use a first order matrix only.
@@ -155,7 +157,7 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
         x = self.Additive.predict(X=Xadd)
 
         # Get data used to approximate x_add
-        xadd = self.Additive.predict(X='fit')
+        xadd = self.Additive.predict(X=X)
 
         # Set guesses
         for key, value in kwargs.items():
@@ -199,11 +201,11 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
         # Point to nonlinear.
         self.parameters = self.Nonlinear.params
 
-    def fit_transform(self, X='obs', y='obs', **kwargs):
+    def fit_transform(self, X=None, y=None, **kwargs):
         # Fit method.
         self.fit(X=X, y=y, **kwargs)
 
-        if isinstance(y, str) and y == 'obs':
+        if y is None:
             y = self.gpm.phenotypes
 
         xdata = self.Additive.predict(X='fit')
@@ -219,22 +221,22 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
         gpm.data['phenotypes'] = linear_phenotypes
         return gpm
 
-    def predict(self, X='obs'):
+    def predict(self, X=None):
         x = self.Additive.predict(X=X)
         xadd = self.Additive.predict(X='fit')
         y = self.function(x, *self.parameters.values(), data=xadd)
         return y
 
-    def predict_transform(self, X='obs', y='obs'):
-        if y == 'obs':
+    def predict_transform(self, X=None, y=None):
+        if y is None:
             y = self.gpm.phenotypes
 
         xdata = self.Additive.predict(X='fit')
         return self.function(y, *self.parameters.values(), data=xdata)
 
-    def score(self, X='obs', y='obs', sample_weight=None):
+    def score(self, X=None, y=None):
         # Get pobs for nonlinear fit.
-        if type(y) is str and y in ["obs"]:
+        if y is None:
             pobs = self.gpm.phenotypes
         # Else, numpy array or dataframe
         elif type(y) == np.array or type(y) == pd.Series:
@@ -246,8 +248,8 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
         ypred = self.function(xadd, *self.parameters.values(), data=xadd)
         return pearson(pobs, ypred)**2
 
-    @X_predictor
-    def hypothesis(self, X='obs', thetas=None):
+    @arghandler
+    def hypothesis(self, X=None, thetas=None):
         # ----------------------------------------------------------------------
         # Part 0: Break up thetas
         # ----------------------------------------------------------------------
@@ -270,8 +272,7 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
 
         return ynonlin
 
-    def lnlike_of_data(self, X='obs', y='obs', yerr='obs',
-                       sample_weight=None, thetas=None):
+    def lnlike_of_data(self, X=None, y=None, yerr=None, thetas=None):
         # ###### Prepare input #########
         # If no model parameters are given, use the model fit.
         if thetas is None:
@@ -279,25 +280,25 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
 
         # Handle y.
         # Get pobs for nonlinear fit.
-        if type(y) is str and y in ["obs",]:
+        if y is None:
             ydata = self.gpm.phenotypes
         # Else, numpy array or dataframe
         elif type(y) == np.array or type(y) == pd.Series:
             ydata = y
         else:
             raise FittingError("y is not valid. Must be one of the following:"
-                               "'obs', 'complete', numpy.array, pandas.Series."
+                               "None, 'complete', numpy.array, pandas.Series."
                                " Right now, its {}".format(type(y)))
 
         # Handle yerr.
         # Check if yerr is string
-        if type(yerr) is str and yerr in ["obs"]:
+        if yerr is None:
             yerr = self.gpm.std.upper
 
         # Else, numpsy array or dataframe
         elif type(y) != np.array and type(y) != pd.Series:
             raise FittingError("yerr is not valid. Must be one of the "
-                               "following: 'obs', 'complete', numpy.array, "
+                               "following: None, 'complete', numpy.array, "
                                "pandas.Series. Right now, its "
                                "{}".format(type(yerr)))
 
@@ -359,8 +360,7 @@ class EpistasisPowerTransformLasso(EpistasisPowerTransform):
             alpha=alpha,
             order=1, model_type=self.model_type)
 
-    def lnlike_of_data(self, X='obs', y='obs', yerr='obs',
-                       sample_weight=None, thetas=None):
+    def lnlike_of_data(self, X=None, y=None, yerr=None, thetas=None):
         """Calculate the log likelihoods of each data point, given a set of
         model coefficients.
 
@@ -387,25 +387,25 @@ class EpistasisPowerTransformLasso(EpistasisPowerTransform):
 
         # Handle y.
         # Get pobs for nonlinear fit.
-        if type(y) is str and y in ["obs", "complete"]:
+        if y is None:
             ydata = self.gpm.phenotypes
         # Else, numpy array or dataframe
         elif type(y) == np.array or type(y) == pd.Series:
             ydata = y
         else:
             raise FittingError("y is not valid. Must be one of the following:"
-                               "'obs', 'complete', numpy.array, pandas.Series."
+                               "None, 'complete', numpy.array, pandas.Series."
                                " Right now, its {}".format(type(y)))
 
         # Handle yerr.
         # Check if yerr is string
-        if type(yerr) is str and yerr in ["obs", "complete"]:
+        if yerr is None:
             yerr = self.gpm.std.upper
 
         # Else, numpsy array or dataframe
         elif type(y) != np.array and type(y) != pd.Series:
             raise FittingError("yerr is not valid. Must be one of the "
-                               "following: 'obs', 'complete', numpy.array, "
+                               "following: None, 'complete', numpy.array, "
                                "pandas.Series. Right now, its "
                                "{}".format(type(yerr)))
 
