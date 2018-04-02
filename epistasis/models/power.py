@@ -144,6 +144,7 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
         self.Additive = EpistasisLinearRegression(
             order=1, model_type=self.model_type)
 
+    @arghandler
     def _fit_nonlinear(self, X=None, y=None, **kwargs):
         """Estimate the scale of multiple mutations in a genotype-phenotype
         map."""
@@ -201,12 +202,10 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
         # Point to nonlinear.
         self.parameters = self.Nonlinear.params
 
+    @arghandler
     def fit_transform(self, X=None, y=None, **kwargs):
         # Fit method.
         self.fit(X=X, y=y, **kwargs)
-
-        if y is None:
-            y = self.gpm.phenotypes
 
         xdata = self.Additive.predict(X='fit')
 
@@ -227,36 +226,22 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
         y = self.function(x, *self.parameters.values(), data=xadd)
         return y
 
+    @arghandler
     def predict_transform(self, X=None, y=None):
-        if y is None:
-            y = self.gpm.phenotypes
-
         xdata = self.Additive.predict(X='fit')
         return self.function(y, *self.parameters.values(), data=xdata)
 
+    @arghandler
     def score(self, X=None, y=None):
-        # Get pobs for nonlinear fit.
-        if y is None:
-            pobs = self.gpm.phenotypes
-        # Else, numpy array or dataframe
-        elif type(y) == np.array or type(y) == pd.Series:
-            pobs = y
-        else:
-            raise Exception
-
         xadd = self.Additive.predict(X='fit')
         ypred = self.function(xadd, *self.parameters.values(), data=xadd)
-        return pearson(pobs, ypred)**2
+        return pearson(y, ypred)**2
 
     @arghandler
     def hypothesis(self, X=None, thetas=None):
         # ----------------------------------------------------------------------
         # Part 0: Break up thetas
         # ----------------------------------------------------------------------
-        # Get thetas from model.
-        if thetas is None:
-            thetas = self.thetas
-
         i, j = len(self.parameters.valuesdict()), self.Additive.epistasis.n
         parameters = thetas[:i]
         epistasis = thetas[i:i + j]
@@ -272,43 +257,31 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
 
         return ynonlin
 
+    @arghandler
+    def hypothesis_transform(self, X=None, y=None, thetas=None):
+        # Estimate additive coefficients
+        xdata = self.Additive.predict(X=X)
+
+        linear_phenotypes = self.reverse(y, *self.parameters.values(), data=xdata)
+
+        # Transform map.
+        gpm = GenotypePhenotypeMap.read_dataframe(
+            dataframe=self.gpm.data,
+            wildtype=self.gpm.wildtype,
+            mutations=self.gpm.mutations
+        )
+        gpm.data['phenotypes'] = linear_phenotypes
+        return gpm
+
+    @arghandler
     def lnlike_of_data(self, X=None, y=None, yerr=None, thetas=None):
-        # ###### Prepare input #########
-        # If no model parameters are given, use the model fit.
-        if thetas is None:
-            thetas = self.thetas
-
-        # Handle y.
-        # Get pobs for nonlinear fit.
-        if y is None:
-            ydata = self.gpm.phenotypes
-        # Else, numpy array or dataframe
-        elif type(y) == np.array or type(y) == pd.Series:
-            ydata = y
-        else:
-            raise FittingError("y is not valid. Must be one of the following:"
-                               "None, 'complete', numpy.array, pandas.Series."
-                               " Right now, its {}".format(type(y)))
-
-        # Handle yerr.
-        # Check if yerr is string
-        if yerr is None:
-            yerr = self.gpm.std.upper
-
-        # Else, numpsy array or dataframe
-        elif type(y) != np.array and type(y) != pd.Series:
-            raise FittingError("yerr is not valid. Must be one of the "
-                               "following: None, 'complete', numpy.array, "
-                               "pandas.Series. Right now, its "
-                               "{}".format(type(yerr)))
-
         # ###### Calculate likelihood #########
         # Calculate ymodel
         ymodel = self.hypothesis(X=X, thetas=thetas)
 
         # Likelihood of data given model
         return (- 0.5 * np.log(2 * np.pi * yerr**2) -
-                (0.5 * ((ydata - ymodel)**2 / yerr**2)))
+               (0.5 * ((y - ymodel)**2 / yerr**2)))
 
 
 class EpistasisPowerTransformLasso(EpistasisPowerTransform):
@@ -360,60 +333,13 @@ class EpistasisPowerTransformLasso(EpistasisPowerTransform):
             alpha=alpha,
             order=1, model_type=self.model_type)
 
+    @arghandler
     def lnlike_of_data(self, X=None, y=None, yerr=None, thetas=None):
-        """Calculate the log likelihoods of each data point, given a set of
-        model coefficients.
-
-        Parameters
-        ----------
-        X : 2d array
-            model matrix
-        y : array
-            data to calculate the likelihood
-        yerr: array
-            uncertainty in data
-        thetas : array
-            array of model coefficients
-
-        Returns
-        -------
-        lnlike : np.ndarray
-            log-likelihood of each data point given a model.
-        """
-        # ###### Prepare input #########
-        # If no model parameters are given, use the model fit.
-        if thetas is None:
-            thetas = self.thetas
-
-        # Handle y.
-        # Get pobs for nonlinear fit.
-        if y is None:
-            ydata = self.gpm.phenotypes
-        # Else, numpy array or dataframe
-        elif type(y) == np.array or type(y) == pd.Series:
-            ydata = y
-        else:
-            raise FittingError("y is not valid. Must be one of the following:"
-                               "None, 'complete', numpy.array, pandas.Series."
-                               " Right now, its {}".format(type(y)))
-
-        # Handle yerr.
-        # Check if yerr is string
-        if yerr is None:
-            yerr = self.gpm.std.upper
-
-        # Else, numpsy array or dataframe
-        elif type(y) != np.array and type(y) != pd.Series:
-            raise FittingError("yerr is not valid. Must be one of the "
-                               "following: None, 'complete', numpy.array, "
-                               "pandas.Series. Right now, its "
-                               "{}".format(type(yerr)))
-
         # ###### Calculate likelihood #########
         # Calculate ymodel
         ymodel = self.hypothesis(X=X, thetas=thetas)
 
         # Likelihood of data given model
         return (- 0.5 * np.log(2 * np.pi * yerr**2) -
-                (0.5 * ((ydata - ymodel)**2 / yerr**2)) -
+                (0.5 * ((y - ymodel)**2 / yerr**2)) -
                 (self.Linear.alpha * sum(abs(thetas))))

@@ -68,6 +68,7 @@ class EpistasisLinearRegression(BaseModel):
     def predict(self, X=None):
         return super(self.__class__, self).predict(X)
 
+    @arghandler
     def predict_transform(self, X=None, y=None):
         return self.predict(X=X)
 
@@ -81,10 +82,9 @@ class EpistasisLinearRegression(BaseModel):
 
     @arghandler
     def hypothesis(self, X=None, thetas=None):
-        if thetas is None:
-            thetas = self.thetas
         return _np.dot(X, thetas)
 
+    @arghandler
     def hypothesis_transform(self, X=None, y=None, thetas=None):
         return self.hypothesis(X=X, thetas=thetas)
 
@@ -94,22 +94,6 @@ class EpistasisLinearRegression(BaseModel):
             X=None, y=None,
             yerr=None,
             thetas=None):
-        # If thetas are not explicitly named, get them from the model
-        if thetas is None:
-            thetas = self.thetas
-
-        # Handle yerr.
-        # Check if yerr is string
-        if type(yerr) is str and yerr in [None, "complete"]:
-            yerr = self.gpm.std.upper
-
-        # Else, numpy array or dataframe
-        elif type(y) != np.array and type(y) != pd.Series:
-            raise FittingError("yerr is not valid. Must be one of the "
-                               "following: None, 'complete', "
-                               "numpy.array, pandas.Series. Right now, "
-                               "its {}".format(type(yerr)))
-
         # Calculate y from model.
         ymodel = self.hypothesis(X=X, thetas=thetas)
         return (- 0.5 * _np.log(2 * _np.pi * yerr**2) -
@@ -246,6 +230,7 @@ class EpistasisLasso(BaseModel):
         X = _np.asfortranarray(X)
         return super(self.__class__, self).predict(X)
 
+    @arghandler
     def predict_transform(self, X=None, y=None):
         return self.predict(X=X)
 
@@ -260,8 +245,6 @@ class EpistasisLasso(BaseModel):
 
     @arghandler
     def hypothesis(self, X=None, thetas=None):
-        if thetas is None:
-            thetas = self.thetas
         return _np.dot(X, thetas)
 
     def hypothesis_transform(self, X=None, thetas=None):
@@ -273,21 +256,6 @@ class EpistasisLasso(BaseModel):
             X=None, y=None,
             yerr=None,
             thetas=None):
-        # If thetas are not explicitly named, get them from the model
-        if thetas is None:
-            thetas = self.thetas
-
-        # Handle yerr.
-        # Check if yerr is string
-        if type(yerr) is str and yerr in [None, "complete"]:
-            yerr = self.gpm.std.upper
-
-        # Else, numpy array or dataframe
-        elif type(y) != np.array and type(y) != pd.Series:
-            raise FittingError("yerr is not valid. Must be one of the "
-                               "following: None, 'complete', "
-                               "numpy.array, pandas.Series. Right now, "
-                               "its {}".format(type(yerr)))
 
         # Calculate y from model.
         ymodel = self.hypothesis(X=X, thetas=thetas)

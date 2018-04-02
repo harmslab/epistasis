@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from sklearn.preprocessing import binarize
 
-from abc import abstractmethod, ABC
+from abc import abstractmethod, ABC, ABCMeta
 
 # imports from gpmap dependency
 from gpmap.gpm import GenotypePhenotypeMap
@@ -16,6 +16,9 @@ from epistasis.utils import (extract_mutations_from_genotypes,
                              genotypes_to_X)
 from .utils import XMatrixException
 from sklearn.base import RegressorMixin, BaseEstimator
+
+class SubclassException(Exception):
+    pass
 
 def sklearn_mixin(sklearn_class):
     """Mixing a Scikit learn model.
@@ -29,7 +32,10 @@ def sklearn_mixin(sklearn_class):
         parents = cls.__bases__
 
         # Put Sklearn first in line of parent classes
-        parents = (sklearn_class,) + parents
+        types = tuple(set((type(sklearn_class), type(ABCModel))))
+        meta = type("EpistasisSklearnMeta", types, {}) #{'mro': lambda self: mro})
+
+        parents = (sklearn_class,)
 
         # Rebuild class with Mixed in scikit learn.
         cls = type(name, parents, methods)
@@ -37,7 +43,7 @@ def sklearn_mixin(sklearn_class):
 
     return mixer
 
-class BaseModel(ABC, BaseEstimator, RegressorMixin):
+class ABCModel(ABC):
     """Abstract Base Class for all epistasis models.
 
     This class sets all docstrings not given in subclasses.
@@ -47,7 +53,7 @@ class BaseModel(ABC, BaseEstimator, RegressorMixin):
         this base class.
         """
         # Get items in BaseModel.
-        for name, member in inspect.getmembers(BaseModel):
+        for name, member in inspect.getmembers(self.__class__):
             # Get the docstring for this item
             doc = getattr(member, '__doc__')
 
@@ -70,7 +76,7 @@ class BaseModel(ABC, BaseEstimator, RegressorMixin):
     def num_of_params(self):
         """Number of parameters in model.
         """
-        pass
+        raise SubclassException("Must be implemented in a subclass.")
 
     # --------------------------------------------------------------
     # Abstract Methods
@@ -100,7 +106,7 @@ class BaseModel(ABC, BaseEstimator, RegressorMixin):
         self :
             The model is returned. Allows chaining methods.
         """
-        pass
+        raise SubclassException("Must be implemented in a subclass.")
 
     @abstractmethod
     def fit_transform(self, X=None, y=None, **kwargs):
@@ -125,7 +131,7 @@ class BaseModel(ABC, BaseEstimator, RegressorMixin):
         gpm : GenotypePhenotypeMap
             The genotype-phenotype map object with transformed genotypes.
         """
-        pass
+        raise SubclassException("Must be implemented in a subclass.")
 
     @abstractmethod
     def predict(self, X=None):
@@ -146,7 +152,7 @@ class BaseModel(ABC, BaseEstimator, RegressorMixin):
         y : ndarray
             array of phenotypes.
         """
-        pass
+        raise SubclassException("Must be implemented in a subclass.")
 
     @abstractmethod
     def predict_transform(self, X=None, y=None, **kwargs):
@@ -170,7 +176,7 @@ class BaseModel(ABC, BaseEstimator, RegressorMixin):
         y_transform : ndarray
             array of phenotypes.
         """
-        pass
+        raise SubclassException("Must be implemented in a subclass.")
 
     @abstractmethod
     def hypothesis(self, X=None, thetas=None):
@@ -194,7 +200,7 @@ class BaseModel(ABC, BaseEstimator, RegressorMixin):
         y : ndarray
             array of phenotypes predicted by model parameters.
         """
-        pass
+        raise SubclassException("Must be implemented in a subclass.")
 
     @abstractmethod
     def hypothesis_transform(self, X=None, y=None, thetas=None):
@@ -221,7 +227,8 @@ class BaseModel(ABC, BaseEstimator, RegressorMixin):
         y : ndarray
             array of phenotypes predicted by model parameters.
         """
-        pass
+        raise SubclassException("Must be implemented in a subclass.")
+
 
     @abstractmethod
     def lnlike_of_data(
@@ -257,7 +264,7 @@ class BaseModel(ABC, BaseEstimator, RegressorMixin):
         y : ndarray
             array of phenotypes predicted by model parameters.
         """
-        pass
+        raise SubclassException("Must be implemented in a subclass.")
 
 
     def lnlikelihood(
@@ -293,9 +300,7 @@ class BaseModel(ABC, BaseEstimator, RegressorMixin):
         lnlike : float
             log-likelihood of the model parameters.
         """
-        lnlike = np.sum(self.lnlike_of_data(X=X, y=y, yerr=yerr,
-                                            sample_weight=sample_weight,
-                                            thetas=thetas))
+        lnlike = np.sum(self.lnlike_of_data(X=X, y=y, yerr=yerr, thetas=thetas))
 
         # If log-likelihood is infinite, set to negative infinity.
         if np.isinf(lnlike) or np.isnan(lnlike):
@@ -423,7 +428,7 @@ class BaseModel(ABC, BaseEstimator, RegressorMixin):
             X = self.Xbuilt[X]
 
         # If 2-d array, keep as so.
-        elif isinstance(X, np.ndarray) and X.shape == 2:
+        elif isinstance(X, np.ndarray) and X.ndim == 2:
             pass
 
         # If list of genotypes.
@@ -437,7 +442,7 @@ class BaseModel(ABC, BaseEstimator, RegressorMixin):
                 model_type=self.model_type
             )
         else:
-            raise Exception
+            raise Exception("X is invalid.")
 
         # Save X
         self.Xbuilt[method] = X
@@ -476,3 +481,6 @@ class BaseModel(ABC, BaseEstimator, RegressorMixin):
             return thetas
         else:
             raise Exception("thetas is invalid.")
+
+class BaseModel(ABC, RegressorMixin, BaseEstimator):
+    pass

@@ -21,8 +21,8 @@ warnings.filterwarnings(action="ignore", module="sklearn",
                         category=DeprecationWarning)
 
 
-@sklearn_mixin(LogisticRegression)
-class EpistasisLogisticRegression(BaseModel):
+#@sklearn_mixin(LogisticRegression)
+class EpistasisLogisticRegression(LogisticRegression, BaseModel):
     """Logistic regression for estimating epistatic interactions that lead to
     nonviable phenotypes. Useful for predicting viable/nonviable phenotypes.
 
@@ -39,7 +39,6 @@ class EpistasisLogisticRegression(BaseModel):
         a background-averaged "genotype-phenotype". "local" defines epistasis
         with respect to the wildtype genotype.
     """
-
     def __init__(self, threshold, model_type="global", **kwargs):
         super(self.__class__, self).__init__(**kwargs)
         self.threshold = threshold
@@ -78,7 +77,8 @@ class EpistasisLogisticRegression(BaseModel):
 
     def fit_transform(self, X=None, y=None, **kwargs):
         self.fit(X=X, y=y, **kwargs)
-        ypred = self.predict(X='fit')
+        ypred = self.predict(X=X)
+
 
         # Transform map.
         gpm = GenotypePhenotypeMap.read_dataframe(
@@ -100,18 +100,16 @@ class EpistasisLogisticRegression(BaseModel):
         yclass = binarize(y.reshape(1, -1), self.threshold)[0]
         self.classes = yclass
         super(self.__class__, self).fit(X=X, y=yclass, **kwargs)
+        self.epistasis.values = np.reshape(self.coef_, (-1,))
         return self
 
     @arghandler
     def predict(self, X=None):
-        return super(self.__class__, self).predict(X)
+        return super().predict(X=X)
 
+    @arghandler
     def predict_transform(self, X=None, y=None):
         x = self.predict(X=X)
-
-        if y is None:
-            y = self.gpm.phenotypes
-
         y[x == 0] = 0
         return y
 
@@ -130,9 +128,6 @@ class EpistasisLogisticRegression(BaseModel):
 
     @arghandler
     def lnlike_of_data(self, X=None, y=None, yerr=None, thetas=None):
-        if thetas is None:
-            thetas = self.thetas
-
         # Calculate Y's
         yclass = binarize(y.reshape(1, -1), threshold=self.threshold)[0]
         ymodel = self.hypothesis(X=X, thetas=thetas)
@@ -143,22 +138,23 @@ class EpistasisLogisticRegression(BaseModel):
 
     @arghandler
     def hypothesis(self, X=None, thetas=None):
-        # Given thetas, estimate probability of class.
-        if thetas is None:
-            thetas = self.thetas
-
         # Calculate probability of each class
         logit_p1 = 1 / (1 + np.exp(np.dot(X, thetas)))
 
-        # Determine class from probability
-        classes = np.ones(len(logit_p1))
-        classes[logit_p1 > 0.5] = 0
+        # Returns probability of class 1
+        return logit_p1
 
-        # Return class
-        return classes
+    @arghandler
+    def hypothesis_transform(self, X=None, y=None, thetas=None):
+        ypred = self.hypothesis(X=X, thetas=thetas)
 
-    def hypothesis_transform(self, X=None, y=None):
-        pass
+        # Transform map.
+        gpm = GenotypePhenotypeMap.read_dataframe(
+            dataframe=self.gpm.data[ypred<0.5],
+            wildtype=self.gpm.wildtype,
+            mutations=self.gpm.mutations
+        )
+        return gpm
 
     @property
     def thetas(self):

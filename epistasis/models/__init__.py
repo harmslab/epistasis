@@ -9,5 +9,4 @@ from .linear import EpistasisLinearRegression, EpistasisLasso
 #                         Parameter,
 #                         Parameters)
 # from .classifiers import EpistasisLogisticRegression
-# from .mixed import EpistasisMixedRegression
 # from .ensemble import EpistasisEnsembleRegression
