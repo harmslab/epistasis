@@ -2,7 +2,7 @@ import numpy as _np
 from sklearn.linear_model import LinearRegression
 from sklearn.linear_model import Lasso
 
-from .base import BaseModel, sklearn_mixin
+from .base import BaseModel, use_sklearn
 from .utils import arghandler
 from ..stats import pearson
 
@@ -14,7 +14,7 @@ warnings.filterwarnings(action="ignore", module="scipy",
                         message="^internal gelsd")
 
 
-@sklearn_mixin(LinearRegression)
+@use_sklearn(LinearRegression)
 class EpistasisLinearRegression(BaseModel):
     """Ordinary least-squares regression for estimating high-order, epistatic
     interactions in a genotype-phenotype map.
@@ -49,7 +49,7 @@ class EpistasisLinearRegression(BaseModel):
     @property
     def num_of_params(self):
         n = 0
-        n += self.coef_
+        n += self.epistasis.n
         return n
 
     #@epistasis_fitter
@@ -68,7 +68,6 @@ class EpistasisLinearRegression(BaseModel):
     def predict(self, X=None):
         return super(self.__class__, self).predict(X)
 
-    @arghandler
     def predict_transform(self, X=None, y=None):
         return self.predict(X=X)
 
@@ -91,7 +90,8 @@ class EpistasisLinearRegression(BaseModel):
     @arghandler
     def lnlike_of_data(
             self,
-            X=None, y=None,
+            X=None,
+            y=None,
             yerr=None,
             thetas=None):
         # Calculate y from model.
@@ -99,8 +99,20 @@ class EpistasisLinearRegression(BaseModel):
         return (- 0.5 * _np.log(2 * _np.pi * yerr**2) -
                 (0.5 * ((y - ymodel)**2 / yerr**2)))
 
+    @arghandler
+    def lnlike_transform(
+            self,
+            X=None,
+            y=None,
+            yerr=None,
+            lnprior=None,
+            thetas=None):
+        # Update likelihood.
+        lnlike = self.lnlike_of_data(X=X, y=y, yerr=yerr, thetas=thetas)
+        return lnlike + lnprior
 
-@sklearn_mixin(Lasso)
+
+@use_sklearn(Lasso)
 class EpistasisLasso(BaseModel):
     """A scikit-learn Lasso Regression class for discovering sparse
     epistatic coefficients.
@@ -207,9 +219,7 @@ class EpistasisLasso(BaseModel):
     @property
     def num_of_params(self):
         n = 0
-        vals = self.epistasis.values
-        vals = vals[vals > 0]
-        n += len(vals)
+        n += self.epistasis.n
         return n
 
     @arghandler
@@ -247,8 +257,9 @@ class EpistasisLasso(BaseModel):
     def hypothesis(self, X=None, thetas=None):
         return _np.dot(X, thetas)
 
-    def hypothesis_transform(self, X=None, thetas=None):
-        pass
+    @arghandler
+    def hypothesis_transform(self, X=None, y=None, thetas=None):
+        return self.hypothesis(X=X, thetas=thetas)
 
     @arghandler
     def lnlike_of_data(

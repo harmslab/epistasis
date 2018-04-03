@@ -18,24 +18,19 @@ from .utils import XMatrixException
 from sklearn.base import RegressorMixin, BaseEstimator
 
 class SubclassException(Exception):
-    pass
+    """Subclass Exception for parent classes."""
 
-def sklearn_mixin(sklearn_class):
-    """Mixing a Scikit learn model.
-
-    Update docstrings to BaseModel.
+def use_sklearn(sklearn_class):
+    """Swap out base classes in an Epistasis model class with a sklearn_class +
+    AbstractModel.
     """
     def mixer(cls):
         # Meta program the class
         name = cls.__name__
         methods = dict(cls.__dict__)
-        parents = cls.__bases__
 
         # Put Sklearn first in line of parent classes
-        types = tuple(set((type(sklearn_class), type(ABCModel))))
-        meta = type("EpistasisSklearnMeta", types, {}) #{'mro': lambda self: mro})
-
-        parents = (sklearn_class,)
+        parents = (sklearn_class, AbstractModel)
 
         # Rebuild class with Mixed in scikit learn.
         cls = type(name, parents, methods)
@@ -43,7 +38,7 @@ def sklearn_mixin(sklearn_class):
 
     return mixer
 
-class ABCModel(ABC):
+class AbstractModel(ABC):
     """Abstract Base Class for all epistasis models.
 
     This class sets all docstrings not given in subclasses.
@@ -53,7 +48,7 @@ class ABCModel(ABC):
         this base class.
         """
         # Get items in BaseModel.
-        for name, member in inspect.getmembers(self.__class__):
+        for name, member in inspect.getmembers(AbstractModel):
             # Get the docstring for this item
             doc = getattr(member, '__doc__')
 
@@ -65,7 +60,7 @@ class ABCModel(ABC):
             except AttributeError:
                 pass
 
-        return super(BaseModel, self).__new__(self)
+        return super(AbstractModel, self).__new__(self)
 
     # --------------------------------------------------------------
     # Abstract Properties
@@ -266,6 +261,45 @@ class ABCModel(ABC):
         """
         raise SubclassException("Must be implemented in a subclass.")
 
+    @abstractmethod
+    def lnlike_transform(
+            self,
+            X=None,
+            y=None,
+            yerr=None,
+            lnprior=None,
+            thetas=None):
+        """Compute the individual log-likelihoods for each datapoint from a set
+        of model parameters and a prior.
+
+        Parameters
+        ----------
+        X : None, ndarray, or list of genotypes. (default=None)
+            data used to construct X matrix that maps genotypes to
+            model coefficients. If None, the model uses genotypes in the
+            attached genotype-phenotype map. If a list of strings,
+            the strings are genotypes that will be converted to an X matrix.
+            If ndarray, the function assumes X is the X matrix used by the
+            epistasis model.
+
+        y : ndarray
+            An array of phenotypes to transform.
+
+        yerr : ndarray
+            An array of the measured phenotypes standard deviations.
+
+        lnprior : ndarray
+            An array of priors for a given datapoint.
+
+        thetas : ndarray
+            array of model parameters. See thetas property for specifics.
+
+        Returns
+        -------
+        y : ndarray
+            array of phenotypes predicted by model parameters.
+        """
+        raise SubclassException("Must be implemented in a subclass.")
 
     def lnlikelihood(
             self,
@@ -392,6 +426,9 @@ class ABCModel(ABC):
         """Data stored in a GenotypePhenotypeMap object."""
         return self._gpm
 
+    # -----------------------------------------------------------
+    # Argument handlers.
+    # -----------------------------------------------------------
 
     def _X(self, data=None, method=None):
         """Handle the X argument in this model."""
@@ -482,5 +519,18 @@ class ABCModel(ABC):
         else:
             raise Exception("thetas is invalid.")
 
-class BaseModel(ABC, RegressorMixin, BaseEstimator):
+    def _lnprior(self, data=None, method=None):
+        _lnprior = data
+        if _lnprior is None:
+            return np.zeros(self.gpm.n)
+
+        elif isinstance(_lnprior, np.ndarray) or isinstance(_lnprior, list):
+            return _lnprior
+        else:
+            raise Exceptison("_prior is invalid.")
+
+
+class BaseModel(AbstractModel, RegressorMixin, BaseEstimator):
+    """Base model for defining an epistasis model.
+    """
     pass

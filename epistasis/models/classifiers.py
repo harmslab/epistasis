@@ -8,7 +8,7 @@ from sklearn.naive_bayes import BernoulliNB
 from sklearn.preprocessing import binarize
 
 from ..mapping import EpistasisMap
-from .base import BaseModel, sklearn_mixin
+from .base import BaseModel, use_sklearn
 from .utils import (XMatrixException, arghandler)
 
 from .linear import EpistasisLinearRegression
@@ -21,8 +21,8 @@ warnings.filterwarnings(action="ignore", module="sklearn",
                         category=DeprecationWarning)
 
 
-#@sklearn_mixin(LogisticRegression)
-class EpistasisLogisticRegression(LogisticRegression, BaseModel):
+@use_sklearn(LogisticRegression)
+class EpistasisLogisticRegression(BaseModel):
     """Logistic regression for estimating epistatic interactions that lead to
     nonviable phenotypes. Useful for predicting viable/nonviable phenotypes.
 
@@ -105,12 +105,11 @@ class EpistasisLogisticRegression(LogisticRegression, BaseModel):
 
     @arghandler
     def predict(self, X=None):
-        return super().predict(X=X)
+        return super(self.__class__, self).predict(X=X)
 
-    @arghandler
     def predict_transform(self, X=None, y=None):
         x = self.predict(X=X)
-        y[x == 0] = 0
+        y[x <= 0.5] = self.threshold
         return y
 
     @arghandler
@@ -129,32 +128,42 @@ class EpistasisLogisticRegression(LogisticRegression, BaseModel):
     @arghandler
     def lnlike_of_data(self, X=None, y=None, yerr=None, thetas=None):
         # Calculate Y's
-        yclass = binarize(y.reshape(1, -1), threshold=self.threshold)[0]
         ymodel = self.hypothesis(X=X, thetas=thetas)
+        ymodel_ = 1 - ymodel
+        ymodel[ymodel < 0.5] = ymodel_[ymodel < 0.5]
 
-        # log-likelihood of logit model
-        # NOTE: This likelihood is not normalized -- not a simple problem.
-        return yclass * np.log(1 - ymodel) + (1 - yclass) * np.log(ymodel)
+        return np.log(ymodel)
+
+    @arghandler
+    def lnlike_transform(
+            self,
+            X=None,
+            y=None,
+            yerr=None,
+            lnprior=None,
+            thetas=None):
+        # Update likelihood.
+        ymodel = self.hypothesis(X=X, thetas=thetas)
+        yclass = np.ones(len(ymodel))
+        yclass[ymodel > 0.5] = 0
+
+        lnlike = self.lnlike_of_data(X=X, y=y, yerr=yerr, thetas=thetas)
+        lnprior[yclass == 0] = 0
+        return lnlike + lnprior
 
     @arghandler
     def hypothesis(self, X=None, thetas=None):
         # Calculate probability of each class
-        logit_p1 = 1 / (1 + np.exp(np.dot(X, thetas)))
+        logit_p0 = 1 / (1 + np.exp(np.dot(X, thetas)))
 
         # Returns probability of class 1
-        return logit_p1
+        return logit_p0
 
     @arghandler
     def hypothesis_transform(self, X=None, y=None, thetas=None):
         ypred = self.hypothesis(X=X, thetas=thetas)
-
-        # Transform map.
-        gpm = GenotypePhenotypeMap.read_dataframe(
-            dataframe=self.gpm.data[ypred<0.5],
-            wildtype=self.gpm.wildtype,
-            mutations=self.gpm.mutations
-        )
-        return gpm
+        y[ypred > 0.5] = self.threshold
+        return y
 
     @property
     def thetas(self):

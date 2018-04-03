@@ -226,22 +226,23 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
         y = self.function(x, *self.parameters.values(), data=xadd)
         return y
 
-    @arghandler
     def predict_transform(self, X=None, y=None):
         xdata = self.Additive.predict(X='fit')
-        return self.function(y, *self.parameters.values(), data=xdata)
+        if y is None:
+            x = self.Additive.predict(X=X)
+        else:
+            x = y
+        return self.function(x, *self.parameters.values(), data=xdata)
 
     @arghandler
     def score(self, X=None, y=None):
-        xadd = self.Additive.predict(X='fit')
+        xadd = self.Additive.predict(X=X)
         ypred = self.function(xadd, *self.parameters.values(), data=xadd)
         return pearson(y, ypred)**2
 
     @arghandler
     def hypothesis(self, X=None, thetas=None):
-        # ----------------------------------------------------------------------
-        # Part 0: Break up thetas
-        # ----------------------------------------------------------------------
+        # Break up thetas
         i, j = len(self.parameters.valuesdict()), self.Additive.epistasis.n
         parameters = thetas[:i]
         epistasis = thetas[i:i + j]
@@ -260,18 +261,9 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
     @arghandler
     def hypothesis_transform(self, X=None, y=None, thetas=None):
         # Estimate additive coefficients
-        xdata = self.Additive.predict(X=X)
-
-        linear_phenotypes = self.reverse(y, *self.parameters.values(), data=xdata)
-
-        # Transform map.
-        gpm = GenotypePhenotypeMap.read_dataframe(
-            dataframe=self.gpm.data,
-            wildtype=self.gpm.wildtype,
-            mutations=self.gpm.mutations
-        )
-        gpm.data['phenotypes'] = linear_phenotypes
-        return gpm
+        xdata = self.Additive.predict(X='fit')
+        y_transform = self.reverse(y, *self.parameters.values(), data=xdata)
+        return y_transform
 
     @arghandler
     def lnlike_of_data(self, X=None, y=None, yerr=None, thetas=None):

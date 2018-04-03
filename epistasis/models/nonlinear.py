@@ -261,6 +261,7 @@ class EpistasisNonlinearRegression(BaseModel):
             wildtype=self.gpm.wildtype,
             mutations=self.gpm.mutations
         )
+
         gpm.data['phenotypes'] = linear_phenotypes
         return gpm
 
@@ -269,9 +270,12 @@ class EpistasisNonlinearRegression(BaseModel):
         y = self.function(x, *self.parameters.values())
         return y
 
-    @arghandler
     def predict_transform(self, X=None, y=None):
-        return self.function(y, *self.parameters.values())
+        if y is None:
+            x = self.Additive.predict(X=X)
+        else:
+            x = y
+        return self.function(x, *self.parameters.values())
 
     @arghandler
     def hypothesis(self, X=None, thetas=None):
@@ -292,21 +296,9 @@ class EpistasisNonlinearRegression(BaseModel):
 
     @arghandler
     def hypothesis_transform(self, X=None, y=None, thetas=None):
-        i, j = len(self.parameters.valuesdict()), self.Additive.epistasis.n
-        parameters = thetas[:i]
-        epistasis = thetas[i:i+j]
-
         # Part 2: Nonlinear portion
-        linear_phenotypes = self.reverse(y, *self.parameters.values())
-
-        # Transform map.
-        gpm = GenotypePhenotypeMap.read_dataframe(
-            dataframe=self.gpm.data,
-            wildtype=self.gpm.wildtype,
-            mutations=self.gpm.mutations
-        )
-        gpm.data['phenotypes'] = linear_phenotypes
-        return gpm
+        y_transform = self.reverse(y, *self.parameters.values())
+        return y_transform
 
     @arghandler
     def score(self, X=None, y=None):
@@ -324,6 +316,17 @@ class EpistasisNonlinearRegression(BaseModel):
         return (- 0.5 * np.log(2 * np.pi * yerr**2) -
                 (0.5 * ((y - ymodel)**2 / yerr**2)))
 
+    @arghandler
+    def lnlike_transform(
+            self,
+            X=None,
+            y=None,
+            yerr=None,
+            lnprior=None,
+            thetas=None):
+        # Update likelihood.
+        lnlike = self.lnlike_of_data(X=X, y=y, yerr=yerr, thetas=thetas)
+        return lnlike + lnprior
 
 class EpistasisNonlinearLasso(EpistasisNonlinearRegression):
     """Use nonlinear regression with a linear lasso epistasis model

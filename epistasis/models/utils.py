@@ -15,10 +15,11 @@ class FittingError(Exception):
     """Exception Subclass for X matrix errors."""
 
 def arghandler(method):
-    """
+    """Points methods to argument handlers. Assumes each argument has a
+    corresponding method attached to the object named "_{argument}". These
+    methods given default values to arguments.
 
-
-
+    Ignores self and kwargs
     """
     @wraps(method)
     def inner(self, **kwargs):
