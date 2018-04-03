@@ -9,7 +9,7 @@ from epistasis.stats import pearson
 from ..mapping import EpistasisMap, mutations_to_sites
 from .base import BaseModel
 from epistasis.model_matrix_ext import get_model_matrix
-from .utils import X_fitter, X_predictor
+from .utils import arghandler
 
 
 class State(EpistasisMap):
@@ -60,7 +60,7 @@ class State(EpistasisMap):
         return keys
 
 
-class EpistasisEnsembleRegression(BaseEstimator, BaseModel):
+class EpistasisEnsembleRegression(BaseModel):
     """Ensemble epistasis model. It models variation in a genotype-phenotype map
     as a statistical ensemble of nstates contributing to each genotype's
     phenotype.
@@ -189,8 +189,8 @@ class EpistasisEnsembleRegression(BaseEstimator, BaseModel):
         y = np.log(Z)
         return y
 
-    @X_fitter
-    def fit(self, X='obs', y='obs', **kwargs):
+    @arghandler
+    def fit(self, X=None, y=None, **kwargs):
         """Fit ensemble model to data.
 
         Parameters
@@ -231,23 +231,23 @@ class EpistasisEnsembleRegression(BaseEstimator, BaseModel):
 
         return self
 
-    def fit_transform(self, X='obs', y='obs', **kwargs):
+    def fit_transform(self, X=None, y=None, **kwargs):
         """Same as calling fit in ensemble model.
         """
         self.fit(X=X, y=y, **kwargs)
 
-    @X_predictor
-    def predict(self, X='obs'):
+    @arghandler
+    def predict(self, X=None):
         """Predict phenotypes using fitted model.
         """
         return self.functional_form(list(self.parameters.values()), X=X)
 
-    def predict_transform(self, X='obs', y='obs'):
+    def predict_transform(self, X=None, y=None):
         """Same as calling predict."""
         return self.predict(X=X)
 
-    @X_fitter
-    def score(self, X='obs', y='obs', **kwargs):
+    @arghandler
+    def score(self, X=None, y=None, **kwargs):
         """Calculate the pearson coefficient between the models predictions and
         a given y array.
         """
