@@ -217,7 +217,6 @@ class EpistasisPipeline(list, BaseModel):
             log-likelihood of the model parameters.
         """
         lnlike = np.sum(self.lnlike_of_data(X=X, y=y, yerr=yerr, thetas=thetas))
-
         # If log-likelihood is infinite, set to negative infinity.
         if np.isinf(lnlike) or np.isnan(lnlike):
             return -np.inf

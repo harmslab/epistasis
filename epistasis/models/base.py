@@ -435,20 +435,14 @@ class AbstractModel(ABC):
         X = data
         # If X is None, see if we saved an array.
         if X is None:
-            # Has an X been constructed before?
-            if method in self.Xbuilt:
-                X = self.Xbuilt[method]
-
-            # If not, use the observed genotypes
-            else:
-                # Get X from genotypes
-                X = genotypes_to_X(
-                    self.gpm.wildtype,
-                    self.gpm.genotypes,
-                    order=self.order,
-                    mutations=self.gpm.mutations,
-                    model_type=self.model_type
-                )
+            # Get X from genotypes
+            X = genotypes_to_X(
+                self.gpm.wildtype,
+                self.gpm.genotypes,
+                order=self.order,
+                mutations=self.gpm.mutations,
+                model_type=self.model_type
+            )
 
         elif isinstance(X, str) and X in self.gpm.genotypes:
             # Get X from genotypes

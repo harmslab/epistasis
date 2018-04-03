@@ -248,21 +248,30 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
         epistasis = thetas[i:i + j]
 
         # Get the data that was used to estimate the geometric mean.
-        xadd = self.Additive.predict(X='fit')
+        xdata = self.Additive.predict(X='fit')
 
         # Part 1: Linear portion
-        ylin = np.dot(X, epistasis)
+        x = self.Additive.hypothesis(X=X, thetas=epistasis)
 
         # Part 2: Nonlinear portion
-        ynonlin = self.function(ylin, *parameters, data=xadd)
+        ynonlin = self.function(x, *parameters, data=xdata)
 
         return ynonlin
 
-    @arghandler
     def hypothesis_transform(self, X=None, y=None, thetas=None):
+        # Break up thetas
+        i, j = len(self.parameters.valuesdict()), self.Additive.epistasis.n
+        parameters = thetas[:i]
+        epistasis = thetas[i:i + j]
+
         # Estimate additive coefficients
         xdata = self.Additive.predict(X='fit')
-        y_transform = self.reverse(y, *self.parameters.values(), data=xdata)
+        # Part 2: Nonlinear portion
+        if y is None:
+            x = self.Additive.hypothesis(X=X, thetas=epistasis)
+        else:
+            x = y
+        y_transform = self.function(x, *parameters, data=xdata)
         return y_transform
 
     @arghandler

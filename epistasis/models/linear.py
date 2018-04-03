@@ -83,7 +83,6 @@ class EpistasisLinearRegression(BaseModel):
     def hypothesis(self, X=None, thetas=None):
         return _np.dot(X, thetas)
 
-    @arghandler
     def hypothesis_transform(self, X=None, y=None, thetas=None):
         return self.hypothesis(X=X, thetas=thetas)
 

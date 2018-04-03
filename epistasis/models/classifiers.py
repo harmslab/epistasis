@@ -159,7 +159,6 @@ class EpistasisLogisticRegression(BaseModel):
         # Returns probability of class 1
         return logit_p0
 
-    @arghandler
     def hypothesis_transform(self, X=None, y=None, thetas=None):
         ypred = self.hypothesis(X=X, thetas=thetas)
         y[ypred > 0.5] = self.threshold

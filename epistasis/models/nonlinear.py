@@ -294,10 +294,13 @@ class EpistasisNonlinearRegression(BaseModel):
 
         return ynonlin
 
-    @arghandler
     def hypothesis_transform(self, X=None, y=None, thetas=None):
         # Part 2: Nonlinear portion
-        y_transform = self.reverse(y, *self.parameters.values())
+        if y is None:
+            x = self.Additive.predict(X=X)
+        else:
+            x = y
+        y_transform = self.reverse(x, *self.parameters.values())
         return y_transform
 
     @arghandler
