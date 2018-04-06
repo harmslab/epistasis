@@ -30,6 +30,23 @@ a box plot (see example below), and signficicance as stars using a t-test.
 Plot nonlinear scale
 --------------------
 
+Plot a nonlinear scale using the ``pyplot.nonlinear`` module.
 
-Plot classification
--------------------
+.. code-block:: python
+
+    %matplotlib inline
+    import matplotlib.pyplot as plt
+
+    from gpmap.simulate import MountFujiSimulation
+    from epistasis.models import EpistasisPowerTransform
+    from epistasis.pyplot.nonlinear import plot_power_transform
+
+    gpm = MountFujiSimulation.from_length(4, field_strength=-1, roughness=(-2,2))
+
+    model = EpistasisPowerTransform(lmbda=1, A=0, B=0)
+    model.add_gpm(gpm)
+    model.fit()
+
+    fig, ax = plt.subplots(figsize=(3,3))
+
+    plot_power_transform(model, cmap='plasma', ax=ax, yerr=0.6)
