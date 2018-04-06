@@ -25,7 +25,6 @@ class TestEpistasisLogisticRegression(object):
 
     def test_init(self, gpm):
         model = EpistasisLogisticRegression(threshold=self.threshold,
-                                            order=self.order,
                                             model_type="local")
         model.add_gpm(gpm)
         # Tests
@@ -34,31 +33,25 @@ class TestEpistasisLogisticRegression(object):
 
     def test_fit(self, gpm):
         model = EpistasisLogisticRegression(threshold=self.threshold,
-                                            order=self.order,
                                             model_type="local")
         model.add_gpm(gpm)
         model.fit()
 
-        assert "fit" in model.Xbuilt
-        assert "obs" in model.Xbuilt
         assert hasattr(model, "classes")
         assert hasattr(model, "epistasis")
         assert hasattr(model, "coef_")
 
     def test_predict(self, gpm):
         model = EpistasisLogisticRegression(threshold=self.threshold,
-                                            order=self.order,
                                             model_type="local")
         model.add_gpm(gpm)
         model.fit()
-        ypred = model.predict(X='obs')
+        ypred = model.predict()
 
-        assert "predict" in model.Xbuilt
         assert len(ypred) == model.gpm.n
 
     def test_predict_proba(self, gpm):
         model = EpistasisLogisticRegression(threshold=self.threshold,
-                                            order=self.order,
                                             model_type="local")
         model.add_gpm(gpm)
         model.fit()
@@ -73,7 +66,6 @@ class TestEpistasisLogisticRegression(object):
 
     def test_predict_log_proba(self, gpm):
         model = EpistasisLogisticRegression(threshold=self.threshold,
-                                            order=self.order,
                                             model_type="local")
         model.add_gpm(gpm)
         model.fit()
@@ -87,7 +79,6 @@ class TestEpistasisLogisticRegression(object):
 
     def test_score(self, gpm):
         model = EpistasisLogisticRegression(threshold=self.threshold,
-                                            order=self.order,
                                             model_type="local")
         model.add_gpm(gpm)
         model.fit()
@@ -98,7 +89,6 @@ class TestEpistasisLogisticRegression(object):
 
     def test_thetas(self, gpm):
         model = EpistasisLogisticRegression(threshold=self.threshold,
-                                            order=self.order,
                                             model_type="local")
         model.add_gpm(gpm)
         model.fit()
@@ -108,7 +98,6 @@ class TestEpistasisLogisticRegression(object):
 
     def test_hypothesis(self, gpm):
         model = EpistasisLogisticRegression(threshold=self.threshold,
-                                            order=self.order,
                                             model_type="local")
         model.add_gpm(gpm)
         model.fit()
@@ -120,7 +109,6 @@ class TestEpistasisLogisticRegression(object):
 
     def test_lnlikelihood(self, gpm):
         model = EpistasisLogisticRegression(threshold=self.threshold,
-                                            order=self.order,
                                             model_type="local")
         model.add_gpm(gpm)
         model.fit()

@@ -16,11 +16,8 @@ For more information about the epistasis models in this library, see our Genetic
     `Sailer, Z. R., & Harms, M. J. (2017). "Detecting High-Order Epistasis in Nonlinear Genotype-Phenotype Maps." Genetics, 205(3), 1079-1088.`_
 
 
-Simple Tutorial
+Simple Example
 --------------
-
-Basic epistasis model
-=====================
 
 Follow these five steps for all epistasis models in this library:
 
@@ -31,6 +28,8 @@ Follow these five steps for all epistasis models in this library:
   from epistasis.models import EpistasisLinearRegression
 
 2. **Initialize a model**. Set the order, choose the type of model (see `Anatomy of an epistasis model`_ for more info), and set any other parameters in the model.
+
+.. _`Anatomy of an epistasis model`: anatomy.html
 
 .. code-block:: python
 
@@ -69,57 +68,8 @@ Follow these five steps for all epistasis models in this library:
 
 .. image:: ../img/basic-example.png
 
-Epistasis Pipeline
-==================
-
-The ``EpistasisPipeline`` object allows you to link a few different epistasis models in series.
-Simply define each model's parameters and pass them to the pipeline. When ``fit`` is called,
-this object runs as cascade of fits and transforms.
-
-.. code-block:: python
-
-  from epistasis import EpistasisPipeline
-  from epistasis.models import (EpistasisLogisticRegression,
-                                EpistasisPowerTransform,
-                                EpistasisLinearRegression)
-
-  # Define genotype-phenotype map.
-  gpm = GenotypePhenotyeMap(
-    wildtype='AA'
-    genotypes=['AA', 'AV','VV'],  # Note that we're missing the 'VA' genotype
-    phenotypes=[0, .5, 1]
-  )
-
-  # Construct pipeline.
-  model = EpistasisPipeline(
-    EpistasisLogisticRegression(threshold=.2),
-    EpistasisPowerTransform(lmbda=1, A=0, B=0),
-    EpistasisLinearRegression(order=2)
-  )
-
-  # Fit pipeline.
-  model.fit()
-
-  # Predict missing phenotype of missing genotype.
-  model.predict(['VA'])
-
-
-
-
-Overview of available models
-----------------------------
-
-* EpistasisLinearRegression_: estimate epistatic coefficents in a linear genotype-phenotype map.
-* EpistasisLasso_: estimate *sparse* epistatic coefficients in a linear genotype-phenotype map
-* EpistasisNonlinearRegression_: estimates high-order epistatic coefficients in a nonlinear genotype-phenotype map.
-* EpistasisNonlinearLasso_: estimate *sparse* epistatic coefficients in a nonlinear genotype-phenotype map.
-* EpistasisPowerTransform_: use a power transform function to fit a nonlinear genotype-phenotype map and estimate epistasis.
-* EpistasisPowerLasso_: use a power transform function to fit a nonlinear genotype-phenotype map and estimate *sparse* epistasis.
-* EpistasisLogisticRegression_: use logistic regression to classify phenotypes as dead/alive.
-* EpistasisEnsembleRegression_: use a statistical ensemble of "states" to decompose variation in a genotype-phenotype map.
-
-Installation and dependencies
-------------------------------
+Install and dependencies
+------------------------
 
 For users
 ~~~~~~~~~
@@ -192,13 +142,3 @@ using the following command.
 .. Links for this page
 
 .. _`Sailer, Z. R., & Harms, M. J. (2017). "Detecting High-Order Epistasis in Nonlinear Genotype-Phenotype Maps." Genetics, 205(3), 1079-1088.`: http://www.genetics.org/content/205/3/1079
-.. _`Anatomy of an epistasis model`: anatomy.html
-.. _EpistasisLinearRegression: models.html#epistasislinearregression
-.. _EpistasisLasso: models.html#epistasislasso
-.. _EpistasisNonlinearRegression: models.html#epistasisnonlinearregression
-.. _EpistasisNonlinearLasso: models.html#epistasisnonlinearlasso
-.. _EpistasisPowerTransform: models.html#epistasispowertransform
-.. _EpistasisPowerLasso: models.html#epistasispowerlasso
-.. _EpistasisLogisticRegression: models.html#epistasislogisticregression
-.. _EpistasisMixedRegression: models.html#epistasismixedregression
-.. _EpistasisEnsembleRegression: models.html#epistasisensembleregression

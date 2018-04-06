@@ -201,7 +201,7 @@ class AbstractModel(ABC):
     def hypothesis_transform(self, X=None, y=None, thetas=None):
         """Transform phenotypes with given model parameters.
 
-        Parameterss
+        Parameters
         ----------
         X : None, ndarray, or list of genotypes. (default=None)
             data used to construct X matrix that maps genotypes to

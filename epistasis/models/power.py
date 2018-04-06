@@ -316,9 +316,6 @@ class EpistasisPowerTransformLasso(EpistasisPowerTransform):
     epistasis : EpistasisMap
         Mapping object containing high-order epistatic coefficients
 
-    Linear : EpistasisLasso
-        Linear regression object for fitting high-order epistasis model
-
     Additive : EpistasisLinearRegression
         Linear regression object for fitting additive model
 

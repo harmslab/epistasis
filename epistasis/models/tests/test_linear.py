@@ -47,19 +47,14 @@ class TestEpistasisLinearRegression(object):
         assert check1 is True
         assert check2 is True
         assert check3 is True
-        assert "obs" in model.Xbuilt
         assert "fit" in model.Xbuilt
 
-    def test_fit_sample_weight(self, gpm):
-        model = EpistasisLinearRegression(order=self.order, model_type="local")
-        model.add_gpm(gpm)
-        model.fit(sample_weight='relative')
 
     def test_predict(self, gpm):
         model = EpistasisLinearRegression(order=self.order, model_type="local")
         model.add_gpm(gpm)
         model.fit()
-        check1 = model.predict(X='obs')
+        check1 = model.predict(X='fit')
 
         # Tests
         np.testing.assert_almost_equal(

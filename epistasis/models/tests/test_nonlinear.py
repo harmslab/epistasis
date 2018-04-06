@@ -57,30 +57,34 @@ class TestEpistasisNonlinearRegression(object):
 
         m = EpistasisNonlinearRegression(function=function,
                                          reverse=reverse,
-                                         model_type=self.model_type)
+                                         model_type=self.model_type,
+                                         A=1,
+                                         B=0)
         m.add_gpm(gpm)
-        m.fit(A=1, B=0)
+        m.fit()
 
         assert True
 
     def test_score(self, gpm):
         m = EpistasisNonlinearRegression(function=function,
                                          reverse=reverse,
-                                         model_type=self.model_type)
+                                         model_type=self.model_type,
+                                         A=1, B=0)
         m.add_gpm(gpm)
 
-        m.fit(A=1, B=0)
+        m.fit()
         score = m.score()
         assert 0 <= score <= 1
 
     def test_predict(self, gpm):
         m = EpistasisNonlinearRegression(function=function,
                                          reverse=reverse,
-                                         model_type=self.model_type)
+                                         model_type=self.model_type,
+                                         A=1, B=0)
         m.add_gpm(gpm)
 
-        m.fit(A=1, B=0)
-        y = m.predict(X='obs')
+        m.fit()
+        y = m.predict()
 
         # Tests
         assert True
@@ -88,9 +92,10 @@ class TestEpistasisNonlinearRegression(object):
     def test_thetas(self, gpm):
         m = EpistasisNonlinearRegression(function=function,
                                          reverse=reverse,
-                                         model_type=self.model_type)
+                                         model_type=self.model_type,
+                                         A=1, B=0)
         m.add_gpm(gpm)
-        m.fit(A=1, B=0)
+        m.fit()
         coefs = m.thetas
         # Tests
         assert len(coefs) == 6
@@ -99,10 +104,11 @@ class TestEpistasisNonlinearRegression(object):
 
         m = EpistasisNonlinearRegression(function=function,
                                          reverse=reverse,
-                                         model_type=self.model_type)
+                                         model_type=self.model_type,
+                                         A=1, B=0)
         m.add_gpm(gpm)
 
-        m.fit(A=1, B=0)
+        m.fit()
         predictions = m.hypothesis()
         # Tests
         assert True
@@ -111,10 +117,11 @@ class TestEpistasisNonlinearRegression(object):
     def test_lnlikelihood(self, gpm):
         m = EpistasisNonlinearRegression(function=function,
                                          reverse=reverse,
-                                         model_type=self.model_type)
+                                         model_type=self.model_type,
+                                         A=1, B=0)
         m.add_gpm(gpm)
 
-        m.fit(A=1, B=0)
+        m.fit()
 
         # Calculate lnlikelihood
         lnlike = m.lnlikelihood()

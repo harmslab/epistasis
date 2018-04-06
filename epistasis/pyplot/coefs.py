@@ -8,17 +8,22 @@ from scipy.stats import norm as scipy_norm
 from epistasis.utils import Bunch
 
 
-def plot_coefs(sites=[], values=[], errors=None, **kwargs):
+def plot_coefs(model=None, sites=None, values=None, errors=None, **kwargs):
     """Create a barplot with the values from model, drawing the x-axis as a
     grid of boxes indicating the coordinate of the epistatic parameter.
     Should automatically generate an almost publication-quality figure.
 
     Parameters
     ----------
+    model: BaseModel object
+        epistasis model.
+
     sites : array
         array of epistatic indices/sites.
+
     values : array
         an array of epistatic coefficients
+
     errors : 2d array or list
         upper and lower bounds for each beta.
 
@@ -26,40 +31,59 @@ def plot_coefs(sites=[], values=[], errors=None, **kwargs):
     -----------------
     logbase : numpy.ufunc (default=np.log10)
         function to transform into log space
+
     log_transform : bool (default=False)
         transform the values if true.
+
     order_colors :
         list/tuple of colors for each order (rgb,html string-like)
+
     significance :
         how to treat signifiance.  should be
         1. "bon" -> Bonferroni corrected p-values (default)
         2. "p" -> raw p-values
         3. None -> ignore significance
+
     significance_cutoff :
         value above which to consider a term significant
+
     sigmas :
         number of sigmas to show for each error bar
+
     y_scalar :
         how much to scale the y-axis above and beyond y-max
+
     y_axis_name :
         what to put on the y-axis of the barplot
+
     figsize :
         tuple of figure width,height
+
     height_ratio :
         how much to scale barplot relative to xbox
+
     star_cutoffs :
         signifiance cutoffs for star stack.  should go from highest
                   p to lowest p (least to most significant)
+
     star_spacer :
         constant that scales how closely stacked stars are from one
         another
+
     ybounds : tuple (default=None)
+
     bar_borders : bool (default=True)
+
     xgrid : bool (default=True)
+
     ecolor : color (default='black')
+
     elinewidth : float (default=1)
+
     capthick : float (default=1)
+
     capsize : float (default=1)
+
     gridlines : float (default=1)
         x grid linewidth
 
@@ -67,9 +91,22 @@ def plot_coefs(sites=[], values=[], errors=None, **kwargs):
     -------
     fig : matplotlib.pyplot.Figure
         Figure object
+
     ax : matplotlib.pyplot.Axes
         Axes object
     """
+    # Some sanity checks.
+    if model is not None:
+        sites = model.epistasis.sites
+        values = model.epistasis.values
+
+    else:
+        if sites is None:
+            raise Exception("If no model is given, sites and values must be "
+                            "set.")
+        elif len(sites) != len(values):
+            raise Exception("sites and values must be the same length.")
+
     # Set up plotting user options. Type check the options to make sure nothing
     # will break. Also helps with widgets.
     sites = list(sites)

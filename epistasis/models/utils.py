@@ -22,7 +22,7 @@ def arghandler(method):
     Ignores self and kwargs
     """
     @wraps(method)
-    def inner(self, **kwargs):
+    def inner(self, *args, **kwargs):
         # Get method name
         name = method.__name__
 

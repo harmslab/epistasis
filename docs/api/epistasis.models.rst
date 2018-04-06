@@ -27,18 +27,18 @@ epistasis\.models\.linear module
     :undoc-members:
     :show-inheritance:
 
-epistasis\.models\.mixed module
--------------------------------
-
-.. automodule:: epistasis.models.mixed
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 epistasis\.models\.nonlinear module
 -----------------------------------
 
 .. automodule:: epistasis.models.nonlinear
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+epistasis\.models\.pipeline module
+----------------------------------
+
+.. automodule:: epistasis.models.pipeline
     :members:
     :undoc-members:
     :show-inheritance:
