@@ -64,7 +64,7 @@ extensions = [
 # Sphinx gallery conf
 sphinx_gallery_conf = {
     # path to your examples scripts
-    'examples_dirs' : '../examples/py',
+    'examples_dirs' : '../examples',
     # path where to save gallery generated examples
     'gallery_dirs'  : 'gallery',
     'backreferences_dir': False,

@@ -1,5 +1,5 @@
 """
-Epistasis LinearRegression
+High-order epistasis model
 ==========================
 
 ``EpistasisLinearRegression`` is the base class for fitting epistasis in linear genotype-phenotype
@@ -14,30 +14,26 @@ The ``EpistasisLinearRegression`` class extends scikit-learn's models to fit
 epistatic coefficients in genotype-phenotype maps specifically. This means, it creates its own **X** matrix
 argument if you don't explicitly pass an ``X`` argument into the ``fit`` method.
 """
-# Import the epistasis class
+# Imports
 import matplotlib.pyplot as plt
+
+from gpmap import GenotypePhenotypeMap
 from epistasis.models import EpistasisLinearRegression
-import epistasis.plot
+from epistasis.pyplot import plot_coefs
+
 
 # The data
-
 wildtype = "000"
 genotypes = ['000', '001', '010', '011', '100', '101', '110', '111']
 phenotypes = [ 0.366, -0.593,  1.595, -0.753,  0.38 ,  1.296,  1.025, -0.519]
-mutations = {0:["0","1"],1:["0","1"],2:["0","1"]}
+gpm = GenotypePhenotypeMap(wildtype, genotypes, phenotypes)
 
 # Initialize a model
 model = EpistasisLinearRegression(order=3)
-
-# Add the data to the model
-model.add_data(wildtype, genotypes, phenotypes, mutations=mutations)
+model.add_gpm(gpm)
 
 # Fit the model
 model.fit()
 
-# Access the epistatic coefficients
-sites = model.epistasis.sites
-vals = model.epistasis.values
-
-fig, ax = epistasis.plot.coefs(vals, sites, figsize=(2,3))
+fig, ax = plot_coefs(model, figsize=(2,3))
 plt.show()

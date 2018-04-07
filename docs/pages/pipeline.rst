@@ -1,5 +1,5 @@
-Building a pipeline
-===================
+Building an epistasis pipeline
+==============================
 
 The ``EpistasisPipeline`` object allows you to link epistasis models in series.
 Define each mode and add them to a pipeline. When ``fit`` is called,

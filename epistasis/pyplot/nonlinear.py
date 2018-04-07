@@ -107,6 +107,7 @@ def plot_scale(
         ax.plot(xx, yy, color=line_color, linewidth=2)
     return ax
 
+
 @functools.wraps(plot_scale)
 def plot_power_transform(
     model=None,

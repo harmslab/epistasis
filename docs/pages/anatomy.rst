@@ -25,8 +25,8 @@ This speeds up fitting algorithms that may need resample fitting many times.
 
 .. _paper: http://www.genetics.org/content/205/3/1079
 
-List of important methods
--------------------------
+Methods in every epistasis model
+--------------------------------
 
 Every epistasis model includes the following methods:
 
@@ -38,8 +38,8 @@ Every epistasis model includes the following methods:
   * **lnlike_of_data** : returns an array of log-likelihoods for each data point given a ``thetas`` array.
   * **lnlikelihood** : returns the total log-likelihood for X/y data given a ``thetas`` array.
 
-List of important nonlinear attributes
---------------------------------------
+Methods in nonlinear models
+---------------------------
 
 The extra attributes below are attached to **nonlinear** epistasis models.
 

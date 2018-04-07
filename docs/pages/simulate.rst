@@ -1,5 +1,5 @@
-Simulating epistasis in fitness landscapes
-==========================================
+Simulating epistatic genotype-phenotype maps
+============================================
 
 Simulate rough, epistatic genotype-phenotype maps using the ``simulate`` module.
 
