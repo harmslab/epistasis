@@ -15,7 +15,7 @@ a box plot (see example below), and signficicance as stars using a t-test.
   import matplotlib.pyplot as plt
 
   from gpmap.simulate import MountFujiSimulation
-  from epistasis.models import EpistasisLinearRegression
+  from epistasis.models.linear import EpistasisLinearRegression
   from epistasis.pyplot.coefs import plot_coefs
 
   gpm = MountFujiSimulation.from_length(4, field_strength=-1, roughness=(-2,2))
@@ -34,7 +34,7 @@ a box plot (see example below), and signficicance as stars using a t-test.
 Plot nonlinear scale
 --------------------
 
-Plot a nonlinear scale using the ``pyplot.nonlinear`` module.
+Plot a nonlinear scale using the ``epistasis.pyplot.nonlinear`` module.
 
 .. code-block:: python
 
@@ -43,7 +43,7 @@ Plot a nonlinear scale using the ``pyplot.nonlinear`` module.
 
     # Import epistasis package
     from gpmap.simulate import MountFujiSimulation
-    from epistasis.models import EpistasisPowerTransform
+    from epistasis.models.nonlinear import EpistasisPowerTransform
     from epistasis.pyplot.nonlinear import plot_power_transform
 
     # Simulate a Mt. Fuji fitness landscape

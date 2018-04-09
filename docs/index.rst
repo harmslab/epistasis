@@ -59,40 +59,10 @@ Fit an epistasis model to genotype-phenotype map data.
     # Fit model to given genotype-phenotype map.
     model.fit()
 
-    # Plot coefficients (powered by matplotlib).
-    coef_sites = model.epistasis.sites
-    coef_values = model.epistasis.values
-
-    fig, axes = plot_coefs(coef_sites, coef_values, figsize=(2,4))
+    # Plot coefs.
+    fig, axes = plot_coefs(model, figsize=(2,4))
 
 .. image:: img/basic-example.png
-
-
-Or, fit a chain of global *and* local epistasis models.
-
-.. code-block:: python
-
-    from epistasis import EpistasisPipeline
-    from epistasis.models import (EpistasisLinearRegression,
-                                  EpistasisPowerTransform)
-
-    # Construct a pipeline
-    pipeline = EpistasisPipeline([
-        EpistasisPowerTransform(lmbda=1, A=0, B=0),
-        EpistasisLinearRegression(order=3)
-    ])
-
-    # Add the genotype phenotype map to pipeline.
-    pipeline.add_gpm(gpm)
-
-    # Fit pipeline to given genotype-phenotype map.
-    pipeline.fit()
-
-    # Plot coefficients (powered by matplotlib).
-    coef_sites = pipeline[1].epistasis.sites
-    coef_values = pipeline[1].epistasis.values
-
-    fig, axes = plot_coefs(coef_sites, coef_values, figsize=(2,4))
 
 
 Documentation
@@ -112,8 +82,9 @@ places. We appreciate your patience as we try to catch up on docs.
    pages/visualize
    pages/advanced
    pages/io
-   gallery/index.rst
-   api/main.rst
+   gallery/index
+   api/main
+
 
 Example Gallery
 ---------------
@@ -123,7 +94,27 @@ The following gallery contains various examples from the package.
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="``EpistasisLinearRegression`` is the base class for fitting epistasis in linear genotype-phenot...">
+    <div class="sphx-glr-thumbcontainer" tooltip="Use a linear, logistic regression model to estimate the positive/negative effects of mutations....">
+
+.. only:: html
+
+    .. figure:: /gallery/images/thumb/sphx_glr_plot_nonlinear_regression_thumb.png
+
+        :ref:`sphx_glr_gallery_plot_nonlinear_regression.py`
+
+.. raw:: html
+
+    </div>
+
+
+.. toctree::
+   :hidden:
+
+   /gallery/plot_nonlinear_regression
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Estimate high-order epistatic coefficients in arbitrary genotype-phenotype maps. A linear epist...">
 
 .. only:: html
 
@@ -134,6 +125,12 @@ The following gallery contains various examples from the package.
 .. raw:: html
 
     </div>
+
+
+.. toctree::
+   :hidden:
+
+   /gallery/plot_linear_regression
 
 .. raw:: html
 
@@ -148,21 +145,6 @@ The following gallery contains various examples from the package.
 .. raw:: html
 
     </div>
-
-.. raw:: html
-
-    <div class="sphx-glr-thumbcontainer" tooltip="Often, the genotype-phenotype map is nonlinear. That is to say, the genotypes and phenotypes ch...">
-
-.. only:: html
-
-    .. figure:: /gallery/images/thumb/sphx_glr_plot_nonlinear_simulation_thumb.png
-
-        :ref:`sphx_glr_gallery_plot_nonlinear_simulation.py`
-
-.. raw:: html
-
-    </div>
-
 
 
 

@@ -2,17 +2,9 @@
 High-order epistasis model
 ==========================
 
-``EpistasisLinearRegression`` is the base class for fitting epistasis in linear genotype-phenotype
-maps. It uses an ordinary least squares regression approach to estimate epistatic coefficients
-from a list of genotypes-phenotypes pairs.
-
-It inherits Scikit-learn's ``LinearRegression``
-class and follows the same API. (All attributes and methods are the same.) You can reference
-their Docs for more information about the regression aspect of these models.
-
-The ``EpistasisLinearRegression`` class extends scikit-learn's models to fit
-epistatic coefficients in genotype-phenotype maps specifically. This means, it creates its own **X** matrix
-argument if you don't explicitly pass an ``X`` argument into the ``fit`` method.
+Estimate high-order epistatic coefficients in arbitrary genotype-phenotype maps.
+A linear epistasis model fits high-order interaction terms to capture
+variation in phenotype.
 """
 # Imports
 import matplotlib.pyplot as plt

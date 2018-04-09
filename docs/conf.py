@@ -61,14 +61,7 @@ extensions = [
     'sphinx_gallery.gen_gallery'
 ]
 
-# Sphinx gallery conf
-sphinx_gallery_conf = {
-    # path to your examples scripts
-    'examples_dirs' : '../examples',
-    # path where to save gallery generated examples
-    'gallery_dirs'  : 'gallery',
-    'backreferences_dir': False,
-    'download_section_examples' : False}
+
 
     # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -336,3 +329,21 @@ napoleon_use_admonition_for_references = False
 napoleon_use_ivar = False
 napoleon_use_param = True
 napoleon_use_rtype = True
+
+
+# ------------------------- Sphinx Gallery ------------------------
+
+# Sphinx gallery conf
+sphinx_gallery_conf = {
+    # path to your examples scripts
+    'examples_dirs' : '../examples',
+    # path where to save gallery generated examples
+    'gallery_dirs'  : 'gallery',
+    'backreferences_dir': 'generated/modules',
+    'download_section_examples' : False,
+    'reference_url': {
+        'epistasis': None,
+    },
+}
+
+plot_gallery = 'True'

@@ -25,5 +25,5 @@ model.add_gpm(gpm)
 model.fit()
 
 fig, ax = plt.subplots(figsize=(2.5,2.5))
-ax = plot_power_transform(model)
+ax = plot_power_transform(model, ax=ax)
 plt.show()

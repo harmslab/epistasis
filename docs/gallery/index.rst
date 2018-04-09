@@ -1,6 +1,7 @@
 :orphan:
 
-# Epistasis examples
+Example Gallery
+===============
 
 Some tutorials for this package are included in Jupyter (formerly IPython) Notebooks. Jupyter Notebooks and the IPython kernel are dependencies for viewing these notebooks interactively. If you'd like to just view a static representation of these notebooks, use NBViewer.
 
@@ -31,7 +32,7 @@ package using temporary notebooks. No installation is required.
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="``EpistasisLinearRegression`` is the base class for fitting epistasis in linear genotype-phenot...">
+    <div class="sphx-glr-thumbcontainer" tooltip="Estimate high-order epistatic coefficients in arbitrary genotype-phenotype maps. A linear epist...">
 
 .. only:: html
 
@@ -68,26 +69,6 @@ package using temporary notebooks. No installation is required.
    :hidden:
 
    /gallery/plot_logistic_regression
-
-.. raw:: html
-
-    <div class="sphx-glr-thumbcontainer" tooltip="Often, the genotype-phenotype map is nonlinear. That is to say, the genotypes and phenotypes ch...">
-
-.. only:: html
-
-    .. figure:: /gallery/images/thumb/sphx_glr_plot_nonlinear_simulation_thumb.png
-
-        :ref:`sphx_glr_gallery_plot_nonlinear_simulation.py`
-
-.. raw:: html
-
-    </div>
-
-
-.. toctree::
-   :hidden:
-
-   /gallery/plot_nonlinear_simulation
 .. raw:: html
 
     <div style='clear:both'></div>

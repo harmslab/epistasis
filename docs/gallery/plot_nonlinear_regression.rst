@@ -12,18 +12,8 @@ of mutations.
 
 
 
-.. rst-class:: sphx-glr-horizontal
-
-
-    *
-
-      .. image:: /gallery/images/sphx_glr_plot_nonlinear_regression_001.png
-            :scale: 47
-
-    *
-
-      .. image:: /gallery/images/sphx_glr_plot_nonlinear_regression_002.png
-            :scale: 47
+.. image:: /gallery/images/sphx_glr_plot_nonlinear_regression_001.png
+    :align: center
 
 
 
@@ -51,10 +41,10 @@ of mutations.
     model.fit()
 
     fig, ax = plt.subplots(figsize=(2.5,2.5))
-    ax = plot_power_transform(model)
+    ax = plot_power_transform(model, ax=ax)
     plt.show()
 
-**Total running time of the script:** ( 0 minutes  0.675 seconds)
+**Total running time of the script:** ( 0 minutes  1.979 seconds)
 
 
 

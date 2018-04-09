@@ -18,11 +18,3 @@ epistasis\.simulate\.linear module
     :members:
     :undoc-members:
     :show-inheritance:
-
-epistasis\.simulate\.nonlinear module
--------------------------------------
-
-.. automodule:: epistasis.simulate.nonlinear
-    :members:
-    :undoc-members:
-    :show-inheritance:
