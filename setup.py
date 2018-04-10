@@ -7,7 +7,7 @@ extension = Extension('epistasis.matrix_cython',
                       include_dirs=[numpy.get_include()])
 
 setup(name='epistasis',
-      version='0.6.1',
+      version='0.6.2',
       description='High-order epistasis models for genotype-phenotype maps',
       author='Zach Sailer',
       author_email='zachsailer@gmail.com',

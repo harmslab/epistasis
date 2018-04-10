@@ -16,12 +16,3 @@ epistasis\.models\.nonlinear\.power module
     :members:
     :undoc-members:
     :show-inheritance:
-
-
-Module contents
----------------
-
-.. automodule:: epistasis.models.nonlinear
-    :members:
-    :undoc-members:
-    :show-inheritance:
