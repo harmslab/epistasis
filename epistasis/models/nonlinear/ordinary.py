@@ -20,11 +20,11 @@ from sklearn.base import BaseEstimator, RegressorMixin
 from gpmap import GenotypePhenotypeMap
 
 # Epistasis imports.
-from ..mapping import EpistasisMap
-from .base import BaseModel
-from .utils import (arghandler, FittingError)
-from .linear import (EpistasisLinearRegression, EpistasisLasso)
-from ..stats import pearson
+from epistasis.mapping import EpistasisMap
+from epistasis.models.base import BaseModel
+from epistasis.models.utils import (arghandler, FittingError)
+from epistasis.models.linear import (EpistasisLinearRegression, EpistasisLasso)
+from epistasis.stats import pearson
 
 
 class EpistasisNonlinearRegression(BaseModel):

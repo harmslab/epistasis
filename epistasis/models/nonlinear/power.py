@@ -8,11 +8,10 @@ import pandas as pd
 import lmfit
 from lmfit import Parameter, Parameters
 
-from .utils import arghandler
-from ..stats import gmean, pearson
-from .linear import EpistasisLinearRegression
-from .nonlinear import (EpistasisNonlinearRegression,
-                        Parameters)
+from epistasis.stats import gmean, pearson
+from epistasis.models.utils import arghandler
+from epistasis.models.linear.ordinary import EpistasisLinearRegression
+from epistasis.models.nonlinear.ordinary import EpistasisNonlinearRegression
 
 from gpmap import GenotypePhenotypeMap
 
