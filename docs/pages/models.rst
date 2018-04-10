@@ -4,8 +4,9 @@ Detailed list of models
 This page lists all models included in the Epistasis Package.
 
 * EpistasisLinearRegression_: estimate epistatic coefficents in a linear genotype-phenotype map.
-* EpistasisRidge_: estimate *sparse* epistatic coefficients in a linear genotype-phenotype map
-* EpistasisLasso_: estimate *sparse* epistatic coefficients in a linear genotype-phenotype map
+* EpistasisRidge_: estimate epistatic coefficients using L2-regularization in a linear genotype-phenotype map
+* EpistasisLasso_: estimate *sparse* epistatic coefficients using L1-regularization in a linear genotype-phenotype map
+* EpistasisElasticNet_: estimate *sparse* epistatic coefficients, mixing L1- and L2-regularization, in a linear genotype-phenotype map
 * EpistasisNonlinearRegression_: estimates high-order epistatic coefficients in a nonlinear genotype-phenotype map.
 * EpistasisNonlinearLasso_: estimate *sparse* epistatic coefficients in a nonlinear genotype-phenotype map.
 * EpistasisPowerTransform_: use a power transform function to fit a nonlinear genotype-phenotype map and estimate epistasis.
@@ -16,6 +17,7 @@ This page lists all models included in the Epistasis Package.
 .. _EpistasisLinearRegression: models.html#epistasislinearregression
 .. _EpistasisRidge: models.html#epistasisridge
 .. _EpistasisLasso: models.html#epistasislasso
+.. _EpistasisElasticNet: models.html#epistasisnet
 .. _EpistasisNonlinearRegression: models.html#epistasisnonlinearregression
 .. _EpistasisNonlinearLasso: models.html#epistasisnonlinearlasso
 .. _EpistasisPowerTransform: models.html#epistasispowertransform
@@ -73,7 +75,7 @@ the model that maximally explains the data while using the fewest coefficients.
   gpm = GenotypePhenotypeMap(wildtype, genotypes, phenotypes)
 
   # Initialize the data.
-  model = EpistasisRidge(order=2)
+  model = EpistasisRidge(order=2, alpha=0.1)
 
   # Add Genotype-phenotype map data.
   model.add_gpm(gpm)
@@ -102,7 +104,35 @@ the model that maximally explains the data while using the fewest coefficients.
   gpm = GenotypePhenotypeMap(wildtype, genotypes, phenotypes)
 
   # Initialize the data.
-  model = EpistasisLasso(order=2)
+  model = EpistasisLasso(order=2, alpha=0.1)
+
+  # Add Genotype-phenotype map data.
+  model.add_gpm(gpm)
+
+  # Fit the model.
+  model.fit()
+
+EpistasisElasticNet
+-------------------
+
+A L1-norm+L2-norm epistasis model for estimating sparse epistatic coefficients. The
+optimization function imposes a penalty on the number of coefficients and finds
+the model that maximally explains the data while using the fewest coefficients.
+
+.. code-block:: python
+
+  from gpmap import GenotypePhenotypeMap
+  from epistasis.models import EpistasisElasticNet
+
+  wildtype = 'AA'
+  genotypes = ['AA', 'AT', 'TA', 'TT']
+  phenotypes = [0.1, 0.2, 0.7, 1.2]
+
+  # Read genotype-phenotype map.
+  gpm = GenotypePhenotypeMap(wildtype, genotypes, phenotypes)
+
+  # Initialize the data.
+  model = EpistasisElasticNet(order=2, alpha=0.1)
 
   # Add Genotype-phenotype map data.
   model.add_gpm(gpm)
