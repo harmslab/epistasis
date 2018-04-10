@@ -82,14 +82,14 @@ places. We appreciate your patience as we try to catch up on docs.
    pages/visualize
    pages/advanced
    pages/io
-   gallery/index
    api/main
 
+.. ------------------------- Example Gallery -------------------------
 
 Example Gallery
 ---------------
 
-The following gallery contains various examples from the package.
+------------------------------
 
 
 .. raw:: html
@@ -147,6 +147,15 @@ The following gallery contains various examples from the package.
     </div>
 
 
+.. toctree::
+   :hidden:
+
+   /gallery/plot_logistic_regression
+.. raw:: html
+
+    <div style='clear:both'></div>
+
+.. ------------------------- Tables and search -------------------------
 
 
 Indices and tables
