@@ -1,11 +1,15 @@
 import numpy as np
-from .matrix_cython import build_model_matrix
 
 # Try importing model matrix builder from cython extension for speed up.
 try:
     from .matrix_cython import build_model_matrix
 
 except ImportError:
+
+    import warnings as _warnings
+
+    # Raise warning
+    _warnings.warn('Could not load cython extension, "build_model_matrix".', Warning)
 
     def build_model_matrix(encoding_vectors, sites):
         """Build model matrix.
