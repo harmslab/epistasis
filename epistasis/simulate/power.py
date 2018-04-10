@@ -1,8 +1,8 @@
 import inspect
 import numpy as np
 from .base import BaseSimulation
-from epistasis.models.nonlinear import Parameters
-from epistasis.models.power import power_transform
+from epistasis.models.nonlinear.ordinary import Parameters
+from epistasis.models.nonlinear.power import power_transform
 from epistasis.matrix import get_model_matrix
 
 

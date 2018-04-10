@@ -1,8 +1,6 @@
 epistasis\.sampling package
 ===========================
 
-.. automodule:: epistasis.sampling.__init__
-
 epistasis\.sampling\.bayesian module
 ------------------------------------
 
