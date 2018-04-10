@@ -17,4 +17,7 @@ For more information about the epistasis models in this library, see our Genetic
 Currently, this package works only as an API and there is no command-line
 interface. Instead, we encourage you use this package inside `Jupyter notebooks`_ .
 """
-from .pipeline import EpistasisPipeline
+# from . import models
+# from . import simulate
+# from . import sampling
+# from . import pyplot

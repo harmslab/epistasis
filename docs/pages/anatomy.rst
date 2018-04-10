@@ -16,23 +16,17 @@ above for more information on which model to use.
 
 Constructing these matrices for your dataset is no easy task,
 so each epistasis model can handle this construction internally. Most methods
-allow you to pass one of the keywords below to construct matrices you're likely to use.
+automatically infer X from the genotype-phenotype map.
 
 Any X matrix used by an epistasis model is also stored in the ``Xbuilt`` attribute.
 This speeds up fitting algorithms that may need resample fitting many times.
-
-These keys include:
-
-  1. ``"obs"`` : model matrix for the observed genotypes in an attached genotype-phenotype map. These genotypes are returned by the ``genotypes`` attribute in a GenotypePhenotypeMap object.
-  2. ``"fit"`` : model matrix created/used by the last ``fit`` call.
-  3. ``"predict"`` : model matrix created/used by the last ``predict`` call.
 
 .. References in this document
 
 .. _paper: http://www.genetics.org/content/205/3/1079
 
-List of important methods
--------------------------
+Methods in every epistasis model
+--------------------------------
 
 Every epistasis model includes the following methods:
 
@@ -44,8 +38,8 @@ Every epistasis model includes the following methods:
   * **lnlike_of_data** : returns an array of log-likelihoods for each data point given a ``thetas`` array.
   * **lnlikelihood** : returns the total log-likelihood for X/y data given a ``thetas`` array.
 
-List of important nonlinear attributes
---------------------------------------
+Methods in nonlinear models
+---------------------------
 
 The extra attributes below are attached to **nonlinear** epistasis models.
 

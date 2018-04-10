@@ -8,7 +8,7 @@ import pandas as pd
 import lmfit
 from lmfit import Parameter, Parameters
 
-from .utils import X_fitter, X_predictor, epistasis_fitter
+from .utils import arghandler
 from ..stats import gmean, pearson
 from .linear import EpistasisLinearRegression, EpistasisLasso
 from .nonlinear import (EpistasisNonlinearRegression,
@@ -105,14 +105,16 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
     ----------
     epistasis : EpistasisMap
         Mapping object containing high-order epistatic coefficients
+
     Linear : EpistasisLinearRegression
         Linear regression object for fitting high-order epistasis model
+
     Additive : EpistasisLinearRegression
         Linear regression object for fitting additive model
+
     parameters : Parameters object
         Mapping object for nonlinear coefficients
     """
-
     def __init__(self, model_type="global", **p0):
         # Construct parameters object
         self.parameters = Parameters()
@@ -142,7 +144,8 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
         self.Additive = EpistasisLinearRegression(
             order=1, model_type=self.model_type)
 
-    def _fit_nonlinear(self, X='obs', y='obs', sample_weight=None, **kwargs):
+    @arghandler
+    def _fit_nonlinear(self, X=None, y=None, **kwargs):
         """Estimate the scale of multiple mutations in a genotype-phenotype
         map."""
         # Use a first order matrix only.
@@ -155,7 +158,7 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
         x = self.Additive.predict(X=Xadd)
 
         # Get data used to approximate x_add
-        xadd = self.Additive.predict(X='fit')
+        xadd = self.Additive.predict(X=X)
 
         # Set guesses
         for key, value in kwargs.items():
@@ -199,18 +202,10 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
         # Point to nonlinear.
         self.parameters = self.Nonlinear.params
 
-    def fit_transform(self, X='obs', y='obs', **kwargs):
-        """Fit and transform data for an Epistasis Pipeline.
-
-        Returns
-        -------
-        gpm : GenotypePhenotypeMap
-            data with phenotypes transformed according to model.
-        """
+    @arghandler
+    def fit_transform(self, X=None, y=None, **kwargs):
+        # Fit method.
         self.fit(X=X, y=y, **kwargs)
-
-        if isinstance(y, str) and y == 'obs':
-            y = self.gpm.phenotypes
 
         xdata = self.Additive.predict(X='fit')
 
@@ -225,154 +220,69 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
         gpm.data['phenotypes'] = linear_phenotypes
         return gpm
 
-    def predict(self, X='obs'):
-        """Infer phenotypes from model coefficients and nonlinear function."""
+    def predict(self, X=None):
         x = self.Additive.predict(X=X)
         xadd = self.Additive.predict(X='fit')
         y = self.function(x, *self.parameters.values(), data=xadd)
         return y
 
-    def predict_transform(self, X='obs', y='obs'):
-        """Predict classes and apply to phenotypes. Used mostly in Pipeline
-        object.
-        """
+    def predict_transform(self, X=None, y=None):
         xdata = self.Additive.predict(X='fit')
-        return self.function(y, *self.parameters.values(), data=xdata)
-
-    def score(self, X='obs', y='obs', sample_weight=None):
-        """Calculates the squared-pearson coefficient for the nonlinear fit.
-
-        Returns
-        -------
-        r_nonlinear : float
-            squared pearson coefficient between phenotypes and nonlinear
-            function.
-        r_linear : float
-            squared pearson coefficient between linearized phenotypes and
-            linear epistasis model described by epistasis.values.
-        """
-        # Get pobs for nonlinear fit.
-        if type(y) is str and y in ["obs"]:
-            pobs = self.gpm.phenotypes
-        # Else, numpy array or dataframe
-        elif type(y) == np.array or type(y) == pd.Series:
-            pobs = y
+        if y is None:
+            x = self.Additive.predict(X=X)
         else:
-            raise Exception
+            x = y
+        return self.function(x, *self.parameters.values(), data=xdata)
 
-        xadd = self.Additive.predict(X='fit')
+    @arghandler
+    def score(self, X=None, y=None):
+        xadd = self.Additive.predict(X=X)
         ypred = self.function(xadd, *self.parameters.values(), data=xadd)
-        return pearson(pobs, ypred)**2
+        return pearson(y, ypred)**2
 
-    def contributions(self):
-        """Calculate the contributions from nonlinearity and epistasis to
-        the variation in phenotype.
-
-        Returns a list of contribution ordered as additive, scale, and
-        epistasis.
-        """
-        # Calculate various pearson coeffs.
-        x0 = self.gpm.phenotypes
-        x1 = self.Additive.predict(X='fit')
-
-        # Scale contribution
-        x2 = self.function(x1, **self.parameters, data=x1)
-
-        # Epistasis contribution
-        x3 = self.predict(X='fit')
-
-        # Calculate contributions
-        additive = pearson(x0, x1)**2
-        scale = pearson(x0, x2)**2
-        epistasis = pearson(x0, x3)**2
-
-        return [additive, scale-additive, epistasis-scale]
-
-    @X_predictor
-    def hypothesis(self, X='obs', thetas=None):
-        """Given a set of parameters, compute a set of phenotypes. Does not
-        predict. This is method can be used to test a set of parameters
-        (Useful for bayesian sampling).
-        """
-        # ----------------------------------------------------------------------
-        # Part 0: Break up thetas
-        # ----------------------------------------------------------------------
-        # Get thetas from model.
-        if thetas is None:
-            thetas = self.thetas
-
+    @arghandler
+    def hypothesis(self, X=None, thetas=None):
+        # Break up thetas
         i, j = len(self.parameters.valuesdict()), self.Additive.epistasis.n
         parameters = thetas[:i]
         epistasis = thetas[i:i + j]
 
         # Get the data that was used to estimate the geometric mean.
-        xadd = self.Additive.predict(X='fit')
+        xdata = self.Additive.predict(X='fit')
 
         # Part 1: Linear portion
-        ylin = np.dot(X, epistasis)
+        x = self.Additive.hypothesis(X=X, thetas=epistasis)
 
         # Part 2: Nonlinear portion
-        ynonlin = self.function(ylin, *parameters, data=xadd)
+        ynonlin = self.function(x, *parameters, data=xdata)
 
         return ynonlin
 
-    def lnlike_of_data(self, X='obs', y='obs', yerr='obs',
-                       sample_weight=None, thetas=None):
-        """Calculate the log likelihoods of each data point, given a set of
-        model coefficients.
+    def hypothesis_transform(self, X=None, y=None, thetas=None):
+        # Break up thetas
+        i, j = len(self.parameters.valuesdict()), self.Additive.epistasis.n
+        parameters = thetas[:i]
+        epistasis = thetas[i:i + j]
 
-        Parameters
-        ----------
-        X : 2d array
-            model matrix
-        y : array
-            data to calculate the likelihood
-        yerr: array
-            uncertainty in data
-        thetas : array
-            array of model coefficients
-
-        Returns
-        -------
-        lnlike : np.ndarray
-            log-likelihood of each data point given a model.
-        """
-        # ###### Prepare input #########
-        # If no model parameters are given, use the model fit.
-        if thetas is None:
-            thetas = self.thetas
-
-        # Handle y.
-        # Get pobs for nonlinear fit.
-        if type(y) is str and y in ["obs",]:
-            ydata = self.gpm.phenotypes
-        # Else, numpy array or dataframe
-        elif type(y) == np.array or type(y) == pd.Series:
-            ydata = y
+        # Estimate additive coefficients
+        xdata = self.Additive.predict(X='fit')
+        # Part 2: Nonlinear portion
+        if y is None:
+            x = self.Additive.hypothesis(X=X, thetas=epistasis)
         else:
-            raise FittingError("y is not valid. Must be one of the following:"
-                               "'obs', 'complete', numpy.array, pandas.Series."
-                               " Right now, its {}".format(type(y)))
+            x = y
+        y_transform = self.function(x, *parameters, data=xdata)
+        return y_transform
 
-        # Handle yerr.
-        # Check if yerr is string
-        if type(yerr) is str and yerr in ["obs"]:
-            yerr = self.gpm.std.upper
-
-        # Else, numpsy array or dataframe
-        elif type(y) != np.array and type(y) != pd.Series:
-            raise FittingError("yerr is not valid. Must be one of the "
-                               "following: 'obs', 'complete', numpy.array, "
-                               "pandas.Series. Right now, its "
-                               "{}".format(type(yerr)))
-
+    @arghandler
+    def lnlike_of_data(self, X=None, y=None, yerr=None, thetas=None):
         # ###### Calculate likelihood #########
         # Calculate ymodel
         ymodel = self.hypothesis(X=X, thetas=thetas)
 
         # Likelihood of data given model
         return (- 0.5 * np.log(2 * np.pi * yerr**2) -
-                (0.5 * ((ydata - ymodel)**2 / yerr**2)))
+               (0.5 * ((y - ymodel)**2 / yerr**2)))
 
 
 class EpistasisPowerTransformLasso(EpistasisPowerTransform):
@@ -405,10 +315,10 @@ class EpistasisPowerTransformLasso(EpistasisPowerTransform):
     ----------
     epistasis : EpistasisMap
         Mapping object containing high-order epistatic coefficients
-    Linear : EpistasisLasso
-        Linear regression object for fitting high-order epistasis model
+
     Additive : EpistasisLinearRegression
         Linear regression object for fitting additive model
+
     parameters : Parameters object
         Mapping object for nonlinear coefficients
     """
@@ -421,61 +331,13 @@ class EpistasisPowerTransformLasso(EpistasisPowerTransform):
             alpha=alpha,
             order=1, model_type=self.model_type)
 
-    def lnlike_of_data(self, X='obs', y='obs', yerr='obs',
-                       sample_weight=None, thetas=None):
-        """Calculate the log likelihoods of each data point, given a set of
-        model coefficients.
-
-        Parameters
-        ----------
-        X : 2d array
-            model matrix
-        y : array
-            data to calculate the likelihood
-        yerr: array
-            uncertainty in data
-        thetas : array
-            array of model coefficients
-
-        Returns
-        -------
-        lnlike : np.ndarray
-            log-likelihood of each data point given a model.
-        """
-        # ###### Prepare input #########
-        # If no model parameters are given, use the model fit.
-        if thetas is None:
-            thetas = self.thetas
-
-        # Handle y.
-        # Get pobs for nonlinear fit.
-        if type(y) is str and y in ["obs", "complete"]:
-            ydata = self.gpm.phenotypes
-        # Else, numpy array or dataframe
-        elif type(y) == np.array or type(y) == pd.Series:
-            ydata = y
-        else:
-            raise FittingError("y is not valid. Must be one of the following:"
-                               "'obs', 'complete', numpy.array, pandas.Series."
-                               " Right now, its {}".format(type(y)))
-
-        # Handle yerr.
-        # Check if yerr is string
-        if type(yerr) is str and yerr in ["obs", "complete"]:
-            yerr = self.gpm.std.upper
-
-        # Else, numpsy array or dataframe
-        elif type(y) != np.array and type(y) != pd.Series:
-            raise FittingError("yerr is not valid. Must be one of the "
-                               "following: 'obs', 'complete', numpy.array, "
-                               "pandas.Series. Right now, its "
-                               "{}".format(type(yerr)))
-
+    @arghandler
+    def lnlike_of_data(self, X=None, y=None, yerr=None, thetas=None):
         # ###### Calculate likelihood #########
         # Calculate ymodel
         ymodel = self.hypothesis(X=X, thetas=thetas)
 
         # Likelihood of data given model
         return (- 0.5 * np.log(2 * np.pi * yerr**2) -
-                (0.5 * ((ydata - ymodel)**2 / yerr**2)) -
+                (0.5 * ((y - ymodel)**2 / yerr**2)) -
                 (self.Linear.alpha * sum(abs(thetas))))

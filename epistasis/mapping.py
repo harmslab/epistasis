@@ -125,6 +125,7 @@ def mutations_to_sites(order, mutations, start_order=0):
             if bad_term is False:
                 for r in it.product(*lists):
                     sites.append(list(r))
+
     return sites
 
 
@@ -179,12 +180,6 @@ class EpistasisMap(object):
     def order(self):
         """ Get order of epistasis in system. """
         return self._order
-
-    @property
-    def keys(self):
-        """ Get the interaction keys. (type==list of str, see
-        self._build_interaction_sites)"""
-        return self.data.keys.values
 
     @property
     def values(self):
@@ -275,10 +270,4 @@ class Orders(map):
     def values(self):
         """Get values of epistasis for this order."""
         return pd.Series([self._epistasismap.values[int(i)]
-                          for i in self.index], index=self.index)
-
-    @property
-    def keys(self):
-        """Get keys of epistasis for this order."""
-        return pd.Series([self._epistasismap.keys[int(i)]
                           for i in self.index], index=self.index)

@@ -1,7 +1,27 @@
 Detailed list of models
 =======================
 
-This page provides short descriptions of each epistasis model available in this library.
+This page lists all models included in the Epistasis Package.
+
+* EpistasisLinearRegression_: estimate epistatic coefficents in a linear genotype-phenotype map.
+* EpistasisLasso_: estimate *sparse* epistatic coefficients in a linear genotype-phenotype map
+* EpistasisNonlinearRegression_: estimates high-order epistatic coefficients in a nonlinear genotype-phenotype map.
+* EpistasisNonlinearLasso_: estimate *sparse* epistatic coefficients in a nonlinear genotype-phenotype map.
+* EpistasisPowerTransform_: use a power transform function to fit a nonlinear genotype-phenotype map and estimate epistasis.
+* EpistasisPowerLasso_: use a power transform function to fit a nonlinear genotype-phenotype map and estimate *sparse* epistasis.
+* EpistasisLogisticRegression_: use logistic regression to classify phenotypes as dead/alive.
+* EpistasisEnsembleRegression_: use a statistical ensemble of "states" to decompose variation in a genotype-phenotype map.
+
+.. _EpistasisLinearRegression: models.html#epistasislinearregression
+.. _EpistasisLasso: models.html#epistasislasso
+.. _EpistasisNonlinearRegression: models.html#epistasisnonlinearregression
+.. _EpistasisNonlinearLasso: models.html#epistasisnonlinearlasso
+.. _EpistasisPowerTransform: models.html#epistasispowertransform
+.. _EpistasisPowerLasso: models.html#epistasispowerlasso
+.. _EpistasisLogisticRegression: models.html#epistasislogisticregression
+.. _EpistasisMixedRegression: models.html#epistasismixedregression
+.. _EpistasisEnsembleRegression: models.html#epistasisensembleregression
+
 
 EpistasisLinearRegression
 -------------------------

@@ -3,10 +3,8 @@ from gpmap.gpm import GenotypePhenotypeMap
 from gpmap import utils
 
 # Local imports
-from epistasis.mapping import (EpistasisMap,
-                               mutations_to_sites,
-                               assert_epistasis)
-from epistasis.model_matrix_ext import get_model_matrix
+from epistasis.mapping import (EpistasisMap, mutations_to_sites, assert_epistasis)
+from epistasis.matrix import get_model_matrix
 from epistasis.utils import extract_mutations_from_genotypes
 from epistasis.models.utils import XMatrixException
 
@@ -22,7 +20,6 @@ class BaseSimulation(GenotypePhenotypeMap):
     mutations : dict
         dictionary mapping each site the possible mutations
     """
-
     def __init__(self, wildtype, mutations,
                  model_type="global",
                  **kwargs
@@ -53,18 +50,6 @@ class BaseSimulation(GenotypePhenotypeMap):
     def add_X(self, X="complete", key=None):
         """Add X to Xbuilt
 
-        X must be:
-
-            - 'obs' : Uses `gpm.binary.genotypes` to construct X. If genotypes
-            are missing they will not be included in fit. At the end of
-            fitting, an epistasis map attribute is attached to the model class.
-            - 'complete' : Uses `gpm.binary.complete_genotypes` to construct X.
-            All genotypes missing from the data are included. Warning, will
-            break in most fitting methods. At the end of fitting, an epistasis
-            map attribute is attached to the model class.
-            - 'fit' : a previously defined array/dataframe matrix. Prevents
-            copying for efficiency.
-
         Parameters
         ----------
         X :
@@ -87,10 +72,7 @@ class BaseSimulation(GenotypePhenotypeMap):
                 columns = self.epistasis.sites
 
             # Use desired set of genotypes for rows in X matrix.
-            if X == "obs":
-                index = self.binary
-            else:
-                index = self.complete_binary
+            index = self.binary
 
             # Build numpy array
             x = get_model_matrix(index, columns, model_type=self.model_type)

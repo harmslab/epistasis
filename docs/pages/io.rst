@@ -1,15 +1,14 @@
-Reading/Writing
-===============
+Saving an epistasis model
+=========================
 
-All epistasis models/simulators store data in Pandas_ Series/DataFrames, so the data
-can be easily written to various file formats. This page lists a few.
+All epistasis models/simulators store epistatic coefficients in Pandas_ Series/DataFrames, so the coefficients can be written to various file formats. This page lists a few.
 
 .. _Pandas: http://pandas.pydata.org/
 
-Saving an epistasis model
--------------------------
+Pickle
+------
 
-The simplest (recommended) way to save an epistasis model is to use Python's ``pickle`` library.
+The recommended way to save an epistasis model to be used again is by **pickling** the model(See Python's ``pickle`` library).
 
 .. code-block:: python
 
@@ -176,74 +175,3 @@ Epistatic coefficients can be written to a csv file using the ``to_csv`` method
   13,"[1, 3, 4]",-0.30912353449573415
   14,"[2, 3, 4]",0.6066739725656609
   15,"[1, 2, 3, 4]",-0.2689818206753505
-
-
-JSON Format
------------
-
-A model can be written to a JSON file using the ``to_json`` method.
-
-.. code-block:: python
-
-  model.to_json('model.json')
-
-.. code-block:: javascript
-
-  {
-    "binary": [
-      "000",
-      "001",
-      "010",
-      "011",
-      "100",
-      "101",
-      "110",
-      "111"
-    ],
-    "genotypes": [
-      "AAA",
-      "AAT",
-      "ATA",
-      "ATT",
-      "TAA",
-      "TAT",
-      "TTA",
-      "TTT"
-    ],
-    "mutations": {"0":["A","T"],"1":["A","T"],"2":["A","T"]},
-    "n_replicates": [1,"NaN",1,1,1,1,1,1],
-    "phenotypes": [0.1,"NaN",0.4,0.3,0.3,0.6,0.8,1],
-    "wildtype": "AAA",
-    "sites": [
-      [0],
-      [1],
-      [2],
-      [3],
-      [1,2],
-      [1,3],
-      [2,3],
-      [1,2,3]
-    ],
-    "values": [
-      0.43749999999999983,
-      0.23749999999999996,
-      0.18749999999999997,
-      0.0375000000000001,
-      0.037500000000000006,
-      0.08750000000000006,
-      -0.012500000000000051,
-      -0.012499999999999874
-    ],
-    "stdeviations": [
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-      null
-    ],
-    "order": 3,
-    "model_type": "global"
-  }

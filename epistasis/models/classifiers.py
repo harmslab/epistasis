@@ -1,4 +1,3 @@
-from functools import wraps
 import numpy as np
 import pandas as pd
 
@@ -9,12 +8,8 @@ from sklearn.naive_bayes import BernoulliNB
 from sklearn.preprocessing import binarize
 
 from ..mapping import EpistasisMap
-from .base import BaseModel
-from .utils import (sklearn_to_epistasis,
-                    XMatrixException,
-                    X_fitter,
-                    epistasis_fitter,
-                    X_predictor)
+from .base import BaseModel, use_sklearn
+from .utils import (XMatrixException, arghandler)
 
 from .linear import EpistasisLinearRegression
 
@@ -26,24 +21,34 @@ warnings.filterwarnings(action="ignore", module="sklearn",
                         category=DeprecationWarning)
 
 
-class EpistasisBaseClassifier(BaseModel):
-    """Base class for implementing epistasis classification using scikit-learn
-    models. To write your own epistasis classifier, write a subclass class,
-    inherit whatever scikit-learn classifer class you'd like and this class
-    (second).
-    """
+@use_sklearn(LogisticRegression)
+class EpistasisLogisticRegression(BaseModel):
+    """Logistic regression for estimating epistatic interactions that lead to
+    nonviable phenotypes. Useful for predicting viable/nonviable phenotypes.
 
-    def __init__(self, threshold, order=1, model_type="global", **kwargs):
+    Parameters
+    ----------
+    threshold : float
+        value below which phenotypes are considered nonviable.
+
+    order : int
+        order of epistasis model
+
+    model_type : str (default="global")
+        type of model matrix to use. "global" defines epistasis with respect to
+        a background-averaged "genotype-phenotype". "local" defines epistasis
+        with respect to the wildtype genotype.
+    """
+    def __init__(self, threshold, model_type="global", **kwargs):
         super(self.__class__, self).__init__(**kwargs)
         self.threshold = threshold
-        self.order = order
         self.model_type = model_type
         self.fit_intercept = False
+        self.order = 1
         self.Xbuilt = {}
 
         # Store model specs.
         self.model_specs = dict(
-            order=self.order,
             threshold=self.threshold,
             model_type=self.model_type,
             **kwargs)
@@ -52,8 +57,7 @@ class EpistasisBaseClassifier(BaseModel):
         self.Additive = EpistasisLinearRegression(
             order=1, model_type=self.model_type)
 
-    def fit(self, X='obs', y='obs', **kwargs):
-        """Fit Classifier to estimate the class of unknown phenotypes."""
+    def fit(self, X=None, y=None, **kwargs):
         # Use Additive model to establish the phenotypic scale.
         # Prepare Additive model
         self.Additive.add_gpm(self.gpm)
@@ -71,17 +75,10 @@ class EpistasisBaseClassifier(BaseModel):
         self = self._fit_(X=X, y=y)
         return self
 
-    def fit_transform(self, X='obs', y='obs', **kwargs):
-        """Fit and transform data for an Epistasis Pipeline.
-
-        Returns
-        -------
-        gpm : GenotypePhenotypeMap
-            data with phenotypes transformed according to model.
-        """
+    def fit_transform(self, X=None, y=None, **kwargs):
         self.fit(X=X, y=y, **kwargs)
-        ypred = self.predict(X='fit')
-        yprob = self.predict_proba(X='fit')
+        ypred = self.predict(X=X)
+
 
         # Transform map.
         gpm = GenotypePhenotypeMap.read_dataframe(
@@ -93,184 +90,80 @@ class EpistasisBaseClassifier(BaseModel):
 
     @property
     def num_of_params(self):
-        """Return number of parameters in model."""
         n = 0
-        n += self.Additive.epistasis.n
+        n += self.epistasis.n
         return n
 
-    @epistasis_fitter
-    @X_fitter
-    def _fit_(self, X='obs', y='obs', **kwargs):
-        """Fit classifier."""
+    @arghandler
+    def _fit_(self, X=None, y=None, **kwargs):
         # Fit the classifier
         yclass = binarize(y.reshape(1, -1), self.threshold)[0]
         self.classes = yclass
         super(self.__class__, self).fit(X=X, y=yclass, **kwargs)
+        self.epistasis.values = np.reshape(self.coef_, (-1,))
         return self
 
-    @X_predictor
-    def predict(self, X='obs'):
-        """Predict classes."""
-        return super(self.__class__, self).predict(X)
+    @arghandler
+    def predict(self, X=None):
+        return super(self.__class__, self).predict(X=X)
 
-    def predict_transform(self, X='obs', y='obs'):
-        """Predict classes and apply to phenotypes. Used mostly in Pipeline
-        object.
-        """
+    def predict_transform(self, X=None, y=None):
         x = self.predict(X=X)
-
-        if y is 'obs':
-            y = self.gpm.phenotypes
-
-        y[x == 0] = 0
+        y[x <= 0.5] = self.threshold
         return y
 
-    @X_predictor
-    def predict_log_proba(self, X='obs'):
+    @arghandler
+    def predict_log_proba(self, X=None):
         return super(self.__class__, self).predict_log_proba(X)
 
-    @X_predictor
-    def predict_proba(self, X='obs'):
+    @arghandler
+    def predict_proba(self, X=None):
         return super(self.__class__, self).predict_proba(X)
 
-    @X_fitter
-    def score(self, X='obs', y='obs', **kwargs):
+    @arghandler
+    def score(self, X=None, y=None, **kwargs):
         yclass = binarize(y.reshape(1, -1), threshold=self.threshold)[0]
         return super(self.__class__, self).score(X=X, y=yclass)
 
-    @X_fitter
-    def lnlike_of_data(self, X='obs', y='obs', yerr='obs',
-                       sample_weight=None, thetas=None):
-        """Calculate the log likelihoods of each data point, given a set of
-        model coefficients.
-
-        Parameters
-        ----------
-        X : 2d array
-            model matrix
-        y : array
-            data to calculate the likelihood
-        yerr: array
-            uncertainty in data
-        thetas : array
-            array of model coefficients
-
-        Returns
-        -------
-        lnlike : np.ndarray
-            log-likelihood of each data point given a model.
-        """
-        if thetas is None:
-            thetas = self.thetas
-
+    @arghandler
+    def lnlike_of_data(self, X=None, y=None, yerr=None, thetas=None):
         # Calculate Y's
-        yclass = binarize(y.reshape(1, -1), threshold=self.threshold)[0]
         ymodel = self.hypothesis(X=X, thetas=thetas)
+        ymodel_ = 1 - ymodel
+        ymodel[ymodel < 0.5] = ymodel_[ymodel < 0.5]
 
-        # log-likelihood of logit model
-        # NOTE: This likelihood is not normalized -- not a simple problem.
-        return yclass * np.log(1 - ymodel) + (1 - yclass) * np.log(ymodel)
+        return np.log(ymodel)
 
-    @property
-    def data(self):
-        """Model data."""
-        # Get dataframes
-        df1 = self.gpm.complete_data
-        df2 = self.Linear.epistasis.data
+    @arghandler
+    def lnlike_transform(
+            self,
+            X=None,
+            y=None,
+            yerr=None,
+            lnprior=None,
+            thetas=None):
+        # Update likelihood.
+        ymodel = self.hypothesis(X=X, thetas=thetas)
+        yclass = np.ones(len(ymodel))
+        yclass[ymodel > 0.5] = 0
 
-        # Merge dataframes.
-        data = pd.concat((df1, df2), axis=1)
-        return data
+        lnlike = self.lnlike_of_data(X=X, y=y, yerr=yerr, thetas=thetas)
+        lnprior[yclass == 0] = 0
+        return lnlike + lnprior
 
-    @classmethod
-    def read_json(cls, filename, **kwargs):
-        """Read genotype-phenotype data from a json file."""
-        with open(filename, 'r') as f:
-            data = json.load(f)
+    @arghandler
+    def hypothesis(self, X=None, thetas=None):
+        # Calculate probability of each class
+        logit_p0 = 1 / (1 + np.exp(np.dot(X, thetas)))
 
-        gpm = GenotypePhenotypeMap(wildtype=data['wildtype'],
-                                   genotypes=data['genotypes'],
-                                   phenotypes=data['phenotypes'],
-                                   stdeviations=data['stdeviations'],
-                                   mutations=data['mutations'],
-                                   n_replicates=data['n_replicates'])
+        # Returns probability of class 1
+        return logit_p0
 
-        additive_epistasis = EpistasisMap(sites=data['additive']['sites'],
-                                          values=data['additive']['values'],
-                                          model_type=model_type['model_type'])
-
-        # Initialize a model
-        self = cls(order=data['order'],
-                   model_type=data['model_type'],
-                   **kwargs)
-
-        self.add_gpm(gpm)
-        self.Additive.epistasis = epistasis
-        return self
-
-    def to_excel(self, filename):
-        """Write data to excel spreadsheet."""
-        self.data.to_excel(filename)
-
-    def to_csv(self, filename):
-        """Write data to excel spreadsheet."""
-        self.data.to_csv(filename)
-
-    def to_dict(self):
-        """Return model data as dictionary."""
-        # Get genotype-phenotype data
-        data = self.gpm.to_dict(complete=True)
-
-        # Update with epistasis model data
-        data.update({'additive': self.Additive.epistasis.to_dict()})
-
-        # Update with model data
-        data.update(model_type=self.model_type,
-                    order=self.order)
-        return data
-
-    def to_json(self, filename):
-        """Write to json file."""
-        data = self.to_dict()
-        with open(filename, 'w') as f:
-            json.dump(data, f)
-
-
-@sklearn_to_epistasis()
-class EpistasisLogisticRegression(LogisticRegression, EpistasisBaseClassifier):
-    """Logistic regression for estimating epistatic interactions that lead to
-    nonviable phenotypes. Useful for predicting viable/nonviable phenotypes.
-
-    Parameters
-    ----------
-    threshold : float
-        value below which phenotypes are considered nonviable.
-    order : int
-        order of epistasis model
-    model_type : str (default="global")
-        type of model matrix to use. "global" defines epistasis with respect to
-        a background-averaged "genotype-phenotype". "local" defines epistasis
-        with respect to the wildtype genotype.
-    """
-    @X_predictor
-    def hypothesis(self, X='obs', thetas=None):
-        """Returns the probability of the data given the model."""
-        if thetas is None:
-            thetas = self.thetas
-        logit_p1 = 1 / (1 + np.exp(np.dot(X, thetas)))
-        return logit_p1
+    def hypothesis_transform(self, X=None, y=None, thetas=None):
+        ypred = self.hypothesis(X=X, thetas=thetas)
+        y[ypred > 0.5] = self.threshold
+        return y
 
     @property
     def thetas(self):
         return self.epistasis.values
-
-
-@sklearn_to_epistasis()
-class EpistasisBernoulliNB(BernoulliNB, EpistasisBaseClassifier):
-    """"""
-
-
-@sklearn_to_epistasis()
-class EpistasisSVC(SVC, EpistasisBaseClassifier):
-    """Logistic Regression used to categorize phenotypes as either alive
-    or dead."""
