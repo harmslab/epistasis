@@ -9,7 +9,7 @@ import numpy as np
 from gpmap.gpm import GenotypePhenotypeMap
 
 # local imports
-from epistasis.model_matrix_ext import get_model_matrix
+from epistasis.matrix import get_model_matrix
 from epistasis.simulate.base import BaseSimulation
 
 # ------------------------------------------------------------

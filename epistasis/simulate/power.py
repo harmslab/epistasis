@@ -3,7 +3,7 @@ import numpy as np
 from .base import BaseSimulation
 from epistasis.models.nonlinear import Parameters
 from epistasis.models.power import power_transform
-from epistasis.model_matrix_ext import get_model_matrix
+from epistasis.matrix import get_model_matrix
 
 
 class PowerScaleSimulation(BaseSimulation):

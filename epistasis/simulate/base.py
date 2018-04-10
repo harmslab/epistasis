@@ -4,7 +4,7 @@ from gpmap import utils
 
 # Local imports
 from epistasis.mapping import (EpistasisMap, mutations_to_sites, assert_epistasis)
-from epistasis.model_matrix_ext import get_model_matrix
+from epistasis.matrix import get_model_matrix
 from epistasis.utils import extract_mutations_from_genotypes
 from epistasis.models.utils import XMatrixException
 

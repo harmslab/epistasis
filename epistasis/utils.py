@@ -14,7 +14,7 @@ from collections import OrderedDict
 from gpmap.utils import genotypes_to_binary
 from .mapping import mutations_to_sites
 
-from .model_matrix_ext import get_model_matrix
+from epistasis.matrix import get_model_matrix
 
 
 # -------------------------------------------------------
