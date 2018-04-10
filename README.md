@@ -48,31 +48,6 @@ model.fit()
 # Plot coefficients (powered by matplotlib).
 coef_sites = model.epistasis.sites
 coef_values = model.epistasis.values
-
-```
-
-Or, fit a chain of global *and* local epistasis models.
-
-```python
-from epistasis import EpistasisPipeline
-from epistasis.models import (EpistasisLinearRegression,
-                              EpistasisPowerTransform)
-
-# Construct a pipeline
-pipeline = EpistasisPipeline([
-    EpistasisPowerTransform(lmbda=1, A=0, B=0),
-    EpistasisLinearRegression(order=3)
-])
-
-# Add the genotype phenotype map to pipeline.
-pipeline.add_gpm(gpm)
-
-# Fit pipeline to given genotype-phenotype map.
-pipeline.fit()
-
-# Plot coefficients (powered by matplotlib).
-coef_sites = pipeline[1].epistasis.sites
-coef_values = pipeline[1].epistasis.values
 ```
 
 More examples can be found in these [binder notebooks](https://mybinder.org/v2/gh/harmslab/epistasis-notebooks/master).
