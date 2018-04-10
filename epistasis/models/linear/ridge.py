@@ -1,12 +1,8 @@
-import numpy as _np
-from sklearn.linear_model import LinearRegression
-from sklearn.linear_model import Lasso
+import numpy as np
+from sklearn.linear_model import Ridge
 
-from .base import BaseModel, use_sklearn
-from .utils import arghandler
-from ..stats import pearson
-
-from gpmap import GenotypePhenotypeMap
+from ..base import BaseModel, use_sklearn
+from ..utils import arghandler
 
 # Suppress an annoying error from scikit-learn
 import warnings
@@ -14,105 +10,8 @@ warnings.filterwarnings(action="ignore", module="scipy",
                         message="^internal gelsd")
 
 
-@use_sklearn(LinearRegression)
-class EpistasisLinearRegression(BaseModel):
-    """Ordinary least-squares regression for estimating high-order, epistatic
-    interactions in a genotype-phenotype map.
-
-    Methods are described in the following publication:
-        Sailer, Z. R. & Harms, M. J. 'Detecting High-Order Epistasis in
-        Nonlinear Genotype-Phenotype Maps'. Genetics 205, 1079-1088 (2017).
-
-    Parameters
-    ----------
-    order : int
-        order of epistasis
-
-    model_type : str (default="global")
-        model matrix type. See publication above for more information
-    """
-    def __init__(self, order=1, model_type="global", n_jobs=1, **kwargs):
-        # Set Linear Regression settings.
-        self.fit_intercept = False
-        self.normalize = False
-        self.copy_X = False
-        self.n_jobs = n_jobs
-        self.set_params(model_type=model_type, order=order)
-        self.Xbuilt = {}
-
-        # Store model specs.
-        self.model_specs = dict(
-            order=self.order,
-            model_type=self.model_type,
-            **kwargs)
-
-    @property
-    def num_of_params(self):
-        n = 0
-        n += self.epistasis.n
-        return n
-
-    #@epistasis_fitter
-    @arghandler
-    def fit(self, X=None, y=None, **kwargs):
-        self = super(self.__class__, self).fit(X, y)
-
-        # Link coefs to epistasis values.
-        self.epistasis.values = _np.reshape(self.coef_, (-1,))
-        return self
-
-    def fit_transform(self, X=None, y=None, **kwargs):
-        return self.fit(X=X, y=y, **kwargs)
-
-    @arghandler
-    def predict(self, X=None):
-        return super(self.__class__, self).predict(X)
-
-    def predict_transform(self, X=None, y=None):
-        return self.predict(X=X)
-
-    @arghandler
-    def score(self, X=None, y=None):
-        return super(self.__class__, self).score(X, y)
-
-    @property
-    def thetas(self):
-        return self.coef_
-
-    @arghandler
-    def hypothesis(self, X=None, thetas=None):
-        return _np.dot(X, thetas)
-
-    def hypothesis_transform(self, X=None, y=None, thetas=None):
-        return self.hypothesis(X=X, thetas=thetas)
-
-    @arghandler
-    def lnlike_of_data(
-            self,
-            X=None,
-            y=None,
-            yerr=None,
-            thetas=None):
-        # Calculate y from model.
-        ymodel = self.hypothesis(X=X, thetas=thetas)
-        return (- 0.5 * _np.log(2 * _np.pi * yerr**2) -
-                (0.5 * ((y - ymodel)**2 / yerr**2)))
-
-    @arghandler
-    def lnlike_transform(
-            self,
-            X=None,
-            y=None,
-            yerr=None,
-            lnprior=None,
-            thetas=None):
-        # Update likelihood.
-        lnlike = self.lnlike_of_data(X=X, y=y, yerr=yerr, thetas=thetas)
-        return lnlike + lnprior
-
-
-@use_sklearn(Lasso)
-class EpistasisLasso(BaseModel):
+@use_sklearn(Ridge)
+class EpistasisRidge(BaseModel):
     """A scikit-learn Lasso Regression class for discovering sparse
     epistatic coefficients.
 
@@ -134,12 +33,6 @@ class EpistasisLasso(BaseModel):
         equivalent to an ordinary least square, solved by the
         EpistasisLinearRegression object.
 
-    precompute :
-        Whether to use a precomputed Gram matrix to speed up calculations.
-        If set to 'auto' let us decide. The Gram matrix can also be passed
-        as argument. For sparse input this option is always True to preserve
-        sparsity.
-
     max_iter : int
         The maximum number of iterations.
 
@@ -147,13 +40,6 @@ class EpistasisLasso(BaseModel):
         The tolerance for the optimization: if the updates are smaller than
         tol, the optimization code checks the dual gap for optimality and
         continues until it is smaller than tol.
-
-    warm_start : bool
-        When set to True, reuse the solution of the previous call to fit as
-        initialization, otherwise, just erase the previous solution.
-
-    positive : bool
-        When set to True, forces the coefficients to be positive.
 
     random_state : int
         The seed of the pseudo random number generator that selects a random
@@ -163,24 +49,18 @@ class EpistasisLasso(BaseModel):
         RandomState instance used by np.random. Used when
         selection == 'random'.
 
-    selection : str
-        If set to 'random', a random coefficient is updated every iteration
-        rather than looping over features sequentially by default. This
-        (setting to 'random') often leads to significantly faster convergence
-        especially when tol is higher than 1e-4.
+    solver : str
+        See scikit learn docs for Ridge.
     """
     def __init__(
             self,
             order=1,
             model_type="global",
             alpha=1.0,
-            precompute=False,
             max_iter=1000,
             tol=0.0001,
-            warm_start=False,
-            positive=False,
             random_state=None,
-            selection='cyclic',
+            solver='auto',
             **kwargs):
         # Set Linear Regression settings.
         self.fit_intercept = False

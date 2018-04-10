@@ -10,9 +10,8 @@ from lmfit import Parameter, Parameters
 
 from .utils import arghandler
 from ..stats import gmean, pearson
-from .linear import EpistasisLinearRegression, EpistasisLasso
+from .linear import EpistasisLinearRegression
 from .nonlinear import (EpistasisNonlinearRegression,
-                        EpistasisNonlinearLasso,
                         Parameters)
 
 from gpmap import GenotypePhenotypeMap
@@ -283,61 +282,3 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
         # Likelihood of data given model
         return (- 0.5 * np.log(2 * np.pi * yerr**2) -
                (0.5 * ((y - ymodel)**2 / yerr**2)))
-
-
-class EpistasisPowerTransformLasso(EpistasisPowerTransform):
-    """Use power-transform function, via nonlinear least-squares regression,
-    and an epistasis lasso model to estimate epistatic coefficients and the
-    nonlinear scale in a nonlinear genotype-phenotype map.
-
-    This models has two steps:
-        1. Fit an additive, linear regression to approximate the average effect
-        of individual mutations.
-        2. Fit the nonlinear function to the observed phenotypes vs. the
-        additive phenotypes estimated in step 1.
-
-    Methods are described in the following publication:
-        Sailer, Z. R. & Harms, M. J. 'Detecting High-Order Epistasis in
-        Nonlinear Genotype-Phenotype Maps'. Genetics 205, 1079-1088 (2017).
-
-    Parameters
-    ----------
-    model_type : str (default: global)
-        type of epistasis model to use. See paper above for more information.
-
-    Keyword Arguments
-    -----------------
-    Keyword arguments are interpreted as intial guesses for the nonlinear
-    function parameters. Must have the same name as parameters in the
-    nonlinear function
-
-    Attributes
-    ----------
-    epistasis : EpistasisMap
-        Mapping object containing high-order epistatic coefficients
-
-    Additive : EpistasisLinearRegression
-        Linear regression object for fitting additive model
-
-    parameters : Parameters object
-        Mapping object for nonlinear coefficients
-    """
-    def __init__(self, model_type="global", alpha=1.0, **p0):
-        super(EpistasisPowerTransformLasso, self).__init__(
-            model_type=model_type, **p0)
-
-        # Set up additive and high-order linear model
-        self.Additive = EpistasisLasso(
-            alpha=alpha,
-            order=1, model_type=self.model_type)
-
-    @arghandler
-    def lnlike_of_data(self, X=None, y=None, yerr=None, thetas=None):
-        # ###### Calculate likelihood #########
-        # Calculate ymodel
-        ymodel = self.hypothesis(X=X, thetas=thetas)
-
-        # Likelihood of data given model
-        return (- 0.5 * np.log(2 * np.pi * yerr**2) -
-                (0.5 * ((y - ymodel)**2 / yerr**2)) -
-                (self.Linear.alpha * sum(abs(thetas))))
