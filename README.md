@@ -76,6 +76,7 @@ Documentation and API reference can be viewed [here](http://epistasis.readthedoc
 * [Scikit-learn](http://scikit-learn.org/stable/): Simple to use machine-learning algorithms
 * [Numpy](http://www.numpy.org/): Python's array manipulation packaged
 * [Scipy](http://www.scipy.org/): Efficient scientific array manipulations and fitting.
+* [lmfit](https://lmfit.github.io/lmfit-py/): Non-linear least-squares minimization and curve fitting in Python.
 
 ### Optional dependencies
 
@@ -108,7 +109,7 @@ You can also cite the software directly:
   title        = {harmslab/epistasis: Genetics paper release},
   month        = jan,
   year         = 2017,
-  doi          = {10.5281/zenodo.252927},
-  url          = {https://doi.org/10.5281/zenodo.252927}
+  doi          = {10.5281/zenodo.1215853},
+  url          = {https://doi.org/10.5281/zenodo.1215853}
 }
 ```
