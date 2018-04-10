@@ -6,7 +6,7 @@ import numpy as np
 from gpmap import GenotypePhenotypeMap
 
 # Module to test
-from ..linear import *
+from ..lasso import EpistasisLasso
 
 
 @pytest.fixture
@@ -20,12 +20,12 @@ def gpm():
                                 stdeviations=stdeviations)
 
 
-class TestEpistasisLinearRegression(object):
+class TestEpistasisLasso(object):
 
     order = 3
 
     def test_init(self, gpm):
-        model = EpistasisLinearRegression(order=self.order, model_type="local")
+        model = EpistasisLasso(order=self.order, model_type="local")
         model.add_gpm(gpm)
 
         # Checks
@@ -35,7 +35,7 @@ class TestEpistasisLinearRegression(object):
         assert check2 == "local"
 
     def test_fit(self, gpm):
-        model = EpistasisLinearRegression(order=self.order, model_type="local")
+        model = EpistasisLasso(order=self.order, model_type="local")
         model.add_gpm(gpm)
         model.fit()
         # Checks
@@ -51,18 +51,16 @@ class TestEpistasisLinearRegression(object):
 
 
     def test_predict(self, gpm):
-        model = EpistasisLinearRegression(order=self.order, model_type="local")
+        model = EpistasisLasso(order=self.order, model_type="local")
         model.add_gpm(gpm)
         model.fit()
         check1 = model.predict(X='fit')
 
         # Tests
-        np.testing.assert_almost_equal(
-            sorted(check1), sorted(model.gpm.phenotypes))
         assert "predict" in model.Xbuilt
 
     def test_score(self, gpm):
-        model = EpistasisLinearRegression(order=self.order, model_type="local")
+        model = EpistasisLasso(order=self.order, model_type="local", alpha=0.1)
         model.add_gpm(gpm)
         model.fit()
         score = model.score()
@@ -71,17 +69,16 @@ class TestEpistasisLinearRegression(object):
         assert score <= 1
 
     def test_hypothesis(self, gpm):
-        model = EpistasisLinearRegression(order=self.order, model_type="local")
+        model = EpistasisLasso(order=self.order, model_type="local")
         model.add_gpm(gpm)
         model.fit()
         # Checks
         check1 = model.hypothesis(thetas=model.coef_)
         # Tests
-        np.testing.assert_almost_equal(
-            sorted(check1), sorted(model.gpm.phenotypes))
+        True
 
     def test_lnlikelihood(self, gpm):
-        model = EpistasisLinearRegression(order=self.order, model_type="local")
+        model = EpistasisLasso(order=self.order, model_type="local")
         model.add_gpm(gpm)
         model.fit()
 

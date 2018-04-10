@@ -13,6 +13,7 @@ packages = [
     'epistasis.pyplot',
     'epistasis.sampling',
     'epistasis.simulate',
+    'epistasis.models.linear'
 ]
 
 setup(name='epistasis',

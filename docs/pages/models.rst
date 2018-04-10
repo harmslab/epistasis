@@ -4,6 +4,7 @@ Detailed list of models
 This page lists all models included in the Epistasis Package.
 
 * EpistasisLinearRegression_: estimate epistatic coefficents in a linear genotype-phenotype map.
+* EpistasisRidge_: estimate *sparse* epistatic coefficients in a linear genotype-phenotype map
 * EpistasisLasso_: estimate *sparse* epistatic coefficients in a linear genotype-phenotype map
 * EpistasisNonlinearRegression_: estimates high-order epistatic coefficients in a nonlinear genotype-phenotype map.
 * EpistasisNonlinearLasso_: estimate *sparse* epistatic coefficients in a nonlinear genotype-phenotype map.
@@ -13,6 +14,7 @@ This page lists all models included in the Epistasis Package.
 * EpistasisEnsembleRegression_: use a statistical ensemble of "states" to decompose variation in a genotype-phenotype map.
 
 .. _EpistasisLinearRegression: models.html#epistasislinearregression
+.. _EpistasisRidge: models.html#epistasisridge
 .. _EpistasisLasso: models.html#epistasislasso
 .. _EpistasisNonlinearRegression: models.html#epistasisnonlinearregression
 .. _EpistasisNonlinearLasso: models.html#epistasisnonlinearlasso
@@ -54,6 +56,35 @@ genotype-phenotype map. Simple define the order of the model.
 EpistasisLasso
 --------------
 
+A L2-norm epistasis model for estimating sparse epistatic coefficients. The
+optimization function imposes a penalty on the number of coefficients and finds
+the model that maximally explains the data while using the fewest coefficients.
+
+.. code-block:: python
+
+  from gpmap import GenotypePhenotypeMap
+  from epistasis.models import EpistasisRidge
+
+  wildtype = 'AA'
+  genotypes = ['AA', 'AT', 'TA', 'TT']
+  phenotypes = [0.1, 0.2, 0.7, 1.2]
+
+  # Read genotype-phenotype map.
+  gpm = GenotypePhenotypeMap(wildtype, genotypes, phenotypes)
+
+  # Initialize the data.
+  model = EpistasisRidge(order=2)
+
+  # Add Genotype-phenotype map data.
+  model.add_gpm(gpm)
+
+  # Fit the model.
+  model.fit()
+
+
+EpistasisLasso
+--------------
+
 A L1-norm epistasis model for estimating sparse epistatic coefficients. The
 optimization function imposes a penalty on the number of coefficients and finds
 the model that maximally explains the data while using the fewest coefficients.
@@ -61,7 +92,7 @@ the model that maximally explains the data while using the fewest coefficients.
 .. code-block:: python
 
   from gpmap import GenotypePhenotypeMap
-  from epistasis.models import EpistasisLinearRegression
+  from epistasis.models import EpistasisLasso
 
   wildtype = 'AA'
   genotypes = ['AA', 'AT', 'TA', 'TT']

@@ -12,13 +12,8 @@ warnings.filterwarnings(action="ignore", module="scipy",
 
 @use_sklearn(Ridge)
 class EpistasisRidge(BaseModel):
-    """A scikit-learn Lasso Regression class for discovering sparse
+    """A scikit-learn Ridge Regression class for discovering sparse
     epistatic coefficients.
-
-    Methods are described in the following publication:
-        Poelwijk FJ, Socolich M, and Ranganathan R. 'Learning the pattern of
-        epistasis linking enotype and phenotype in a protein'.
-        bioRxiv. (2017).
 
     Parameters
     ----------
@@ -67,14 +62,11 @@ class EpistasisRidge(BaseModel):
         self.normalize = False
         self.copy_X = True
         self.alpha = alpha
-        self.precompute = precompute
         self.max_iter = max_iter
         self.tol = tol
-        self.warm_start = warm_start
-        self.positive = positive
         self.random_state = random_state
-        self.selection = selection
-        self.l1_ratio = 1.0
+        self.solver = solver
+        self.l2_ratio = 1.0
 
         self.set_params(model_type=model_type, order=order)
         self.Xbuilt = {}
@@ -104,11 +96,11 @@ class EpistasisRidge(BaseModel):
     @arghandler
     def fit(self, X=None, y=None, **kwargs):
         # If a threshold exists in the data, pre-classify genotypes
-        X = _np.asfortranarray(X)
+        X = np.asfortranarray(X)
         self = super(self.__class__, self).fit(X, y)
 
         # Link coefs to epistasis values.
-        self.epistasis.values = _np.reshape(self.coef_, (-1,))
+        self.epistasis.values = np.reshape(self.coef_, (-1,))
         return self
 
     def fit_transform(self, X=None, y=None, **kwargs):
@@ -116,7 +108,7 @@ class EpistasisRidge(BaseModel):
 
     @arghandler
     def predict(self, X=None):
-        X = _np.asfortranarray(X)
+        X = np.asfortranarray(X)
         return super(self.__class__, self).predict(X)
 
     @arghandler
@@ -125,7 +117,7 @@ class EpistasisRidge(BaseModel):
 
     @arghandler
     def score(self, X=None, y=None):
-        X = _np.asfortranarray(X)
+        X = np.asfortranarray(X)
         return super(self.__class__, self).score(X, y)
 
     @property
@@ -134,7 +126,7 @@ class EpistasisRidge(BaseModel):
 
     @arghandler
     def hypothesis(self, X=None, thetas=None):
-        return _np.dot(X, thetas)
+        return np.dot(X, thetas)
 
     @arghandler
     def hypothesis_transform(self, X=None, y=None, thetas=None):
@@ -151,6 +143,18 @@ class EpistasisRidge(BaseModel):
         ymodel = self.hypothesis(X=X, thetas=thetas)
 
         # Return the likelihood of this model (with an L1 prior)
-        return (- 0.5 * _np.log(2 * _np.pi * yerr**2) -
+        return (- 0.5 * np.log(2 * np.pi * yerr**2) -
                 (0.5 * ((y - ymodel)**2 / yerr**2)) -
                 (self.alpha * sum(abs(thetas))))
+
+    @arghandler
+    def lnlike_transform(
+            self,
+            X=None,
+            y=None,
+            yerr=None,
+            lnprior=None,
+            thetas=None):
+        # Update likelihood.
+        lnlike = self.lnlike_of_data(X=X, y=y, yerr=yerr, thetas=thetas)
+        return lnlike + lnprior

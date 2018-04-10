@@ -123,11 +123,11 @@ class EpistasisLasso(BaseModel):
     @arghandler
     def fit(self, X=None, y=None, **kwargs):
         # If a threshold exists in the data, pre-classify genotypes
-        X = _np.asfortranarray(X)
+        X = np.asfortranarray(X)
         self = super(self.__class__, self).fit(X, y)
 
         # Link coefs to epistasis values.
-        self.epistasis.values = _np.reshape(self.coef_, (-1,))
+        self.epistasis.values = np.reshape(self.coef_, (-1,))
         return self
 
     def fit_transform(self, X=None, y=None, **kwargs):
@@ -135,7 +135,7 @@ class EpistasisLasso(BaseModel):
 
     @arghandler
     def predict(self, X=None):
-        X = _np.asfortranarray(X)
+        X = np.asfortranarray(X)
         return super(self.__class__, self).predict(X)
 
     @arghandler
@@ -144,7 +144,7 @@ class EpistasisLasso(BaseModel):
 
     @arghandler
     def score(self, X=None, y=None):
-        X = _np.asfortranarray(X)
+        X = np.asfortranarray(X)
         return super(self.__class__, self).score(X, y)
 
     @property
@@ -153,7 +153,7 @@ class EpistasisLasso(BaseModel):
 
     @arghandler
     def hypothesis(self, X=None, thetas=None):
-        return _np.dot(X, thetas)
+        return np.dot(X, thetas)
 
     @arghandler
     def hypothesis_transform(self, X=None, y=None, thetas=None):
@@ -170,6 +170,18 @@ class EpistasisLasso(BaseModel):
         ymodel = self.hypothesis(X=X, thetas=thetas)
 
         # Return the likelihood of this model (with an L1 prior)
-        return (- 0.5 * _np.log(2 * _np.pi * yerr**2) -
+        return (- 0.5 * np.log(2 * np.pi * yerr**2) -
                 (0.5 * ((y - ymodel)**2 / yerr**2)) -
                 (self.alpha * sum(abs(thetas))))
+
+    @arghandler
+    def lnlike_transform(
+            self,
+            X=None,
+            y=None,
+            yerr=None,
+            lnprior=None,
+            thetas=None):
+        # Update likelihood.
+        lnlike = self.lnlike_of_data(X=X, y=y, yerr=yerr, thetas=thetas)
+        return lnlike + lnprior
