@@ -1,8 +1,10 @@
 from setuptools import setup, Extension
+import numpy
 
 # Define extensions
-extension = Extension('epistasis.model_matrix_ext',
-                      ['epistasis/model_matrix_ext.c'])
+extension = Extension('epistasis.matrix_cython',
+                      ['epistasis/matrix_cython.c'],
+                      include_dirs=[numpy.get_include()])
 
 # define all packages for distribution
 packages = [

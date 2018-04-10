@@ -125,6 +125,9 @@ def mutations_to_sites(order, mutations, start_order=0):
             if bad_term is False:
                 for r in it.product(*lists):
                     sites.append(list(r))
+
+    # Convert sites to array of arrays
+    sites = np.array([np.array(s) for s in sites])
     return sites
 
 

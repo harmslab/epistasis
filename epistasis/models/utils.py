@@ -2,7 +2,7 @@ import inspect
 import numpy as np
 import pandas as pd
 from functools import wraps
-from epistasis.model_matrix_ext import get_model_matrix
+from epistasis.matrix import get_model_matrix
 from epistasis.mapping import EpistasisMap, mutations_to_sites
 
 from gpmap.utils import genotypes_to_binary

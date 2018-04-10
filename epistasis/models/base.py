@@ -11,7 +11,7 @@ from gpmap.gpm import GenotypePhenotypeMap
 
 # Local imports
 from epistasis.mapping import EpistasisMap, mutations_to_sites
-from epistasis.model_matrix_ext import get_model_matrix
+from epistasis.matrix import get_model_matrix
 from epistasis.utils import (extract_mutations_from_genotypes,
                              genotypes_to_X)
 from .utils import XMatrixException
