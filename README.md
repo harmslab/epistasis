@@ -4,7 +4,7 @@
 [![Binder](http://mybinder.org/badge.svg)](https://beta.mybinder.org/v2/gh/harmslab/epistasis-notebooks/master)
 [![Documentation Status](https://readthedocs.org/projects/epistasis/badge/?version=latest)](http://epistasis.readthedocs.io/?badge=latest)
 [![Build Status](https://travis-ci.org/harmslab/epistasis.svg?branch=master)](https://travis-ci.org/harmslab/epistasis)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.242665.svg)](https://doi.org/10.5281/zenodo.242665)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1215853.svg)](https://doi.org/10.5281/zenodo.1215853)
 
 *Python API for estimating statistical, high-order epistasis in genotype-phenotype maps.*
 
