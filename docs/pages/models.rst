@@ -53,7 +53,7 @@ genotype-phenotype map. Simple define the order of the model.
   # Fit the model.
   model.fit()
 
-EpistasisLasso
+EpistasisRidge
 --------------
 
 A L2-norm epistasis model for estimating sparse epistatic coefficients. The

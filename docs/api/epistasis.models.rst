@@ -1,7 +1,12 @@
 epistasis\.models package
 =========================
 
-.. automodule:: epistasis.models.__init__
+See subpackages for specific models.
+
+.. toctree::
+
+    epistasis.models.linear
+    epistasis.models.nonlinear
 
 epistasis\.models\.base module
 ------------------------------
@@ -19,35 +24,10 @@ epistasis\.models\.classifiers module
     :undoc-members:
     :show-inheritance:
 
-epistasis\.models\.linear\.ordinary module
-------------------------------------------
+epistasis\.models\.ensemble module
+----------------------------------
 
-.. automodule:: epistasis.models.linear.ordinary
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-epistasis\.models\.linear\.ridge module
-------------------------------------------
-
-.. automodule:: epistasis.models.linear.ridge
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-epistasis\.models\.linear\.lasso module
-------------------------------------------
-
-.. automodule:: epistasis.models.linear.lasso
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
-epistasis\.models\.nonlinear module
------------------------------------
-
-.. automodule:: epistasis.models.nonlinear
+.. automodule:: epistasis.models.ensemble
     :members:
     :undoc-members:
     :show-inheritance:
@@ -60,18 +40,19 @@ epistasis\.models\.pipeline module
     :undoc-members:
     :show-inheritance:
 
-epistasis\.models\.power module
--------------------------------
-
-.. automodule:: epistasis.models.power
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 epistasis\.models\.utils module
 -------------------------------
 
 .. automodule:: epistasis.models.utils
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: epistasis.models
     :members:
     :undoc-members:
     :show-inheritance:

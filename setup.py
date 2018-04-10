@@ -1,4 +1,4 @@
-from setuptools import setup, Extension
+from setuptools import setup, Extension, find_packages
 import numpy
 
 # Define extensions
@@ -6,24 +6,13 @@ extension = Extension('epistasis.matrix_cython',
                       ['epistasis/matrix_cython.c'],
                       include_dirs=[numpy.get_include()])
 
-# define all packages for distribution
-packages = [
-    'epistasis',
-    'epistasis.models',
-    'epistasis.pyplot',
-    'epistasis.sampling',
-    'epistasis.simulate',
-    'epistasis.models.linear',
-    'epistasis.models.nonlinear'
-]
-
 setup(name='epistasis',
-      version='0.6.0',
+      version='0.6.1',
       description='High-order epistasis models for genotype-phenotype maps',
       author='Zach Sailer',
       author_email='zachsailer@gmail.com',
       url='https://github.com/harmslab/epistasis',
-      packages=packages,
+      packages=find_packages(exclude=('tests',)),
       classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Science/Research',

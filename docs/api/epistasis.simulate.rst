@@ -1,7 +1,6 @@
 epistasis\.simulate package
 ===========================
 
-.. automodule:: epistasis.simulate.__init__
 
 epistasis\.simulate\.base module
 --------------------------------
@@ -15,6 +14,14 @@ epistasis\.simulate\.linear module
 ----------------------------------
 
 .. automodule:: epistasis.simulate.linear
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+epistasis\.simulate\.power module
+---------------------------------
+
+.. automodule:: epistasis.simulate.power
     :members:
     :undoc-members:
     :show-inheritance:
