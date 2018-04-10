@@ -69,6 +69,9 @@ def encode_vectors(binary_genotypes, model_type='global'):
 def get_model_matrix(binary_genotypes, sites, model_type='global'):
     """Get a model matrix for a given set of genotypes and coefficients.
     """
+    # Convert sites to array of arrays
+    sites = np.array([np.array(s) for s in sites])
+
     # Encode genotypes
     encoded_vector = encode_vectors(binary_genotypes, model_type=model_type)
 
