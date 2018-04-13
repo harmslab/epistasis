@@ -76,8 +76,8 @@ places. We appreciate your patience as we try to catch up on docs.
 
    pages/quick_guide
    pages/models
-   pages/anatomy
    pages/pipeline
+   pages/anatomy
    pages/simulate
    pages/visualize
    pages/advanced
