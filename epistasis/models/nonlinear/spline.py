@@ -5,6 +5,8 @@ from .ordinary import EpistasisNonlinearRegression
 from epistasis.models import EpistasisLinearRegression
 from epistasis.models.utils import (arghandler, FittingError)
 from scipy.interpolate import UnivariateSpline
+from lmfit import Parameter, Parameters
+
 
 # -------------------- Minimizer object ------------------------
 
@@ -14,7 +16,10 @@ class SplineMinizer(Minimizer):
     def __init__(self, k=3, s=None):
         self.k = k
         self.s = s
-        self.parameters = None
+        # Set initalize parameters to zero.
+        self.parameters = Parameters()
+        for i in range(self.k+1):
+            self.parameters.add(name='c{}'.format(i), value=0)
 
     def _sorter(self, x, y=None):
         """sort x (and y) according to x values"""
@@ -24,8 +29,35 @@ class SplineMinizer(Minimizer):
         else:
             return x[idx], y[idx]
 
+    def function(self, x, **coefs):
+        # Order of polynomial
+        k = self.k
+
+        # Number of coefficients
+        n = k + 1
+
+        # Knot positions
+        t_arr = np.zeros(n*2, dtype=float)
+        t_arr[:n] = min(x)
+        t_arr[n:] = max(x)
+
+        # Coefficients
+        c_arr = np.zeros(n*2, dtype=float)
+        c_arr[:n] = list(coefs.values())
+
+        # Build Spline function
+        tck = [t_arr, c_arr, k]
+        model = UnivariateSpline._from_tck(tck)
+
+        # Return predicted function
+        return model(x)
+
     def predict(self, x):
         return self._spline(x)
+
+    def transform(self, x, y):
+        ymodel = self.predict(x)
+        return (y - ymodel) + x
 
     def fit(self, x, y):
         # Sort values for fit
@@ -39,14 +71,21 @@ class SplineMinizer(Minimizer):
             s=self.s
         )
 
-    def transform(self, x, y):
-        ymodel = self.predict(x)
-        return (y - ymodel) + x
+        for i, coef in enumerate(self._spline.get_coeffs()):
+            self.parameters['c{}'.format(i)].value = coef
 
 # -------------------- Minimizer object ------------------------
 
 class EpistasisSpline(EpistasisNonlinearRegression):
-    """Epistasis Spline method.
+    """Estimate nonlinearity in a genotype-phenotype map using a spline.
+
+    Parameters
+    ----------
+    k : int
+        order of spline.
+
+    s : float, optional
+        smoothness factor.
     """
     def __init__(self, k=3, s=None, model_type="global"):
         # Set atributes

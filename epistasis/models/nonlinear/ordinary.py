@@ -204,7 +204,7 @@ class EpistasisNonlinearRegression(BaseModel):
         x = np.dot(X, epistasis)
 
         # Part 2: Nonlinear portion
-        ynonlin = self.function(x, *parameters)
+        ynonlin = self.minimizer.function(x, *parameters)
 
         return ynonlin
 
@@ -214,12 +214,11 @@ class EpistasisNonlinearRegression(BaseModel):
         parameters = thetas[:i]
         epistasis = thetas[i:i + j]
 
-        # Part 2: Nonlinear portion
         if y is None:
             x = self.Additive.hypothesis(X=X, thetas=epistasis)
         else:
             x = y
-        y_transform = self.function(x, *parameters)
+        y_transform = self.minimizer.function(x, *parameters)
         return y_transform
 
     @arghandler
@@ -230,7 +229,6 @@ class EpistasisNonlinearRegression(BaseModel):
 
     @arghandler
     def lnlike_of_data(self, X=None, y=None, yerr=None, thetas=None):
-        # ###### Calculate likelihood #########
         # Calculate ymodel
         ymodel = self.hypothesis(X=X, thetas=thetas)
 
@@ -246,6 +244,7 @@ class EpistasisNonlinearRegression(BaseModel):
             yerr=None,
             lnprior=None,
             thetas=None):
+
         # Update likelihood.
         lnlike = self.lnlike_of_data(X=X, y=y, yerr=yerr, thetas=thetas)
         return lnlike + lnprior

@@ -28,24 +28,18 @@ def function(x, A, B):
     return A * x + B
 
 
-def reverse(y, A, B):
-    return (y - B) / A
-
-
 class TestEpistasisNonlinearRegression(object):
 
     model_type = "local"
 
     def test_init(self, gpm):
         m = EpistasisNonlinearRegression(function=function,
-                                         reverse=reverse,
                                          model_type=self.model_type)
         m.add_gpm(gpm)
 
         # Checks
         assert hasattr(m, 'parameters') is True
         assert hasattr(m, 'function') is True
-        assert hasattr(m, 'reverse') is True
 
         parameters = m.parameters
 
@@ -56,7 +50,6 @@ class TestEpistasisNonlinearRegression(object):
     def test_fit(self, gpm):
 
         m = EpistasisNonlinearRegression(function=function,
-                                         reverse=reverse,
                                          model_type=self.model_type,
                                          A=1,
                                          B=0)
@@ -67,7 +60,6 @@ class TestEpistasisNonlinearRegression(object):
 
     def test_score(self, gpm):
         m = EpistasisNonlinearRegression(function=function,
-                                         reverse=reverse,
                                          model_type=self.model_type,
                                          A=1, B=0)
         m.add_gpm(gpm)
@@ -78,7 +70,6 @@ class TestEpistasisNonlinearRegression(object):
 
     def test_predict(self, gpm):
         m = EpistasisNonlinearRegression(function=function,
-                                         reverse=reverse,
                                          model_type=self.model_type,
                                          A=1, B=0)
         m.add_gpm(gpm)
@@ -91,7 +82,6 @@ class TestEpistasisNonlinearRegression(object):
 
     def test_thetas(self, gpm):
         m = EpistasisNonlinearRegression(function=function,
-                                         reverse=reverse,
                                          model_type=self.model_type,
                                          A=1, B=0)
         m.add_gpm(gpm)
@@ -103,7 +93,6 @@ class TestEpistasisNonlinearRegression(object):
     def test_hypothesis(self, gpm):
 
         m = EpistasisNonlinearRegression(function=function,
-                                         reverse=reverse,
                                          model_type=self.model_type,
                                          A=1, B=0)
         m.add_gpm(gpm)
@@ -116,7 +105,6 @@ class TestEpistasisNonlinearRegression(object):
 
     def test_lnlikelihood(self, gpm):
         m = EpistasisNonlinearRegression(function=function,
-                                         reverse=reverse,
                                          model_type=self.model_type,
                                          A=1, B=0)
         m.add_gpm(gpm)

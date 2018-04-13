@@ -8,9 +8,7 @@ This page lists all models included in the Epistasis Package.
 * EpistasisLasso_: estimate *sparse* epistatic coefficients using L1-regularization in a linear genotype-phenotype map
 * EpistasisElasticNet_: estimate *sparse* epistatic coefficients, mixing L1- and L2-regularization, in a linear genotype-phenotype map
 * EpistasisNonlinearRegression_: estimates high-order epistatic coefficients in a nonlinear genotype-phenotype map.
-* EpistasisNonlinearLasso_: estimate *sparse* epistatic coefficients in a nonlinear genotype-phenotype map.
 * EpistasisPowerTransform_: use a power transform function to fit a nonlinear genotype-phenotype map and estimate epistasis.
-* EpistasisPowerLasso_: use a power transform function to fit a nonlinear genotype-phenotype map and estimate *sparse* epistasis.
 * EpistasisLogisticRegression_: use logistic regression to classify phenotypes as dead/alive.
 * EpistasisEnsembleRegression_: use a statistical ensemble of "states" to decompose variation in a genotype-phenotype map.
 
@@ -19,9 +17,7 @@ This page lists all models included in the Epistasis Package.
 .. _EpistasisLasso: models.html#epistasislasso
 .. _EpistasisElasticNet: models.html#epistasisnet
 .. _EpistasisNonlinearRegression: models.html#epistasisnonlinearregression
-.. _EpistasisNonlinearLasso: models.html#epistasisnonlinearlasso
 .. _EpistasisPowerTransform: models.html#epistasispowertransform
-.. _EpistasisPowerLasso: models.html#epistasispowerlasso
 .. _EpistasisLogisticRegression: models.html#epistasislogisticregression
 .. _EpistasisMixedRegression: models.html#epistasismixedregression
 .. _EpistasisEnsembleRegression: models.html#epistasisensembleregression
@@ -181,46 +177,6 @@ This models has three steps:
   model.fit(A=1)
 
 
-EpistasisNonlinearLasso
------------------------
-
-A nonlinear, high-order epistasis model. This uses nonlinear, least-squares
-regression (provided by ``lmfit``) to estimate high-order, epistatic
-coefficients in an arbitrary genotype-phenotype map.
-
-This models has three steps:
-  1. Fit an additive, linear regression to approximate the average effect of individual mutations.
-  2. Fit the nonlinear function to the observed phenotypes vs. the additive phenotypes estimated in step 1. This function is defined by the user as a callable python function
-  3. Transform the phenotypes to this linear scale and fit leftover variation with an EpistasisLasso.
-
-.. code-block:: python
-
-  from gpmap import GenotypePhenotypeMap
-  from epistasis.models import EpistasisLinearRegression
-
-  wildtype = 'AA'
-  genotypes = ['AA', 'AT', 'TA', 'TT']
-  phenotypes = [0.1, 0.2, 0.7, 1.2]
-
-  # Read genotype-phenotype map.
-  gpm = GenotypePhenotypeMap(wildtype, genotypes, phenotypes)
-
-    def func(x, A):
-        return np.exp(A * x)
-
-    def reverse(y, A):
-        return np.log(x) / A
-
-    # Initialize the data.
-    model = EpistasisNonlinearLasso(order=3, function=func, reverse=reverse)
-
-    # Add Genotype-phenotype map data.
-    model.add_gpm(gpm)
-
-    # Fit the model.
-    model.fit(A=1)
-
-
 EpistasisPowerTransform
 -----------------------
 
@@ -252,41 +208,6 @@ Methods are described in the following publication:
 
     # Initialize the data.
     model = EpistasisPowerTransform(order=3)
-
-    # Add Genotype-phenotype map data.
-    model.add_gpm(gpm)
-
-    # Fit the model.
-    model.fit(lmbda=1, A=1, B=1)
-
-
-EpistasisPowerLasso
--------------------
-
-Use power-transform function, via nonlinear least-squares regression, to
-estimate epistatic coefficients and the nonlinear scale in a nonlinear
-genotype-phenotype map.
-
-Like the nonlinear model, this model has three steps:
-  1. Fit an additive, linear regression to approximate the average effect of individual mutations.
-  2. Fit the nonlinear function to the observed phenotypes vs. the additive phenotypes estimated in step 1.
-  3. Transform the phenotypes to this linear scale and fit leftover variation with an EpistasisLasso.
-
-
-.. code-block:: python
-
-    from gpmap import GenotypePhenotypeMap
-    from epistasis.models import EpistasisLinearRegression
-
-    wildtype = 'AA'
-    genotypes = ['AA', 'AT', 'TA', 'TT']
-    phenotypes = [0.1, 0.2, 0.7, 1.2]
-
-    # Read genotype-phenotype map.
-    gpm = GenotypePhenotypeMap(wildtype, genotypes, phenotypes)
-
-    # Initialize the data.
-    model = EpistasisPowerTransformLasso(order=3)
 
     # Add Genotype-phenotype map data.
     model.add_gpm(gpm)

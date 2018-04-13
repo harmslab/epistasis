@@ -75,7 +75,11 @@ class PowerTransformMinizer(FunctionMinimizer):
         # Set function
         self._function = power_transform
 
-    def function(self, x):
+    def function(self, x, lmbda, A, B):
+        """Execute the function."""
+        return self._function(x, lmbda=lmbda, A=A, B=B, data=self.data)
+
+    def predict(self, x):
         return self._function(x, **self.parameter, data=self.data)
 
     def fit(self, x, y):

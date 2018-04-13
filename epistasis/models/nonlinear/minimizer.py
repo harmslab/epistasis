@@ -4,6 +4,7 @@ from lmfit import Parameter, Parameters
 
 from abc import ABC, abstractmethod
 
+# ---------------------- Abstract Minimizer class -------------------------
 
 class Minimizer(ABC):
     """Abstract Base Class for function minimizers.
@@ -15,8 +16,18 @@ class Minimizer(ABC):
         pass
 
     @abstractmethod
+    def function(self, x, **params):
+        """Execute function given parameters.
+        """
+
+    @abstractmethod
     def predict(self, x):
         """Predict y, given x, from the fitted model.
+        """
+
+    @abstractmethod
+    def transform(self, x, y):
+        """Method that transforms y onto the x scale using the minimized fit.
         """
 
     @abstractmethod
@@ -24,10 +35,8 @@ class Minimizer(ABC):
         """Fit the x, y data using the function. Store fit.
         """
 
-    @abstractmethod
-    def transform(self, x, y):
-        """Method that transforms y onto the x scale using the minimized fit.
-        """
+# ---------------------- Abstract Minimizer class -------------------------
+
 
 class FunctionMinimizer(Minimizer):
     """Minimizer object that fits data using a function.
@@ -55,9 +64,18 @@ class FunctionMinimizer(Minimizer):
         # Set function
         self._function = function
 
+    def function(self, x, *args, **kwargs):
+        """Execute the function."""
+        return self._function(x, *args, **kwargs)
+
     def predict(self, x):
         """Call function"""
-        return self._function(x, **self.parameter)
+        return self._function(x, **self.parameters)
+
+    def transform(self, x, y):
+        """Transform y onto the x scale."""
+        ymodel = self.predict(x)
+        return (y - ymodel) + x
 
     def fit(self, x, y):
         """Fit the function"""
@@ -78,9 +96,15 @@ class FunctionMinimizer(Minimizer):
 
         # Minimize the above residual function.
         try:
-            self.minizer = lmfit.minimize(residual, self.parameters,
-                                            args=[self._function, x],
-                                            kws={'y': y})
+            self.minimizer = lmfit.minimize(
+                residual,
+                self.parameters,
+                args=[self._function, x],
+                kws={'y': y})
+
+            # Point to nonlinear.
+            self.parameters = self.minimizer.params
+
         # If fitting fails, print what happened
         except Exception as e:
             # if e is ValueError
@@ -91,12 +115,4 @@ class FunctionMinimizer(Minimizer):
             print("\nTransformed phenotypes:")
             print("----------------------")
             print(last_residual_set[1])
-            raise
-
-        # Point to nonlinear.
-        self.parameters = self.minimizer.params
-
-    def transform(self, x, y):
-        """Transform y onto the x scale."""
-        ymodel = self.predict(x)
-        return (y - ymodel) + x
+            raise e
