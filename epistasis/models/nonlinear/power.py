@@ -1,5 +1,5 @@
 import inspect
-import json
+from functools import wraps
 
 import scipy
 import numpy as np
@@ -13,12 +13,9 @@ from epistasis.models.utils import arghandler
 from epistasis.models.linear.ordinary import EpistasisLinearRegression
 from epistasis.models.nonlinear.ordinary import EpistasisNonlinearRegression
 
-from gpmap import GenotypePhenotypeMap
+from .minimizer import FunctionMinimizer
 
-# Suppress an annoying error
-import warnings
-# warnings.filterwarnings(action="ignore", category=RuntimeWarning)
-
+# -------------------- Power Transform Function -----------------------
 
 def power_transform(x, lmbda, A, B, data=None):
     """Transform x according to a power transformation.
@@ -56,21 +53,77 @@ def power_transform(x, lmbda, A, B, data=None):
     else:
         first = (x + A)**lmbda
         out = (first - 1.0) / (lmbda * gm**(lmbda - 1)) + B
-    #print(lmbda, A, B)
+
     return out
 
+# --------------------- Power transform Minizer object -----------------------
 
-def reverse_power_transform(y, lmbda, A, B, data=None):
-    """The reverse of ``power_transform``.
-
-    Note, the power transform calculates the geometric mean of x
-    to center the curve on that point. If you'd like to calculate
-    the geometric mean on a different array than x (perhaps some
-    real data) pass that ohter array to the data keyword argument.
+class PowerTransformMinizer(FunctionMinimizer):
+    """Minimizer class for power transform.
     """
-    # Calculate the GMean on the data
-    gm = gmean(data + A)
-    return (gm**(lmbda - 1) * lmbda * (y - B) + 1)**(1 / lmbda) - A
+    def __init__(self, **p0):
+        # Construct parameters object
+        self.parameters = Parameters()
+        for p in ['lmbda', 'A', 'B']:
+            # Get starting value of parameter if given.
+            val = None
+            if p in p0:
+                val = p0[p]
+            # Add parameter.
+            self.parameters.add(name=p, value=val)
+
+        # Set function
+        self._function = power_transform
+
+    def function(self, x, lmbda, A, B):
+        """Execute the function."""
+        return self._function(x, lmbda=lmbda, A=A, B=B, data=self.data)
+
+    def predict(self, x):
+        return self._function(x, **self.parameter, data=self.data)
+
+    def fit(self, x, y):
+        self.data = x
+
+        # Set the lower bound on B.
+        self.parameters['A'].set(min=-min(x))
+
+        # Store residual steps in case fit fails.
+        last_residual_set = None
+
+        # Residual function to minimize.
+        def residual(params, func, x, y=None, data=None):
+            # Fit model
+            parvals = list(params.values())
+            ymodel = func(x, *parvals, data=data)
+
+            # Store items in case of error.
+            nonlocal last_residual_set
+            last_residual_set = (params, ymodel)
+
+            return y - ymodel
+
+        # Minimize the above residual function.
+        try:
+            self.minimizer = lmfit.minimize(residual, self.parameters,
+                                            args=[self._function, x],
+                                            kws={'y': y, 'data': self.data})
+        # If fitting fails, print what happened
+        except Exception as e:
+            # if e is ValueError
+            print("ERROR! Some of the transformed phenotypes are invalid.")
+            print("\nParameters:")
+            print("----------")
+            print(last_residual_set[0].pretty_print())
+            print("\nTransformed phenotypes:")
+            print("----------------------")
+            print(last_residual_set[1])
+            raise
+
+        self.parameters = self.minimizer.params
+
+
+# -------------------- Epistasis Model -----------------------
 
 
 class EpistasisPowerTransform(EpistasisNonlinearRegression):
@@ -101,12 +154,6 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
 
     Attributes
     ----------
-    epistasis : EpistasisMap
-        Mapping object containing high-order epistatic coefficients
-
-    Linear : EpistasisLinearRegression
-        Linear regression object for fitting high-order epistasis model
-
     Additive : EpistasisLinearRegression
         Linear regression object for fitting additive model
 
@@ -114,19 +161,10 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
         Mapping object for nonlinear coefficients
     """
     def __init__(self, model_type="global", **p0):
-        # Construct parameters object
-        self.parameters = Parameters()
-        for p in ['lmbda', 'A', 'B']:
-            # Get starting value of parameter if given.
-            val = None
-            if p in p0:
-                val = p0[p]
-            # Add parameter.
-            self.parameters.add(name=p, value=val)
-
-        # Save functions
+        # Set up the function for fitting.
         self.function = power_transform
-        self.reverse = reverse_power_transform
+        self.minimizer = PowerTransformMinizer(**p0)
+        self.parameters = self.minimizer.parameters
         self.order = 1
         self.Xbuilt = {}
 
@@ -135,149 +173,10 @@ class EpistasisPowerTransform(EpistasisNonlinearRegression):
 
         # Store model specs.
         self.model_specs = dict(
+            function=self.function,
             model_type=self.model_type,
             **p0)
 
         # Set up additive and high-order linear model
         self.Additive = EpistasisLinearRegression(
             order=1, model_type=self.model_type)
-
-    @arghandler
-    def _fit_nonlinear(self, X=None, y=None, **kwargs):
-        """Estimate the scale of multiple mutations in a genotype-phenotype
-        map."""
-        # Use a first order matrix only.
-        if type(X) == np.ndarray or type(X) == pd.DataFrame:
-            Xadd = X[:, :self.Additive.epistasis.n]
-        else:
-            Xadd = X
-
-        # Predict additive phenotypes that passed the classifier.
-        x = self.Additive.predict(X=Xadd)
-
-        # Get data used to approximate x_add
-        xadd = self.Additive.predict(X=X)
-
-        # Set guesses
-        for key, value in kwargs.items():
-            self.parameters[key].set(value=value)
-
-        # Set the lower bound on B.
-        self.parameters['A'].set(min=-min(x))
-
-        # Store residual steps in case fit fails.
-        last_residual_set = None
-
-        # Residual function to minimize.
-        def residual(params, func, x, y=None, data=None):
-            # Fit model
-            parvals = list(params.values())
-            ymodel = func(x, *parvals, data=data)
-
-            # Store items in case of error.
-            nonlocal last_residual_set
-            last_residual_set = (params, ymodel)
-
-            return y - ymodel
-
-        # Minimize the above residual function.
-        try:
-            self.Nonlinear = lmfit.minimize(residual, self.parameters,
-                                            args=[self.function, x],
-                                            kws={'y': y, 'data': xadd})
-        # If fitting fails, print what happened
-        except Exception as e:
-            # if e is ValueError
-            print("ERROR! Some of the transformed phenotypes are invalid.")
-            print("\nParameters:")
-            print("----------")
-            print(last_residual_set[0].pretty_print())
-            print("\nTransformed phenotypes:")
-            print("----------------------")
-            print(last_residual_set[1])
-            raise
-
-        # Point to nonlinear.
-        self.parameters = self.Nonlinear.params
-
-    @arghandler
-    def fit_transform(self, X=None, y=None, **kwargs):
-        # Fit method.
-        self.fit(X=X, y=y, **kwargs)
-
-        xdata = self.Additive.predict(X='fit')
-
-        linear_phenotypes = self.reverse(y, *self.parameters.values(), data=xdata)
-
-        # Transform map.
-        gpm = GenotypePhenotypeMap.read_dataframe(
-            dataframe=self.gpm.data,
-            wildtype=self.gpm.wildtype,
-            mutations=self.gpm.mutations
-        )
-        gpm.data['phenotypes'] = linear_phenotypes
-        return gpm
-
-    def predict(self, X=None):
-        x = self.Additive.predict(X=X)
-        xadd = self.Additive.predict(X='fit')
-        y = self.function(x, *self.parameters.values(), data=xadd)
-        return y
-
-    def predict_transform(self, X=None, y=None):
-        xdata = self.Additive.predict(X='fit')
-        if y is None:
-            x = self.Additive.predict(X=X)
-        else:
-            x = y
-        return self.function(x, *self.parameters.values(), data=xdata)
-
-    @arghandler
-    def score(self, X=None, y=None):
-        xadd = self.Additive.predict(X=X)
-        ypred = self.function(xadd, *self.parameters.values(), data=xadd)
-        return pearson(y, ypred)**2
-
-    @arghandler
-    def hypothesis(self, X=None, thetas=None):
-        # Break up thetas
-        i, j = len(self.parameters.valuesdict()), self.Additive.epistasis.n
-        parameters = thetas[:i]
-        epistasis = thetas[i:i + j]
-
-        # Get the data that was used to estimate the geometric mean.
-        xdata = self.Additive.predict(X='fit')
-
-        # Part 1: Linear portion
-        x = self.Additive.hypothesis(X=X, thetas=epistasis)
-
-        # Part 2: Nonlinear portion
-        ynonlin = self.function(x, *parameters, data=xdata)
-
-        return ynonlin
-
-    def hypothesis_transform(self, X=None, y=None, thetas=None):
-        # Break up thetas
-        i, j = len(self.parameters.valuesdict()), self.Additive.epistasis.n
-        parameters = thetas[:i]
-        epistasis = thetas[i:i + j]
-
-        # Estimate additive coefficients
-        xdata = self.Additive.predict(X='fit')
-        # Part 2: Nonlinear portion
-        if y is None:
-            x = self.Additive.hypothesis(X=X, thetas=epistasis)
-        else:
-            x = y
-        y_transform = self.function(x, *parameters, data=xdata)
-        return y_transform
-
-    @arghandler
-    def lnlike_of_data(self, X=None, y=None, yerr=None, thetas=None):
-        # ###### Calculate likelihood #########
-        # Calculate ymodel
-        ymodel = self.hypothesis(X=X, thetas=thetas)
-
-        # Likelihood of data given model
-        return (- 0.5 * np.log(2 * np.pi * yerr**2) -
-               (0.5 * ((y - ymodel)**2 / yerr**2)))

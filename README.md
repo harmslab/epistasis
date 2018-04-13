@@ -46,9 +46,10 @@ model.add_gpm(gpm)
 model.fit()
 
 # Plot coefficients (powered by matplotlib).
-coef_sites = model.epistasis.sites
-coef_values = model.epistasis.values
+plot_coefs(model, figsize=(3,5))
 ```
+
+<img src="docs/img/coef_example.png" width="200">
 
 More examples can be found in these [binder notebooks](https://mybinder.org/v2/gh/harmslab/epistasis-notebooks/master).
 

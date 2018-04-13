@@ -2,16 +2,9 @@
 import warnings
 # warnings.filterwarnings(action="ignore", category=RuntimeWarning)
 
-# Standard library imports
-import sys
-import json
-import inspect
-
 # Scipy stack imports
 import numpy as np
 import pandas as pd
-import lmfit
-from lmfit import Parameter, Parameters
 
 # Scikit learn imports
 from sklearn.base import BaseEstimator, RegressorMixin
@@ -26,6 +19,7 @@ from epistasis.models.utils import (arghandler, FittingError)
 from epistasis.models.linear import (EpistasisLinearRegression, EpistasisLasso)
 from epistasis.stats import pearson
 
+from .minimizer import FunctionMinimizer
 
 class EpistasisNonlinearRegression(BaseModel):
     """Use nonlinear least-squares regression to estimate epistatic coefficients
@@ -46,10 +40,6 @@ class EpistasisNonlinearRegression(BaseModel):
     function : callable
         Nonlinear function between Pobs and Padd
 
-    reverse : callable
-        The inverse of the nonlinear function used to back transform from
-        nonlinear phenotypic scale to linear scale.
-
     model_type : str (default: global)
         type of epistasis model to use. See paper above for more information.
 
@@ -61,47 +51,24 @@ class EpistasisNonlinearRegression(BaseModel):
 
     Attributes
     ----------
-    epistasis : EpistasisMap
-        Mapping object containing high-order epistatic coefficients
-
-    Linear : EpistasisLinearRegression
-        Linear regression object for fitting high-order epistasis model
-
     Additive : EpistasisLinearRegression
         Linear regression object for fitting additive model
 
     parameters : Parameters object
         Mapping object for nonlinear coefficients
-    """
 
+    minimizer :
+        Object that fits data using the function and a least squares minimization.
+    """
     def __init__(self,
                  function,
-                 reverse,
                  model_type="global",
                  **p0):
 
-        # Do some inspection to get the parameters from the nonlinear
-        # function argument list.
-        func_signature = inspect.signature(function)
-        func_params = list(func_signature.parameters.keys())
-
-        if func_params[0] != "x":
-            raise Exception("First argument of the nonlinear function must "
-                            "be `x`.")
-
-        # Construct lmfit parameters object
-        self.parameters = Parameters()
-        for p in func_params[1:]:
-            # Get starting value of parameter if given.
-            val = None
-            if p in p0:
-                val = p0[p]
-            # Add parameter.
-            self.parameters.add(name=p, value=val)
-
         # Set up the function for fitting.
         self.function = function
-        self.reverse = reverse
+        self.minimizer = FunctionMinimizer(self.function, **p0)
+        self.parameters = self.minimizer.parameters
         self.order = 1
         self.Xbuilt = {}
 
@@ -110,8 +77,7 @@ class EpistasisNonlinearRegression(BaseModel):
 
         # Store model specs.
         self.model_specs = dict(
-            function=function,
-            reverse=reverse,
+            function=self.function,
             model_type=self.model_type,
             **p0)
 
@@ -136,47 +102,32 @@ class EpistasisNonlinearRegression(BaseModel):
         n += len(self.parameters) + len(self.Additive.coef_)
         return n
 
+    @arghandler
+    def transform(self, X=None, y=None):
+        # Use a first order matrix only.
+        if type(X) == np.ndarray or type(X) == pd.DataFrame:
+            Xadd = X[:, :self.Additive.epistasis.n]
+        else:
+            Xadd = X
+
+        # Predict additive model.
+        x = self.Additive.predict(X=Xadd)
+
+        # Transform y onto x scale
+        return self.minimizer.transform(x, y)
+
     def fit(self,
             X=None,
             y=None,
-            use_widgets=False,
-            plot_fit=True,
             **kwargs):
         # Fit linear portion
         self._fit_additive(X=X, y=y)
 
-        # Use widgets to guess the value?
-        if use_widgets is False:
-            # Step 2: fit nonlinear function
-            self._fit_nonlinear(X=X, y=y, **kwargs)
-            return self
-
-        # Don't use widgets to fit data
-        else:
-            import matplotlib.pyplot as plt
-            import epistasis.pyplot
-            import ipywidgets
-
-            # Build fitting method to pass into widget box
-            def fitting(**parameters):
-                """Callable to be controlled by widgets."""
-                # Fit the nonlinear least squares fit
-                self._fit_nonlinear(X=X, y=y, **parameters)
-
-                # Print model parameters.
-                self.parameters.pretty_print()
-
-            # Construct and return the widget box
-            widgetbox = ipywidgets.interactive(fitting, **kwargs)
-            return widgetbox
+        # Step 2: fit nonlinear function
+        self._fit_nonlinear(X=X, y=y, **kwargs)
+        return self
 
     def _fit_additive(self, X=None, y=None, **kwargs):
-
-        if hasattr(self, 'gpm') is False:
-            raise Exception("This model will not work if a genotype-phenotype "
-                            "map is not attached to the model class. Use the "
-                            "`add_gpm` method")
-
         # Fit with an additive model
         self.Additive.epistasis = EpistasisMap(
             sites=self.Additive.Xcolumns,
@@ -193,7 +144,6 @@ class EpistasisNonlinearRegression(BaseModel):
         # Fit Additive model
         self.Additive.fit(X=Xadd, y=y)
         self.Additive.epistasis.values = self.Additive.coef_
-
         return self
 
     @arghandler
@@ -207,53 +157,17 @@ class EpistasisNonlinearRegression(BaseModel):
             Xadd = X
 
         # Predict additive phenotypes.
-        x = self.Additive.predict(X=Xadd)
+        x = self.Additive.predict(X='fit')
 
-        # Set guesses
-        for key, value in kwargs.items():
-            self.parameters[key].set(value=value)
-
-        # Store residual steps in case fit fails.
-        last_residual_set = None
-
-        # Residual function to minimize.
-        def residual(params, func, x, y=None):
-            # Fit model
-            parvals = list(params.values())
-            ymodel = func(x, *parvals)
-
-            # Store items in case of error.
-            nonlocal last_residual_set
-            last_residual_set = (params, ymodel)
-            return y - ymodel
-
-        # Minimize the above residual function.
-        try:
-            self.Nonlinear = lmfit.minimize(
-                residual, self.parameters,
-                args=[self.function, x],
-                kws={'y': y})
-
-        # If fitting fails, print what happened
-        except Exception as e:
-            # if e is ValueError
-            print("ERROR! Some of the transformed phenotypes are invalid.")
-            print("\nParameters:")
-            print("----------")
-            print(last_residual_set[0].pretty_print())
-            print("\nTransformed phenotypes:")
-            print("----------------------")
-            print(last_residual_set[1])
-            raise
-
-        # Point to nonlinear.
-        self.parameters = self.Nonlinear.params
+        # Fit function
+        self.minimizer.fit(x, y)
+        self.parameters = self.minimizer.parameters
 
     @arghandler
     def fit_transform(self, X=None, y=None, **kwargs):
         self.fit(X=X, y=y, **kwargs)
 
-        linear_phenotypes = self.reverse(y, *self.parameters.values())
+        linear_phenotypes = self.transform(X=X, y=y)
 
         # Transform map.
         gpm = GenotypePhenotypeMap.read_dataframe(
@@ -267,7 +181,7 @@ class EpistasisNonlinearRegression(BaseModel):
 
     def predict(self, X=None):
         x = self.Additive.predict(X=X)
-        y = self.function(x, *self.parameters.values())
+        y = self.minimizer.predict(x)
         return y
 
     def predict_transform(self, X=None, y=None):
@@ -275,7 +189,7 @@ class EpistasisNonlinearRegression(BaseModel):
             x = self.Additive.predict(X=X)
         else:
             x = y
-        return self.function(x, *self.parameters.values())
+        return self.minimizer.predict(x)
 
     @arghandler
     def hypothesis(self, X=None, thetas=None):
@@ -287,31 +201,34 @@ class EpistasisNonlinearRegression(BaseModel):
         epistasis = thetas[i:i + j]
 
         # Part 1: Linear portion
-        ylin = np.dot(X, epistasis)
+        x = np.dot(X, epistasis)
 
         # Part 2: Nonlinear portion
-        ynonlin = self.function(ylin, *parameters)
+        ynonlin = self.minimizer.function(x, *parameters)
 
         return ynonlin
 
     def hypothesis_transform(self, X=None, y=None, thetas=None):
-        # Part 2: Nonlinear portion
+        # Break up thetas
+        i, j = len(self.parameters.valuesdict()), self.Additive.epistasis.n
+        parameters = thetas[:i]
+        epistasis = thetas[i:i + j]
+
         if y is None:
-            x = self.Additive.predict(X=X)
+            x = self.Additive.hypothesis(X=X, thetas=epistasis)
         else:
             x = y
-        y_transform = self.reverse(x, *self.parameters.values())
+        y_transform = self.minimizer.function(x, *parameters)
         return y_transform
 
     @arghandler
     def score(self, X=None, y=None):
-        xlin = self.Additive.predict(X=X)
-        ypred = self.function(xlin, *self.parameters.values())
+        x = self.Additive.predict(X=X)
+        ypred = self.minimizer.predict(x)
         return pearson(y, ypred)**2
 
     @arghandler
     def lnlike_of_data(self, X=None, y=None, yerr=None, thetas=None):
-        # ###### Calculate likelihood #########
         # Calculate ymodel
         ymodel = self.hypothesis(X=X, thetas=thetas)
 
@@ -327,6 +244,7 @@ class EpistasisNonlinearRegression(BaseModel):
             yerr=None,
             lnprior=None,
             thetas=None):
+
         # Update likelihood.
         lnlike = self.lnlike_of_data(X=X, y=y, yerr=yerr, thetas=thetas)
         return lnlike + lnprior

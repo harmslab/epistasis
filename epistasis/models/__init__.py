@@ -7,6 +7,7 @@ from .linear import (EpistasisLinearRegression,
                      EpistasisRidge,
                      EpistasisElasticNet)
 from .nonlinear import (EpistasisNonlinearRegression,
-                        EpistasisPowerTransform)
+                        EpistasisPowerTransform,
+                        EpistasisSpline)
 from .classifiers import EpistasisLogisticRegression
 from .pipeline import EpistasisPipeline
