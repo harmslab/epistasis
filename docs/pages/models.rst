@@ -149,7 +149,6 @@ coefficients in an arbitrary genotype-phenotype map.
 This models has three steps:
   1. Fit an additive, linear regression to approximate the average effect of individual mutations.
   2. Fit the nonlinear function to the observed phenotypes vs. the additive phenotypes estimated in step 1. This function is defined by the user as a callable python function
-  3. Transform the phenotypes to this linear scale and fit leftover variation with high-order epistasis model.
 
 .. code-block:: python
 
@@ -189,8 +188,6 @@ genotype-phenotype map.
 Like the nonlinear model, this model has three steps:
   1. Fit an additive, linear regression to approximate the average effect of individual mutations.
   2. Fit the nonlinear function to the observed phenotypes vs. the additive phenotypes estimated in step 1.
-  3. Transform the phenotypes to this linear scale and fit leftover variation with high-order epistasis model.
-
 
 .. code-block:: python
 
@@ -224,7 +221,6 @@ genotype-phenotype map.
 Like the nonlinear model, this model has three steps:
   1. Fit an additive, linear regression to approximate the average effect of individual mutations.
   2. Fit the nonlinear function to the observed phenotypes vs. the additive phenotypes estimated in step 1.
-  3. Transform the phenotypes to this linear scale and fit leftover variation with high-order epistasis model.
 
 Methods are described in the following publication:
 

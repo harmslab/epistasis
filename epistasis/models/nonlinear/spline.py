@@ -21,13 +21,31 @@ class SplineMinizer(Minimizer):
         for i in range(self.k+1):
             self.parameters.add(name='c{}'.format(i), value=0)
 
-    def _sorter(self, x, y=None):
-        """sort x (and y) according to x values"""
-        idx = np.argsort(x)
+    def _sorter(self, x, y=None, tol=1e-5):
+        """sort x (and y) according to x values
+
+        The spline call requires that x must be increasing. This function
+        sorts x. If there are non-unique values, it adds a small numerical
+        difference using tol.
+        """
+        # Copy x to leave it unchanged.
+        x_ = np.copy(x)
+
+        # Get non-unique terms
+        idx = np.arange(len(x_))
+        u, u_idx = np.unique(x, return_index=True)
+        idx = np.delete(idx, u_idx)
+
+        # Add noise to non-unique
+        x_[idx] = x_[idx] + np.random.uniform(1,9.9, size=len(idx))*tol
+
+        # Now sort x
+        idx = np.argsort(x_)
+
         if y is None:
-            return x[idx]
+            return x_[idx]
         else:
-            return x[idx], y[idx]
+            return x_[idx], y[idx]
 
     def function(self, x, *coefs):
         # Order of polynomial
