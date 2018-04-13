@@ -29,7 +29,7 @@ class SplineMinizer(Minimizer):
         else:
             return x[idx], y[idx]
 
-    def function(self, x, **coefs):
+    def function(self, x, *coefs):
         # Order of polynomial
         k = self.k
 
@@ -43,7 +43,7 @@ class SplineMinizer(Minimizer):
 
         # Coefficients
         c_arr = np.zeros(n*2, dtype=float)
-        c_arr[:n] = list(coefs.values())
+        c_arr[:n] = coefs
 
         # Build Spline function
         tck = [t_arr, c_arr, k]
