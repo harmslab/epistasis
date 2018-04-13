@@ -49,7 +49,7 @@ model.fit()
 plot_coefs(model, figsize=(3,5))
 ```
 
-<img src="docs/img/coef_example.png">
+<img src="docs/img/coef_example.png" width="200">
 
 More examples can be found in these [binder notebooks](https://mybinder.org/v2/gh/harmslab/epistasis-notebooks/master).
 
