@@ -69,7 +69,7 @@ def plot_scale(
         yadd = model.Additive.predict()
 
         xx = np.linspace(min(yadd), max(yadd),20)
-        yy = model.function(xx, **params)
+        yy = model.minimizer.predict(xx)
 
     elif yobs is None or yadd is None:
         raise Exception("If not model is given, pobs and padd must be set.")

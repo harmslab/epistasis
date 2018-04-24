@@ -9,6 +9,8 @@ from scipy.stats import f
 from scipy.stats import norm
 import scipy
 
+from gpmap import GenotypePhenotypeMap
+
 # -----------------------------------------------------------------------
 # Correlation metrics
 # -----------------------------------------------------------------------
@@ -51,6 +53,43 @@ def split_data(data, fraction=1.0):
     test_set = data.iloc[test_idx]
 
     return train_set, test_set
+
+
+def split_gpm(gpm, fraction=1.0):
+    """Split GenotypePhenotypeMap into two sets, a training and a test set.
+
+    Parameters
+    ----------
+    data : pandas.DataFrame
+        full dataset to split.
+
+    fraction : float
+        fraction in training set.
+
+    Returns
+    -------
+    train_gpm : GenotypePhenotypeMap
+        training set.
+
+    test_gpm : GenotypePhenotypeMap
+        test set.
+    """
+    train, test = split_data(gpm.data, fraction=fraction)
+
+    train_gpm = GenotypePhenotypeMap.read_dataframe(
+        train,
+        wildtype=gpm.wildtype,
+        mutations=gpm.mutations
+    )
+
+    test_gpm = GenotypePhenotypeMap.read_dataframe(
+        test,
+        wildtype=gpm.wildtype,
+        mutations=gpm.mutations
+    )
+
+    return train_gpm, test_gpm
+
 
 
 def gmean(x):
