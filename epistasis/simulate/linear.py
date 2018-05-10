@@ -28,7 +28,7 @@ class LinearSimulation(BaseSimulation):
 
     Parameters
     ---------
-    wildtype : strß
+    wildtype : str
         Wildtype genotype
     mutations : dict
         Mapping for each site to its alphabet
