@@ -32,7 +32,7 @@ REQUIRED = [
     "ipython",
     "ipywidgets",
     "scikit-learn",
-    "gpmap==0.4.1",
+    "gpmap>=0.4.2",
     "emcee"
 ]
 
