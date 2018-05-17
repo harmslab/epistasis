@@ -21,16 +21,19 @@ class SubclassException(Exception):
     """Subclass Exception for parent classes."""
 
 def use_sklearn(sklearn_class):
-    """Swap out base classes in an Epistasis model class with a sklearn_class +
-    AbstractModel.
+    """Swap out last class in the inherited stack (Assuming its
+    the BaseModel) with the AbstractModel below. Then, sandwiches
+    the Sklearn class with all other base classes first, followed
+    by the Sklearn class and the AbstractModel.
     """
     def mixer(cls):
         # Meta program the class
+        bases = cls.__bases__[:-1]
         name = cls.__name__
         methods = dict(cls.__dict__)
 
         # Put Sklearn first in line of parent classes
-        parents = (sklearn_class, AbstractModel)
+        parents = bases + (sklearn_class, AbstractModel)
 
         # Rebuild class with Mixed in scikit learn.
         cls = type(name, parents, methods)
