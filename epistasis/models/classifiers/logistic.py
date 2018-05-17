@@ -21,8 +21,10 @@ warnings.filterwarnings(action="ignore", module="sklearn",
                         category=DeprecationWarning)
 
 
+from .base import EpistasisClassifierMixin
+
 @use_sklearn(LogisticRegression)
-class EpistasisLogisticRegression(BaseModel):
+class EpistasisLogisticRegression(EpistasisClassifierMixin, BaseModel):
     """Logistic regression for estimating epistatic interactions that lead to
     nonviable phenotypes. Useful for predicting viable/nonviable phenotypes.
 
@@ -53,78 +55,21 @@ class EpistasisLogisticRegression(BaseModel):
             model_type=self.model_type,
             **kwargs)
 
-        # Set up additive linear model for pre-classifying
-        self.Additive = EpistasisLinearRegression(
-            order=1, model_type=self.model_type)
+    @arghandler
+    def fit(self, X=None, y=None, **kwargs):
+        # Use Additive model to establish the phenotypic scale.
+        # Prepare Additive model
+        self._fit_additive(X=X, y=y)
+        self._fit_classifier(X=X, y=y)
 
-    def fit_transform(self, X=None, y=None, **kwargs):
-        self.fit(X=X, y=y, **kwargs)
-        ypred = self.predict(X=X)
-
-
-        # Transform map.
-        gpm = GenotypePhenotypeMap.read_dataframe(
-            dataframe=self.gpm.data[ypred==1],
-            wildtype=self.gpm.wildtype,
-            mutations=self.gpm.mutations
-        )
-        return gpm
+        self.epistasis.values = self.coef_[0]
+        return self
 
     @property
     def num_of_params(self):
         n = 0
         n += self.epistasis.n
         return n
-
-    @arghandler
-    def fit(self, X=None, y=None, **kwargs):
-        # Use Additive model to establish the phenotypic scale.
-        # Prepare Additive model
-        self.Additive.add_gpm(self.gpm)
-
-        # Prepare a high-order model
-        self.Additive.epistasis = EpistasisMap(
-            sites=self.Additive.Xcolumns,
-            order=self.Additive.order,
-            model_type=self.Additive.model_type
-        )
-
-        # Fit the additive model and infer additive phenotypes
-        self.Additive.fit(X=X, y=y)
-        Xclass = self.Additive.Xbuilt['fit'] * self.Additive.epistasis.values
-        yclass = binarize(y.reshape(1, -1), self.threshold)[0]
-
-        self = self._fit_(X=Xclass, y=yclass)
-        return self
-
-    def _fit_additive(self, ):
-
-
-    def _fit_(self, X=None, y=None, **kwargs):
-        # Fit the classifier
-        super(self.__class__, self).fit(X=X, y=y)
-        return self
-
-    @arghandler
-    def predict(self, X=None):
-        self.Additive.predict(X=X)
-        Xclass = self.Additive.Xbuilt['predict'] * self.Additive.epistasis.values
-        return super(self.__class__, self).predict(X=Xclass)
-
-    def predict_transform(self, X=None, y=None):
-        x = self.predict(X=X)
-        y[x <= 0.5] = self.threshold
-        return y
-
-    @arghandler
-    def predict_log_proba(self, X=None):
-
-        return super(self.__class__, self).predict_log_proba(X)
-
-    def predict_proba(self, X=None):
-        self.Additive.predict(X=X)
-        Xclass = self.Additive.Xbuilt['predict'] * self.Additive.epistasis.values
-        return super(self.__class__, self).predict_proba(X=Xclass)
 
     @arghandler
     def score(self, X=None, y=None, **kwargs):
@@ -142,12 +87,12 @@ class EpistasisLogisticRegression(BaseModel):
 
     @arghandler
     def lnlike_transform(
-            self,
-            X=None,
-            y=None,
-            yerr=None,
-            lnprior=None,
-            thetas=None):
+        self,
+        X=None,
+        y=None,
+        yerr=None,
+        lnprior=None,
+        thetas=None):
         # Update likelihood.
         ymodel = self.hypothesis(X=X, thetas=thetas)
         yclass = np.ones(len(ymodel))

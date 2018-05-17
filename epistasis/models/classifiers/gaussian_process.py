@@ -9,11 +9,11 @@ from epistasis.models.base import BaseModel, use_sklearn
 from epistasis.models.utils import arghandler
 from epistasis.models.linear import EpistasisLinearRegression
 
-
+from .base import EpistasisClassifierMixin
 
 # Use if inheriting from a scikit-learn class
 @use_sklearn(GaussianProcessClassifier)
-class EpistasisGaussianProcess(BaseModel):
+class EpistasisGaussianProcess(EpistasisClassifierMixin, BaseModel):
     """testing quadratic
     """
     def __init__(self, order=1, threshold=5, model_type='global', **kwargs):
@@ -41,53 +41,13 @@ class EpistasisGaussianProcess(BaseModel):
         n += self.epistasis.n
         return n
 
-    #@epistasis_fitter
     @arghandler
     def fit(self, X=None, y=None, **kwargs):
         # Use Additive model to establish the phenotypic scale.
         # Prepare Additive model
-        self.Additive.add_gpm(self.gpm)
-
-        # Prepare a high-order model
-        self.Additive.epistasis = EpistasisMap(
-            sites=self.Additive.Xcolumns,
-            order=self.Additive.order,
-            model_type=self.Additive.model_type
-        )
-
-        # Fit the additive model and infer additive phenotypes
-        self.Additive.fit(X=X, y=y)
-        Xclass = self.Additive.Xbuilt['fit'] * self.Additive.epistasis.values
-        yclass = binarize(y.reshape(1, -1), self.threshold)[0]
-
-        self = self._fit_(X=Xclass, y=yclass)
+        self._fit_additive(X=X, y=y)
+        self._fit_classifier(X=X, y=y)
         return self
-
-    def _fit_(self, X=None, y=None, **kwargs):
-        # Fit the classifier
-        super(self.__class__, self).fit(X=X, y=y)
-        return self
-
-    def fit_transform(self, X=None, y=None, **kwargs):
-        return self.fit(X=X, y=y, **kwargs)
-
-    @arghandler
-    def predict(self, X=None):
-        self.Additive.predict(X=X)
-        Xclass = self.Additive.Xbuilt['predict'] * self.Additive.epistasis.values
-        return super(self.__class__, self).predict(X=Xclass)
-
-    def predict_transform(self, X=None, y=None):
-        return self.predict(X=X)
-
-    def predict_proba(self, X=None):
-        self.Additive.predict(X=X)
-        Xclass = self.Additive.Xbuilt['predict'] * self.Additive.epistasis.values
-        return super(self.__class__, self).predict_proba(X=Xclass)
-
-    @arghandler
-    def score(self, X=None, y=None):
-        return super(self.__class__, self).score(X, y)
 
     def hypothesis(self, X=None, thetas=None):
         pass
