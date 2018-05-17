@@ -9,5 +9,6 @@ from .linear import (EpistasisLinearRegression,
 from .nonlinear import (EpistasisNonlinearRegression,
                         EpistasisPowerTransform,
                         EpistasisSpline)
-from .classifiers import EpistasisLogisticRegression
+from .classifiers import (EpistasisLogisticRegression,
+                          EpistasisGaussianMixture)
 from .pipeline import EpistasisPipeline
