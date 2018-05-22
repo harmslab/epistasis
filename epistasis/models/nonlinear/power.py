@@ -80,7 +80,7 @@ class PowerTransformMinizer(FunctionMinimizer):
         return self._function(x, lmbda=lmbda, A=A, B=B, data=self.data)
 
     def predict(self, x):
-        return self._function(x, **self.parameter, data=self.data)
+        return self._function(x, **self.parameters, data=self.data)
 
     def fit(self, x, y):
         self.data = x

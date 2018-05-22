@@ -14,6 +14,7 @@ def plot_scale(
     cmap=None,
     color=None,
     s=50,
+    alpha=1,
     ax=None,
     function_line=True,
     line_color='r',
@@ -96,7 +97,7 @@ def plot_scale(
         fig, ax = plt.subplots()
 
     # Plot data.
-    ax.scatter(yadd, yobs, color=color, s=s)
+    ax.scatter(yadd, yobs, color=color, s=s, alpha=alpha)
 
     # Plot errorbars if given
     if yerr is not None:
