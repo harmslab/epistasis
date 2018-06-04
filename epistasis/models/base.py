@@ -435,9 +435,13 @@ class AbstractModel(ABC):
 
     def _X(self, data=None, method=None):
         """Handle the X argument in this model."""
+        # Get object type.
+        obj = data.__class__
+
         X = data
         # If X is None, see if we saved an array.
         if X is None:
+
             # Get X from genotypes
             X = genotypes_to_X(
                 self.gpm.wildtype,
@@ -447,7 +451,8 @@ class AbstractModel(ABC):
                 model_type=self.model_type
             )
 
-        elif isinstance(X, str) and X in self.gpm.genotypes:
+        elif obj is str and X in self.gpm.genotypes:
+
             # Get X from genotypes
             X = genotypes_to_X(
                 self.gpm.wildtype,
@@ -458,15 +463,15 @@ class AbstractModel(ABC):
             )
 
         # If X is a keyword in Xbuilt, use it.
-        elif isinstance(X, str) and X in self.Xbuilt:
+        elif obj is str and X in self.Xbuilt:
             X = self.Xbuilt[X]
 
         # If 2-d array, keep as so.
-        elif isinstance(X, np.ndarray) and X.ndim == 2:
+        elif obj is np.ndarray and X.ndim == 2:
             pass
 
         # If list of genotypes.
-        elif isinstance(X, list) or isinstance(X, np.ndarray):
+        elif obj in [list, np.ndarray, pd.DataFrame, pd.Series]:
             # Get X from genotypes
             X = genotypes_to_X(
                 self.gpm.wildtype,
@@ -484,11 +489,14 @@ class AbstractModel(ABC):
 
     def _y(self, data=None, method=None):
         """Handle y arguments in this model."""
+        # Get object type.
+        obj = data.__class__
         y = data
+
         if y is None:
             return self.gpm.phenotypes
 
-        elif isinstance(y, np.ndarray) or isinstance(y, list):
+        elif obj in [list, np.ndarray, pd.Series, pd.DataFrame]:
             return y
 
         else:
@@ -496,32 +504,38 @@ class AbstractModel(ABC):
 
     def _yerr(self, data=None, method=None):
         """Handle yerr argument in this model."""
+        # Get object type.
+        obj = data.__class__
         yerr = data
         if yerr is None:
             return self.gpm.std.upper
 
-        elif isinstance(yerr, np.ndarray) or isinstance(yerr, list):
+        elif obj in [list, np.ndarray, pd.Series, pd.DataFrame]:
             return yerr
         else:
             raise Exception("yerr is invalid.")
 
     def _thetas(self, data=None, method=None):
         """Handle yerr argument in this model."""
+        # Get object type.
+        obj = data.__class__
         thetas = data
         if thetas is None:
             return self.thetas
 
-        elif isinstance(thetas, np.ndarray) or isinstance(thetas, list):
+        elif obj in [list, np.ndarray, pd.Series, pd.DataFrame]:
             return thetas
         else:
             raise Exception("thetas is invalid.")
 
     def _lnprior(self, data=None, method=None):
+        # Get object type.
+        obj = data.__class__
         _lnprior = data
         if _lnprior is None:
             return np.zeros(self.gpm.n)
 
-        elif isinstance(_lnprior, np.ndarray) or isinstance(_lnprior, list):
+        elif obj in [list, np.ndarray, pd.Series, pd.DataFrame]:
             return _lnprior
         else:
             raise Exceptison("_prior is invalid.")
