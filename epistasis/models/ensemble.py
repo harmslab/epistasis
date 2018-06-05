@@ -252,3 +252,27 @@ class EpistasisEnsembleRegression(BaseModel):
         a given y array.
         """
         return pearson(self.gpm.phenotypes, self.predict(X=X))**2
+
+    def hypothesis(self, X=None, thetas=None):
+        pass
+
+    def hypothesis_transform(self, X=None, y=None, thetas=None):
+        pass
+
+    def lnlike_of_data(
+        self,
+        X=None,
+        y=None,
+        yerr=None,
+        thetas=None):
+
+        pass
+
+    def lnlike_transform(
+        self,
+        X=None,
+        y=None,
+        yerr=None,
+        lnprior=None,
+        thetas=None):
+        pass
