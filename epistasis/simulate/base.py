@@ -27,7 +27,7 @@ class BaseSimulation(GenotypePhenotypeMap):
         self.model_type = model_type
         self.Xbuilt = {}
         genotypes = np.array(
-            utils.mutations_to_genotypes(wildtype, mutations))
+            utils.mutations_to_genotypes(mutations, wildtype=wildtype))
         phenotypes = np.ones(len(genotypes))
         # Initialize a genotype-phenotype map
         super(BaseSimulation, self).__init__(
@@ -199,7 +199,7 @@ class BaseSimulation(GenotypePhenotypeMap):
         GenotypePhenotypeMap
         """
         wildtype = "0" * length
-        mutations = utils.binary_mutations_map(wildtype, "1" * length)
+        mutations = utils.genotypes_to_mutations([wildtype, "1" * length])
         return cls(wildtype, mutations, **kwargs)
 
     @classmethod

@@ -23,17 +23,7 @@ VERSION = None
 
 # What packages are required for this module to be executed?
 REQUIRED = [
-    "numpy",
-    "scipy",
-    "matplotlib",
-    "pandas",
-    "lmfit",
-    "notebook",
-    "ipython",
-    "ipywidgets",
-    "scikit-learn",
-    "gpmap>=0.4.2",
-    "emcee"
+    #"numpy",
 ]
 
 # Extensions

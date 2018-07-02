@@ -15,13 +15,20 @@ from gpmap import GenotypePhenotypeMap
 # Correlation metrics
 # -----------------------------------------------------------------------
 
-def split_data(data, fraction=1.0):
+def split_data(data, idx=None, nobs=None, fraction=None):
     """Split DataFrame into two sets, a training and a test set.
 
     Parameters
     ----------
     data : pandas.DataFrame
         full dataset to split.
+
+    idx : list
+        List of indices to include in training set
+
+    nobs : int
+        number of observations in training. If nobs is given, fraction is
+        ignored.
 
     fraction : float
         fraction in training set.
@@ -34,19 +41,33 @@ def split_data(data, fraction=1.0):
     test_set : pandas.DataFrame
         test set.
     """
-    if  0 < fraction > 1.0:
-        raise Exception("fraction is invalid.")
+    if idx is not None:
 
-    length = len(data)
-    n = int(length * fraction)
-    frac = n / length
+        train_idx = set(idx)
+        total_idx = set(data.index)
+        test_idx = total_idx.difference(train_idx)
 
-    # Shuffle the indices
-    index = np.arange(0, length, dtype=int)
-    np.random.shuffle(index)
+        train_idx = sorted(list(train_idx))
+        test_idx = sorted(list(test_idx))
 
-    train_idx = index[:n]
-    test_idx = index[n:]
+    elif nobs is None:
+
+        if fraction is None:
+            raise Exception("nobs or fraction must be given")
+
+        elif 0 < fraction > 1.0:
+            raise Exception("fraction is invalid.")
+
+        else:
+            length = len(data)
+            nobs = int(length * fraction)
+
+        # Shuffle the indices
+        index = np.arange(0, length, dtype=int)
+        np.random.shuffle(index)
+
+        train_idx = index[:nobs]
+        test_idx = index[nobs:]
 
     # Split data.
     train_set = data.iloc[train_idx]
@@ -55,13 +76,19 @@ def split_data(data, fraction=1.0):
     return train_set, test_set
 
 
-def split_gpm(gpm, fraction=1.0):
+def split_gpm(gpm, idx=None, nobs=None, fraction=None):
     """Split GenotypePhenotypeMap into two sets, a training and a test set.
 
     Parameters
     ----------
     data : pandas.DataFrame
         full dataset to split.
+
+    idx : list
+        List of indices to include in training set
+
+    nobs : int
+        number of observations in training.
 
     fraction : float
         fraction in training set.
@@ -74,7 +101,7 @@ def split_gpm(gpm, fraction=1.0):
     test_gpm : GenotypePhenotypeMap
         test set.
     """
-    train, test = split_data(gpm.data, fraction=fraction)
+    train, test = split_data(gpm.data, idx=idx, nobs=nobs, fraction=fraction)
 
     train_gpm = GenotypePhenotypeMap.read_dataframe(
         train,
@@ -89,7 +116,6 @@ def split_gpm(gpm, fraction=1.0):
     )
 
     return train_gpm, test_gpm
-
 
 
 def gmean(x):
