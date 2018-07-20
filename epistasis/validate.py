@@ -46,6 +46,9 @@ def holdout(gpm, model, size=1, repeat=1):
     train_scores = []
     test_scores = []
 
+    model.add_gpm(gpm)
+    X = model._X()
+
     for i in range(repeat):
         # Get index.
         idx = np.copy(gpm.index)
@@ -53,21 +56,23 @@ def holdout(gpm, model, size=1, repeat=1):
         # Shuffle index
         np.random.shuffle(idx)
 
+        # Split model matrix (fast way to cross validate).
         train_idx = idx[:size]
+        test_idx = idx[size:]
+        train_X = X[train_idx, :]
+        test_X = X[test_idx, :]
 
-        # Split genotype-phenotype map
-        train, test = split_gpm(gpm, idx=train_idx)
+        # Train the model
+        model.fit(X=train_X, y=gpm.phenotypes[train_idx])
 
-        # Fit model.
-        model.add_gpm(train)
-        model.fit()
-        train_scores.append(model.score())
+        train_p = model.predict(X=train_X)
+        train_s = pearson(train_p, gpm.phenotypes[train_idx])**2
+        train_scores.append(train_s)
 
-        # Score validation set
-        pobs = test.phenotypes
-        pred = model.predict(X=test.genotypes)
+        # Test the model
+        test_p = model.predict(X=test_X)
+        test_s = pearson(test_p, gpm.phenotypes[test_idx])**2
+        test_scores.append(test_s)
 
-        score = pearson(pobs, pred)**2
-        test_scores.append(score)
 
     return train_scores, test_scores
