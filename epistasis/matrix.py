@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 
 # Try importing model matrix builder from cython extension for speed up.
 try:
@@ -68,6 +69,18 @@ def encode_vectors(binary_genotypes, model_type='global'):
 
 def get_model_matrix(binary_genotypes, sites, model_type='global'):
     """Get a model matrix for a given set of genotypes and coefficients.
+
+    Parameters
+    ----------
+    binary_genotypes : list or array
+        List of genotypes in their binary representation (see
+        gpmap.utils.genotypes_to_binary)
+
+    sites : list
+        List of epistatic interaction sites.
+
+    model_type : string
+        Type of epistasis model (global/Hadamard, local/Biochemical).
     """
     # Convert sites to array of arrays
     sites = np.array([np.array(s) for s in sites])
@@ -78,3 +91,36 @@ def get_model_matrix(binary_genotypes, sites, model_type='global'):
     # Build matrix.
     X = build_model_matrix(encoded_vector, sites)
     return X
+
+
+def get_pandas_matrix(
+    binary_genotypes,
+    sites,
+    matrix=None,
+    model_type="global"):
+    """Get epistasis model matrix as a Pandas DataFrame.
+
+    This is useful for visualizing the matrix in a Jupyter Notebook.
+
+    Parameters
+    ----------
+    binary_genotypes : list or array
+        List of genotypes in their binary representation (see
+        gpmap.utils.genotypes_to_binary)
+
+    sites : list
+        List of epistatic interaction sites.
+
+    model_type : string
+        Type of epistasis model (global/Hadamard, local/Biochemical).
+    """
+    if matrix is None:
+        matrix = get_model_matrix(
+            binary_genotypes,
+            sites,
+            model_type=model_type
+        )
+
+    keys = [tuple(s) for s in sites]
+
+    return pd.DataFrame(matrix, index=binary_genotypes, columns=keys)

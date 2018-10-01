@@ -472,6 +472,7 @@ class AbstractModel(ABC):
 
         # If list of genotypes.
         elif obj in [list, np.ndarray, pd.DataFrame, pd.Series]:
+
             # Get X from genotypes
             X = genotypes_to_X(
                 self.gpm.wildtype,

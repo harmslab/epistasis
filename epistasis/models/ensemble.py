@@ -169,7 +169,7 @@ class EpistasisEnsembleRegression(BaseModel):
             X = self.Xbuilt['fit']
 
         # Calculate a partition function
-        Z = 0
+        Z = []
         for state_i in range(nstates):
             # Get parameter indexes
             idx_start = state_i * length
@@ -183,10 +183,10 @@ class EpistasisEnsembleRegression(BaseModel):
             additive = X @ dDG
 
             # add to ensemble
-            Z += np.exp(-additive)
+            Z.append( np.exp(-additive) )
 
         # Ensemble model.
-        y = np.log(Z)
+        y = np.log(sum(Z))
         return y
 
     @arghandler
