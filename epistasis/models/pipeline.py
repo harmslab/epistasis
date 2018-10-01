@@ -2,8 +2,7 @@
 
 import numpy as np
 from ..stats import pearson
-from .base import BaseModel
-from .utils import arghandler
+from .base import BaseModel, arghandler
 
 class EpistasisPipeline(list, BaseModel):
     """Construct a pipeline of epistasis models to run in series.

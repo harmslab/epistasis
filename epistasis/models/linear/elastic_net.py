@@ -1,8 +1,7 @@
 import numpy as np
 from sklearn.linear_model import ElasticNet
 
-from ..base import BaseModel, use_sklearn
-from ..utils import arghandler
+from ..base import BaseModel, use_sklearn, arghandler
 
 # Suppress an annoying error from scikit-learn
 import warnings

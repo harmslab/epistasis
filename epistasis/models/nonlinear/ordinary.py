@@ -14,8 +14,8 @@ from gpmap import GenotypePhenotypeMap
 
 # Epistasis imports.
 from epistasis.mapping import EpistasisMap
-from epistasis.models.base import BaseModel
-from epistasis.models.utils import (arghandler, FittingError)
+from epistasis.models.base import (BaseModel, arghandler)
+from epistasis.models.utils import FittingError
 from epistasis.models.linear import (EpistasisLinearRegression, EpistasisLasso)
 from epistasis.stats import pearson
 

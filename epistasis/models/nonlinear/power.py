@@ -9,7 +9,7 @@ import lmfit
 from lmfit import Parameter, Parameters
 
 from epistasis.stats import gmean, pearson
-from epistasis.models.utils import arghandler
+from epistasis.models.base import arghandler
 from epistasis.models.linear.ordinary import EpistasisLinearRegression
 from epistasis.models.nonlinear.ordinary import EpistasisNonlinearRegression
 

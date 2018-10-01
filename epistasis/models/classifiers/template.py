@@ -4,8 +4,8 @@ import pandas as pd
 # Scikit-learn classifiers
 from sklearn.preprocessing import binarize
 
-from epistasis.models.base import BaseModel, use_sklearn
-from epistasis.models.utils import (XMatrixException, arghandler)
+from epistasis.models.base import BaseModel, use_sklearn, arghandler
+from epistasis.models.utils import XMatrixException
 
 from .base import EpistasisClassifierMixin
 

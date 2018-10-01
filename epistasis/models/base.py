@@ -2,6 +2,7 @@ import json
 import inspect
 import numpy as np
 import pandas as pd
+from functools import wraps
 from sklearn.preprocessing import binarize
 
 from abc import abstractmethod, ABC, ABCMeta
@@ -17,8 +18,10 @@ from epistasis.utils import (extract_mutations_from_genotypes,
 from .utils import XMatrixException
 from sklearn.base import RegressorMixin, BaseEstimator
 
+
 class SubclassException(Exception):
     """Subclass Exception for parent classes."""
+
 
 def use_sklearn(sklearn_class):
     """Swap out last class in the inherited stack (Assuming its
@@ -40,6 +43,46 @@ def use_sklearn(sklearn_class):
         return cls
 
     return mixer
+
+
+def arghandler(method):
+    """Points methods to argument handlers. Assumes each argument has a
+    corresponding method attached to the object named "_{argument}". These
+    methods given default values to arguments.
+
+    Ignores self and kwargs
+    """
+    @wraps(method)
+    def inner(self, *args, **kwargs):
+        # Get method name
+        name = method.__name__
+
+        # Inspect function for arguments to update.
+        out = inspect.signature(method)
+
+        # Construct kwargs from signature.
+        kws = {key: val.default for key, val in out.parameters.items()}
+        kws.pop('self')
+
+        # Try to remove kwargs.
+        try:
+            kws.pop('kwargs')
+        except:
+            pass
+
+        # Update kwargs with user specified kwargs.
+        kws.update(**kwargs)
+
+        # Handle each argument
+        for arg in kws:
+            # Get handler function.
+            handler_name = "_{}".format(arg)
+            handler = getattr(self, handler_name)
+            kws[arg] = handler(data=kws[arg], method=name)
+
+        return method(self, **kws)
+    return inner
+
 
 class AbstractModel(ABC):
     """Abstract Base Class for all epistasis models.

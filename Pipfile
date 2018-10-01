@@ -17,6 +17,7 @@ pytest = "*"
 [dev-packages]
 "e1839a8" = {editable = true, path = "."}
 pylint = "*"
+black = "*"
 
 [requires]
 python_version = "3.7"

@@ -3,7 +3,8 @@ import numpy as np
 from .minimizer import Minimizer
 from .ordinary import EpistasisNonlinearRegression
 from epistasis.models import EpistasisLinearRegression
-from epistasis.models.utils import (arghandler, FittingError)
+from epistasis.models.utils import FittingError
+from epistasis.models.base import arghandler
 from scipy.interpolate import UnivariateSpline
 from lmfit import Parameter, Parameters
 

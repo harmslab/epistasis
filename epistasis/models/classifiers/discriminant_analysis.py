@@ -5,8 +5,7 @@ from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
 from sklearn.preprocessing import binarize
 
 from epistasis.mapping import EpistasisMap
-from epistasis.models.base import BaseModel, use_sklearn
-from epistasis.models.utils import arghandler
+from epistasis.models.base import BaseModel, use_sklearn,arghandler
 from epistasis.models.linear import EpistasisLinearRegression
 
 # Use if inheriting from a scikit-learn class

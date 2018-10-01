@@ -5,8 +5,7 @@ from sklearn.gaussian_process import GaussianProcessClassifier
 from sklearn.preprocessing import binarize
 
 from epistasis.mapping import EpistasisMap
-from epistasis.models.base import BaseModel, use_sklearn
-from epistasis.models.utils import arghandler
+from epistasis.models.base import BaseModel, use_sklearn, arghandler
 from epistasis.models.linear import EpistasisLinearRegression
 
 from .base import EpistasisClassifierMixin
