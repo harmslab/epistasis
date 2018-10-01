@@ -56,7 +56,7 @@ def holdout(gpm, model, size=1, repeat=1):
         # Shuffle index
         np.random.shuffle(idx)
 
-        # Split model matrix (fast way to cross validate).
+        # Split model matriay to cross validate).
         train_idx = idx[:size]
         test_idx = idx[size:]
         train_X = X[train_idx, :]
