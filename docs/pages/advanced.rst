@@ -8,10 +8,10 @@ The X matrix in an epistasis model maps genotypes to epistatic coefficients.
 The rows represent the binary representation of genotypes, and the columns
 represent the epistatic coefficients. In a "local" epistasis model, an element
 in the matrix is ``1`` if the genotype in that element's row has the epistatic 
-interaction in that elements column.
+interaction in that element's column. Otherwise, the element is a ``0`` (see the example below).
 
-If you want to generate your own X matrix, you'll the list genotypes (in their
-binary representation) and the list of epistatic coefficients you'd like to fit.
+If you want to generate your own X matrix, you'll need a list of genotypes (in their
+binary representation) and a list of epistatic coefficients you'd like to fit.
 Then, you can generate X using the ``get_model_matrix`` function. Here is an example:
 
 **Input**
