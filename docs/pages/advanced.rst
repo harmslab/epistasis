@@ -1,6 +1,92 @@
 Advanced topics
 ===============
 
+Building your own X matrix
+--------------------------
+
+The X matrix in an epistasis model maps genotypes to epistatic coefficients. 
+The rows represent the binary representation of genotypes, and the columns
+represent the epistatic coefficients. In a "local" epistasis model, an element
+in the matrix is ``1`` if the genotype in that element's row has the epistatic 
+interaction in that elements column.
+
+If you want to generate your own X matrix, you'll the list genotypes (in their
+binary representation) and the list of epistatic coefficients you'd like to fit.
+Then, you can generate X using the ``get_model_matrix`` function. Here is an example:
+
+**Input**
+
+.. code-block:: python
+
+    # imports
+    from epistasis.matrix import get_model_matrix
+
+    # Epistasis coefficients
+    coefs = [
+        [0],                        # Reference state
+        [1], [2], [3],              # Additive coefficients
+        [1, 2], [1, 3], [2,  3],    # Pairwise coefficients
+        [1, 2, 3]                   # Third order coefficients
+    ]
+
+    # List of binary coefficients
+    binary_genotypes = [
+        '000',
+        '001',
+        '010',
+        '100',
+        '011',
+        '101',
+        '110',
+        '111'
+    ]
+
+    # Build X matrix
+    X = get_model_matrix(binary_genotypes, coefs, model_type='local')
+
+**Output**
+
+.. code-block:: python
+
+    X = array([
+        [1, 0, 0, 0, 0, 0, 0, 0],
+        [1, 0, 0, 1, 0, 0, 0, 0],
+        [1, 0, 1, 0, 0, 0, 0, 0],
+        [1, 1, 0, 0, 0, 0, 0, 0],
+        [1, 0, 1, 1, 0, 0, 1, 0],
+        [1, 1, 0, 1, 0, 1, 0, 0],
+        [1, 1, 1, 0, 1, 0, 0, 0],
+        [1, 1, 1, 1, 1, 1, 1, 1]
+    ])
+
+**Input**
+
+You can easily generate the coefficient list using a few helper functions:
+
+.. code-block:: python
+
+    from epistasis.mapping import mutations_to_sites
+
+    mutations = {
+        0: ['0', '1'],
+        1: ['0', '1'],
+        2: ['0', '1']
+    }
+
+    # Same as the list above!
+    coefs = mutations_to_sites(order=3, mutations=mutations)
+
+**Output**
+
+.. code-block:: python
+
+    coefs = [
+        [0], 
+        [1], [2], [3], 
+        [1, 2], [1, 3], [2, 3], 
+        [1, 2, 3]
+    ]
+
 Setting bounds on nonlinear fits
 --------------------------------
 

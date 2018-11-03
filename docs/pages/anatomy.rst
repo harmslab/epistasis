@@ -16,13 +16,14 @@ above for more information on which model to use.
 
 Constructing these matrices for your dataset is no easy task,
 so each epistasis model can handle this construction internally. Most methods
-automatically infer X from the genotype-phenotype map.
+automatically infer X from the genotype-phenotype map. (If you need to build your own X matrix, check out this page_)
 
 Any X matrix used by an epistasis model is also stored in the ``Xbuilt`` attribute.
 This speeds up fitting algorithms that may need resample fitting many times.
 
 .. References in this document
 
+.. _page: ./advanced.html
 .. _paper: http://www.genetics.org/content/205/3/1079
 
 Methods in every epistasis model
