@@ -78,6 +78,7 @@ package using temporary notebooks. No installation is required.
 .. only :: html
 
  .. container:: sphx-glr-footer
+    :class: sphx-glr-footer-gallery
 
 
   .. container:: sphx-glr-download

@@ -87,6 +87,83 @@ You can easily generate the coefficient list using a few helper functions:
         [1, 2, 3]
     ]
 
+Write your own linear model
+---------------------------
+
+A linear, high-order epistasis model is a linear transformation of phenotypes :math:`\vec{P}` (length L) to (Lth order) epistatic coefficients :math:`\vec{\beta}` using the :math:`\mathbf{X}` matrix described in the previous section.
+
+.. math:: 
+
+    \vec{P} = \mathbf{X} \cdot \vec{\beta}
+
+In Python 3, this looks like:
+
+.. code-block:: python3
+
+    from epistasis.matrix import get_model_matrix
+
+    # See the section above to get `coefs`
+    coefs = [
+        [0], 
+        [1], [2], [3], 
+        [1, 2], [1, 3], [2, 3], 
+        [1, 2, 3]
+    ]
+
+    # Numerical values for each coefficient
+    betas = [
+        1.0,
+        0.2, 0.3, 0.1,
+        0.1, 0.05, 0.01,
+        0.05 
+    ]
+
+    # Build the X matrix
+    X = get_model_matrix(binary_genotypes, coefs, model_type='local')
+    
+    # Do the dot product
+    phenotypes = X @ beta
+
+
+To compute linear epistatic coefficients from phenotypes, take the inverse
+of the equation above:
+
+.. math:: 
+
+    \vec{\beta} = \mathbf{X^{-1}} \cdot \vec{P}
+
+
+In Python 3, this looks like:
+
+.. code-block:: python3
+
+    import numpy as np
+    from epistasis.matrix import get_model_matrix
+
+    # See the section above to get `coefs`
+    coefs = [
+        [0], 
+        [1], [2], [3], 
+        [1, 2], [1, 3], [2, 3], 
+        [1, 2, 3]
+    ]
+
+    # Binary genotypes
+    binary_genotypes = ['000','001','010','100','011','101','110', '111']
+
+    # Quantitative phenotype values.
+    phenotypes = [1, 1.1, 1.2, 1.2, 1.3, 1.5, 1.7, 1.8]
+
+    # Build the X matrix
+    X = get_model_matrix(binary_genotypes, coefs, model_type='local')
+
+    # Take the inverse
+    X_inv = np.inv(X)
+    
+    # Do the dot product
+    beta = X_inv @ phenotypes
+
+
 Setting bounds on nonlinear fits
 --------------------------------
 
