@@ -111,7 +111,7 @@ In Python 3, this looks like:
     ]
 
     # Numerical values for each coefficient
-    betas = [
+    beta = [
         1.0,
         0.2, 0.3, 0.1,
         0.1, 0.05, 0.01,
