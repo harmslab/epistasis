@@ -3,7 +3,8 @@ from gpmap.gpm import GenotypePhenotypeMap
 from gpmap import utils
 
 # Local imports
-from epistasis.mapping import (EpistasisMap, mutations_to_sites, assert_epistasis)
+from epistasis.mapping import (mutations_to_sites, assert_epistasis)
+from .mapping import SimulatedEpistasisMap
 from epistasis.matrix import get_model_matrix
 from epistasis.utils import extract_mutations_from_genotypes
 from epistasis.models.utils import XMatrixException
@@ -20,7 +21,7 @@ class BaseSimulation(GenotypePhenotypeMap):
     mutations : dict
         dictionary mapping each site the possible mutations
     """
-    def __init__(self, wildtype, mutations,
+    def __init__(self, wildtype, mutations, order=None,
                  model_type="global",
                  **kwargs
                  ):
@@ -37,6 +38,10 @@ class BaseSimulation(GenotypePhenotypeMap):
             mutations=mutations,
             **kwargs)
 
+        if order is not None:
+            self.order = order
+            self.add_epistasis()
+
     def add_epistasis(self):
         """Add an EpistasisMap to model.
         """
@@ -44,8 +49,7 @@ class BaseSimulation(GenotypePhenotypeMap):
         sites = mutations_to_sites(self.order, self.mutations)
 
         # Map those columns to epistastalis dataframe.
-        self.epistasis = EpistasisMap(
-            sites, order=self.order, model_type=self.model_type)
+        self.epistasis = SimulatedEpistasisMap(gpm=self, sites=sites, values=0)
 
     def add_X(self, X="complete", key=None):
         """Add X to Xbuilt

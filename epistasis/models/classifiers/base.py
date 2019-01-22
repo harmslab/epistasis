@@ -26,8 +26,6 @@ class EpistasisClassifierMixin:
         # Prepare a high-order model
         self.Additive.epistasis = EpistasisMap(
             sites=self.Additive.Xcolumns,
-            order=self.Additive.order,
-            model_type=self.Additive.model_type
         )
 
         # Fit the additive model and infer additive phenotypes

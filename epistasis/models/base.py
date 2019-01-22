@@ -418,10 +418,7 @@ class AbstractModel(ABC):
         self.Xcolumns = mutations_to_sites(self.order, self.gpm.mutations)
 
         # Map those columns to epistastalis dataframe.
-        self.epistasis = EpistasisMap(
-            sites=self.Xcolumns,
-            order=self.order,
-            model_type=self.model_type)
+        self.epistasis = EpistasisMap(sites=self.Xcolumns)
         return self
 
     @property
