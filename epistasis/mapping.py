@@ -238,6 +238,9 @@ class EpistasisMap(object):
 
             self.data.loc[filter, "values"] = values
 
+    def get(self, filter):
+        return self.data.loc[filter]
+
     @values.setter
     def values(self, values):
         """Manually set keys. NEED TO do some quality control here. """
