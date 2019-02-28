@@ -88,9 +88,11 @@ class SplineMinizer(Minimizer):
             k=self.k,
             s=self.s
         )
-
         for i, coef in enumerate(self._spline.get_coeffs()):
-            self.parameters['c{}'.format(i)].value = coef
+            if 'c{}'.format(i) in self.parameters:
+                self.parameters['c{}'.format(i)].value = coef
+            else:
+                self.parameters.add(name='c{}'.format(i), value=coef)
 
 # -------------------- Minimizer object ------------------------
 
