@@ -88,12 +88,19 @@ class SplineMinizer(Minimizer):
             k=self.k,
             s=self.s
         )
+        
+        keys = []
         for i, coef in enumerate(self._spline.get_coeffs()):
             if 'c{}'.format(i) in self.parameters:
                 self.parameters['c{}'.format(i)].value = coef
             else:
                 self.parameters.add(name='c{}'.format(i), value=coef)
-
+            keys.append('c{}'.format(i))
+        for key in self.parameters:
+            if key not in keys: 
+                raise ValueError(
+                    f"Parameter {key} not returned after fitting"
+                    )
 # -------------------- Minimizer object ------------------------
 
 class EpistasisSpline(EpistasisNonlinearRegression):
