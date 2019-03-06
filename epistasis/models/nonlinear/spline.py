@@ -99,7 +99,7 @@ class SplineMinizer(Minimizer):
         for key in self.parameters:
             if key not in keys: 
                 raise ValueError(
-                    f"Parameter {key} not returned after fitting"
+                    'Parameter {} not returned after fitting'.format(key)
                     )
 # -------------------- Minimizer object ------------------------
 
