@@ -1,4 +1,5 @@
 import numpy as np
+import warnings
 
 from .minimizer import Minimizer
 from .ordinary import EpistasisNonlinearRegression
@@ -90,10 +91,14 @@ class SplineMinizer(Minimizer):
         )
         
         keys = []
+        warned = False
         for i, coef in enumerate(self._spline.get_coeffs()):
             if 'c{}'.format(i) in self.parameters:
                 self.parameters['c{}'.format(i)].value = coef
             else:
+                if not warned:
+                    warnings.warn('Spline fitting added knots, try raising "s"', Warning)
+                    warned = True
                 self.parameters.add(name='c{}'.format(i), value=coef)
             keys.append('c{}'.format(i))
         for key in self.parameters:
