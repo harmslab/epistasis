@@ -90,22 +90,15 @@ class SplineMinizer(Minimizer):
             s=self.s
         )
         
-        keys = []
-        warned = False
         for i, coef in enumerate(self._spline.get_coeffs()):
             if 'c{}'.format(i) in self.parameters:
                 self.parameters['c{}'.format(i)].value = coef
             else:
-                if not warned:
-                    warnings.warn('Spline fitting added knots, try raising "s"', Warning)
-                    warned = True
-                self.parameters.add(name='c{}'.format(i), value=coef)
-            keys.append('c{}'.format(i))
-        for key in self.parameters:
-            if key not in keys: 
-                raise ValueError(
-                    'Parameter {} not returned after fitting'.format(key)
-                    )
+                raise FittingError('scipy.interpolate.UnivariateSpline '
+                'fitting returned more parameters than\nexpected, likely'
+                ' due to knots being added to closer fit the data.\nTry '
+                'raising the size of `s` when initializing the spline '
+                'model to prevent this.')
 # -------------------- Minimizer object ------------------------
 
 class EpistasisSpline(EpistasisNonlinearRegression):
