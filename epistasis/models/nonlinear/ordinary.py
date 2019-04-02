@@ -131,8 +131,6 @@ class EpistasisNonlinearRegression(BaseModel):
         # Fit with an additive model
         self.Additive.epistasis = EpistasisMap(
             sites=self.Additive.Xcolumns,
-            order=self.Additive.order,
-            model_type=self.Additive.model_type
         )
 
         # Use a first order matrix only.

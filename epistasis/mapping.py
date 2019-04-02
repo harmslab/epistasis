@@ -130,28 +130,57 @@ def mutations_to_sites(order, mutations, start_order=0):
 
 
 class EpistasisMap(object):
-    """DataFrame for epistatic interactions.
+    """Container object (DataFrame) for epistatic interactions.
     """
-    def __init__(self, sites, order=1, values=None, model_type="global"):
-        self.order = order
-        self.model_type = model_type
+    def __init__(self, df=None, sites=None, values=None, stdeviations=None):
+        if df is not None and isinstance(df, pd.DataFrame) is False:
+            raise Exception("""df must be a dataframe""")
+
+        if sites is not None and isinstance(sites, list) is False:
+            raise Exception("sites must be a list of lists.")
+
+
+        if df is not None:
+            self._from_df(df)
+        else:
+            self._from_sites(sites=sites, values=values, stdeviations=stdeviations)
+
+    def _from_df(self, df):
+        self.data = df
+
+    def _from_sites(self, sites, values, stdeviations):
         data = {
+            'labels': self._sites_to_keys(sites),
+            'orders': self._sites_to_orders(sites),
             'sites': sites,
             'values': values,
+            'stdeviations': stdeviations
         }
         self.data = pd.DataFrame(data)
+        self.data.loc
+    
+    @staticmethod
+    def _sites_to_keys(sites):
+        return [",".join([str(c) for c in s]) for s in sites]
+
+    @staticmethod
+    def _sites_to_orders(sites):
+        orders = []
+        for s in sites:
+            if s[0] == 0:
+                orders.append(0)
+            else:
+                orders.append(len(s))
+        return orders
 
     def map(self, attr1, attr2):
         """Dictionary that maps attr1 to attr2."""
         return dict(zip(getattr(self, attr1), getattr(self, attr2)))
 
     @classmethod
-    def read_dataframe(cls, df, model_type="global"):
+    def read_dataframe(cls, df):
         """Create an epistasis model from dataframe"""
-        sites = df['sites']
-        values = df['values']
-        order = max([len(site) for site in sites])
-        self = cls(sites, order=order, values=values, model_type=model_type)
+        self = cls(df=df)
         return self
 
     def to_dict(self):
@@ -167,19 +196,9 @@ class EpistasisMap(object):
         self.data.to_excel(filename)
 
     @property
-    def model_type(self):
-        """Type of epistasis model used to get coefficients."""
-        return self._model_type
-
-    @property
     def n(self):
         """ Return the number of Interactions. """
         return len(self.data.sites)
-
-    @property
-    def order(self):
-        """ Get order of epistasis in system. """
-        return self._order
 
     @property
     def values(self):
@@ -201,73 +220,86 @@ class EpistasisMap(object):
 
     def get_orders(self, *orders):
         """Get epistasis of a given order."""
-        return Orders(self, orders)
+        return EpistasisMapReference(self.data, orders)
 
     # ----------------------------------------------
     # Setter Functions
     # ----------------------------------------------
 
-    @order.setter
-    def order(self, order):
-        """"""
-        self._order = order
+    def set_values(self, values, filter=None):
+        if hasattr(values, "__iter__") is False:
+            raise Exception("Values must be iterable.") 
+
+        if filter is None:
+            self.data.values = values
+        else:
+            if sum(filter) != len(values):
+                raise Exception("Values and filter items need to be the same length")
+
+            self.data.loc[filter, "values"] = values
+
+    def get(self, filter):
+        return self.data.loc[filter]
 
     @values.setter
     def values(self, values):
-        """ Manually set keys. NEED TO do some quality control here. """
+        """Manually set keys. NEED TO do some quality control here. """
         self.data.values = values
 
-    @model_type.setter
-    def model_type(self, model_type):
-        types = ["global", "local"]
-        if model_type not in types:
-            raise Exception("Model type must be global or local")
-        self._model_type = model_type
 
+class EpistasisMapReference(object):
 
-class Orders(map):
-    """An object that provides API for easily calling epistasis of a given order
-    in an epistasis map.
-    """
-
-    def __init__(self, epistasismap, orders):
-        self._epistasismap = epistasismap
-        self.orders = orders
-
-    def __call__(self):
-        """return a dictionary"""
-        return dict(zip(self.keys, self.values))
+    def __init__(self, df, orders):
+        self._df = df
+        self._orders= orders
 
     @property
-    def df(self):
-        """Dataframe for orders object."""
-        data = {"sites": self.sites, "values": self.values,
-                "stdeviations": self.stdeviations}
-        return pd.DataFrame(data, columns=["sites", "values", "stdeviations"])
+    def data(self):
+        return self._df.loc[(self._df.orders.isin(self._orders))]
+
+    def map(self, attr1, attr2):
+        """Dictionary that maps attr1 to attr2."""
+        return dict(zip(getattr(self, attr1), getattr(self, attr2)))
+
+    def to_dict(self):
+        """Get data as dictionary."""
+        return self.data.to_dict('list')
+
+    def to_csv(self, filename):
+        """Write data to a csv file."""
+        self.data.to_csv(filename)
+
+    def to_excel(self, filename):
+        """Write data to excel file."""
+        self.data.to_excel(filename)
 
     @property
-    def index(self):
-        """Get indices of epistasis from this order."""
-        # Check is multiple orders were given
-        try:
-            orders = list(iter(self.orders))
-        except TypeError:
-            orders = [self.orders]
-        sites = self._epistasismap.sites
-        x = [i for i in range(1, len(sites)) if len(sites[i]) in orders]
-        # Add the zeroth element if included
-        if 0 in orders:
-            x = [0] + x
-        return np.array(x)
-
-    @property
-    def sites(self):
-        """Get epistatic sites"""
-        return pd.Series([self._epistasismap.sites[int(i)]
-                          for i in self.index], index=self.index)
+    def n(self):
+        """ Return the number of Interactions. """
+        return len(self.data.sites)
 
     @property
     def values(self):
-        """Get values of epistasis for this order."""
-        return pd.Series([self._epistasismap.values[int(i)]
-                          for i in self.index], index=self.index)
+        """ Get the values of the interaction in the system"""
+        return self.data['values'].values
+
+    @property
+    def index(self):
+        """ Get the interaction index in interaction matrix. """
+        return self.data.index
+
+    @property
+    def sites(self):
+        """ Get the interaction sites, which describe the position of
+        interacting mutations in the genotypes. (type==list of lists,
+        see self._build_interaction_sites)
+        """
+        return self.data.sites.values
+
+    def set_values(self, values):
+        self._df.loc[(self._df.orders.isin(self._orders)), "values"] = values
+
+    @values.setter
+    def values(self, values):
+        """Manually set keys. NEED TO do some quality control here. """
+        self.set_values(values)
