@@ -1,5 +1,4 @@
 import numpy as np
-import warnings
 
 from .minimizer import Minimizer
 from .ordinary import EpistasisNonlinearRegression
@@ -97,7 +96,7 @@ class SplineMinizer(Minimizer):
                 raise FittingError('scipy.interpolate.UnivariateSpline '
                 'fitting returned more parameters than\nexpected, likely'
                 ' due to knots being added to closer fit the data.\nTry '
-                'raising the size of `s` when initializing the spline '
+                'raising the value of `s` when initializing the spline '
                 'model to prevent this.')
 # -------------------- Minimizer object ------------------------
 
