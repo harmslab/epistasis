@@ -30,7 +30,7 @@ REQUIRED = [
     "emcee>=2.2.1",
     "lmfit>=0.9.11",
     "matplotlib>=3.0.0",
-    "gpmap>=0.4.5",
+    "gpmap>=0.6.0",
 ]
 
 # Extensions
