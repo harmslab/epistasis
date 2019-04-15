@@ -24,7 +24,7 @@ VERSION = None
 # What packages are required for this module to be executed?
 REQUIRED = [
     "numpy>=1.15.2",
-    "pandas>=0.23.4",
+    "pandas>=0.24.2",
     "scikit-learn>=0.20.0",
     "scipy>=1.1.0",
     "emcee>=2.2.1",

@@ -97,8 +97,8 @@ def plot_coefs(model=None, sites=None, values=None, errors=None, **kwargs):
     """
     # Some sanity checks.
     if model is not None:
-        sites = model.epistasis.sites
-        values = model.epistasis.values
+        sites = model.epistasis.sites[1:]
+        values = model.epistasis.values[1:]
 
     else:
         if sites is None:

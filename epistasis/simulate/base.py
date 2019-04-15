@@ -3,7 +3,7 @@ from gpmap.gpm import GenotypePhenotypeMap
 from gpmap import utils
 
 # Local imports
-from epistasis.mapping import (mutations_to_sites, assert_epistasis)
+from epistasis.mapping import (encoding_to_sites, assert_epistasis)
 from .mapping import SimulatedEpistasisMap
 from epistasis.matrix import get_model_matrix
 from epistasis.utils import extract_mutations_from_genotypes
@@ -30,6 +30,7 @@ class BaseSimulation(GenotypePhenotypeMap):
         genotypes = np.array(
             utils.mutations_to_genotypes(mutations, wildtype=wildtype))
         phenotypes = np.ones(len(genotypes))
+
         # Initialize a genotype-phenotype map
         super(BaseSimulation, self).__init__(
             wildtype,
@@ -46,7 +47,7 @@ class BaseSimulation(GenotypePhenotypeMap):
         """Add an EpistasisMap to model.
         """
         # Build epistasis interactions as columns in X matrix.
-        sites = mutations_to_sites(self.order, self.mutations)
+        sites = encoding_to_sites(self.order, self.encoding_table)
 
         # Map those columns to epistastalis dataframe.
         self.epistasis = SimulatedEpistasisMap(gpm=self, sites=sites, values=0)
