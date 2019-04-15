@@ -10,7 +10,7 @@ from abc import abstractmethod, ABC, ABCMeta
 from gpmap.gpm import GenotypePhenotypeMap
 
 # Local imports
-from epistasis.mapping import EpistasisMap, mutations_to_sites
+from epistasis.mapping import EpistasisMap, encoding_to_sites
 from epistasis.matrix import get_model_matrix
 from epistasis.utils import (extract_mutations_from_genotypes,
                              genotypes_to_X)
@@ -415,10 +415,10 @@ class AbstractModel(ABC):
         self.Xbuilt = {}
 
         # Construct columns for X matrix
-        self.Xcolumns = mutations_to_sites(self.order, self.gpm.mutations)
+        self.Xcolumns = encoding_to_sites(self.order, self.gpm.encoding_table)
 
         # Map those columns to epistastalis dataframe.
-        self.epistasis = EpistasisMap(sites=self.Xcolumns)
+        self.epistasis = EpistasisMap(sites=self.Xcolumns, gpm=gpm)
         return self
 
     @property
@@ -441,21 +441,19 @@ class AbstractModel(ABC):
 
             # Get X from genotypes
             X = genotypes_to_X(
-                self.gpm.wildtype,
                 self.gpm.genotypes,
+                self.gpm,
                 order=self.order,
-                mutations=self.gpm.mutations,
                 model_type=self.model_type
             )
 
         elif obj is str and X in self.gpm.genotypes:
-
+            single_genotype = [X]
             # Get X from genotypes
             X = genotypes_to_X(
-                self.gpm.wildtype,
-                [X],
+                single_genotype,
+                self.gpm,
                 order=self.order,
-                mutations=self.gpm.mutations,
                 model_type=self.model_type
             )
 
@@ -469,13 +467,12 @@ class AbstractModel(ABC):
 
         # If list of genotypes.
         elif obj in [list, np.ndarray, pd.DataFrame, pd.Series]:
-
+            genotypes = X
             # Get X from genotypes
             X = genotypes_to_X(
-                self.gpm.wildtype,
+                genotypes,
                 X,
                 order=self.order,
-                mutations=self.gpm.mutations,
                 model_type=self.model_type
             )
         else:
@@ -536,7 +533,7 @@ class AbstractModel(ABC):
         elif obj in [list, np.ndarray, pd.Series, pd.DataFrame]:
             return _lnprior
         else:
-            raise Exceptison("_prior is invalid.")
+            raise Exception("_prior is invalid.")
 
 
 class BaseModel(AbstractModel, RegressorMixin, BaseEstimator):

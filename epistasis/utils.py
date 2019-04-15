@@ -12,7 +12,7 @@ from sklearn.metrics import mean_squared_error
 from collections import OrderedDict
 
 from gpmap.utils import genotypes_to_binary
-from .mapping import mutations_to_sites
+from .mapping import encoding_to_sites
 
 from epistasis.matrix import get_model_matrix
 
@@ -28,16 +28,19 @@ class SubclassException(Exception):
 # Useful methods
 # -------------------------------------------------------
 
-def genotypes_to_X(wildtype, genotypes,
-    order=1,
-    mutations=None,
-    model_type='global'):
+def genotypes_to_X(genotypes, gpm, order=1, model_type='global'):
     """Build an X matrix for a list of genotypes."""
-    # Binary representation
-    binary = genotypes_to_binary(wildtype, genotypes, mutations)
-
-    # Build list of sites from genotypes.
-    sites = mutations_to_sites(order, mutations)
+    # But a sites list.
+    sites = encoding_to_sites(
+        order,
+        gpm.encoding_table
+    )
+    # Get genotype column.
+    col = gpm.data.genotypes
+    # Get index of genotypes given.
+    loc = [col[col == g].index[0] for g in genotypes]
+    # Get binary values of genotypes using `loc`. Return as list
+    binary = gpm.data.loc[loc].binary.values.tolist()
 
     # X matrix
     X = get_model_matrix(binary, sites, model_type=model_type)

@@ -6,7 +6,7 @@ from sklearn.base import BaseEstimator, RegressorMixin
 
 
 from epistasis.stats import pearson
-from ..mapping import EpistasisMap, mutations_to_sites
+from ..mapping import EpistasisMap, encoding_to_sites
 from .base import BaseModel
 from epistasis.matrix import get_model_matrix
 from .utils import arghandler
