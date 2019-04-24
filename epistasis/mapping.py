@@ -76,11 +76,11 @@ def encoding_to_sites(order, encoding_table, start_order=0):
     """
     # Drop the nans (represent wildtype sites)
     t = encoding_table[["mutation_index", "genotype_index"]].dropna().astype(int)
-    
+
     # Get mutations indices, grouped by their position in the genotype
     mutation_loc = t.groupby("genotype_index").groups.values()
     mutation_index = [tuple(t.loc[loc]["mutation_index"]) for loc in mutation_loc]
-  
+
     # Include the intercept interaction?
     if start_order == 0:
         sites = [(0,)]
@@ -89,7 +89,7 @@ def encoding_to_sites(order, encoding_table, start_order=0):
         sites = list()
         orders = range(start_order, order + 1)
 
-    # Construct combinations of mutations. 
+    # Construct combinations of mutations.
     for order in orders:
         for combination in it.combinations(mutation_index, order):
             sites += list(it.product(*combination))
@@ -100,11 +100,11 @@ def encoding_to_sites(order, encoding_table, start_order=0):
 class EpistasisMap(object):
     """Container object (DataFrame) for epistatic interactions.
     """
-    def __init__(self, 
-        df=None, 
-        sites=None, 
+    def __init__(self,
+        df=None,
+        sites=None,
         values=None,
-        gpm=None, 
+        gpm=None,
         stdeviations=None):
         if df is not None and isinstance(df, pd.DataFrame) is False:
             raise Exception("""df must be a dataframe""")
@@ -138,7 +138,7 @@ class EpistasisMap(object):
         }
         self.data = pd.DataFrame(data)
         self.data.loc
-    
+
     @staticmethod
     def _sites_to_keys(sites):
         return [",".join([str(c) for c in s]) for s in sites]
@@ -203,8 +203,8 @@ class EpistasisMap(object):
         the mutations they represent in a genotype-phenotype map.
 
         - Keys represent the epistatic coef index
-        - Values are strings joining the wildtype character, genotype position, 
-          and mutation character. 
+        - Values are strings joining the wildtype character, genotype position,
+          and mutation character.
 
         Returns:
         -------
@@ -215,8 +215,8 @@ class EpistasisMap(object):
         label_mapper = {}
         for i, row in t.iterrows():
             label = '{}{}{}'.format(
-                row.wildtype_letter, 
-                row.genotype_index, 
+                row.wildtype_letter,
+                row.site_label,
                 row.mutation_letter
             )
             label_mapper[row.mutation_index] = label
@@ -224,8 +224,8 @@ class EpistasisMap(object):
 
     @property
     def labels(self):
-        """List of site labels. Each site is represented 
-        as a list of labels returned by the `label_mapper` 
+        """List of site labels. Each site is represented
+        as a list of labels returned by the `label_mapper`
         (see `get_label_mapper`).
         """
         mapper = self.get_label_mapper()
@@ -244,7 +244,7 @@ class EpistasisMap(object):
 
     def set_values(self, values, filter=None):
         if hasattr(values, "__iter__") is False:
-            raise Exception("Values must be iterable.") 
+            raise Exception("Values must be iterable.")
 
         if filter is None:
             self.data.values = values
