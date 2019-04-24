@@ -15,7 +15,7 @@ from gpmap.utils import genotypes_to_binary
 from .mapping import encoding_to_sites
 
 from epistasis.matrix import get_model_matrix
-
+from gpmap.utils import genotypes_to_binary
 
 # -------------------------------------------------------
 # Custom exceptions
@@ -35,13 +35,7 @@ def genotypes_to_X(genotypes, gpm, order=1, model_type='global'):
         order,
         gpm.encoding_table
     )
-    # Get genotype column.
-    col = gpm.data.genotypes
-    # Get index of genotypes given.
-    loc = [col[col == g].index[0] for g in genotypes]
-    # Get binary values of genotypes using `loc`. Return as list
-    binary = gpm.data.loc[loc].binary.values.tolist()
-
+    binary = genotypes_to_binary(genotypes, gpm.encoding_table)
     # X matrix
     X = get_model_matrix(binary, sites, model_type=model_type)
     return X

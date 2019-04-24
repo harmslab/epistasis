@@ -471,7 +471,7 @@ class AbstractModel(ABC):
             # Get X from genotypes
             X = genotypes_to_X(
                 genotypes,
-                X,
+                self.gpm,
                 order=self.order,
                 model_type=self.model_type
             )
