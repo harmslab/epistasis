@@ -152,6 +152,45 @@ class AbstractModel(ABC):
         """
         raise SubclassException("Must be implemented in a subclass.")
 
+    def predict_to_df(self, X=None):
+        """Predict a list of genotypes and write the results to a dataframe."""
+        # ------- Handle X --------------
+        # Get object type.
+        obj = X.__class__
+
+        if X is None:
+            X = self.gpm.genotypes
+
+        elif obj is str and X[0] in self.gpm.mutations[0]:
+            X = [X]
+
+        elif obj is np.ndarray and X.ndim == 2:
+            raise Exception("X must be a list of genotypes")             
+
+        elif obj in [list, np.ndarray, pd.DataFrame, pd.Series]:
+            pass
+
+        else:
+            raise Exception("X must be a list of genotypes.")
+
+        # -------- Predict ---------------
+        y = self.predict(X=X)
+
+        return pd.DataFrame(dict(
+            genotypes=X,
+            phenotypes=y
+        ))
+
+    def predict_to_csv(self, filename, X=None):
+        """Predict a list of genotypes and write the results to a CSV."""
+        df = self.predict_of_df(X=X)
+        df.to_csv(filename, index=False)
+
+    def predict_to_excel(self, filename, X=None):
+        """Predict a list of genotypes and write the results to a Excel."""
+        df = self.predict_of_df(X=X)
+        df.to_excel(filename, index=False)  
+
     @abstractmethod
     def predict_transform(self, X=None, y=None, **kwargs):
         """Transform a set of phenotypes according to the model.
