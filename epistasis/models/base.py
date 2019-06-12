@@ -183,12 +183,12 @@ class AbstractModel(ABC):
 
     def predict_to_csv(self, filename, X=None):
         """Predict a list of genotypes and write the results to a CSV."""
-        df = self.predict_of_df(X=X)
+        df = self.predict_to_df(X=X)
         df.to_csv(filename, index=False)
 
     def predict_to_excel(self, filename, X=None):
         """Predict a list of genotypes and write the results to a Excel."""
-        df = self.predict_of_df(X=X)
+        df = self.predict_to_df(X=X)
         df.to_excel(filename, index=False)  
 
     @abstractmethod
