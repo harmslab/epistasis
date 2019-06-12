@@ -7,7 +7,7 @@ __doc__ = """Submodule with handy utilities used throughout the package.
 import abc
 import itertools as it
 import numpy as np
-from scipy.misc import comb
+from scipy.special import comb
 from sklearn.metrics import mean_squared_error
 from collections import OrderedDict
 
