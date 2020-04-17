@@ -10,7 +10,6 @@ import sys
 from shutil import rmtree
 
 from setuptools import find_packages, setup, Command, Extension
-import numpy
 
 # Package meta-data.
 NAME = 'epistasis'
@@ -23,6 +22,7 @@ VERSION = None
 
 # What packages are required for this module to be executed?
 REQUIRED = [
+    "cython",
     "numpy>=1.15.2",
     "pandas>=0.24.2",
     "scikit-learn>=0.20.0",
@@ -33,10 +33,35 @@ REQUIRED = [
     "gpmap>=0.6.0",
 ]
 
-# Extensions
-extension = Extension('epistasis.matrix_cython',
-                      ['epistasis/matrix_cython.c'],
-                      include_dirs=[numpy.get_include()])
+# Hanlding a Cython extension is a pain! Need to
+# import numpy before it's installed... Used this
+# Stackoverflow solution:
+# https://stackoverflow.com/a/42163080
+
+try:
+    from Cython.setuptools import build_ext
+except:
+    # If we couldn't import Cython, use the normal setuptools
+    # and look for a pre-compiled .c file instead of a .pyx file
+    from setuptools.command.build_ext import build_ext
+    extension = Extension("epistasis.matrix_cython", ["epistasis/matrix_cython.c"])
+else:
+    # If we successfully imported Cython, look for a .pyx file
+    extension = Extension("epistasis.matrix_cython", ["epistasis/matrix_cython.pyx"])
+
+class CustomBuildExtCommand(build_ext):
+    """build_ext command for use when numpy headers are needed."""
+    def run(self):
+
+        # Import numpy here, only when headers are needed
+        import numpy
+
+        # Add numpy headers to include_dirs
+        self.include_dirs.append(numpy.get_include())
+
+        # Call original build_ext command
+        build_ext.run(self)
+
 
 # The rest you shouldn't have to touch too much :)
 # ------------------------------------------------
@@ -59,43 +84,6 @@ else:
     about['__version__'] = VERSION
 
 
-class UploadCommand(Command):
-    """Support setup.py upload."""
-
-    description = 'Build and publish the package.'
-    user_options = []
-
-    @staticmethod
-    def status(s):
-        """Prints things in bold."""
-        print('\033[1m{0}\033[0m'.format(s))
-
-    def initialize_options(self):
-        pass
-
-    def finalize_options(self):
-        pass
-
-    def run(self):
-        try:
-            self.status('Removing previous builds…')
-            rmtree(os.path.join(here, 'dist'))
-        except OSError:
-            pass
-
-        self.status('Building Source and Wheel (universal) distribution…')
-        os.system('{0} setup.py sdist bdist_wheel --universal'.format(sys.executable))
-
-        self.status('Uploading the package to PyPi via Twine…')
-        os.system('twine upload dist/*')
-
-        self.status('Pushing git tags…')
-        os.system('git tag v{0}'.format(about['__version__']))
-        os.system('git push --tags')
-
-        sys.exit()
-
-
 # Where the magic happens:
 setup(
     name=NAME,
@@ -108,14 +96,11 @@ setup(
     python_requires=REQUIRES_PYTHON,
     url=URL,
     packages=find_packages(exclude=('tests',)),
-    # If your package is a single module, use this instead of 'packages':
-    # py_modules=['mypackage'],
-
-    # entry_points={
-    #     'console_scripts': ['mycli=mymodule:cli'],
-    # },
     ext_modules=[extension],
     install_requires=REQUIRED,
+    extras_require = {
+        'test': ['pytest'],
+    },
     include_package_data=True,
     license='UNLICENSE',
     classifiers=[
@@ -125,9 +110,6 @@ setup(
       'Programming Language :: Python :: 3.5',
       'Programming Language :: Python :: 3.6',
     ],
-    # $ setup.py publish support.
-    cmdclass={
-        'upload': UploadCommand,
-    },
-    keywords='epistasis high-order genetics genotype-phenotype-maps'
+    keywords='epistasis high-order genetics genotype-phenotype-maps',
+    cmdclass = {'build_ext': CustomBuildExtCommand},
 )

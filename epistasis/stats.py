@@ -41,7 +41,7 @@ def split_data(data, idx=None, nobs=None, fraction=None):
     test_set : pandas.DataFrame
         test set.
     """
-    if idx is not None:
+    if idx:
 
         train_idx = set(idx)
         total_idx = set(data.index)
@@ -50,7 +50,17 @@ def split_data(data, idx=None, nobs=None, fraction=None):
         train_idx = sorted(list(train_idx))
         test_idx = sorted(list(test_idx))
 
-    elif nobs is None:
+    elif nobs:
+        length = len(data)
+
+        # Shuffle the indices
+        index = np.arange(0, length, dtype=int)
+        np.random.shuffle(index)
+
+        train_idx = index[:nobs]
+        test_idx = index[nobs:]
+
+    elif fraction:
 
         if fraction is None:
             raise Exception("nobs or fraction must be given")
