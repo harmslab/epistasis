@@ -3,7 +3,7 @@
 [![Join the chat at https://gitter.im/harmslab/epistasis](https://badges.gitter.im/harmslab/epistasis.svg)](https://gitter.im/harmslab/epistasis?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Binder](http://mybinder.org/badge.svg)](https://beta.mybinder.org/v2/gh/harmslab/epistasis-notebooks/master)
 [![Documentation Status](https://readthedocs.org/projects/epistasis/badge/?version=latest)](http://epistasis.readthedocs.io/?badge=latest)
-[![Build Status](https://travis-ci.org/harmslab/epistasis.svg?branch=master)](https://travis-ci.org/harmslab/epistasis)
+[![Tests](https://github.com/harmslab/epistasis/workflows/Epistasis%20Tests/badge.svg)](https://github.com/harmslab/epistasis/actions?query=workflow%3A%22Epistasis+Tests%22)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1215853.svg)](https://doi.org/10.5281/zenodo.1215853)
 
 *Python API for estimating statistical, high-order epistasis in genotype-phenotype maps.*
@@ -83,7 +83,7 @@ Documentation and API reference can be viewed [here](http://epistasis.readthedoc
 
 * [matplotlib](): Python plotting API.
 * [ipython](): interactive python kernel.
-* [jupyter notebook](): interactive notebook application for running python kernels interactively.   
+* [jupyter notebook](): interactive notebook application for running python kernels interactively.
 * [ipywidgets](): interactive widgets in python.
 
 ## Development
