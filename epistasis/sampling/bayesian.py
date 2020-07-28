@@ -101,11 +101,12 @@ class BayesianSampler(object):
             rstate = previous_state['rstate']
 
         # Run sampler from previous position
-        pos, lnprob, rstate = self.sampler_engine.run_mcmc(pos0=pos,
-                                                           N=n_steps,
+        pos, lnprob, rstate = self.sampler_engine.run_mcmc(initial_state=pos,
+                                                           nsteps=n_steps,
                                                            rstate0=rstate,
-                                                           lnprob0=lnprob,
-                                                           storechain=True)
+                                                           log_prob0=lnprob,
+                                                           store=True,
+                                                           progress=True)
 
         # Store previous run in a dictionary
         previous_state = {'pos': pos, 'lnprob': lnprob, 'rstate': rstate}
