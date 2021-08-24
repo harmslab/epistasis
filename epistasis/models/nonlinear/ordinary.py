@@ -73,7 +73,6 @@ class EpistasisNonlinearRegression(BaseModel):
         self.Xbuilt = {}
 
         self.model_type = model_type
-        self.order = order
         # Necessary for sklearn 0.24 +
         self.positive = False
 
