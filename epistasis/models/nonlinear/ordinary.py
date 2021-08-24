@@ -72,8 +72,10 @@ class EpistasisNonlinearRegression(BaseModel):
         self.order = 1
         self.Xbuilt = {}
 
-        # Construct parameters object
-        self.set_params(model_type=model_type)
+        self.model_type = model_type
+        self.order = order
+        # Necessary for sklearn 0.24 +
+        self.positive = False
 
         # Store model specs.
         self.model_specs = dict(
