@@ -95,7 +95,9 @@ class EpistasisLasso(BaseModel):
         self.selection = selection
         self.l1_ratio = 1.0
 
-        self.set_params(model_type=model_type, order=order)
+        self.model_type = model_type
+        self.order = order
+
         self.Xbuilt = {}
 
         # Store model specs.

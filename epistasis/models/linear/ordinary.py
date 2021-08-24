@@ -32,7 +32,12 @@ class EpistasisLinearRegression(BaseModel):
         self.normalize = False
         self.copy_X = False
         self.n_jobs = n_jobs
-        self.set_params(model_type=model_type, order=order)
+
+        self.model_type = model_type
+        self.order = order
+        # Necessary for sklearn 0.24 +
+        self.positive = False
+
         self.Xbuilt = {}
 
         # Store model specs.

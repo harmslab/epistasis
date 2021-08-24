@@ -68,7 +68,11 @@ class EpistasisRidge(BaseModel):
         self.solver = solver
         self.l2_ratio = 1.0
 
-        self.set_params(model_type=model_type, order=order)
+        self.model_type = model_type
+        self.order = order
+        # Necessary for sklearn 0.24 +
+        self.positive = False
+        
         self.Xbuilt = {}
 
         # Store model specs.

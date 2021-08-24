@@ -83,8 +83,8 @@ def get_model_matrix(binary_genotypes, sites, model_type='global'):
         Type of epistasis model (global/Hadamard, local/Biochemical).
     """
     # Convert sites to array of arrays
-    sites = np.array([np.array(s) for s in sites])
-
+    sites = np.array([np.array(s) for s in sites],dtype=object)
+    
     # Encode genotypes
     encoded_vector = encode_vectors(binary_genotypes, model_type=model_type)
 
