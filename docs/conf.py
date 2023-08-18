@@ -99,7 +99,7 @@ release = '0.1'
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = "en"
 
 # There are two options for replacing |today|: either, you set today to some
 # non-false value, then it is used:
@@ -343,7 +343,7 @@ sphinx_gallery_conf = {
     # path where to save gallery generated examples
     'gallery_dirs'  : 'gallery',
     'backreferences_dir': 'generated/modules',
-    'download_section_examples' : False,
+    'download_all_examples' : False,
     'reference_url': {
         'epistasis': None,
     },
